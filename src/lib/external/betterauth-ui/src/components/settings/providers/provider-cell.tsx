@@ -6,7 +6,7 @@ import {
   TooltipTrigger
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useIsOverflow } from "@betterauth-ui/hooks/use-is-overflow";
+import { useIsOverflow } from "@/lib/external/betterauth-ui/src/hooks/use-is-overflow";
 import { Account } from "better-auth";
 import type { SocialProvider } from "better-auth/social-providers";
 import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";

@@ -13,7 +13,7 @@
 @source not "../../src/app/(frontend)";
 @source not "../../src/components";
 @source not "../../src/providers";
-@source not "../../src/lib";
+@source not "../../src/lib/auth";
 @source not "../../src/stores";
 @source not "../../src/hooks";
 @config "../../tailwind.config.js";

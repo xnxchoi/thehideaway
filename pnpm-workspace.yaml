@@ -8,16 +8,17 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
-
-onlyBuiltDependencies:
-  - '@clerk/shared'
-  - '@parcel/watcher'
-  - '@tailwindcss/oxide'
-  - browser-tabs-lock
-  - core-js
-  - esbuild
-  - sharp
-  - unrs-resolver
+  '@clerk/shared': true
+  '@tailwindcss/oxide': true
+  browser-tabs-lock: true
 
 publicHoistPattern:
   - '*eslint*'
+overrides:
+  uuid: ^13.0.1
+  fast-uri: ^3.1.2
+  fast-xml-builder: ^1.1.7
+  kysely: ^0.28.17
+  dompurify: ^3.3.2
+  esbuild: ^0.25.0
+  postcss: ^8.5.10

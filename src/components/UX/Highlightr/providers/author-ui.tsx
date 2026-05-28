@@ -13,8 +13,11 @@ import {
 import { GradientSeparator } from "@/components/ui/separator";
 import { Link } from "@/components/core/Link/Link";
 import type { AuthorOverview } from "@/types/collections/users";
-import { AuthUIContext, socialProviders } from "@/lib/auth/betterauth-ui/src";
-import { ProviderButton } from "@/lib/auth/betterauth-ui/src/components/auth/provider-button";
+import {
+  AuthUIContext,
+  socialProviders
+} from "@/lib/external/betterauth-ui/src";
+import { ProviderButton } from "@/lib/external/betterauth-ui/src/components/auth/provider-button";
 import { cn } from "@/lib/utils";
 import { delay, isHangul } from "@/utilities/rp_utils";
 import { useTranslations } from "next-intl";

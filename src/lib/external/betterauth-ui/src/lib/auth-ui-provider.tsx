@@ -1,10 +1,10 @@
 "use client";
 
-import { EmailVerificationOptions } from "@betterauth-ui/types/email-verification-options";
+import { EmailVerificationOptions } from "@/lib/external/betterauth-ui/src/types/email-verification-options";
 import {
   TeamOptions,
   TeamOptionsContext
-} from "@betterauth-ui/types/team-options";
+} from "@/lib/external/betterauth-ui/src/types/team-options";
 import { createContext, type ReactNode, useMemo } from "react";
 import { toast } from "sonner";
 

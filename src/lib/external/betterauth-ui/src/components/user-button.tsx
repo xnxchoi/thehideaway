@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { useIsHydrated } from "@betterauth-ui/hooks/use-hydrated";
+import { useIsHydrated } from "@/lib/external/betterauth-ui/src/hooks/use-hydrated";
 import {
   ChevronsUpDown,
   LogInIcon,

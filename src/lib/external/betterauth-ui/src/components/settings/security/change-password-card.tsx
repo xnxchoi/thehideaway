@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Captcha } from "@betterauth-ui/components/captcha/captcha";
-import { useCaptcha } from "@betterauth-ui/hooks/use-captcha";
+import { Captcha } from "@/lib/external/betterauth-ui/src/components/captcha/captcha";
+import { useCaptcha } from "@/lib/external/betterauth-ui/src/hooks/use-captcha";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useContext } from "react";
 import { useForm } from "react-hook-form";
@@ -73,8 +73,6 @@ export function ChangePasswordCard({
   const { data: sessionData } = useSession();
 
   if (!skipHook) {
-
-
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const result = useListAccounts();
     accounts = result.data;

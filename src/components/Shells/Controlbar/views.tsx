@@ -7,7 +7,7 @@ import {
   useSearchQuery
 } from "@/components/UX/CommandKey/Commando";
 import { signOut } from "@/lib/auth/client";
-import { UserAvatar } from "@/lib/auth/betterauth-ui/src";
+import { UserAvatar } from "@/lib/external/betterauth-ui/src";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useHumanTime } from "@/hooks/useLocaleDate";

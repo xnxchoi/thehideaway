@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useMotionValueEvent, useScroll } from "motion/react";
+import { useCallback, useEffect, useRef } from "react";
+import { useTempus } from "tempus/react";
 import {
   BlendFunction,
   BloomEffect,
@@ -12,10 +14,17 @@ import {
 } from "postprocessing";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { getLostScrollY, syncLostScrollY } from "@/lib/lenis/runtime";
+import {
+  getLostHeroPostTheme,
+  shouldPauseLostHeroVideo,
+  shouldRenderLostHeroFrame
+} from "./hero-scene-state";
+import { getLostHeroScrollProgress } from "./hero-scroll-motion";
 
 type Props = {
+  bagOpen: boolean;
   imageUrl: string;
+  onReady: () => void;
   videoUrl?: string | null;
 };
 
@@ -584,8 +593,9 @@ class SourceReflector {
   private readonly renderTarget: THREE.WebGLRenderTarget;
   private readonly material: THREE.ShaderMaterial;
   private readonly blurPass: GroundReflectorBlurPass | null;
+  private readonly cameraWorldPosition = new THREE.Vector3();
   private readonly originalMaterial: THREE.Material | THREE.Material[] | null;
-  private readonly dynamicUpdate: boolean;
+  private readonly reflectorWorldPosition = new THREE.Vector3();
   private readonly updateInterval: number;
   private lastUpdateTime = 0;
 
@@ -648,7 +658,6 @@ class SourceReflector {
     });
     this.mesh.material = this.material;
     this.blurPass = ground ? new GroundReflectorBlurPass() : null;
-    this.dynamicUpdate = !ground;
     this.updateInterval = ground ? 1000 / 24 : 1000 / 30;
   }
 
@@ -663,38 +672,29 @@ class SourceReflector {
     mainCamera: THREE.PerspectiveCamera
   ) {
     const now = performance.now();
-    if (
-      !this.dynamicUpdate &&
-      now - this.lastUpdateTime < this.updateInterval
-    ) {
-      return;
-    }
+    if (now - this.lastUpdateTime < this.updateInterval) return;
     this.lastUpdateTime = now;
     this.mesh.updateMatrixWorld();
     mainCamera.updateMatrixWorld();
 
-    const reflectorWorldPosition = new THREE.Vector3().setFromMatrixPosition(
-      this.mesh.matrixWorld
-    );
-    const cameraWorldPosition = new THREE.Vector3().setFromMatrixPosition(
-      mainCamera.matrixWorld
-    );
+    this.reflectorWorldPosition.setFromMatrixPosition(this.mesh.matrixWorld);
+    this.cameraWorldPosition.setFromMatrixPosition(mainCamera.matrixWorld);
 
     this.rotationMatrix.extractRotation(this.mesh.matrixWorld);
     this.normal.set(0, 0, 1);
     this.normal.applyMatrix4(this.rotationMatrix);
-    this.view.subVectors(reflectorWorldPosition, cameraWorldPosition);
+    this.view.subVectors(this.reflectorWorldPosition, this.cameraWorldPosition);
     if (this.view.dot(this.normal) > 0) return;
 
     this.view.reflect(this.normal).negate();
-    this.view.add(reflectorWorldPosition);
+    this.view.add(this.reflectorWorldPosition);
     this.rotationMatrix.extractRotation(mainCamera.matrixWorld);
     this.target.set(0, 0, -1);
     this.target.applyMatrix4(this.rotationMatrix);
-    this.target.add(cameraWorldPosition);
-    this.target.sub(reflectorWorldPosition);
+    this.target.add(this.cameraWorldPosition);
+    this.target.sub(this.reflectorWorldPosition);
     this.target.reflect(this.normal).negate();
-    this.target.add(reflectorWorldPosition);
+    this.target.add(this.reflectorWorldPosition);
 
     this.virtualCamera.copy(mainCamera, false);
     this.virtualCamera.position.copy(this.view);
@@ -730,7 +730,7 @@ class SourceReflector {
 
     this.mirrorPlane.setFromNormalAndCoplanarPoint(
       this.normal,
-      reflectorWorldPosition
+      this.reflectorWorldPosition
     );
     this.mirrorPlane.applyMatrix4(this.virtualCamera.matrixWorldInverse);
     this.clipPlane.set(
@@ -784,14 +784,68 @@ class SourceReflector {
   }
 }
 
-export function LostHeroScene({ imageUrl, videoUrl }: Props) {
+type LostHeroSceneRuntime = {
+  render: (time: number, deltaTime: number) => void;
+  syncPostTheme: () => void;
+  syncVideoState: () => void;
+};
+
+export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bagOpenRef = useRef(bagOpen);
+  const runtimeRef = useRef<LostHeroSceneRuntime | null>(null);
+  const sceneInViewportRef = useRef(true);
+  const scrollProgressRef = useRef(0);
+  const { scrollY } = useScroll();
+  const syncScrollProgress = useCallback((scrollY: number) => {
+    scrollProgressRef.current = getLostHeroScrollProgress(
+      scrollY,
+      window.innerHeight,
+      window.innerWidth
+    );
+  }, []);
+  useMotionValueEvent(scrollY, "change", syncScrollProgress);
+  useTempus(
+    (time, deltaTime) => {
+      runtimeRef.current?.render(time, deltaTime);
+    },
+    { label: "lost-hero-scene", priority: 1 }
+  );
+
+  useEffect(() => {
+    bagOpenRef.current = bagOpen;
+    runtimeRef.current?.syncVideoState();
+    runtimeRef.current?.syncPostTheme();
+  }, [bagOpen]);
+
+  useEffect(() => {
+    const syncFromCurrentScroll = () => {
+      syncScrollProgress(scrollY.get());
+    };
+
+    syncFromCurrentScroll();
+    window.addEventListener("resize", syncFromCurrentScroll);
+
+    return () => {
+      window.removeEventListener("resize", syncFromCurrentScroll);
+    };
+  }, [scrollY, syncScrollProgress]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     let disposed = false;
+    const visibilityObserver =
+      "IntersectionObserver" in window
+        ? new IntersectionObserver(
+            ([entry]) => {
+              sceneInViewportRef.current = entry?.isIntersecting ?? true;
+            },
+            { rootMargin: "120px" }
+          )
+        : null;
+    visibilityObserver?.observe(canvas);
     const colorCanvas = document.createElement("canvas");
     colorCanvas.width = 1;
     colorCanvas.height = 1;
@@ -1031,9 +1085,11 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
         modelGroup.add(loadedScene);
         syncPostTheme();
         canvas.dataset.lostOflynModels = "loaded";
+        onReady();
       })
       .catch(() => {
         canvas.dataset.lostOflynModels = "failed";
+        onReady();
       });
 
     const composer = new EffectComposer(renderer);
@@ -1076,7 +1132,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
 
     const playVideo = () => {
       if (!video || document.hidden) return;
-      if (document.body.dataset.lostBagOpen === "true") return;
+      if (bagOpenRef.current) return;
       void video
         .play()
         .then(() => {
@@ -1090,7 +1146,12 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     };
     const syncVideoState = () => {
       if (!video) return;
-      if (document.hidden || document.body.dataset.lostBagOpen === "true") {
+      if (
+        shouldPauseLostHeroVideo({
+          bagOpen: bagOpenRef.current,
+          documentHidden: document.hidden
+        })
+      ) {
         pauseVideo();
       } else {
         playVideo();
@@ -1144,9 +1205,11 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     };
     const syncPostTheme = () => {
       applySceneTheme();
-      const darkFrame =
-        document.body.dataset.lostVideoOpen === "true" ||
-        document.body.dataset.lostBagOpen === "true";
+      const postTheme = getLostHeroPostTheme({
+        bagOpen: bagOpenRef.current,
+        videoOpen: document.body.dataset.lostVideoOpen === "true"
+      });
+      const darkFrame = postTheme === "dark";
       colorFromVar(
         darkFrame ? "--n-s-bg" : "--bg",
         darkFrame ? LOST_BLACK_FALLBACK : LOST_WALL_FALLBACK,
@@ -1188,8 +1251,8 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
           ? event.detail.open
           : !zoom.open;
       startVideoZoom(requestedOpen);
+      syncPostTheme();
     };
-    const bagObserver = new MutationObserver(syncVideoState);
     const postThemeObserver = new MutationObserver(syncPostTheme);
 
     if (video) {
@@ -1207,36 +1270,56 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
       playVideo();
     }
 
-    let raf = 0;
-    const clock = new THREE.Clock();
     const lookTarget = new THREE.Vector3();
-    let elapsed = 0;
-    const render = () => {
-      const delta = Math.min(clock.getDelta(), 0.05);
-      const deltaMs = delta * 1000;
-      elapsed += delta;
-      const scrollLimit = Math.min(window.innerHeight * 1.2, 800);
-      syncLostScrollY();
-      const scroll = Math.min(
-        Math.max(getLostScrollY() / Math.max(scrollLimit, 1), 0),
-        1
-      );
-      current.scroll = scroll;
+    const naturalPosition = new THREE.Vector3();
+    const breathing = { x: 0, y: 0, z: 0 };
+    let breathingOffset = 0;
+    const render = (_time: number, deltaTime: number) => {
+      if (disposed) return;
+      if (
+        !shouldRenderLostHeroFrame({
+          documentHidden: document.hidden,
+          inViewport: sceneInViewportRef.current
+        })
+      ) {
+        return;
+      }
+
+      const deltaMs = Math.min(deltaTime || 16.6667, 50);
+      const delta = deltaMs / 1000;
+      breathingOffset += deltaMs / 16.6667;
+
+      current.scroll = scrollProgressRef.current;
       current.x = sourceDamp(current.x, pointer.x, 0.1, deltaMs);
       current.y = sourceDamp(current.y, pointer.y, 0.1, deltaMs);
       vignetteColorUniform.value.lerp(vignetteTargetColor, 0.1);
 
-      const motion = 1;
-      cableMaterial.uniforms.time.value = elapsed;
-      const breathingX = Math.sin(elapsed * 0.6) * 0.02 * motion;
-      const breathingY = Math.cos(elapsed * 0.6) * 0.02 * motion;
-      const breathingZ =
-        Math.cos(elapsed * 0.6) * 0.02 * motion - current.x * 0.6 * motion;
+      cableMaterial.uniforms.time.value += delta;
+      const breathingFrequency = 0.01;
+      const breathingAmplitude = 0.02;
+      breathing.x = sourceDamp(
+        breathing.x,
+        Math.sin(breathingOffset * breathingFrequency) * breathingAmplitude,
+        0.1,
+        deltaMs
+      );
+      breathing.y = sourceDamp(
+        breathing.y,
+        Math.cos(breathingOffset * breathingFrequency) * breathingAmplitude,
+        0.1,
+        deltaMs
+      );
+      breathing.z = sourceDamp(
+        breathing.z,
+        Math.cos(breathingOffset * breathingFrequency) * breathingAmplitude,
+        0.1,
+        deltaMs
+      );
       const scrollOffset = zoom.open ? 0 : current.scroll * 2;
-      const naturalPosition = new THREE.Vector3(
-        breathingX,
-        current.scroll > 0 ? -scrollOffset : breathingY,
-        breathingZ
+      naturalPosition.set(
+        breathing.x,
+        current.scroll > 0 ? -scrollOffset : breathing.y,
+        breathing.z - current.x * 0.6
       );
       if (zoom.active) {
         zoom.progress = Math.min(
@@ -1271,7 +1354,11 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
         reflector.render(renderer, scene, camera)
       );
       composer.render(delta);
-      raf = window.requestAnimationFrame(render);
+    };
+    runtimeRef.current = {
+      render,
+      syncPostTheme,
+      syncVideoState
     };
 
     resize();
@@ -1280,29 +1367,24 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
     window.addEventListener("pointermove", onPointerMove);
     document.addEventListener("lost:watch-video", onWatchVideo);
     document.addEventListener("visibilitychange", syncVideoState);
-    bagObserver.observe(document.body, {
-      attributeFilter: ["data-lost-bag-open"],
-      attributes: true
-    });
     postThemeObserver.observe(document.body, {
-      attributeFilter: ["data-lost-video-open", "data-lost-bag-open"],
+      attributeFilter: ["data-lost-video-open"],
       attributes: true
     });
     postThemeObserver.observe(document.documentElement, {
       attributeFilter: ["data-theme", "class"],
       attributes: true
     });
-    raf = window.requestAnimationFrame(render);
 
     return () => {
       disposed = true;
-      window.cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("lost:watch-video", onWatchVideo);
       document.removeEventListener("visibilitychange", syncVideoState);
-      bagObserver.disconnect();
       postThemeObserver.disconnect();
+      visibilityObserver?.disconnect();
+      runtimeRef.current = null;
       pauseVideo();
       if (video) {
         video.removeAttribute("src");
@@ -1321,7 +1403,7 @@ export function LostHeroScene({ imageUrl, videoUrl }: Props) {
       composer.dispose();
       renderer.dispose();
     };
-  }, [imageUrl, videoUrl]);
+  }, [imageUrl, onReady, videoUrl]);
 
   return (
     <canvas

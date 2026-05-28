@@ -1,12 +1,12 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ComponentProps,
-  type ReactNode
-} from "react";
+import { Button } from "@/components/core/Button";
+import { Link } from "@/components/core/Link/Link";
+import type { LostProductCard } from "@/lib/lost-commerce/queries";
+import type { LostOrderMode } from "@/lib/lost-commerce/types";
+
+import { cn } from "@/lib/utils";
+import { useCursor } from "@/providers/RP_Pro";
 import {
   ArrowElbowDownRightIcon,
   ArrowsOutSimpleIcon,
@@ -17,25 +17,48 @@ import {
   SpeakerXIcon,
   XIcon
 } from "@phosphor-icons/react";
-import { createPortal } from "react-dom";
+import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
-import type Lenis from "lenis";
-import { useLenis } from "lenis/react";
-import { Button } from "@/components/core/Button";
-import { Link } from "@/components/core/Link/Link";
-import { useCursor } from "@/providers/RP_Pro";
 import {
-  clearLostLenis,
-  getLostLenis,
-  setLostLenis,
-  syncLostScrollY
-} from "@/lib/lenis/runtime";
-import { cn } from "@/lib/utils";
-import type { LostProductCard } from "@/lib/lost-commerce/queries";
-import type { LostOrderMode } from "@/lib/lost-commerce/types";
+  type ComponentProps,
+  type RefObject,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import { createPortal } from "react-dom";
+import {
+  getLostBlurLineDelay,
+  getLostBlurViewportAmount,
+  splitLostBlurLines
+} from "./blur-motion";
+import {
+  getLostCollectionTagState,
+  getLostCollectionVideoState,
+  lostCollectionTransition,
+  type LostCollectionMotionState
+} from "./collection-motion";
+import {
+  getLostBagChromeTransition,
+  getLostBagRegularChromeState
+} from "./cart-frame";
 import { LostCartOverlay } from "./cart-overlay";
+import {
+  getLostEntryElementState,
+  getLostEntryTransition,
+  isLostEntryPhase,
+  LOST_ENTRY_PHASE_EVENT,
+  shouldFinishLostEntry,
+  type LostEntryPhase
+} from "./entry-motion";
 import { LostHeroScene } from "./hero-three";
+import {
+  getLostProductStoryFigureState,
+  lostProductStoryFigureTransition,
+  type LostProductStoryFigureState
+} from "./product-story-motion";
 
 const LOST_ENTRY_MIN_MS = 1100;
 const LOST_ENTRY_FAILSAFE_MS = 2600;
@@ -45,46 +68,41 @@ type ChromeLinkProps = ComponentProps<typeof Link> & {
   children: ReactNode;
 };
 
-export function LostLenisBridge() {
-  const lenis = useLenis();
-  const syncBridgeScroll = (instance: Lenis | null) => {
-    document.body.dataset.lostLenisScroll = Math.round(
-      syncLostScrollY(instance)
-    ).toString();
-  };
+function useLostEntryPhase() {
+  const [phase, setPhase] = useState<LostEntryPhase>(() => {
+    if (typeof document === "undefined") return "loading";
+    const currentPhase = document.body.dataset.lostEntry;
+    return isLostEntryPhase(currentPhase) ? currentPhase : "loading";
+  });
 
   useEffect(() => {
-    document.body.dataset.lostLenisBridge = "mounted";
-    const syncNativeScroll = () => {
-      syncBridgeScroll(getLostLenis());
+    const syncPhase = () => {
+      const currentPhase = document.body.dataset.lostEntry;
+      if (isLostEntryPhase(currentPhase)) {
+        setPhase(currentPhase);
+      }
     };
-    window.addEventListener("scroll", syncNativeScroll, { passive: true });
+    const onPhaseChange = (event: Event) => {
+      if (!(event instanceof CustomEvent)) return;
+      if (!isLostEntryPhase(event.detail?.phase)) return;
+      setPhase(event.detail.phase);
+    };
+    const observer = new MutationObserver(syncPhase);
+
+    syncPhase();
+    document.addEventListener(LOST_ENTRY_PHASE_EVENT, onPhaseChange);
+    observer.observe(document.body, {
+      attributeFilter: ["data-lost-entry"],
+      attributes: true
+    });
 
     return () => {
-      window.removeEventListener("scroll", syncNativeScroll);
-      document.body.dataset.lostLenisBridge = "unmounted";
+      document.removeEventListener(LOST_ENTRY_PHASE_EVENT, onPhaseChange);
+      observer.disconnect();
     };
   }, []);
 
-  useEffect(() => {
-    document.body.dataset.lostLenisReady = lenis ? "true" : "false";
-    if (!lenis) return undefined;
-    setLostLenis(lenis);
-    syncBridgeScroll(lenis);
-
-    const syncLenisScroll = () => {
-      syncBridgeScroll(lenis);
-    };
-    lenis.on("scroll", syncLenisScroll);
-
-    return () => {
-      lenis.off("scroll", syncLenisScroll);
-      syncLostScrollY(null);
-      clearLostLenis(lenis);
-    };
-  }, [lenis]);
-
-  return <span aria-hidden className="hidden" data-lost-lenis-bridge />;
+  return phase;
 }
 
 export function LostCursorBridge() {
@@ -110,7 +128,6 @@ export function LostCursorBridge() {
 
     setCursorState(null);
     applyCursorTheme();
-    window.addEventListener("scroll", applyCursorTheme, { passive: true });
     window.addEventListener("resize", applyCursorTheme);
     const cursorObserver = new MutationObserver(applyCursorTheme);
     cursorObserver.observe(document.body, {
@@ -123,7 +140,6 @@ export function LostCursorBridge() {
     });
 
     return () => {
-      window.removeEventListener("scroll", applyCursorTheme);
       window.removeEventListener("resize", applyCursorTheme);
       cursorObserver.disconnect();
       delete document.body.dataset.lostCursorTheme;
@@ -135,71 +151,63 @@ export function LostCursorBridge() {
   return null;
 }
 
-export function LostEntrySequence() {
-  const shouldReduceMotion = useReducedMotion();
-  const [phase, setPhase] = useState<"loading" | "ending" | "ready">(
-    shouldReduceMotion ? "ready" : "loading"
-  );
+export function LostEntrySequence({ sceneReady }: { sceneReady: boolean }) {
+  const [phase, setPhase] = useState<"loading" | "ending" | "ready">("loading");
+  const [minimumElapsed, setMinimumElapsed] = useState(false);
+  const [sceneTimedOut, setSceneTimedOut] = useState(false);
 
   useEffect(() => {
     document.body.dataset.lostEntry = phase;
+    document.dispatchEvent(
+      new CustomEvent(LOST_ENTRY_PHASE_EVENT, { detail: { phase } })
+    );
+
     return () => {
       delete document.body.dataset.lostEntry;
     };
   }, [phase]);
 
   useEffect(() => {
-    if (shouldReduceMotion) {
-      setPhase("ready");
+    const minTimer = window.setTimeout(() => {
+      setMinimumElapsed(true);
+    }, LOST_ENTRY_MIN_MS);
+    const failsafeTimer = window.setTimeout(() => {
+      setSceneTimedOut(true);
+    }, LOST_ENTRY_FAILSAFE_MS);
+
+    return () => {
+      window.clearTimeout(minTimer);
+      window.clearTimeout(failsafeTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "loading") return undefined;
+    if (
+      !shouldFinishLostEntry({
+        minimumElapsed,
+        sceneReady,
+        sceneTimedOut
+      })
+    ) {
       return undefined;
     }
 
-    let minElapsed = false;
-    let sceneReady = false;
-    let isCancelled = false;
-    let readyTimer = 0;
+    setPhase("ending");
+    return undefined;
+  }, [minimumElapsed, phase, sceneReady, sceneTimedOut]);
 
-    const finishIfReady = () => {
-      if (isCancelled || !minElapsed || !sceneReady) return;
-      setPhase("ending");
-      readyTimer = window.setTimeout(() => {
-        setPhase("ready");
-      }, LOST_ENTRY_EXIT_MS);
-    };
+  useEffect(() => {
+    if (phase !== "ending") return undefined;
 
-    const markSceneReady = () => {
-      const canvas = document.querySelector<HTMLCanvasElement>(
-        ".lost-hero-canvas[data-lost-oflyn-models='loaded'], .lost-hero-canvas[data-lost-oflyn-models='failed']"
-      );
-      if (!canvas) return;
-      sceneReady = true;
-      finishIfReady();
-    };
-
-    const minTimer = window.setTimeout(() => {
-      minElapsed = true;
-      finishIfReady();
-    }, LOST_ENTRY_MIN_MS);
-    const failsafeTimer = window.setTimeout(() => {
-      sceneReady = true;
-      finishIfReady();
-    }, LOST_ENTRY_FAILSAFE_MS);
-    const observer = new MutationObserver(markSceneReady);
-    observer.observe(document.body, {
-      attributeFilter: ["data-lost-oflyn-models"],
-      attributes: true,
-      subtree: true
-    });
-    markSceneReady();
+    const readyTimer = window.setTimeout(() => {
+      setPhase("ready");
+    }, LOST_ENTRY_EXIT_MS);
 
     return () => {
-      isCancelled = true;
-      window.clearTimeout(minTimer);
-      window.clearTimeout(failsafeTimer);
       window.clearTimeout(readyTimer);
-      observer.disconnect();
     };
-  }, [shouldReduceMotion]);
+  }, [phase]);
 
   return (
     <AnimatePresence>
@@ -281,28 +289,51 @@ export function LostBrandWord({
   );
 }
 
-export function LostAnnouncementBar({ children }: { children: ReactNode }) {
+export function LostAnnouncementBar({
+  bagOpen,
+  children
+}: {
+  bagOpen: boolean;
+  children: ReactNode;
+}) {
+  const entryPhase = useLostEntryPhase();
+  const chromeState = getLostEntryElementState("chrome", entryPhase);
+
   return (
-    <div
-      className="sticky top-0 z-40 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-bg)_l_c_h_/_0.42)] px-4 py-4 text-center font-mono text-[1rem] leading-none tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] uppercase shadow-[0_1px_0_oklch(from_var(--n-s-fg)_l_c_h_/_0.05)_inset] backdrop-blur-xl"
+    <m.div
+      animate={{
+        ...chromeState,
+        opacity: bagOpen ? 0 : chromeState.opacity
+      }}
+      className="relative z-40 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-bg)_l_c_h_/_0.42)] px-4 py-4 text-center font-mono text-[1rem] leading-none tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] uppercase shadow-[0_1px_0_oklch(from_var(--n-s-fg)_l_c_h_/_0.05)_inset] backdrop-blur-xl"
+      data-lost-announcement
       data-lost-entry-chrome
+      initial={false}
+      transition={
+        entryPhase === "ready"
+          ? getLostBagChromeTransition(bagOpen)
+          : getLostEntryTransition("chrome", entryPhase)
+      }
     >
       {children}
-    </div>
+    </m.div>
   );
 }
 
 type LostHeaderProps = {
   backLabel: string;
+  bagOpen: boolean;
   cartLabel: string;
   clearSearchLabel: string;
   checkoutLabel: string;
+  commerceRootRef: RefObject<HTMLElement | null>;
   emptyLabel: string;
   removeLabel: string;
   searchLabel: string;
   searchPlaceholder: string;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  onBagOpenChange: (open: boolean) => void;
   totalLabel: string;
   shopLabel: string;
   archiveLabel: string;
@@ -312,9 +343,11 @@ type LostHeaderProps = {
 export function LostHeader({
   archiveLabel,
   backLabel,
+  bagOpen,
   cartLabel,
   clearSearchLabel,
   checkoutLabel,
+  commerceRootRef,
   drops,
   emptyLabel,
   removeLabel,
@@ -322,63 +355,93 @@ export function LostHeader({
   searchPlaceholder,
   searchQuery,
   setSearchQuery,
+  onBagOpenChange,
   shopLabel,
   totalLabel
 }: LostHeaderProps) {
+  const entryPhase = useLostEntryPhase();
+  const chromeState = getLostEntryElementState("chrome", entryPhase);
+  const chromeTransition = getLostEntryTransition("chrome", entryPhase);
+  const headerChromeState =
+    entryPhase === "ready"
+      ? {
+          ...getLostBagRegularChromeState(bagOpen),
+          pointerEvents: bagOpen ? "none" : "auto"
+        }
+      : chromeState;
+  const headerChromeTransition =
+    entryPhase === "ready"
+      ? getLostBagChromeTransition(bagOpen)
+      : chromeTransition;
+
   return (
-    <header
-      className="pointer-events-none sticky top-[4.9rem] z-50 h-0 px-4 md:px-14"
+    <m.header
+      className="pointer-events-none sticky top-[4.9rem] z-50 h-0 px-4 pt-2 md:px-14 md:pt-3"
       data-lost-header
+      initial={false}
     >
       <div
         className="flex items-start justify-end gap-4 lg:justify-between"
         data-lost-header-grid
       >
-        <nav
-          className="pointer-events-auto hidden gap-1 lg:flex"
-          aria-label="LOSTINSEOUL"
-          data-lost-entry-chrome
-        >
-          <LostChromeLink href="/lostinseoul">{shopLabel}</LostChromeLink>
-          {drops.slice(0, 2).map((drop) => (
-            <LostChromeLink
-              href={`/lostinseoul/collections/${drop.slug}`}
-              key={drop.slug}
-            >
-              {drop.title}
-            </LostChromeLink>
-          ))}
-          <LostChromeLink href="#products">{archiveLabel}</LostChromeLink>
-        </nav>
+        <div className="hidden overflow-hidden lg:block">
+          <m.nav
+            animate={headerChromeState}
+            className="pointer-events-auto flex gap-1"
+            aria-label="LOSTINSEOUL"
+            data-lost-entry-chrome
+            initial={false}
+            transition={headerChromeTransition}
+          >
+            <LostChromeLink href="/lostinseoul">{shopLabel}</LostChromeLink>
+            {drops.slice(0, 2).map((drop) => (
+              <LostChromeLink
+                href={`/lostinseoul/collections/${drop.slug}`}
+                key={drop.slug}
+              >
+                {drop.title}
+              </LostChromeLink>
+            ))}
+            <LostChromeLink href="#products">{archiveLabel}</LostChromeLink>
+          </m.nav>
+        </div>
 
-        <div
-          className="pointer-events-auto flex min-w-0 justify-end gap-1"
-          data-lost-header-actions
-          data-lost-entry-chrome
-        >
-          <LostSearchBar
-            clearLabel={clearSearchLabel}
-            label={searchLabel}
-            onChange={setSearchQuery}
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-          />
-          <LostCartOverlay
-            backLabel={backLabel}
-            cartLabel={cartLabel}
-            checkoutLabel={checkoutLabel}
-            emptyLabel={emptyLabel}
-            removeLabel={removeLabel}
-            totalLabel={totalLabel}
-          />
+        <div className="min-w-0 overflow-hidden">
+          <m.div
+            animate={headerChromeState}
+            className="pointer-events-auto flex min-w-0 justify-end gap-1"
+            data-lost-header-actions
+            data-lost-entry-chrome
+            initial={false}
+            transition={headerChromeTransition}
+          >
+            <LostSearchBar
+              clearLabel={clearSearchLabel}
+              label={searchLabel}
+              onChange={setSearchQuery}
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+            />
+            <LostCartOverlay
+              backLabel={backLabel}
+              open={bagOpen}
+              cartLabel={cartLabel}
+              checkoutLabel={checkoutLabel}
+              commerceRootRef={commerceRootRef}
+              emptyLabel={emptyLabel}
+              onOpenChange={onBagOpenChange}
+              removeLabel={removeLabel}
+              totalLabel={totalLabel}
+            />
+          </m.div>
         </div>
       </div>
-      <LostHeaderLogo />
-    </header>
+      <LostHeaderLogo bagOpen={bagOpen} />
+    </m.header>
   );
 }
 
-function LostHeaderLogo() {
+function LostHeaderLogo({ bagOpen }: { bagOpen: boolean }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -390,14 +453,23 @@ function LostHeaderLogo() {
   }
 
   return createPortal(
-    <Link
-      aria-label="LOSTINSEOUL home"
-      className="pointer-events-auto fixed top-[var(--lost-logo-top)] left-1/2 z-50 flex items-center justify-center"
+    <div
+      className="pointer-events-auto fixed top-[var(--lost-logo-top)] left-1/2 z-50 flex -translate-x-1/2 items-center justify-center overflow-hidden"
       data-lost-entry-logo
-      href="/lostinseoul"
     >
-      <LostBrandWord />
-    </Link>,
+      <m.div
+        animate={{
+          ...getLostBagRegularChromeState(bagOpen),
+          pointerEvents: bagOpen ? "none" : "auto"
+        }}
+        initial={false}
+        transition={getLostBagChromeTransition(bagOpen)}
+      >
+        <Link aria-label="LOSTINSEOUL home" href="/lostinseoul">
+          <LostBrandWord />
+        </Link>
+      </m.div>
+    </div>,
     document.body
   );
 }
@@ -413,91 +485,42 @@ function LostBlurAppear({
   lines?: string[];
   text: string;
 }) {
-  const containerRef = useRef<HTMLSpanElement | null>(null);
-  const shouldReduceMotion = useReducedMotion();
-  const [active, setActive] = useState(Boolean(shouldReduceMotion));
   const hasLines = Boolean(lines?.length);
-  const [visibleLineCount, setVisibleLineCount] = useState(
-    shouldReduceMotion || !hasLines ? (lines?.length ?? 0) : 0
-  );
-
-  useEffect(() => {
-    setActive(Boolean(shouldReduceMotion));
-    setVisibleLineCount(
-      shouldReduceMotion || !hasLines ? (lines?.length ?? 0) : 0
-    );
-  }, [hasLines, lines?.length, shouldReduceMotion, text]);
-
-  useEffect(() => {
-    if (shouldReduceMotion) return undefined;
-    const element = containerRef.current;
-    if (!element) return undefined;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry?.isIntersecting) return;
-        setActive(true);
-        observer.unobserve(element);
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [shouldReduceMotion]);
-
-  useEffect(() => {
-    if (!active || shouldReduceMotion || !hasLines) return undefined;
-
-    setVisibleLineCount(1);
-    const timer = window.setInterval(() => {
-      setVisibleLineCount((current) => {
-        const next = current + 1;
-        if (next >= (lines?.length ?? 0)) {
-          window.clearInterval(timer);
-          return lines?.length ?? current;
-        }
-        return next;
-      });
-    }, interval);
-
-    return () => window.clearInterval(timer);
-  }, [active, hasLines, interval, lines?.length, shouldReduceMotion]);
+  const viewport = { amount: getLostBlurViewportAmount(), once: true };
 
   return (
-    <span
+    <m.span
+      initial={hasLines ? false : { filter: "blur(8px)" }}
+      transition={{ duration: 1, ease: [0.6, 0, 0.3, 1] }}
+      viewport={viewport}
+      whileInView={hasLines ? undefined : { filter: "blur(0px)" }}
       className={cn(
         "lost-blur-appear",
         hasLines && "lost-blur-appear--lines",
-        active && "is-blur-text",
+        hasLines && "is-blur-text",
         className
       )}
-      ref={containerRef}
     >
       {hasLines
         ? lines?.map((line, index) => (
-            <span
-              className={cn(
-                "lost-blur-token",
-                index < visibleLineCount && "is-visible"
-              )}
+            <m.span
+              className="lost-blur-token"
+              initial={{ filter: "blur(8px)" }}
               key={`${line}-${index}`}
+              transition={{
+                delay: getLostBlurLineDelay(index, interval),
+                duration: 0.3,
+                ease: [0.6, 0, 0.3, 1]
+              }}
+              viewport={viewport}
+              whileInView={{ filter: "blur(0px)" }}
             >
               {line}
-            </span>
+            </m.span>
           ))
         : text}
-    </span>
+    </m.span>
   );
-}
-
-function getLostBlurLines(text: string) {
-  const lines = text
-    .split(/(?<=[.!?。！？])\s+/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  return lines.length > 1 ? lines : [text];
 }
 
 function LostSearchBar({
@@ -514,6 +537,7 @@ function LostSearchBar({
   value: string;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const lenis = useLenis();
   const hasValue = value.trim().length > 0;
 
   return (
@@ -521,10 +545,9 @@ function LostSearchBar({
       action="#products"
       className="group/search grid min-h-16 w-16 grid-cols-[auto_1fr_auto] items-center overflow-hidden rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] text-[var(--lost-hero-ink)] backdrop-blur-md transition-[width,background-color,border-color,color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)] focus-within:w-[min(25rem,calc(100vw-11rem))] hover:bg-[var(--lost-hero-glass-hover)] md:w-[22rem] lg:w-[24rem]"
       onSubmit={(event) => {
+        if (!lenis) return;
         event.preventDefault();
-        document
-          .getElementById("products")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        lenis.scrollTo("#products");
       }}
       role="search"
     >
@@ -563,6 +586,7 @@ function LostSearchBar({
 }
 
 type LostHeroProps = {
+  bagOpen: boolean;
   title: string;
   eyebrow: string;
   collectionLabel: string;
@@ -575,15 +599,18 @@ type LostHeroProps = {
   playLabel: string;
   pauseLabel: string;
   muteLabel: string;
+  onSceneReady: () => void;
   unmuteLabel: string;
 };
 
 export function LostHero({
+  bagOpen,
   closeLabel,
   collectionLabel,
   eyebrow,
   imageUrl,
   muteLabel,
+  onSceneReady,
   pauseLabel,
   playLabel,
   productsLabel,
@@ -596,6 +623,7 @@ export function LostHero({
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoTransitioning, setVideoTransitioning] = useState(false);
   const openTimerRef = useRef<number | null>(null);
+  const entryPhase = useLostEntryPhase();
 
   const openVideo = () => {
     if (!videoUrl) return;
@@ -630,12 +658,20 @@ export function LostHero({
       className="relative grid min-h-svh overflow-hidden bg-background"
       data-lost-video-transition={videoTransitioning ? "open" : "closed"}
     >
-      <div
+      <m.div
+        animate={getLostEntryElementState("stage", entryPhase)}
         data-lost-stage
         className="col-span-full row-span-full grid min-h-svh"
+        initial={false}
+        transition={getLostEntryTransition("stage", entryPhase)}
       >
-        <LostHeroScene imageUrl={imageUrl} videoUrl={videoUrl} />
-      </div>
+        <LostHeroScene
+          imageUrl={imageUrl}
+          bagOpen={bagOpen}
+          onReady={onSceneReady}
+          videoUrl={videoUrl}
+        />
+      </m.div>
       <div
         aria-hidden
         className="pointer-events-none absolute -inset-20 [background-image:repeating-linear-gradient(0deg,transparent_0px,transparent_4px,white_5px),repeating-linear-gradient(90deg,transparent_0px,transparent_7px,white_8px)] opacity-[0.012] mix-blend-screen"
@@ -649,18 +685,32 @@ export function LostHero({
         <div />
         <m.div
           animate={
-            videoTransitioning
-              ? { opacity: 0, y: 0 }
-              : { opacity: [0.9, 0.68, 0.9], y: [0, -5, 0] }
+            entryPhase === "loading"
+              ? getLostEntryElementState("heroText", entryPhase)
+              : videoTransitioning
+                ? { opacity: 0, y: 0 }
+                : {
+                    opacity: [0.9, 0.68, 0.9],
+                    pointerEvents: "auto",
+                    y: [0, -5, 0]
+                  }
           }
           className="grid grid-cols-2 items-center gap-4 font-mono text-[1.2rem] leading-none font-bold tracking-tight text-background uppercase md:grid-cols-4 md:px-6 md:text-[1.6rem]"
           data-hero-text-container
-          transition={{
-            duration: videoTransitioning ? 0.8 : 8,
-            ease: videoTransitioning ? [0.6, 0, 0.3, 1] : "easeInOut",
-            repeat: videoTransitioning ? 0 : Infinity,
-            repeatType: "loop"
-          }}
+          initial={false}
+          transition={
+            videoTransitioning
+              ? { duration: 0.8, ease: [0.6, 0, 0.3, 1] }
+              : entryPhase === "loading"
+                ? getLostEntryTransition("heroText", entryPhase)
+                : {
+                    delay: getLostEntryTransition("heroText", entryPhase).delay,
+                    duration: 8,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    repeatType: "loop"
+                  }
+          }
         >
           <span className="text-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_24px_var(--lost-hero-halo)]">
             {title}
@@ -675,14 +725,21 @@ export function LostHero({
             {yearLabel}
           </span>
         </m.div>
-        <Button
+        <m.button
+          animate={
+            videoTransitioning
+              ? { opacity: 1, scale: 0, y: 0 }
+              : {
+                  ...getLostEntryElementState("heroButton", entryPhase),
+                  scale: 1
+                }
+          }
           aria-label={watchLabel}
-          className={cn(
-            "pointer-events-auto absolute top-[calc(50%+2.45rem)] left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] p-0 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] shadow-[0_1.2rem_4.8rem_var(--lost-hero-halo)] backdrop-blur-xl transition-[color,transform,background-color,border-color] duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)] hover:bg-[var(--lost-hero-glass-hover)]",
-            videoTransitioning && "scale-0"
-          )}
+          className="pointer-events-auto absolute top-[calc(50%+2.45rem)] left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] p-0 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] shadow-[0_1.2rem_4.8rem_var(--lost-hero-halo)] backdrop-blur-xl transition-[color,background-color,border-color] duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)] hover:bg-[var(--lost-hero-glass-hover)]"
           id="open-video-button"
+          initial={false}
           onClick={openVideo}
+          transition={getLostEntryTransition("heroButton", entryPhase)}
           type="button"
         >
           <span className="grid size-16 place-items-center rounded-[3px] border-r border-[var(--lost-hero-line)] bg-[oklch(from_var(--lost-hero-glass)_l_c_h_/_0.45)] backdrop-blur-xl transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]">
@@ -695,13 +752,17 @@ export function LostHero({
           <span className="hidden min-h-16 items-center px-5 backdrop-blur-xl md:flex">
             {watchLabel}
           </span>
-        </Button>
-        <div
-          className={cn(
-            "grid items-end justify-items-center transition-opacity duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)]",
-            videoTransitioning && "opacity-0"
-          )}
+        </m.button>
+        <m.div
+          animate={
+            videoTransitioning
+              ? { opacity: 0, y: 0 }
+              : getLostEntryElementState("heroButton", entryPhase)
+          }
+          className="grid items-end justify-items-center"
           data-hero-btn-container
+          initial={false}
+          transition={getLostEntryTransition("heroButton", entryPhase)}
         >
           <Link
             className="pointer-events-auto inline-grid grid-cols-[5.2rem_auto] items-center gap-3 rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] p-1.5 pr-5 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] backdrop-blur-md transition-[color,background-color,border-color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)] hover:bg-[var(--lost-hero-glass-hover)]"
@@ -717,7 +778,7 @@ export function LostHero({
             </span>
             {productsLabel}
           </Link>
-        </div>
+        </m.div>
       </div>
 
       {videoUrl ? (
@@ -767,11 +828,10 @@ function LostVideoPlayer({
     setMounted(true);
   }, []);
 
+  const lenis = useLenis();
   useEffect(() => {
     document.body.dataset.lostVideoOpen = open ? "true" : "false";
     if (!open) return undefined;
-
-    const lenis = getLostLenis();
     lenis?.stop();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -818,7 +878,7 @@ function LostVideoPlayer({
         video.removeEventListener("loadedmetadata", syncTime);
         video.removeEventListener("timeupdate", syncTime);
         lenis?.start();
-        videoRef.current?.pause();
+        video.pause();
         setPlaying(false);
       };
     }
@@ -826,10 +886,9 @@ function LostVideoPlayer({
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       lenis?.start();
-      videoRef.current?.pause();
       setPlaying(false);
     };
-  }, [onClose, open]);
+  }, [onClose, lenis, open]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -868,7 +927,7 @@ function LostVideoPlayer({
     >
       <video
         aria-label={closeLabel}
-        autoPlay
+        autoPlay={open}
         className="h-full w-full object-cover"
         loop
         muted={muted}
@@ -876,8 +935,9 @@ function LostVideoPlayer({
         onPause={() => setPlaying(false)}
         onPlay={() => setPlaying(true)}
         playsInline
+        preload={open ? "auto" : "none"}
         ref={videoRef}
-        src={src}
+        src={open ? src : undefined}
       />
       <div
         className="pointer-events-none absolute bottom-0 left-0 h-fit w-fit p-4 md:p-8 lg:p-12"
@@ -935,7 +995,7 @@ export function LostStatement({
   return (
     <section className="relative grid bg-[var(--lost-paper)] px-4 py-24 text-center text-[var(--lost-paper-ink)] md:px-14 md:py-40">
       <p className="mx-auto max-w-[89.4rem] text-[2.4rem] leading-[1.08] font-medium tracking-tight md:text-[3.8rem]">
-        <LostBlurAppear lines={getLostBlurLines(lede)} text={lede} />
+        <LostBlurAppear lines={splitLostBlurLines(lede)} text={lede} />
       </p>
       <p className="mt-8 font-mono text-[1.1rem] leading-none tracking-[0.22em] text-[var(--lost-paper-muted)] uppercase">
         <LostBlurAppear
@@ -1113,6 +1173,8 @@ function LostProductTile({
         ? [{ url: product.imageUrl, alt: product.imageAlt ?? product.name }]
         : [];
   const progressCount = Math.max(storyImages.length, 1);
+  const [storyState, setStoryState] =
+    useState<LostProductStoryFigureState>("rest");
 
   return (
     <article
@@ -1120,7 +1182,22 @@ function LostProductTile({
       className="group grid gap-y-8"
       data-product-card
     >
-      <div className="lost-product-story grid overflow-hidden rounded-[4px]">
+      <div
+        className="lost-product-story grid overflow-hidden rounded-[4px]"
+        onBlurCapture={(event) => {
+          const nextTarget = event.relatedTarget;
+          if (
+            nextTarget instanceof Node &&
+            event.currentTarget.contains(nextTarget)
+          ) {
+            return;
+          }
+          setStoryState("rest");
+        }}
+        onFocusCapture={() => setStoryState("hover")}
+        onMouseEnter={() => setStoryState("hover")}
+        onMouseLeave={() => setStoryState("rest")}
+      >
         <Link
           className="col-span-full row-span-full grid overflow-hidden rounded-[4px]"
           href={href}
@@ -1128,15 +1205,14 @@ function LostProductTile({
           <div className="lost-product-story-image col-span-full row-span-full">
             {storyImages.length > 0 ? (
               storyImages.map((image, index) => (
-                <figure
+                <m.figure
+                  animate={getLostProductStoryFigureState(index, storyState)}
                   aria-hidden={index > 0}
-                  className={cn(
-                    "col-span-full row-span-full",
-                    index === 0 && "is-visible",
-                    index === 1 && "is-hover"
-                  )}
+                  className="col-span-full row-span-full"
                   data-story-image-item-image={index + 1}
+                  initial={false}
                   key={`${image.url}-${index}`}
+                  transition={lostProductStoryFigureTransition}
                 >
                   <img
                     alt={index === 0 ? (image.alt ?? product.name) : ""}
@@ -1144,7 +1220,7 @@ function LostProductTile({
                     loading="lazy"
                     src={image.url}
                   />
-                </figure>
+                </m.figure>
               ))
             ) : (
               <div className="flex h-full items-end bg-[linear-gradient(145deg,oklch(from_var(--fg)_l_c_h_/_0.14),oklch(from_var(--bg)_l_c_h_/_0.38)_40%,oklch(from_var(--fg)_l_c_h_/_0.08))] p-4 font-serif text-[7rem] leading-none font-bold text-[oklch(from_var(--fg)_l_c_h_/_0.1)]">
@@ -1329,15 +1405,19 @@ function LostCollectionPreviewFigure({
     imageUrl ?? "lost-collection-empty",
     "lost-collection-ukiyo"
   );
+  const motionState: LostCollectionMotionState = active
+    ? "active"
+    : leaving
+      ? "leaving"
+      : "inactive";
 
   return (
-    <figure
-      className={cn(
-        "lost-collection-video",
-        active && "is-active-next",
-        leaving && "is-active-prev"
-      )}
+    <m.figure
+      animate={getLostCollectionVideoState(motionState)}
+      className="lost-collection-video"
       data-collection-video
+      initial={false}
+      transition={lostCollectionTransition}
     >
       {imageUrl ? (
         <img
@@ -1349,7 +1429,7 @@ function LostCollectionPreviewFigure({
           src={imageUrl}
         />
       ) : null}
-    </figure>
+    </m.figure>
   );
 }
 
@@ -1563,7 +1643,7 @@ export function LostVideoCollections({
         <div className="z-[2] grid gap-y-[2.4rem] px-4 md:col-span-6 md:col-start-1 md:row-span-1 md:row-start-1 md:gap-y-[4rem] md:self-start md:px-0">
           <h2 className="max-w-[73rem] text-[3.6rem] leading-[0.98] font-medium tracking-tight text-[var(--n-s-fg)] md:text-[8rem]">
             <LostBlurAppear
-              lines={getLostBlurLines(collectionsTitleLabel)}
+              lines={splitLostBlurLines(collectionsTitleLabel)}
               text={collectionsTitleLabel}
             />
           </h2>
@@ -1631,16 +1711,21 @@ export function LostVideoCollections({
             <>
               <div className="lost-collection-tags">
                 {visibleCollectionItems.map((item, index) => (
-                  <div
-                    className={cn(
-                      "lost-collection-tag",
-                      index === activeIndex && "is-active",
-                      index === previousIndex && "is-inactive"
+                  <m.div
+                    animate={getLostCollectionTagState(
+                      index === activeIndex
+                        ? "active"
+                        : index === previousIndex
+                          ? "leaving"
+                          : "inactive"
                     )}
+                    className="lost-collection-tag"
+                    initial={false}
                     key={`${item.href}-${index}-tag`}
+                    transition={lostCollectionTransition}
                   >
                     <span className="lost-product-tag">{item.title}</span>
-                  </div>
+                  </m.div>
                 ))}
               </div>
               <Link

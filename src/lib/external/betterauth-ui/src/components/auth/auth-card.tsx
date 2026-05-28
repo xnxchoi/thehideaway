@@ -11,7 +11,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { SettingsCardClassNames } from "@betterauth-ui";
+import { SettingsCardClassNames } from "@/lib/external/betterauth-ui/src";
 import { ArrowLeftIcon } from "lucide-react";
 import { type ReactNode, useContext, useEffect, useState } from "react";
 

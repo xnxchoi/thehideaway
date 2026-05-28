@@ -17,7 +17,7 @@ import { useTheme } from "src/providers/Theme";
 import { useVoyageur } from "src/stores/Routing/RP_Voyageur";
 import { delay, rp_lerp } from "src/utilities/rp_utils";
 import { useWindowResize } from "src/utilities/use_window_resize";
-import { SignedIn } from "src/lib/auth/betterauth-ui/src";
+import { SignedIn } from "@/lib/external/betterauth-ui/src";
 import { useLenis } from "lenis/react";
 import { animate, AnimationPlaybackControls, cancelFrame, frame } from "motion";
 import {

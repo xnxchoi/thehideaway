@@ -1,6 +1,6 @@
 "use client";
 
-import { UserAvatar } from "@/lib/auth/betterauth-ui/src";
+import { UserAvatar } from "@/lib/external/betterauth-ui/src";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/providers/Notifications";

@@ -78,3 +78,4 @@ echo "✓ Sync complete."
 echo "Verify on the VPS:"
 host_part="${TARGET%%:*}"
 echo "  ssh ${host_part} 'du -sh ${TARGET#*:} && ls ${TARGET#*:}scripts/first-deploy.sh'"
+-

@@ -1,9 +1,9 @@
 "use client";
-import { AuthUIProvider } from "@/lib/auth/betterauth-ui/src";
+import { AuthUIProvider } from "@/lib/external/betterauth-ui/src";
 import { authClient } from "@/lib/auth/client";
 import { Link } from "@/components/core/Link/Link";
 import { useTransitionRouter } from "next-transition-router";
-import { NaverIcon } from "@/lib/auth/betterauth-ui/src/components/provider-icons";
+import { NaverIcon } from "@/lib/external/betterauth-ui/src/components/provider-icons";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const router = useTransitionRouter();

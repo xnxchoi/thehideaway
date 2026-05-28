@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@betterauth-ui/components/ui/select";
+} from "@/lib/external/betterauth-ui/src/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ReactNode, useContext, useMemo } from "react";
 import { useForm } from "react-hook-form";

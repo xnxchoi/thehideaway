@@ -7,7 +7,7 @@ import {
   ProvidersCard,
   SessionsCard,
   TwoFactorCard
-} from "@/lib/auth/betterauth-ui/src";
+} from "@/lib/external/betterauth-ui/src";
 import { cn } from "@/lib/utils";
 import { useContext } from "react";
 import { AuthUIContext } from "../../lib/auth-ui-provider";

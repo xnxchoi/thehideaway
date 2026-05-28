@@ -2,51 +2,34 @@
 import "lenis/dist/lenis.css";
 import {
   LenisProps as ReactLenisProps,
-  ReactLenis,
-  useLenis
+  LenisRef,
+  ReactLenis
 } from "lenis/react";
-import { useEffect } from "react";
+import { useRef } from "react";
 import { useTempus } from "tempus/react";
 import { LenisOptions } from "lenis";
-import { setRootLenis } from "@/lib/lenis/runtime";
 
 interface LenisProps extends Omit<ReactLenisProps, "ref"> {
   root: boolean;
   options?: LenisOptions;
 }
 
-function LenisRuntime({ root }: { root: boolean }) {
-  const lenis = useLenis();
+export function Linus({ root, options }: LenisProps) {
+  const lenisRef = useRef<LenisRef>(null!);
   useTempus((time) => {
-    if (lenis) {
-      lenis.raf(time);
+    if (!!lenisRef.current?.lenis) {
+      lenisRef.current.lenis.raf(time);
     }
   });
-
-  useEffect(() => {
-    if (!root || !lenis) return undefined;
-
-    setRootLenis(lenis);
-
-    return () => {
-      setRootLenis(null);
-    };
-  }, [lenis, root]);
-
-  return null;
-}
-
-export function Linus({ root, options }: LenisProps) {
   return (
     <ReactLenis
+      ref={lenisRef}
       root={root}
       options={{
         ...options,
         autoRaf: false,
         anchors: true
       }}
-    >
-      <LenisRuntime root={root} />
-    </ReactLenis>
+    />
   );
 }

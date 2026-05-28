@@ -1,5 +1,5 @@
 "use client";
-import { AuthViewPath } from "@/lib/auth/betterauth-ui/src";
+import { AuthViewPath } from "@/lib/external/betterauth-ui/src";
 import { useContext, useEffect } from "react";
 import { AuthUIContext } from "../lib/auth-ui-provider";
 import type { AnyAuthClient } from "../types/any-auth-client";

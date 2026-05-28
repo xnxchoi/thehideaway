@@ -6,6 +6,7 @@ import {
   PlusIcon,
   XIcon
 } from "@phosphor-icons/react";
+import * as m from "motion/react-m";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import type {
@@ -16,6 +17,11 @@ import type { LostOrderMode } from "@/lib/lost-commerce/types";
 import { useLostCart } from "@/lib/lost-commerce/useLostCart";
 import { cn } from "@/lib/utils";
 import { LostProductSection } from "../../components";
+import {
+  getLostProductPanelFigureState,
+  getLostProductPanelState,
+  lostProductPanelTransition
+} from "../../product-panel-motion";
 import "../../index.css";
 
 type Labels = {
@@ -644,14 +650,22 @@ function ProductDetailPanel({
   open: boolean;
 }) {
   return (
-    <aside
+    <m.aside
+      animate={getLostProductPanelState(open)}
       aria-hidden={!open}
       aria-label={label}
-      className={cn("lost-product-detail-panel", open && "is-open")}
+      className="lost-product-detail-panel"
       data-panel-detail-container
+      initial={false}
+      transition={lostProductPanelTransition}
     >
       <div className="grid min-h-screen lg:grid-cols-2">
-        <figure className="min-h-[42svh] overflow-hidden bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.06)] lg:min-h-screen">
+        <m.figure
+          animate={getLostProductPanelFigureState(open)}
+          className="min-h-[42svh] overflow-hidden bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.06)] lg:min-h-screen"
+          initial={false}
+          transition={lostProductPanelTransition}
+        >
           {image ? (
             <img
               alt={image.alt ?? ""}
@@ -660,7 +674,7 @@ function ProductDetailPanel({
               src={image.url}
             />
           ) : null}
-        </figure>
+        </m.figure>
         <div className="grid items-center justify-items-center bg-[var(--n-s-bg)]">
           <div className="grid w-full gap-y-10 px-4 py-20 lg:gap-y-28 lg:px-28 lg:py-0">
             <Button
@@ -679,6 +693,6 @@ function ProductDetailPanel({
           </div>
         </div>
       </div>
-    </aside>
+    </m.aside>
   );
 }
