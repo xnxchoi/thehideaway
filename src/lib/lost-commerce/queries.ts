@@ -1,6 +1,12 @@
 import config from "@payload-config";
 import { getPayload } from "payload";
 import { formatLostMoney } from "./format";
+import {
+  normalizeLostDropCard,
+  normalizeLostProductVariants,
+  type LostDropCard,
+  type LostProductVariant
+} from "./query-normalizers";
 import type { LostCurrency, LostOrderMode } from "./types";
 
 type AnyDoc = Record<string, unknown>;
@@ -22,6 +28,8 @@ export type LostProductCard = {
   campaign?: LostCampaignView | null;
 };
 
+export type { LostDropCard, LostProductVariant };
+
 export type LostCampaignView = {
   id: string;
   title: string;
@@ -38,6 +46,7 @@ export type LostProductDetail = LostProductCard & {
   gallery: Array<{ url: string; alt?: string | null }>;
   privatePresetPriceEnabled?: boolean;
   privateUnitAmount?: number | null;
+  variants: LostProductVariant[];
 };
 
 function stringValue(value: unknown, fallback = ""): string {
@@ -174,7 +183,7 @@ async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
 
 export async function getLostHomeData(): Promise<{
   products: LostProductCard[];
-  drops: Array<{ title: string; slug: string; kicker?: string; lede?: string }>;
+  drops: LostDropCard[];
 }> {
   const payload = await getPayload({ config });
   const [productsResult, dropsResult] = await Promise.all([
@@ -209,12 +218,7 @@ export async function getLostHomeData(): Promise<{
 
   return {
     products,
-    drops: (dropsResult.docs as AnyDoc[]).map((drop) => ({
-      title: stringValue(drop.title),
-      slug: stringValue(drop.slug),
-      kicker: nullableString(drop.kicker) ?? undefined,
-      lede: nullableString(drop.lede) ?? undefined
-    }))
+    drops: (dropsResult.docs as AnyDoc[]).map(normalizeLostDropCard)
   };
 }
 
@@ -255,7 +259,8 @@ export async function getLostProductBySlug(
     privateUnitAmount:
       typeof product.private_unit_amount === "number"
         ? product.private_unit_amount
-        : null
+        : null,
+    variants: normalizeLostProductVariants(product)
   };
 }
 
@@ -264,17 +269,28 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
   kicker?: string;
   lede?: string;
   products: LostProductCard[];
+  drops: LostDropCard[];
 } | null> {
   const payload = await getPayload({ config });
-  const dropResult = await payload.find({
-    collection: "product-drops" as never,
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-    where: {
-      and: [{ slug: { equals: slug } }, { active: { equals: true } }]
-    } as never
-  });
+  const [dropResult, dropsResult] = await Promise.all([
+    payload.find({
+      collection: "product-drops" as never,
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      where: {
+        and: [{ slug: { equals: slug } }, { active: { equals: true } }]
+      } as never
+    }),
+    payload.find({
+      collection: "product-drops" as never,
+      depth: 0,
+      limit: 8,
+      overrideAccess: true,
+      sort: "sort",
+      where: { active: { equals: true } } as never
+    })
+  ]);
   const drop = dropResult.docs[0] as AnyDoc | undefined;
   if (!drop) return null;
 
@@ -303,6 +319,7 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
     title: stringValue(drop.title),
     kicker: nullableString(drop.kicker) ?? undefined,
     lede: nullableString(drop.lede) ?? undefined,
-    products
+    products,
+    drops: (dropsResult.docs as AnyDoc[]).map(normalizeLostDropCard)
   };
 }

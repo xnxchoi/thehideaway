@@ -4,6 +4,7 @@ import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
 import { useLostCart } from "@/lib/lost-commerce/useLostCart";
+import "../index.css";
 
 type Labels = {
   title: string;
@@ -100,7 +101,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                 {lines.map((line) => (
                   <div
                     className="grid gap-5 py-6 md:grid-cols-[116px_1fr_auto]"
-                    key={`${line.productId}:${line.mode}:${line.campaignId ?? ""}`}
+                    key={`${line.productId}:${line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
                   >
                     <Link
                       className="aspect-square w-28 overflow-hidden rounded-[3px] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.06)]"
@@ -122,6 +123,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                         {line.productName}
                       </Link>
                       <p className="mt-2 font-mono text-[11px] tracking-[0.16em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.55)] uppercase">
+                        {line.variantLabel ? `${line.variantLabel} / ` : ""}
                         {line.mode.replaceAll("_", " ")} / x {line.quantity}
                       </p>
                       <Button

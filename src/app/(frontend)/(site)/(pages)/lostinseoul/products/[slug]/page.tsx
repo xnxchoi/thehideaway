@@ -27,7 +27,10 @@ export default async function LostProductPage({ params }: PageProps) {
   const { slug } = await params;
   const product = await getLostProductBySlug(slug).catch(() => null);
   if (!product) notFound();
-  const data = await getLostHomeData().catch(() => ({ products: [] }));
+  const data = await getLostHomeData().catch(() => ({
+    products: [],
+    drops: []
+  }));
   const relatedProducts = data.products
     .filter((item) => item.id !== product.id)
     .slice(0, 3);
@@ -58,7 +61,14 @@ export default async function LostProductPage({ params }: PageProps) {
           privateQuote: t("product.privateQuote"),
           related: t("product.related"),
           collectionPush: t("product.collectionPush"),
-          viewProduct: t("actions.view")
+          viewProduct: t("actions.view"),
+          variants: t("product.variants"),
+          selected: t("product.selected"),
+          status: t("product.status"),
+          stockInStock: t("product.stock.inStock"),
+          stockOutOfStock: t("product.stock.outOfStock"),
+          stockOnRequest: t("product.stock.onRequest"),
+          stockPreOrder: t("product.stock.preOrder")
         }}
       />
     </RPage>

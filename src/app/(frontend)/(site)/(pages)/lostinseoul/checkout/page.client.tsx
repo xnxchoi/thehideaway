@@ -4,7 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
-import { useLostCart } from "@/lib/lost-commerce/useLostCart";
+import {
+  serializeLostCartLines,
+  useLostCart
+} from "@/lib/lost-commerce/useLostCart";
 
 declare global {
   interface Window {
@@ -78,17 +81,7 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
           address: formData.get("address"),
           note: formData.get("note")
         },
-        lines: lines.map(
-          ({
-            productName,
-            productSlug,
-            price,
-            unitAmount,
-            currency,
-            imageUrl,
-            ...line
-          }) => line
-        )
+        lines: serializeLostCartLines(lines)
       })
     });
     const data = await response.json().catch(() => null);
@@ -203,10 +196,13 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
                 {lines.map((line) => (
                   <div
                     className="flex justify-between py-3"
-                    key={line.productId}
+                    key={`${line.productId}:${line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
                   >
                     <span className="text-sm text-[oklch(from_var(--fg)_l_c_h_/_0.7)]">
-                      {line.productName} x {line.quantity}
+                      {line.productName}
+                      {line.variantLabel
+                        ? ` / ${line.variantLabel}`
+                        : ""} x {line.quantity}
                     </span>
                     <span className="font-mono text-[11px] text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
                       {formatLostMoney(

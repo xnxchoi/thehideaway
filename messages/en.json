@@ -87,7 +87,18 @@
       "directPurchase": "Direct purchase",
       "privateQuote": "Notes for a private order",
       "related": "Same collection",
-      "collectionPush": "Collection Memory"
+      "collectionPush": "Collection Memory",
+      "variants": "Variants",
+      "origin": "Origin",
+      "madeInSeoul": "Made in Seoul",
+      "selected": "Selected",
+      "status": "Status",
+      "stock": {
+        "inStock": "In stock",
+        "outOfStock": "Sold out",
+        "onRequest": "On request",
+        "preOrder": "Pre-order"
+      }
     },
     "cart": {
       "title": "Cart",

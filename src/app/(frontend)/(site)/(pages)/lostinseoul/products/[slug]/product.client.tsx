@@ -9,6 +9,7 @@ import {
 import * as m from "motion/react-m";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
+import { formatLostMoney } from "@/lib/lost-commerce/format";
 import type {
   LostProductCard,
   LostProductDetail
@@ -44,6 +45,13 @@ type Labels = {
   related: string;
   collectionPush: string;
   viewProduct: string;
+  variants: string;
+  selected: string;
+  status: string;
+  stockInStock: string;
+  stockOutOfStock: string;
+  stockOnRequest: string;
+  stockPreOrder: string;
 };
 
 const MODE_LABEL: Record<LostOrderMode, keyof Labels> = {
@@ -58,6 +66,21 @@ type DetailItem = {
   label: string;
 };
 
+function stockLabel(state: string | null | undefined, labels: Labels) {
+  switch (state) {
+    case "in_stock":
+      return labels.stockInStock;
+    case "out_of_stock":
+      return labels.stockOutOfStock;
+    case "on_request":
+      return labels.stockOnRequest;
+    case "pre_order":
+      return labels.stockPreOrder;
+    default:
+      return state ?? null;
+  }
+}
+
 export function LostProductDetailClient({
   product,
   relatedProducts,
@@ -70,6 +93,9 @@ export function LostProductDetailClient({
   const { add, count } = useLostCart();
   const [mode, setMode] = useState<LostOrderMode>(
     product.modes[0] ?? "standard_purchase"
+  );
+  const [selectedVariantId, setSelectedVariantId] = useState(
+    product.variants[0]?.id ?? ""
   );
   const [added, setAdded] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
@@ -103,6 +129,18 @@ export function LostProductDetailClient({
 
   const isQuoteOnly =
     mode === "private_order" && !product.privatePresetPriceEnabled;
+  const selectedVariant =
+    product.variants.find((variant) => variant.id === selectedVariantId) ??
+    product.variants[0] ??
+    null;
+  const selectedStockState = selectedVariant?.stockState ?? product.stockState;
+  const selectedStockLabel = stockLabel(selectedStockState, labels);
+  const selectedUnitAmount =
+    mode === "private_order" && product.privateUnitAmount
+      ? product.privateUnitAmount
+      : (selectedVariant?.amount ?? product.unitAmount);
+  const selectedPrice = formatLostMoney(selectedUnitAmount, product.currency);
+  const selectedIsUnavailable = selectedStockState === "out_of_stock";
   const details: DetailItem[] = [
     { label: labels.details, body: product.details, image: images[0] },
     {
@@ -118,19 +156,20 @@ export function LostProductDetailClient({
   ].flatMap((item) => (item.body ? [{ ...item, body: item.body }] : []));
 
   const addToCart = () => {
+    if (selectedIsUnavailable) return;
+
     add({
       productId: product.id,
       productName: product.name,
       productSlug: product.slug,
+      variantId: selectedVariant?.id,
+      variantLabel: selectedVariant?.label,
       mode,
       campaignId:
         mode === "request_to_order" ? product.campaign?.id : undefined,
       quantity: 1,
-      price: product.price,
-      unitAmount:
-        mode === "private_order" && product.privateUnitAmount
-          ? product.privateUnitAmount
-          : product.unitAmount,
+      price: selectedPrice,
+      unitAmount: selectedUnitAmount,
       currency: product.currency,
       imageUrl: product.imageUrl
     });
@@ -282,9 +321,9 @@ export function LostProductDetailClient({
                 ))}
               </div>
               <div className="flex h-fit w-fit gap-2 self-end justify-self-end pr-8 pb-8">
-                {product.stockState ? (
+                {selectedStockLabel ? (
                   <span className="lost-product-tag">
-                    <span>{product.stockState}</span>
+                    <span>{selectedStockLabel}</span>
                   </span>
                 ) : null}
               </div>
@@ -384,7 +423,7 @@ export function LostProductDetailClient({
                 data-product-price
               >
                 <span className="col-span-full row-span-full min-w-24 text-right">
-                  {product.price}
+                  {isQuoteOnly ? product.price : selectedPrice}
                 </span>
               </span>
             </div>
@@ -454,6 +493,55 @@ export function LostProductDetailClient({
                   ) : null}
                 </div>
               ) : null}
+
+              {product.variants.length > 1 ? (
+                <div className="grid gap-y-3">
+                  <p className="font-mono text-[1.1rem] leading-none tracking-[0.2em] uppercase">
+                    {labels.variants}
+                  </p>
+                  <ul className="flex flex-wrap gap-3">
+                    {product.variants.map((variant) => {
+                      const unavailable = variant.stockState === "out_of_stock";
+                      const isSelected = selectedVariant?.id === variant.id;
+
+                      return (
+                        <li key={variant.id}>
+                          <Button
+                            aria-pressed={isSelected}
+                            className={cn(
+                              "lost-product-mode-button",
+                              isSelected && "is-active"
+                            )}
+                            disabled={unavailable}
+                            onClick={() => {
+                              setSelectedVariantId(variant.id);
+                              setAdded(false);
+                            }}
+                            type="button"
+                          >
+                            <span aria-hidden className="opacity-30">
+                              [&nbsp;
+                            </span>
+                            <span>{variant.label}</span>
+                            <span aria-hidden className="opacity-30">
+                              &nbsp;]
+                            </span>
+                            <span className="lost-product-mode-bullet" />
+                            <span className="sr-only">
+                              {isSelected ? ` ${labels.selected}` : ""}
+                            </span>
+                          </Button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {selectedStockLabel ? (
+                    <p className="font-mono text-[1.1rem] leading-none tracking-[0.16em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] uppercase">
+                      {labels.status} / {selectedStockLabel}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             {isQuoteOnly ? (
@@ -466,6 +554,7 @@ export function LostProductDetailClient({
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                       productId: product.id,
+                      variantId: selectedVariant?.id,
                       quantity: 1,
                       note: new FormData(event.currentTarget).get("note")
                     })
@@ -486,12 +575,15 @@ export function LostProductDetailClient({
               <div className="grid grid-cols-2 gap-x-2 pb-8 lg:gap-x-4 lg:pb-10">
                 <Link
                   className="lost-source-button lost-source-button--white justify-center"
+                  disabled={selectedIsUnavailable}
                   href="/lostinseoul/checkout"
+                  onClick={addToCart}
                 >
                   <span>{labels.directPurchase}</span>
                 </Link>
                 <Button
                   className="lost-source-button justify-center"
+                  disabled={selectedIsUnavailable}
                   onClick={addToCart}
                   type="button"
                 >

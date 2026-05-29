@@ -8,6 +8,7 @@ const STORAGE_KEY = "lostinseoul.cart.v1";
 export type LostCartLineClient = LostCartLineInput & {
   productName: string;
   productSlug: string;
+  variantLabel?: string;
   price: string;
   unitAmount: number;
   currency: "KRW" | "USD" | "JPY" | "EUR";
@@ -38,12 +39,24 @@ function writeCart(lines: LostCartLineClient[]) {
   window.dispatchEvent(new CustomEvent("lostinseoul-cart"));
 }
 
+export function serializeLostCartLines(
+  lines: LostCartLineClient[]
+): LostCartLineInput[] {
+  return lines.map((line) => ({
+    productId: line.productId,
+    variantId: line.variantId,
+    mode: line.mode,
+    quantity: line.quantity,
+    campaignId: line.campaignId
+  }));
+}
+
 async function syncCart(lines: LostCartLineClient[]) {
   await fetch("/api/lost/cart", {
     method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      lines: lines.map(({ productName, productSlug, price, unitAmount, currency, imageUrl, ...line }) => line)
+      lines: serializeLostCartLines(lines)
     })
   }).catch(() => undefined);
 }
@@ -71,7 +84,9 @@ export function useLostCart() {
   const add = useCallback(
     (line: LostCartLineClient) => {
       const current = readCart();
-      const existing = current.findIndex((item) => keyFor(item) === keyFor(line));
+      const existing = current.findIndex(
+        (item) => keyFor(item) === keyFor(line)
+      );
       const next =
         existing >= 0
           ? current.map((item, index) =>

@@ -81,7 +81,18 @@
       "directPurchase": "바로 결제",
       "privateQuote": "프라이빗 오더 요청 사항",
       "related": "같은 컬렉션",
-      "collectionPush": "Collection Memory"
+      "collectionPush": "Collection Memory",
+      "variants": "옵션",
+      "origin": "원산지",
+      "madeInSeoul": "서울 제작",
+      "selected": "선택",
+      "status": "상태",
+      "stock": {
+        "inStock": "재고 있음",
+        "outOfStock": "품절",
+        "onRequest": "요청 가능",
+        "preOrder": "예약 구매"
+      }
     },
     "cart": {
       "title": "카트",

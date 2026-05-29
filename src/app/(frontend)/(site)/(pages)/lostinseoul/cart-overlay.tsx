@@ -702,7 +702,7 @@ function LostBagPanel({
             <div className="grid max-h-[48svh] gap-6 overflow-y-auto pr-2">
               {lines.map((line) => (
                 <LostBagLine
-                  key={`${line.productId}:${line.mode}:${line.campaignId ?? ""}`}
+                  key={`${line.productId}:${line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
                   line={line}
                   onRemove={onRemove}
                   removeLabel={removeLabel}
@@ -789,6 +789,7 @@ function LostBagLine({
           </p>
         </div>
         <p className="mt-1 font-mono text-[1.1rem] leading-tight tracking-[0.16em] text-[var(--lost-bag-muted)] uppercase">
+          {line.variantLabel ? `${line.variantLabel} / ` : ""}
           {line.mode.replaceAll("_", " ")} / x {line.quantity}
         </p>
         <Button

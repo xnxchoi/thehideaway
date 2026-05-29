@@ -27,7 +27,7 @@ export default async function LostCollectionPage({ params }: PageProps) {
         searchNoResultsLabel={t("nav.searchNoResults")}
         searchPlaceholder={t("nav.searchPlaceholder")}
         searchResultsLabel={t("nav.searchResults")}
-        drops={[]}
+        drops={collection.drops}
         emptyLabel={t("home.empty")}
         eyebrow={collection.kicker ?? t("home.eyebrow")}
         lede={collection.lede ?? ""}
