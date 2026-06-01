@@ -36,6 +36,8 @@ const GROUP_COLORS: Record<PageGroup, string> = {
   auth: "#f87171",
   search: "#fde68a",
   radio: "#34d399",
+  "lost-commerce": "#fb7185",
+  "lost-product": "#f97316",
   static: "#94a3b8",
   system: "#64748b"
 };

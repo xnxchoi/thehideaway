@@ -21,6 +21,32 @@ import {
 } from "react";
 import { useTransitionSetter } from "../../UX/Transition/useTransitionSetter";
 
+const LOSTINSEOUL_PATH_PREFIX = "/lostinseoul";
+
+const normalizePath = (path: string) => path.replace(/\/+$/, "") || "/";
+
+export const isLostInSeoulPathNavigation = ({
+  currentPath,
+  href,
+  isAnchor
+}: {
+  currentPath: string | null;
+  href: string;
+  isAnchor: boolean;
+}) => {
+  if (!isInternalLink(href) || isAnchor) return false;
+
+  const target = new URL(href, "http://localhost");
+  const targetPath = normalizePath(target.pathname);
+  const activePath = normalizePath(currentPath || "/");
+
+  return (
+    activePath.startsWith(LOSTINSEOUL_PATH_PREFIX) &&
+    targetPath.startsWith(LOSTINSEOUL_PATH_PREFIX) &&
+    targetPath !== activePath
+  );
+};
+
 const RP_Link = (props: RPLinkPropsWithRef) => {
   const {
     href,
@@ -63,19 +89,35 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
   useEffect(() => {
     setIsAnchor(href.startsWith("#") || href.startsWith(`${currentPath}#`));
   }, [href, currentPath]);
-  const { setGenericPageTransition } = useTransitionSetter();
+  const { goToPage, setGenericPageTransition } = useTransitionSetter();
+  const isLostInternalNavigation = useMemo(
+    () => isLostInSeoulPathNavigation({ currentPath, href, isAnchor }),
+    [currentPath, href, isAnchor]
+  );
 
   const handleClick: MouseEventHandler<HTMLAnchorElement> = useCallback(
     (e) => {
       onClick?.(e);
+      if (e.defaultPrevented) return;
       if (isAnchor) {
         e.preventDefault();
         lenis && lenis.scrollTo(href);
+      } else if (isLostInternalNavigation) {
+        e.preventDefault();
+        goToPage(href);
       } else {
         setGenericPageTransition(href);
       }
     },
-    [onClick, isAnchor, lenis, href, setGenericPageTransition]
+    [
+      onClick,
+      isAnchor,
+      lenis,
+      href,
+      isLostInternalNavigation,
+      goToPage,
+      setGenericPageTransition
+    ]
   );
   if (!href || typeof href !== "string") {
     return <div className={className}>{props.children}</div>;
@@ -90,6 +132,7 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
 
         className
       )}
+      {...propsToPass}
       {...rest}
       href={href}
       onClick={

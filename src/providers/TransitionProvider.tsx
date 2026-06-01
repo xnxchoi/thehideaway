@@ -21,6 +21,7 @@ import { TransitionRouter } from "next-transition-router";
 import {
   createContext,
   ReactNode,
+  startTransition,
   useCallback,
   useContext,
   useEffect,
@@ -32,6 +33,16 @@ import { useShallow } from "zustand/shallow";
 
 export type TransAPI = ReturnType<typeof createTransStore>;
 export const TransContext = createContext<TransAPI | undefined>(undefined);
+type LostRouteLeaveRun = {
+  finished: Promise<unknown>;
+  readyToNavigate: Promise<void>;
+};
+
+const scheduleTransitionWork = (work: () => void) => {
+  requestAnimationFrame(() => {
+    startTransition(work);
+  });
+};
 
 const TransitionManager = ({ children }: { children: ReactNode }) => {
   const scroll = useLenis();
@@ -538,6 +549,133 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   //   fire
   // ]);
   const scrollToTop = useCallback(() => window.scroll(0, 0), []);
+  const runLostProductLeave = useCallback((): LostRouteLeaveRun => {
+    const page = [
+      '.rp-container [data-themed="background-color,color"].min-h-screen.w-screen > .relative.flex.min-h-screen',
+      '.rp-container [data-themed="background-color,color"].min-h-screen.w-screen',
+      ".rp-container .mask__content > .min-h-screen.w-screen",
+      ".rp-container > [data-main]:not(.root)",
+      ".rp-container > [data-lost-page]",
+      ".rp-container > main.root",
+      ".rp-container > main"
+    ]
+      .map((selector) => document.querySelector<HTMLElement>(selector))
+      .find((node): node is HTMLElement => node !== null);
+    if (!page) {
+      return {
+        finished: Promise.resolve(undefined),
+        readyToNavigate: Promise.resolve()
+      };
+    }
+
+    const startPath = window.location.pathname;
+    const scrollY = window.scrollY || 0;
+    const viewportOriginY = scrollY + window.innerHeight / 2;
+    const fog = document.createElement("div");
+    fog.setAttribute("aria-hidden", "true");
+    fog.setAttribute("data-lost-route-fog", "true");
+    document.body.appendChild(fog);
+    const freezeStyles = [
+      ["backface-visibility", "hidden"],
+      ["border-radius", "4px"],
+      ["height", `${Math.max(page.scrollHeight, window.innerHeight)}px`],
+      ["left", "0px"],
+      ["overflow", "hidden"],
+      ["position", "fixed"],
+      ["top", `${-scrollY}px`],
+      ["transform-origin", `center ${viewportOriginY}px`],
+      ["width", "100%"],
+      ["will-change", "transform"]
+    ] as const;
+    const applyFreezeStyles = (node: HTMLElement) => {
+      freezeStyles.forEach(([property, value]) => {
+        node.style.setProperty(property, value, "important");
+      });
+    };
+    const clearFreezeStyles = (node: HTMLElement) => {
+      freezeStyles.forEach(([property]) => {
+        node.style.removeProperty(property);
+      });
+    };
+
+    applyFreezeStyles(page);
+    document.body.dataset.lostRouteTransition = "leaving";
+
+    const readyToNavigate = new Promise<void>((resolve) => {
+      window.setTimeout(resolve, 860);
+    });
+
+    const pageScale = animate(
+      page,
+      {
+        scale: 0.5,
+        scaleX: 0.9
+      },
+      {
+        duration: 0.86,
+        ease: [0.6, 0, 0.3, 1],
+        type: "tween"
+      }
+    );
+
+    const waitForPathChange = new Promise<void>((resolve) => {
+      const startedAt = performance.now();
+      const checkPath = window.setInterval(() => {
+        if (
+          window.location.pathname !== startPath ||
+          performance.now() - startedAt > 5000
+        ) {
+          window.clearInterval(checkPath);
+          resolve();
+        }
+      }, 32);
+    });
+    let cleanupTimer = 0;
+    let hardCleanupTimer = 0;
+    let hasCleanedUp = false;
+    const cleanup = () => {
+      if (hasCleanedUp) return;
+      hasCleanedUp = true;
+      if (cleanupTimer) window.clearTimeout(cleanupTimer);
+      if (hardCleanupTimer) window.clearTimeout(hardCleanupTimer);
+      pageScale.stop();
+      clearFreezeStyles(page);
+      page.style.removeProperty("transform");
+      fog.remove();
+      document
+        .querySelectorAll<HTMLElement>("[data-lost-entry-chrome]")
+        .forEach((element) => {
+          element.style.removeProperty("opacity");
+          element.style.removeProperty("transform");
+        });
+      delete document.body.dataset.lostRouteTransition;
+    };
+
+    const finished = new Promise<void>((resolve) => {
+      const finish = () => {
+        cleanup();
+        resolve();
+      };
+      hardCleanupTimer = window.setTimeout(finish, 7000);
+      void waitForPathChange.then(() => {
+        cleanupTimer = window.setTimeout(finish, 1800);
+      });
+    });
+
+    void waitForPathChange.then(() => {
+      window.setTimeout(() => {
+        if (document.body.dataset.lostRouteTransition === "leaving") {
+          document.body.dataset.lostRouteTransition = "restoring";
+        }
+        fog.setAttribute("data-lost-route-fog-state", "release");
+      }, 900);
+    });
+
+    return {
+      finished,
+      readyToNavigate
+    };
+  }, []);
   const navOpenRef = useRef(navIsOpen);
   useEffect(() => {
     navOpenRef.current = navIsOpen;
@@ -603,27 +741,58 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
     (next: () => void, from?: string, to?: string) => {
       const shouldRunWipe =
         tro.current === "CURTAIN" && !navisopref.current && !hasRun.current;
+      const shouldRunLostProduct =
+        tro.current === "LOST_PRODUCT" &&
+        !navisopref.current &&
+        !hasRun.current;
       if (shouldRunWipe) {
         hasRun.current = true;
         exit().then(() => {
+          scheduleTransitionWork(() => {
+            completeExfil();
+            hasRun.current = false;
+            next();
+          });
+        });
+      } else if (shouldRunLostProduct) {
+        hasRun.current = true;
+        const transition = runLostProductLeave();
+        transition.readyToNavigate.finally(() => {
+          scheduleTransitionWork(() => {
+            completeExfil();
+            hasRun.current = false;
+            next();
+          });
+        });
+        void transition.finished;
+      } else {
+        scheduleTransitionWork(() => {
           completeExfil();
-          hasRun.current = false;
           next();
         });
-      } else {
-        completeExfil();
-        next();
       }
     },
-    [exit, completeExfil]
+    [exit, completeExfil, runLostProductLeave]
   );
   const enterer = useCallback(
     (next: () => void, from?: string, to?: string) => {
+      const enteringTransition = tro.current;
+      if (enteringTransition === "LOST_PRODUCT") {
+        document.body.dataset.lostRouteTransition = "restoring";
+      }
       entry().then(() => {
-        next();
-        completeEntry();
-        setIsTransitioningWipe(false);
-        setTransitionOutType(null);
+        scheduleTransitionWork(() => {
+          next();
+          completeEntry();
+          setIsTransitioningWipe(false);
+          if (enteringTransition === "LOST_PRODUCT") {
+            window.setTimeout(() => {
+              setTransitionOutType(null);
+            }, 1520);
+            return;
+          }
+          setTransitionOutType(null);
+        });
       });
     },
     [entry, completeEntry, setIsTransitioningWipe, setTransitionOutType]

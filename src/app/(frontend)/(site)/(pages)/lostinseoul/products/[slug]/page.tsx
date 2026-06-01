@@ -28,8 +28,8 @@ export default async function LostProductPage({ params }: PageProps) {
   const product = await getLostProductBySlug(slug).catch(() => null);
   if (!product) notFound();
   const data = await getLostHomeData().catch(() => ({
-    products: [],
-    drops: []
+    drops: [],
+    products: []
   }));
   const relatedProducts = data.products
     .filter((item) => item.id !== product.id)
@@ -40,11 +40,17 @@ export default async function LostProductPage({ params }: PageProps) {
   return (
     <RPage slug={["lostinseoul", "products", slug]} type="pages">
       <LostProductDetailClient
+        drops={data.drops}
         product={product}
         relatedProducts={relatedProducts}
         labels={{
+          announcement: t("home.announcement"),
           back: t("nav.back"),
           cart: t("nav.cart"),
+          archiveLabel: t("nav.archive"),
+          checkoutLabel: t("cart.checkout"),
+          clearSearchLabel: t("nav.clearSearch"),
+          emptyLabel: t("cart.empty"),
           allProducts: t("home.products"),
           standard: t("modes.standard"),
           request: t("modes.request"),
@@ -61,14 +67,21 @@ export default async function LostProductPage({ params }: PageProps) {
           privateQuote: t("product.privateQuote"),
           related: t("product.related"),
           collectionPush: t("product.collectionPush"),
-          viewProduct: t("actions.view"),
           variants: t("product.variants"),
+          origin: t("product.origin"),
+          madeInSeoul: t("product.madeInSeoul"),
           selected: t("product.selected"),
           status: t("product.status"),
           stockInStock: t("product.stock.inStock"),
           stockOutOfStock: t("product.stock.outOfStock"),
           stockOnRequest: t("product.stock.onRequest"),
-          stockPreOrder: t("product.stock.preOrder")
+          stockPreOrder: t("product.stock.preOrder"),
+          removeLabel: t("cart.remove"),
+          searchLabel: t("nav.search"),
+          searchPlaceholder: t("nav.searchPlaceholder"),
+          shopLabel: t("nav.shop"),
+          totalLabel: t("cart.total"),
+          viewProduct: t("actions.view")
         }}
       />
     </RPage>

@@ -264,6 +264,39 @@ const transitionMappings: TransitionMap = {
       }
     }
   },
+  LOST_PRODUCT: {
+    none: {
+      ...tz,
+      y: "100svh",
+      zIndex: 0,
+      borderRadius: "4px",
+      overflow: "hidden"
+    },
+    entering: {
+      ...tU,
+      y: 0,
+      opacity: 1,
+      zIndex: 1,
+      transition: {
+        delay: 0,
+        duration: 1.24,
+        ease: [0.6, 0, 0.3, 1]
+      }
+    },
+    leaving: {
+      ...tz,
+      scale: 0.5,
+      scaleX: 0.9,
+      borderRadius: "4px",
+      overflow: "hidden",
+      opacity: 1,
+      transition: {
+        delay: 0,
+        duration: 1.28,
+        ease: [0.6, 0, 0.3, 1]
+      }
+    }
+  },
   IMMEDIATE: {
     none: {},
     entering: {

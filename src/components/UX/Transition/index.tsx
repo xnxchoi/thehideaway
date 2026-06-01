@@ -25,7 +25,12 @@ import {
 } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-export type PageTransitionType = "FADE" | "FROM_MENU" | "CURTAIN" | "IMMEDIATE";
+export type PageTransitionType =
+  | "FADE"
+  | "FROM_MENU"
+  | "CURTAIN"
+  | "LOST_PRODUCT"
+  | "IMMEDIATE";
 /**
  * @description Information on the transition trigger.
  * @property origin - what caused the navigation, default null
@@ -196,6 +201,39 @@ export const transitionMappings: TransitionMap<Transitions> = {
       }
     }
   },
+  LOST_PRODUCT: {
+    start: {
+      ...tz,
+      y: "100svh",
+      zIndex: 0,
+      borderRadius: "4px",
+      overflow: "hidden"
+    },
+    enter: {
+      ...tU,
+      y: 0,
+      opacity: 1,
+      zIndex: 1,
+      transition: {
+        delay: 0,
+        duration: 1.24,
+        ease: [0.6, 0, 0.3, 1]
+      }
+    },
+    exit: {
+      ...tz,
+      scale: 0.5,
+      scaleX: 0.9,
+      borderRadius: "4px",
+      overflow: "hidden",
+      opacity: 1,
+      transition: {
+        delay: 0,
+        duration: 1.28,
+        ease: [0.6, 0, 0.3, 1]
+      }
+    }
+  },
   IMMEDIATE: {
     start: {},
     enter: {
@@ -221,6 +259,7 @@ export const getPageTransitionVariants = (l: PageTransitionType) => {
   return (
     l === "FROM_MENU" && (c = transitionMappings.FROM_MENU),
     l === "CURTAIN" && (c = transitionMappings.CURTAIN),
+    l === "LOST_PRODUCT" && (c = transitionMappings.LOST_PRODUCT),
     l === "IMMEDIATE" && (c = transitionMappings.IMMEDIATE),
     c
   );

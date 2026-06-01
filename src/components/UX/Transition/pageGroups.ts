@@ -15,6 +15,8 @@ import type { PageTransitionType } from "./index";
  * - auth: unauthenticated auth flows (sign-in, sign-up, forgot-password, …)
  * - search: search surface
  * - radio: audio surface
+ * - lost-commerce: LOSTINSEOUL storefront, collection, cart, and checkout surfaces
+ * - lost-product: LOSTINSEOUL product detail surfaces
  * - static: top-level marketing/legal pages (privacy, terms, plans, the-team, lostinseoul, next)
  * - system: 404, /vault, dev sandboxes
  */
@@ -28,6 +30,8 @@ export type PageGroup =
   | "auth"
   | "search"
   | "radio"
+  | "lost-commerce"
+  | "lost-product"
   | "static"
   | "system";
 
@@ -106,6 +110,13 @@ export function classifyPath(href: string): PageClassification {
   const segments = pathname.split("/").filter(Boolean);
   const head = segments[0] ?? "";
 
+  if (head === "lostinseoul") {
+    if (segments[1] === "products") {
+      return mk(raw, "lost-product", "content", false);
+    }
+    return mk(raw, "lost-commerce", "marketing", false);
+  }
+
   if (head === "search") return mk(raw, "search", "search", false);
   if (head === "radio") return mk(raw, "radio", "content", false);
 
@@ -176,6 +187,7 @@ export type TransitionContext = {
  *
  *   override         → IMMEDIATE / explicit caller intent
  *   menu open        → FROM_MENU
+ *   LOSTINSEOUL internal handoff → LOST_PRODUCT
  *   from.group ≠ to  → CURTAIN
  *   default          → FADE
  */
@@ -185,6 +197,12 @@ export function pickTransitionType(ctx: TransitionContext): TransitionDecision {
 
   if (ctx.override) return { type: ctx.override, from, to };
   if (ctx.navIsOpen) return { type: "FROM_MENU", from, to };
+  const fromLost =
+    from.group === "lost-commerce" || from.group === "lost-product";
+  const toLost = to.group === "lost-commerce" || to.group === "lost-product";
+  if (fromLost && toLost && from.pathname !== to.pathname) {
+    return { type: "LOST_PRODUCT", from, to };
+  }
   if (from.group !== to.group) return { type: "CURTAIN", from, to };
   return { type: "FADE", from, to };
 }

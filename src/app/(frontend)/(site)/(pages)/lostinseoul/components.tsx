@@ -21,10 +21,11 @@ import { useLenis } from "lenis/react";
 import { AnimatePresence, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import {
+  type CSSProperties,
   type ComponentProps,
-  type MouseEvent as ReactMouseEvent,
   type RefObject,
   type ReactNode,
+  useCallback,
   useEffect,
   useRef,
   useState
@@ -63,12 +64,6 @@ import {
   type LostEntryPhase
 } from "./entry-motion";
 import { LostHeroScene } from "./hero-three";
-import {
-  clampLostProductStoryIndex,
-  getLostProductStoryFigureState,
-  getLostProductStoryProgressClassName,
-  lostProductStoryFigureTransition
-} from "./product-story-motion";
 
 const LOST_ENTRY_MIN_MS = 1100;
 const LOST_ENTRY_FAILSAFE_MS = 2600;
@@ -1045,6 +1040,7 @@ type LostProductSectionProps = {
   cartLabel: string;
   emptyLabel: string;
   incomingLabel: string;
+  layout?: "collection" | "recommendations";
   privateModeLabel: string;
   products: LostProductCard[];
   productsLabel: string;
@@ -1053,6 +1049,7 @@ type LostProductSectionProps = {
   searchNoResultsLabel: string;
   searchQuery: string;
   searchResultsLabel: string;
+  sectionMetaLabel?: string;
   standardModeLabel: string;
   viewProductLabel: string;
 };
@@ -1061,6 +1058,7 @@ export function LostProductSection({
   cartLabel,
   emptyLabel,
   incomingLabel,
+  layout = "collection",
   privateModeLabel,
   products,
   productsLabel,
@@ -1069,6 +1067,7 @@ export function LostProductSection({
   searchNoResultsLabel,
   searchQuery,
   searchResultsLabel,
+  sectionMetaLabel,
   standardModeLabel,
   viewProductLabel
 }: LostProductSectionProps) {
@@ -1078,11 +1077,14 @@ export function LostProductSection({
     request_to_order: requestModeLabel,
     standard_purchase: standardModeLabel
   };
+  const gridCount = Math.min(Math.max(products.length, 1), 5);
+  const gridPushProduct =
+    layout === "collection" ? (products[1] ?? products[0] ?? null) : null;
 
   return (
     <section
       id="products"
-      className="relative grid gap-y-8 border-t border-[var(--lost-paper-line)] bg-[var(--lost-paper)] px-4 pt-14 pb-32 text-[var(--lost-paper-ink)] md:px-14 md:pt-20 md:pb-40"
+      className="relative grid scroll-mt-[12rem] gap-y-8 border-t border-[var(--lost-paper-line)] bg-[var(--lost-paper)] px-4 pt-14 pb-32 text-[var(--lost-paper-ink)] md:scroll-mt-[14rem] md:px-14 md:pt-20 md:pb-40"
     >
       <LostTopBar />
       <div className="grid gap-y-10">
@@ -1112,7 +1114,7 @@ export function LostProductSection({
             text={
               searching
                 ? `${searchResultsLabel} / ${products.length.toString().padStart(2, "0")}`
-                : `${cartLabel} / 00`
+                : (sectionMetaLabel ?? `${cartLabel} / 00`)
             }
           />
         </p>
@@ -1131,15 +1133,41 @@ export function LostProductSection({
             ))}
           </div>
         ) : (
-          <div className="grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <LostProductTile
+          <div
+            className={cn(
+              "grid",
+              layout === "collection"
+                ? "lost-collection-product-grid gap-x-5 gap-y-10"
+                : "grid-cols-1 gap-x-5 gap-y-[3.2rem] md:grid-cols-2 lg:min-h-[51.438rem] lg:grid-cols-3"
+            )}
+            data-lost-collection-grid-products-count={gridCount}
+          >
+            {products.map((product, index) => (
+              <div
+                data-lost-collection-grid-products-product
+                data-lost-collection-grid-products-product-second={index + 1}
                 key={product.id}
-                modeLabels={modeLabels}
-                product={product}
-                viewProductLabel={viewProductLabel}
-              />
+              >
+                <LostProductTile
+                  modeLabels={modeLabels}
+                  product={product}
+                  viewProductLabel={viewProductLabel}
+                />
+              </div>
             ))}
+            {gridPushProduct ? (
+              <div data-lost-collection-grid-products-push>
+                <LostCollectionGridPush
+                  href={`/lostinseoul/products/${gridPushProduct.slug}`}
+                  imageUrl={gridPushProduct.imageUrl}
+                  incomingLabel={incomingLabel}
+                  price={gridPushProduct.price}
+                  productsLabel={productsLabel}
+                  title={gridPushProduct.name}
+                  viewProductLabel={viewProductLabel}
+                />
+              </div>
+            ) : null}
           </div>
         )}
         <div className="flex justify-center md:hidden">
@@ -1152,6 +1180,78 @@ export function LostProductSection({
         </div>
       </div>
     </section>
+  );
+}
+
+function LostCollectionGridPush({
+  href,
+  imageUrl,
+  incomingLabel,
+  price,
+  productsLabel,
+  title,
+  viewProductLabel
+}: {
+  href: string;
+  imageUrl?: string | null;
+  incomingLabel: string;
+  price: string;
+  productsLabel: string;
+  title: string;
+  viewProductLabel: string;
+}) {
+  return (
+    <Link
+      aria-label={`${viewProductLabel}: ${title}`}
+      className="lost-collection-grid-push block-push group/push grid overflow-hidden rounded-[4px]"
+      href={href}
+    >
+      <div className="col-span-full row-span-full grid">
+        {imageUrl ? (
+          <img
+            alt=""
+            aria-hidden
+            className="h-full w-full object-cover"
+            loading="lazy"
+            src={imageUrl}
+          />
+        ) : (
+          <span
+            aria-hidden
+            className="grid h-full place-items-center font-serif text-[16rem] leading-none font-bold text-[oklch(from_var(--white)_l_c_h_/_0.12)]"
+          >
+            {title.slice(0, 1)}
+          </span>
+        )}
+      </div>
+      <div
+        aria-hidden
+        className="col-span-full row-span-full bg-[linear-gradient(180deg,oklch(from_var(--black)_l_c_h_/_0.22),oklch(from_var(--black)_l_c_h_/_0.72))]"
+      />
+      <div className="z-[2] col-span-full row-span-full grid content-between p-4 md:p-6">
+        <div>
+          <span className="lost-product-tag">
+            <span>{incomingLabel}</span>
+          </span>
+        </div>
+        <div className="grid gap-4">
+          <div aria-hidden className="lost-top-bar lost-top-bar--pale" />
+          <div className="flex items-end justify-between gap-6">
+            <div className="grid gap-3">
+              <p className="font-mono text-[1.1rem] leading-none tracking-[0.18em] text-[oklch(from_var(--white)_l_c_h_/_0.62)] uppercase">
+                {productsLabel}
+              </p>
+              <h3 className="max-w-[42rem] font-mono text-[1.8rem] leading-none font-bold tracking-[0.05em] text-[var(--white)] uppercase md:text-[2.4rem]">
+                {title}
+              </h3>
+            </div>
+            <p className="font-mono text-[1.2rem] leading-none text-[oklch(from_var(--white)_l_c_h_/_0.72)] tabular-nums">
+              {price}
+            </p>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }
 
@@ -1208,76 +1308,138 @@ function LostProductTile({
         ? [{ url: product.imageUrl, alt: product.imageAlt ?? product.name }]
         : [];
   const progressCount = Math.max(storyImages.length, 1);
-  const [activeStoryIndex, setActiveStoryIndex] = useState(0);
+  const [storyActiveIndex, setStoryActiveIndex] = useState(0);
+  const [storyLeavingIndex, setStoryLeavingIndex] = useState<number | null>(
+    null
+  );
+  const [storyProgress, setStoryProgress] = useState(0);
+  const storyIntervalRef = useRef<number | null>(null);
+  const storyTimeoutRef = useRef<number | null>(null);
 
-  const updateStoryIndexFromPointer = (
-    event: ReactMouseEvent<HTMLDivElement>
-  ) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const ratio = rect.width > 0 ? (event.clientX - rect.left) / rect.width : 0;
-    setActiveStoryIndex(
-      clampLostProductStoryIndex(
-        Math.floor(ratio * storyImages.length),
-        storyImages.length
-      )
-    );
-  };
+  const stopStory = useCallback(() => {
+    if (storyIntervalRef.current) {
+      window.clearInterval(storyIntervalRef.current);
+      storyIntervalRef.current = null;
+    }
+    if (storyTimeoutRef.current) {
+      window.clearTimeout(storyTimeoutRef.current);
+      storyTimeoutRef.current = null;
+    }
+    setStoryActiveIndex(0);
+    setStoryLeavingIndex(null);
+    setStoryProgress(0);
+  }, []);
+
+  const startStory = useCallback(() => {
+    if (storyImages.length <= 1 || storyIntervalRef.current) return;
+
+    const timerDuration = 2000;
+    const startedAt = Date.now();
+
+    storyIntervalRef.current = window.setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      setStoryProgress(Math.min(elapsed / timerDuration, 1));
+    }, 100);
+  }, [storyImages.length]);
+
+  useEffect(() => {
+    if (storyProgress < 1 || storyImages.length <= 1) return;
+
+    const oldIndex = storyActiveIndex;
+    const nextIndex = (storyActiveIndex + 1) % storyImages.length;
+
+    if (storyIntervalRef.current) {
+      window.clearInterval(storyIntervalRef.current);
+      storyIntervalRef.current = null;
+    }
+
+    setStoryLeavingIndex(oldIndex);
+    setStoryActiveIndex(nextIndex);
+    setStoryProgress(0);
+
+    storyTimeoutRef.current = window.setTimeout(() => {
+      setStoryLeavingIndex(null);
+    }, 800);
+
+    if (nextIndex === 0) {
+      storyTimeoutRef.current = window.setTimeout(() => {
+        setStoryLeavingIndex(null);
+        startStory();
+      }, 800);
+      return;
+    }
+
+    startStory();
+  }, [startStory, storyActiveIndex, storyImages.length, storyProgress]);
+
+  useEffect(
+    () => () => {
+      if (storyIntervalRef.current) {
+        window.clearInterval(storyIntervalRef.current);
+      }
+      if (storyTimeoutRef.current) {
+        window.clearTimeout(storyTimeoutRef.current);
+      }
+    },
+    []
+  );
 
   return (
     <article
       aria-label={product.name}
-      className="group grid gap-y-8"
+      className="group grid gap-y-[3.2rem]"
       data-product-card
     >
       <div
-        className="lost-product-story grid overflow-hidden rounded-[4px]"
-        data-story-active-index={activeStoryIndex}
-        onBlurCapture={(event) => {
-          const nextTarget = event.relatedTarget;
-          if (
-            nextTarget instanceof Node &&
-            event.currentTarget.contains(nextTarget)
-          ) {
-            return;
-          }
-          setActiveStoryIndex(0);
-        }}
-        onFocusCapture={() =>
-          setActiveStoryIndex(
-            clampLostProductStoryIndex(1, storyImages.length)
-          )
-        }
-        onMouseEnter={updateStoryIndexFromPointer}
-        onMouseLeave={() => setActiveStoryIndex(0)}
-        onMouseMove={updateStoryIndexFromPointer}
+        className="lost-product-story grid max-w-full overflow-hidden rounded-[4px]"
+        onBlur={stopStory}
+        onFocus={startStory}
+        onMouseEnter={startStory}
+        onMouseLeave={stopStory}
       >
         <Link
-          className="col-span-full row-span-full grid overflow-hidden rounded-[4px]"
+          className="col-start-1 row-start-1 grid max-w-full overflow-hidden rounded-[4px]"
+          data-story-image-link
           href={href}
         >
-          <div className="lost-product-story-image col-span-full row-span-full">
+          <div className="col-span-full row-span-full overflow-hidden">
             {storyImages.length > 0 ? (
-              storyImages.map((image, index) => (
-                <m.figure
-                  animate={getLostProductStoryFigureState(
-                    index,
-                    activeStoryIndex
-                  )}
-                  aria-hidden={index > 0}
-                  className="col-span-full row-span-full"
-                  data-story-image-item-image={index + 1}
-                  initial={false}
-                  key={`${image.url}-${index}`}
-                  transition={lostProductStoryFigureTransition}
+              <>
+                <div className="relative hidden grid-cols-1 overflow-hidden lg:grid">
+                  {storyImages.map((image, index) => (
+                    <figure
+                      aria-hidden={index !== storyActiveIndex}
+                      className={cn(
+                        "relative col-start-1 row-start-1",
+                        index === storyActiveIndex && "is-visible is-z-2",
+                        index === storyLeavingIndex && "is-hidden is-z-1"
+                      )}
+                      data-load-img
+                      data-story-image-item-image={index + 1}
+                      key={`${image.url}-${index}`}
+                      role={index === 0 ? undefined : "presentation"}
+                    >
+                      <img
+                        alt={index === 0 ? (image.alt ?? product.name) : ""}
+                        className="aspect-[580/725] h-full w-full object-cover"
+                        loading="lazy"
+                        src={image.url}
+                      />
+                    </figure>
+                  ))}
+                </div>
+                <figure
+                  className="relative grid w-full max-w-[34.3rem] lg:hidden"
+                  data-load-img
                 >
                   <img
-                    alt={index === 0 ? (image.alt ?? product.name) : ""}
-                    className="h-full w-full object-cover"
+                    alt={storyImages[0]?.alt ?? product.name}
+                    className="aspect-[343/428] h-full w-full object-cover"
                     loading="lazy"
-                    src={image.url}
+                    src={storyImages[0]?.url}
                   />
-                </m.figure>
-              ))
+                </figure>
+              </>
             ) : (
               <div className="flex h-full items-end bg-[linear-gradient(145deg,oklch(from_var(--fg)_l_c_h_/_0.14),oklch(from_var(--bg)_l_c_h_/_0.38)_40%,oklch(from_var(--fg)_l_c_h_/_0.08))] p-4 font-serif text-[7rem] leading-none font-bold text-[oklch(from_var(--fg)_l_c_h_/_0.1)]">
                 {product.name.slice(0, 1)}
@@ -1285,11 +1447,11 @@ function LostProductTile({
             )}
           </div>
           <div
-            className="z-[3] col-span-full row-span-full grid content-start gap-y-5 px-4 pt-6"
+            className="z-[3] col-start-1 row-start-1 grid content-start gap-y-[2.2rem] px-[1.6rem] pt-[2.4rem]"
             data-product-card-top-left
           >
             <div
-              className="grid gap-x-3"
+              className="z-[3] grid gap-x-[1.2rem]"
               style={{
                 gridTemplateColumns: `repeat(${progressCount}, minmax(0, 1fr))`
               }}
@@ -1297,16 +1459,27 @@ function LostProductTile({
               {Array.from({ length: progressCount }).map((_, index) => (
                 <span
                   aria-hidden
-                  className={getLostProductStoryProgressClassName(
-                    index,
-                    activeStoryIndex
+                  className={cn(
+                    "lost-product-progress-bar",
+                    index === storyActiveIndex && "active",
+                    index < storyActiveIndex && "is-complete"
                   )}
                   data-story-image-item-progress={index + 1}
                   key={index}
+                  style={
+                    {
+                      "--progress":
+                        index < storyActiveIndex
+                          ? "100%"
+                          : index === storyActiveIndex
+                            ? `${storyProgress * 100}%`
+                            : "0%"
+                    } as CSSProperties
+                  }
                 />
               ))}
             </div>
-            <div className="flex flex-wrap gap-2 self-start justify-self-start">
+            <div className="flex flex-wrap gap-[0.6rem] self-start justify-self-start">
               {product.modes.map((mode) => (
                 <span
                   className="lost-product-tag"
@@ -1320,32 +1493,42 @@ function LostProductTile({
           </div>
         </Link>
         <Link
-          className="lost-product-quick-panel col-span-full row-span-full self-end"
+          className="lost-product-quick-panel col-start-1 row-start-1 self-end"
+          data-product-card-quick-add
           href={href}
         >
-          <span className="font-mono text-[1.2rem] leading-none font-bold tracking-[0.08em] uppercase">
-            {viewProductLabel}
-          </span>
-          {product.modes.length > 0 ? (
-            <span className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 font-mono text-[1.1rem] leading-none text-[oklch(from_var(--black)_l_c_h_/_0.62)] uppercase">
+          <span
+            className="grid w-fit justify-center justify-items-center overflow-hidden"
+            data-quick-add-inside
+          >
+            <span
+              className="col-span-full row-span-full font-sans text-[2rem] leading-none font-medium text-[var(--black)] uppercase"
+              data-quick-add-btn
+            >
+              {viewProductLabel}
+            </span>
+            <span
+              className="col-span-full row-span-full flex gap-x-[1.2rem] font-sans text-[2rem] leading-none font-medium text-[var(--black)] uppercase"
+              data-quick-add-form
+            >
               {product.modes.map((mode) => (
                 <span key={`${product.id}-quick-${mode}`}>
                   {modeLabels[mode]}
                 </span>
               ))}
             </span>
-          ) : null}
+          </span>
         </Link>
       </div>
 
       <div className="grid grid-cols-[auto_auto] justify-between gap-5">
-        <div className="grid content-start gap-y-5">
-          <h3 className="font-mono text-[1.5rem] leading-none font-bold tracking-[0.05em] text-[var(--lost-paper-ink)] uppercase">
+        <div className="grid content-start gap-y-[2rem]">
+          <h3 className="font-sans text-[2rem] leading-none font-normal text-[var(--lost-paper-ink)] uppercase">
             {product.name}
           </h3>
           <p
             aria-label={product.price}
-            className="font-mono text-[1.3rem] leading-none text-[var(--lost-paper-muted)] tabular-nums"
+            className="font-sans text-[2rem] leading-none text-[var(--lost-paper-muted)] tabular-nums"
             role="status"
           >
             {product.price}
