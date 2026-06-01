@@ -1,39 +1,59 @@
 import { describe, expect, it } from "vitest";
 import {
+  clampLostProductStoryIndex,
   getLostProductStoryFigureState,
+  getLostProductStoryProgressClassName,
   lostProductStoryFigureTransition,
-  type LostProductStoryFigureState
 } from "./product-story-motion";
 
 describe("lostinseoul product story motion", () => {
   it.each<{
     expected: Record<string, unknown>;
+    activeIndex: number;
     index: number;
-    state: LostProductStoryFigureState;
   }>([
     {
-      expected: { opacity: 1, scale: 1, y: 0, zIndex: 0 },
-      index: 0,
-      state: "rest"
+      activeIndex: 0,
+      expected: { opacity: 1, scale: 1, y: 0, zIndex: 2 },
+      index: 0
     },
     {
-      expected: { opacity: 0, scale: 1.02, y: 0, zIndex: 1 },
-      index: 1,
-      state: "rest"
+      activeIndex: 2,
+      expected: { opacity: 0, scale: 1.04, y: 0, zIndex: 1 },
+      index: 1
     },
     {
-      expected: { opacity: 1, scale: 1, y: 0, zIndex: 1 },
-      index: 1,
-      state: "hover"
+      activeIndex: 2,
+      expected: { opacity: 1, scale: 1, y: 0, zIndex: 2 },
+      index: 2
     },
     {
-      expected: { opacity: 0, scale: 1, y: "100%", zIndex: 0 },
-      index: 2,
-      state: "hover"
+      activeIndex: 1,
+      expected: { opacity: 0, scale: 1.02, y: "100%", zIndex: 0 },
+      index: 2
     }
-  ])("returns $state state for story figure $index", ({ expected, index, state }) => {
-    expect(getLostProductStoryFigureState(index, state)).toMatchObject(
-      expected
+  ])(
+    "returns motion state for story figure $index when $activeIndex is active",
+    ({ activeIndex, expected, index }) => {
+      expect(getLostProductStoryFigureState(index, activeIndex)).toMatchObject(
+        expected
+      );
+    }
+  );
+
+  it("clamps pointer-derived story indices to available images", () => {
+    expect(clampLostProductStoryIndex(-1, 3)).toBe(0);
+    expect(clampLostProductStoryIndex(1, 3)).toBe(1);
+    expect(clampLostProductStoryIndex(8, 3)).toBe(2);
+    expect(clampLostProductStoryIndex(4, 0)).toBe(0);
+  });
+
+  it("fills progress bars up to the active story image", () => {
+    expect(getLostProductStoryProgressClassName(0, 2)).toContain("is-active");
+    expect(getLostProductStoryProgressClassName(1, 2)).toContain("is-active");
+    expect(getLostProductStoryProgressClassName(2, 2)).toContain("is-active");
+    expect(getLostProductStoryProgressClassName(3, 2)).not.toContain(
+      "is-active"
     );
   });
 

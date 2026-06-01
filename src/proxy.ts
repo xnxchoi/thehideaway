@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isGatePublicPath } from "@/lib/gate/allowlist";
 
 /**
  * Proxy (Next 16 — replaces `middleware.ts`). Runs in the Node.js
  * runtime by default. Three responsibilities, in order:
  *
- *   1. Soft-launch gate. Anonymous traffic outside the public
- *      allowlist is rewritten to `/gate`. Logged-in users keep their
- *      requested route.
+ *   1. LOSTINSEOUL host routing. Public requests on lostinseoul.com
+ *      are rewritten to the internal `/lostinseoul/*` routes.
  *   2. Per-IP rate limiting on selected `/api/*` prefixes.
  *   3. Auth redirect for `/me`, `/prive`, `/account`, `/admin-ba`
  *      when no Better Auth session cookie is present.
- *
- * To lift the gate: delete the gate block and the catch-all matcher
- * entry. Rate limiting and auth redirect stay.
  */
 
 const SESSION_COOKIE_NAMES = [
@@ -21,19 +16,37 @@ const SESSION_COOKIE_NAMES = [
   "__Secure-better-auth.session_token"
 ];
 
-const TEMPORARILY_LOCKED_PATH_PREFIXES = ["/plans"] as const;
-
 const LOST_HOSTS = new Set(["lostinseoul.com", "www.lostinseoul.com"]);
+
+function hostnameFromHostHeader(host: string): string {
+  const value = host.trim().toLowerCase();
+  if (value.startsWith("[")) {
+    const bracketEnd = value.indexOf("]");
+    return bracketEnd === -1 ? value : value.slice(1, bracketEnd);
+  }
+  return value.split(":")[0] ?? value;
+}
+
+function isLoopbackHostname(hostname: string): boolean {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname === "0.0.0.0"
+  );
+}
 
 function isLostHost(host: string | null | undefined): boolean {
   if (!host) return false;
-  const normalized = host.split(":")[0]?.toLowerCase();
+  const normalized = hostnameFromHostHeader(host);
   if (normalized && LOST_HOSTS.has(normalized)) return true;
 
   const configured = process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
   if (!configured) return false;
   try {
-    return normalized === new URL(configured).hostname.toLowerCase();
+    const configuredHost = new URL(configured).hostname.toLowerCase();
+    if (isLoopbackHostname(configuredHost)) return false;
+    return normalized === configuredHost;
   } catch {
     return false;
   }
@@ -69,12 +82,6 @@ function hasSessionCookie(req: NextRequest): boolean {
     if (req.cookies.get(name)) return true;
   }
   return false;
-}
-
-function isTemporarilyLockedPath(pathname: string): boolean {
-  return TEMPORARILY_LOCKED_PATH_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-  );
 }
 
 /**
@@ -157,36 +164,11 @@ export async function proxy(request: NextRequest) {
     : null;
   const pathname = lostRewritePathname ?? originalPathname;
 
-  // --- 1. Soft-launch gate ---
-  // Forward the real pathname so server components can do the role-aware
-  // tier-2 check without re-parsing the rewrite target.
+  // Forward the route pathname seen by app code after host-based rewrites.
   const fwdHeaders = new Headers(request.headers);
   fwdHeaders.set("x-pathname", pathname);
 
-  if (isTemporarilyLockedPath(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/gate";
-    url.search = "";
-    return NextResponse.rewrite(url, {
-      request: { headers: fwdHeaders }
-    });
-  }
-
-  const gateAllowed =
-    isGatePublicPath(pathname) ||
-    pathname.startsWith("/_next") ||
-    hasSessionCookie(request);
-
-  if (!gateAllowed) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/gate";
-    url.search = "";
-    return NextResponse.rewrite(url, {
-      request: { headers: fwdHeaders }
-    });
-  }
-
-  // --- 2. Rate limiting on API routes ---
+  // --- 1. Rate limiting on API routes ---
   if (pathname.startsWith("/api/")) {
     maybeEvict();
 
@@ -251,10 +233,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // --- 3. Auth redirect for protected routes ---
-  // Explicit prefix guard: the widened gate matcher above means this
-  // block now sees every path, not just the original four. Scope it
-  // back to the four protected areas.
+  // --- 2. Auth redirect for protected routes ---
   const protectedPrefixes = [
     "/me",
     "/prive",
@@ -285,8 +264,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Catch-all for the soft-launch gate. Excludes Next internals and
-    // static assets so they don't pay the proxy cost.
+    // Catch-all for LOSTINSEOUL host routing. Excludes Next internals and
+    // static assets so ordinary asset requests don't pay the proxy cost.
     "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
     "/api/:path*",
     "/me/:path*",

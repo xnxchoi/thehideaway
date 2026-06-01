@@ -22,6 +22,7 @@ import { AnimatePresence, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import {
   type ComponentProps,
+  type MouseEvent as ReactMouseEvent,
   type RefObject,
   type ReactNode,
   useEffect,
@@ -63,9 +64,10 @@ import {
 } from "./entry-motion";
 import { LostHeroScene } from "./hero-three";
 import {
+  clampLostProductStoryIndex,
   getLostProductStoryFigureState,
-  lostProductStoryFigureTransition,
-  type LostProductStoryFigureState
+  getLostProductStoryProgressClassName,
+  lostProductStoryFigureTransition
 } from "./product-story-motion";
 
 const LOST_ENTRY_MIN_MS = 1100;
@@ -1206,8 +1208,20 @@ function LostProductTile({
         ? [{ url: product.imageUrl, alt: product.imageAlt ?? product.name }]
         : [];
   const progressCount = Math.max(storyImages.length, 1);
-  const [storyState, setStoryState] =
-    useState<LostProductStoryFigureState>("rest");
+  const [activeStoryIndex, setActiveStoryIndex] = useState(0);
+
+  const updateStoryIndexFromPointer = (
+    event: ReactMouseEvent<HTMLDivElement>
+  ) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = rect.width > 0 ? (event.clientX - rect.left) / rect.width : 0;
+    setActiveStoryIndex(
+      clampLostProductStoryIndex(
+        Math.floor(ratio * storyImages.length),
+        storyImages.length
+      )
+    );
+  };
 
   return (
     <article
@@ -1217,6 +1231,7 @@ function LostProductTile({
     >
       <div
         className="lost-product-story grid overflow-hidden rounded-[4px]"
+        data-story-active-index={activeStoryIndex}
         onBlurCapture={(event) => {
           const nextTarget = event.relatedTarget;
           if (
@@ -1225,11 +1240,16 @@ function LostProductTile({
           ) {
             return;
           }
-          setStoryState("rest");
+          setActiveStoryIndex(0);
         }}
-        onFocusCapture={() => setStoryState("hover")}
-        onMouseEnter={() => setStoryState("hover")}
-        onMouseLeave={() => setStoryState("rest")}
+        onFocusCapture={() =>
+          setActiveStoryIndex(
+            clampLostProductStoryIndex(1, storyImages.length)
+          )
+        }
+        onMouseEnter={updateStoryIndexFromPointer}
+        onMouseLeave={() => setActiveStoryIndex(0)}
+        onMouseMove={updateStoryIndexFromPointer}
       >
         <Link
           className="col-span-full row-span-full grid overflow-hidden rounded-[4px]"
@@ -1239,7 +1259,10 @@ function LostProductTile({
             {storyImages.length > 0 ? (
               storyImages.map((image, index) => (
                 <m.figure
-                  animate={getLostProductStoryFigureState(index, storyState)}
+                  animate={getLostProductStoryFigureState(
+                    index,
+                    activeStoryIndex
+                  )}
                   aria-hidden={index > 0}
                   className="col-span-full row-span-full"
                   data-story-image-item-image={index + 1}
@@ -1274,9 +1297,9 @@ function LostProductTile({
               {Array.from({ length: progressCount }).map((_, index) => (
                 <span
                   aria-hidden
-                  className={cn(
-                    "lost-product-progress-bar",
-                    index === 0 && "is-active"
+                  className={getLostProductStoryProgressClassName(
+                    index,
+                    activeStoryIndex
                   )}
                   data-story-image-item-progress={index + 1}
                   key={index}

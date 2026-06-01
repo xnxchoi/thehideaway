@@ -23,6 +23,12 @@ import {
   getLostProductPanelState,
   lostProductPanelTransition
 } from "../../product-panel-motion";
+import {
+  getLostProductActiveImageFromScroll,
+  getLostProductDesktopSlideClassName,
+  getLostProductDesktopThumbStyle,
+  getLostProductThumbClassName
+} from "./product-gallery-state";
 import "../../index.css";
 
 type Labels = {
@@ -101,6 +107,7 @@ export function LostProductDetailClient({
   const [activeImage, setActiveImage] = useState(0);
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const imageRefs = useRef<Array<HTMLElement | null>>([]);
+  const desktopSliderRef = useRef<HTMLDivElement | null>(null);
   const mobileScrollerRef = useRef<HTMLDivElement | null>(null);
 
   const images = useMemo(
@@ -205,23 +212,45 @@ export function LostProductDetailClient({
     );
     if (nodes.length <= 1) return undefined;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
+    let frame = 0;
 
-        const index = nodes.findIndex((node) => node === visible.target);
-        if (index >= 0) setActiveImage(index);
-      },
-      { threshold: [0.45, 0.6, 0.75] }
-    );
+    const updateActiveImage = () => {
+      frame = 0;
+      if (!window.matchMedia("(min-width: 1024px)").matches) return;
 
-    nodes.forEach((node) => observer.observe(node));
+      const slider = desktopSliderRef.current;
+      const firstSlide = nodes[0];
+      if (!slider || !firstSlide) return;
+
+      const galleryTop = slider.getBoundingClientRect().top + window.scrollY;
+      const slideHeight =
+        firstSlide.getBoundingClientRect().height || firstSlide.offsetHeight;
+      const nextActiveImage = getLostProductActiveImageFromScroll({
+        galleryTop,
+        imageCount: nodes.length,
+        scrollY: window.scrollY,
+        slideHeight,
+        viewportHeight: window.innerHeight
+      });
+
+      setActiveImage((current) =>
+        current === nextActiveImage ? current : nextActiveImage
+      );
+    };
+
+    const requestUpdate = () => {
+      if (frame !== 0) return;
+      frame = window.requestAnimationFrame(updateActiveImage);
+    };
+
+    updateActiveImage();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
 
     return () => {
-      observer.disconnect();
+      if (frame !== 0) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
     };
   }, [images.length]);
 
@@ -265,13 +294,20 @@ export function LostProductDetailClient({
       >
         <section
           aria-label={product.name}
-          className="lost-product-media relative aspect-[375/500] w-full overflow-hidden lg:aspect-auto lg:min-h-screen"
+          className="lost-product-media relative aspect-[375/500] w-full overflow-hidden lg:aspect-auto lg:min-h-screen lg:overflow-visible"
         >
-          <div className="hidden lg:grid">
+          <div
+            className="hidden lg:grid"
+            data-slider-desktop
+            ref={desktopSliderRef}
+          >
             {images.length > 0 ? (
               images.map((image, index) => (
                 <figure
-                  className="lost-product-media-frame sticky top-0 col-start-1 row-start-1 h-screen max-h-screen overflow-hidden"
+                  className={getLostProductDesktopSlideClassName({
+                    activeImage,
+                    index
+                  })}
                   data-slider-image-desktop={index}
                   key={`${image.url}-${index}`}
                   ref={(node) => {
@@ -280,7 +316,7 @@ export function LostProductDetailClient({
                 >
                   <img
                     alt={image.alt ?? product.name}
-                    className="h-full w-full object-cover"
+                    className="aspect-[980/1080] h-full w-full object-cover"
                     loading={index === 0 ? "eager" : "lazy"}
                     src={image.url}
                   />
@@ -291,14 +327,14 @@ export function LostProductDetailClient({
                 {product.name.slice(0, 1)}
               </div>
             )}
-            <div className="pointer-events-none sticky top-0 z-[9] col-start-1 row-start-1 grid h-screen w-full">
-              <div className="grid h-fit w-fit gap-2 self-end justify-self-start pb-8 pl-8">
+            <div className="pointer-events-none z-[9] col-start-1 row-start-1 hidden lg:sticky lg:top-0 lg:grid lg:h-full lg:w-full">
+              <div className="grid h-fit w-fit gap-5 self-end justify-self-start pb-12 pl-12 xl:pb-16 xl:pl-16">
                 {images.map((image, index) => (
                   <button
                     aria-label={`${product.name} ${index + 1}`}
                     className={cn(
-                      "lost-product-thumb pointer-events-auto",
-                      activeImage === index && "is-active"
+                      getLostProductThumbClassName({ activeImage, index }),
+                      "pointer-events-auto"
                     )}
                     data-slider-desktop-thumb
                     key={`${image.url}-thumb-${index}`}
@@ -309,6 +345,10 @@ export function LostProductDetailClient({
                         block: "start"
                       });
                     }}
+                    style={getLostProductDesktopThumbStyle({
+                      activeImage,
+                      index
+                    })}
                     type="button"
                   >
                     <img
@@ -320,9 +360,9 @@ export function LostProductDetailClient({
                   </button>
                 ))}
               </div>
-              <div className="flex h-fit w-fit gap-2 self-end justify-self-end pr-8 pb-8">
+              <div className="flex h-fit w-fit gap-3 self-end justify-self-end pr-12 pb-12 xl:pr-16 xl:pb-16">
                 {selectedStockLabel ? (
-                  <span className="lost-product-tag">
+                  <span className="lost-product-tag self-end">
                     <span>{selectedStockLabel}</span>
                   </span>
                 ) : null}
@@ -373,8 +413,11 @@ export function LostProductDetailClient({
               <button
                 aria-label={`${product.name} ${index + 1}`}
                 className={cn(
-                  "lost-product-thumb lost-product-thumb--mobile",
-                  activeImage === index && "is-active"
+                  getLostProductThumbClassName({
+                    activeImage,
+                    index,
+                    mobile: true
+                  })
                 )}
                 key={`${image.url}-mobile-thumb-${index}`}
                 onClick={() => {

@@ -12,14 +12,11 @@ function makeRequest(
   });
 }
 
-describe("proxy navigation gate", () => {
-  it("rewrites anonymous non-allowlisted routes to the generic gate", async () => {
+describe("proxy routing", () => {
+  it("lets anonymous site routes keep the route they requested", async () => {
     const res = await proxy(makeRequest("/essays"));
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get("x-middleware-rewrite")).toBe(
-      "https://hideaway.test/gate"
-    );
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBeNull();
   });
 
@@ -32,30 +29,35 @@ describe("proxy navigation gate", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("locks /plans even for signed-in users while the membership surface is paused", async () => {
-    const res = await proxy(
-      makeRequest("/plans", "better-auth.session_token=abc")
-    );
+  it("lets /plans pass through now that the launch gate is lifted", async () => {
+    const res = await proxy(makeRequest("/plans"));
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get("x-middleware-rewrite")).toBe(
-      "https://hideaway.test/gate"
-    );
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("locks nested /plans paths as well", async () => {
-    const res = await proxy(
-      makeRequest("/plans/subscription", "better-auth.session_token=abc")
-    );
+  it("still redirects protected routes when no session is present", async () => {
+    const res = await proxy(makeRequest("/me"));
 
-    expect(res.headers.get("x-middleware-rewrite")).toBe(
-      "https://hideaway.test/gate"
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://hideaway.test/sign-in?callbackUrl=%2Fme"
     );
   });
 
+  it("lets signed-in users keep protected routes", async () => {
+    const res = await proxy(
+      makeRequest("/me", "better-auth.session_token=abc")
+    );
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBeNull();
+  });
+
   it("host-routes lostinseoul.com root into the internal storefront route", async () => {
-    const res = await proxy(makeRequest("/", undefined, "https://lostinseoul.com"));
+    const res = await proxy(
+      makeRequest("/", undefined, "https://lostinseoul.com")
+    );
 
     expect(res.headers.get("x-middleware-rewrite")).toBe(
       "https://lostinseoul.com/lostinseoul"
@@ -70,5 +72,29 @@ describe("proxy navigation gate", () => {
     expect(res.headers.get("x-middleware-rewrite")).toBe(
       "https://lostinseoul.com/lostinseoul/products/coat"
     );
+  });
+
+  it("does not host-route localhost when the local LOSTINSEOUL URL points at the dev server", async () => {
+    const previousLostUrl = process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
+    process.env.NEXT_PUBLIC_LOSTINSEOUL_URL = "http://localhost:3000";
+
+    try {
+      const res = await proxy(
+        makeRequest(
+          "/",
+          "better-auth.session_token=abc",
+          "http://localhost:3000"
+        )
+      );
+
+      expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(res.headers.get("location")).toBeNull();
+    } finally {
+      if (previousLostUrl === undefined) {
+        delete process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
+      } else {
+        process.env.NEXT_PUBLIC_LOSTINSEOUL_URL = previousLostUrl;
+      }
+    }
   });
 });
