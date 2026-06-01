@@ -7,14 +7,30 @@ commit `e9f175a7` in the isolated Codex worktree
 
 ## Policy Applied
 
-- Remote wins by default for equivalent overlap.
-- Remote always wins for motion, animation, transitions, and interaction
-  timing.
-- Local changes were treated as source material, not as a patch to apply
-  wholesale.
+- 2026-05-31 correction: the precedence scope is the May 29 delta only. A file
+  existing in both local and remote does not make the whole file remote-owned.
+  Work shared through May 28 is baseline.
+- Remote wins by default only when both sides changed the same functional or
+  visual behavior on May 29 and neither side is clearly better.
+- Remote still wins for motion, animation, transitions, and interaction timing
+  when remote has a May 29 change in that behavior. If remote did not touch the
+  behavior after the May 28 baseline, the local May 29 change can win.
+- Local changes are applied at the behavior level, not as blind wholesale file
+  replacement.
 - The primary worktree was not edited during reconciliation analysis. Before
   updating it, preserve its failed merge/revert residue with a named stash and
   fast-forward only.
+
+## 2026-05-31 Corrections
+
+| Area                                         | Winner                                       | Reason                                                                                                                                                                                                                                                                                       | Rejected alternative                                                                                                            |
+| -------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Product detail photo layout                  | Local                                        | Remote's May 29 `product.client.tsx` delta only added the detail-panel motion wrapper. It did not change the product photo section from the May 28 baseline, while local did. The restored layout uses the local product slider, thumbnails, mobile buybar, and local product shell spacing. | Remote/stale product chrome stacked above local photo spacing, which pushed the photo layout down and made the page look wrong. |
+| Product card story hover thumbnails          | Local                                        | Remote did not own this May 29 behavior. Local added the story-card image stack, progress bars, and hover/focus timer.                                                                                                                                                                       | Plain static product card imagery without the story progression.                                                                |
+| LOSTINSEOUL route leave transition           | Local                                        | The missing page-scale/fog transition lived in local's May 29 `TransitionProvider` and stylesheet changes. Remote did not touch that transition runner after the May 28 baseline.                                                                                                            | Only setting `LOST_PRODUCT` in the transition map, which changed classification but did not animate the actual page-leave node. |
+| Product detail panel motion                  | Remote                                       | Remote's May 29 delta explicitly changed the detail panel to Motion wrappers and helper-driven states.                                                                                                                                                                                       | Local static `aside` / `figure` panel.                                                                                          |
+| LOSTINSEOUL header/cart interaction contract | Remote contract, local product shell adapted | Remote changed shared LOSTINSEOUL header/cart interaction props and removed the old local Lenis bridge runtime. The product page now uses the local shell/layout but passes the remote `bagOpen`, `commerceRootRef`, and `onBagOpenChange` contract.                                         | Restoring `LostLenisBridge`, which no longer exists with the remote interaction runtime.                                        |
+| Mobile product slider overflow               | Local layout with containment fix            | Local's photo frame is restored, with mobile overflow contained at the media frame so the slider does not widen the page.                                                                                                                                                                    | Letting the internal `w-max` slider create horizontal document overflow.                                                        |
 
 ## Decisions
 

@@ -3,7 +3,7 @@
 import { useRPStore } from "@/providers/RP_Pro";
 import { useTransitionRouter } from "next-transition-router";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { startTransition, useCallback, useEffect, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 import type { PageTransitionType } from "./index";
 import { pickTransitionType, type TransitionDecision } from "./pageGroups";
@@ -11,6 +11,12 @@ import { recordTransitionDecision } from "./transitionDevHistory";
 
 type TransitionSetOptions = {
   override?: PageTransitionType | null;
+};
+
+const scheduleTransitionPush = (work: () => void) => {
+  requestAnimationFrame(() => {
+    startTransition(work);
+  });
 };
 
 export const useTransitionSetter = () => {
@@ -58,12 +64,19 @@ export const useTransitionSetter = () => {
   );
   const goToPage = useCallback(
     (l: string, options?: TransitionSetOptions) => {
-      setGenericPageTransition(l, options);
-      setTimeout(() => {
+      const decision = setGenericPageTransition(l, options);
+      const push = () => {
         l &&
           router.push(l, {
             scroll: false
           });
+      };
+      if (decision.type === "LOST_PRODUCT") {
+        scheduleTransitionPush(push);
+        return;
+      }
+      setTimeout(() => {
+        scheduleTransitionPush(push);
       }, 120);
     },
     [router, setGenericPageTransition]
