@@ -11,6 +11,8 @@ export type MembershipBandProps = {
   validityLabel: string;
   description: string;
   benefits: Benefit[];
+  benefitsAriaLabel: string;
+  patronTierLabel: string;
   ctaLabel: string;
   ctaHref: string;
   ctaAriaLabel?: string;
@@ -33,6 +35,8 @@ export function MembershipBand({
   validityLabel,
   description,
   benefits,
+  benefitsAriaLabel,
+  patronTierLabel,
   ctaLabel,
   ctaHref,
   ctaAriaLabel
@@ -47,7 +51,11 @@ export function MembershipBand({
         </p>
       </div>
       <p className={s.membershipDescription}>{description}</p>
-      <BenefitList benefits={benefits} />
+      <BenefitList
+        benefits={benefits}
+        ariaLabel={benefitsAriaLabel}
+        patronTierLabel={patronTierLabel}
+      />
       <Link
         href={ctaHref}
         className={s.cta}

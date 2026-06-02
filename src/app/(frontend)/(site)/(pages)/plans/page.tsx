@@ -13,7 +13,7 @@ export default async function PlansPage() {
   return (
     <RPage className={s.pricingShell} type="pages" slug={[]}>
       <PlansPageClient />
-      <MarkHero />
+      <MarkHero plans={plans} />
       <TheRoom plans={plans} />
       <CofounderApply />
       <FAQAccordion />
