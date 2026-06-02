@@ -181,9 +181,85 @@
     }
   },
   "Plans": {
-    "title": "하이드어웨이는 공유 가능한 사유의 공간을 추구합니다.",
-    "subtitle": "",
-    "description": " 일상의 기억을 추억으로 잇는 가교입니다."
+    "hero": {
+      "eyebrow": "멤버십",
+      "title": "아직 의미를 만들고 있는 사람들을 위한 사적인 방.",
+      "lead": "읽고, 모으고, 밑줄 긋고, 듣고, 중요했던 것을 자신의 장부에 남깁니다. 멤버십은 배지가 아니라 이 방을 계속 쓸모 있게 만드는 키입니다.",
+      "actionsLabel": "멤버십 동작",
+      "primaryCta": "키 고르기",
+      "secondaryCta": "질문",
+      "panelEyebrow": "현재 오픈",
+      "panelTitle": "들어오는 방식은 둘. 방은 하나.",
+      "panelFallback": "멤버십은 데스크에서 정리 중입니다."
+    },
+    "room": {
+      "eyebrow": "방",
+      "title": "실제로 사용할 만큼의 접근을 고르세요.",
+      "intro": "Resident는 문을 열어둡니다. Patron은 더 넓은 키를 건넵니다. 더 깊은 드롭, 더 빠른 신호, 그리고 아카이브를 물성으로 남기는 인쇄물을 포함합니다.",
+      "summaryEyebrow": "선택",
+      "summaryTitle": "아카이브만 필요하다면 Resident로 시작하세요. 방이 응답하길 원한다면 Patron을 고르세요.",
+      "patronBadge": "풀 키",
+      "residentBadge": "입구",
+      "validity": {
+        "yearly": "연간",
+        "lifetime": "라이프타임 · 1회"
+      },
+      "cta": {
+        "resident": "Resident로 시작",
+        "patron": "Patron 신청",
+        "closed": "마감"
+      },
+      "ctaNote": {
+        "resident": "계좌이체 확인 후 수동으로 접근 권한을 열어드립니다.",
+        "patron": "Patron 신청은 먼저 검토한 뒤 결제와 접근 절차를 안내합니다."
+      },
+      "seats": {
+        "open": "상시 오픈",
+        "closed": "마감",
+        "remaining": "{count}자리 남음"
+      },
+      "methods": {
+        "bank_transfer": "계좌이체",
+        "cash": "현금 요청 가능"
+      },
+      "methodsLabel": "결제",
+      "benefitsLabel": "포함 사항",
+      "patronTierLabel": "Patron 등급",
+      "residentNote": "같은 문, 더 작은 키."
+    },
+    "cofounder": {
+      "eyebrow": "신청 전용",
+      "title": "Cofounder는 메뉴 밖에 둡니다.",
+      "body": "방에 들어오는 것을 넘어 함께 만드는 사람을 위한 자리입니다. 무엇을 가져올 수 있는지, 왜 이곳에 어울리는지 알려주세요.",
+      "cta": "메일 보내기",
+      "subject": "Cofounder application"
+    },
+    "faq": {
+      "eyebrow": "질문",
+      "title": "자주 묻는 것들",
+      "items": {
+        "payment": {
+          "q": "어떻게 결제하나요?",
+          "a": "기본 결제 방식은 계좌이체입니다. 체크아웃에서 선택하면 안내를 보내드리고, 입금 확인 후 멤버십이 활성화됩니다. 현금은 요청 시 가능합니다. 카드 결제는 아직 연결되어 있지 않습니다."
+        },
+        "cancel": {
+          "q": "언제든 취소할 수 있나요?",
+          "a": "Patron은 1회 결제라 취소할 갱신이 없습니다. Resident는 연간 멤버십이며, 갱신 전 계정에서 취소할 수 있습니다."
+        },
+        "refund": {
+          "q": "환불은요?",
+          "a": "첫 결제 후 7일 이내에는 이유를 묻지 않습니다. 그 이후에는 기술적 문제에 한해 비례 환불을 적용합니다."
+        },
+        "invoice": {
+          "q": "세금계산서가 필요한데요?",
+          "a": "Patron 멤버십은 요청 시 발행 가능합니다. 구독 후 concierge@hideawayseoul.com 으로 메일을 보내주세요."
+        },
+        "cofounder": {
+          "q": "Cofounder는 무엇인가요?",
+          "a": "신청 전용입니다. 짧게 말하면 더 큰 배지를 사는 것이 아니라 방의 모양을 함께 만드는 자리입니다."
+        }
+      }
+    }
   },
   "Policies": {
     "Refunds": {
