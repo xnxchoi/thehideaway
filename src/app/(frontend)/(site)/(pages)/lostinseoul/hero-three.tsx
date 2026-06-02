@@ -1,5 +1,6 @@
 "use client";
 
+import { lerp } from "@/utilities/rp_utils";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
 import { useTempus } from "tempus/react";
@@ -208,10 +209,6 @@ void main() {
   float shade = 0.96 + bake.r * 0.035 + (normalColor.r - 0.5) * 0.024 + grain * 0.006;
   gl_FragColor = vec4(baseColor * shade, 1.0);
 }`;
-
-function lerp(current: number, target: number, amount: number) {
-  return current + (target - current) * amount;
-}
 
 function sourceDamp(
   current: number,

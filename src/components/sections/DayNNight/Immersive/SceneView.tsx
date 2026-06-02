@@ -1,6 +1,6 @@
 "use client";
 
-import { rp_lerp } from "@/utilities/rp_utils";
+import { lerp } from "@/utilities/rp_utils";
 import { useMotionValue, useTransform } from "motion/react";
 import * as m from "motion/react-m";
 import { type CSSProperties, useEffect, useRef } from "react";
@@ -66,19 +66,19 @@ export function SceneView() {
         const t = b.at === a.at ? 0 : (p - a.at) / (b.at - a.at);
         return {
           top: [
-            rp_lerp(a.top[0], b.top[0], t),
-            rp_lerp(a.top[1], b.top[1], t),
-            rp_lerp(a.top[2], b.top[2], t)
+            lerp(a.top[0], b.top[0], t),
+            lerp(a.top[1], b.top[1], t),
+            lerp(a.top[2], b.top[2], t)
           ],
           mid: [
-            rp_lerp(a.mid[0], b.mid[0], t),
-            rp_lerp(a.mid[1], b.mid[1], t),
-            rp_lerp(a.mid[2], b.mid[2], t)
+            lerp(a.mid[0], b.mid[0], t),
+            lerp(a.mid[1], b.mid[1], t),
+            lerp(a.mid[2], b.mid[2], t)
           ],
           bottom: [
-            rp_lerp(a.bottom[0], b.bottom[0], t),
-            rp_lerp(a.bottom[1], b.bottom[1], t),
-            rp_lerp(a.bottom[2], b.bottom[2], t)
+            lerp(a.bottom[0], b.bottom[0], t),
+            lerp(a.bottom[1], b.bottom[1], t),
+            lerp(a.bottom[2], b.bottom[2], t)
           ]
         } as {
           top: [number, number, number];

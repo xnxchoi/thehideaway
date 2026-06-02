@@ -15,7 +15,7 @@ import { useIsMobile } from "src/providers/MiddleMan";
 import { useCursor, useFrameState, useRPStore } from "src/providers/RP_Pro";
 import { useTheme } from "src/providers/Theme";
 import { useVoyageur } from "src/stores/Routing/RP_Voyageur";
-import { delay, rp_lerp } from "src/utilities/rp_utils";
+import { delay, lerp } from "src/utilities/rp_utils";
 import { useWindowResize } from "src/utilities/use_window_resize";
 import { SignedIn } from "@/lib/external/betterauth-ui/src";
 import { useLenis } from "lenis/react";
@@ -416,7 +416,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
 
           const lerp = () => {
             scrubPosition.set(
-              rp_lerp(
+              lerp(
                 scrubPosition.get(),
                 getTweenPercentBasedOnScroll(tweenNumber.current),
                 0.08

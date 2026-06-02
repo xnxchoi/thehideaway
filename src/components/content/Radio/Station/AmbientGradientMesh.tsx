@@ -4,7 +4,7 @@ import { useIdleDetection } from "../../Radio/hooks/useIdleDetection";
 import { SPRING_EASE, TE } from "src/constants/animations";
 import { useAudioLevel, usePlayState } from "src/providers/HideawayFM/hooks";
 import { useTheme } from "src/providers/Theme";
-import { rp_lerp } from "src/utilities/rp_utils";
+import { lerp } from "src/utilities/rp_utils";
 import { useWindowResize } from "src/utilities/use_window_resize";
 import { wait } from "src/utilities/wait";
 import {
@@ -444,7 +444,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     beatEnvelopeRef.current = beat;
     m.uniforms.u_audioBeat.value = beat;
     const lastOpacity = m.uniforms.u_opacity.value;
-    m.uniforms.u_opacity.value = rp_lerp(lastOpacity, opacity.get(), 0.12);
+    m.uniforms.u_opacity.value = lerp(lastOpacity, opacity.get(), 0.12);
 
     // Slow audio gain envelope — ramps to 1 when playing, 0 when paused.
     // Decay constant 1.0/s gives ~700ms half-life — soft fade in/out so
@@ -470,7 +470,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
       // Faster lerp (0.45) tracks the beat envelope shape closely so each
       // pulse reads as a discrete inhale/exhale instead of a smear.
       const targetScale = 2.5 + aud * 0.4 + pulse * 20.0;
-      blurPassRef.current.scale = rp_lerp(
+      blurPassRef.current.scale = lerp(
         blurPassRef.current.scale,
         targetScale,
         0.23
@@ -479,7 +479,7 @@ export const AmbientGradientMesh = ({}: AmbientGradientMeshProps) => {
     // Smoothly lerp blob intensity
     const current = m.uniforms.u_blobIntensity.value;
     const target = targetBlobIntensity.get();
-    const lerpedValue = rp_lerp(current, target, 0.16);
+    const lerpedValue = lerp(current, target, 0.16);
     m.uniforms.u_blobIntensity.value = lerpedValue;
 
     // Lerp color uniforms toward their targets each frame. Theme change

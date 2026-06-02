@@ -13,7 +13,7 @@
 
 import { TWEEN_EASE } from "@/constants/animations";
 import { useNowPlaying, usePlayState } from "@/providers/HideawayFM/hooks";
-import { rp_lerp } from "@/utilities/rp_utils";
+import { lerp } from "@/utilities/rp_utils";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {
   Environment,

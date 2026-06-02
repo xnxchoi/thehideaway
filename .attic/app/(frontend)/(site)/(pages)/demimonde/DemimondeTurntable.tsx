@@ -5,8 +5,8 @@ import { View } from "@react-three/drei";
 import { TURNTABLE } from "./content";
 import { MarbleScene } from "./DemimondeMarble";
 import { RecordScene } from "./DemimondeRecord";
-import { Button } from "@/components/core/Button";
-import { useCanvasClaim } from "@/stores/CanvasFrameloop";
+import { Button } from "../../../../../../src/components/core/Button";
+import { useCanvasClaim } from "../../../../../../src/stores/CanvasFrameloop";
 
 /**
  * YM.FM turntable — clickable disc that toggles spin.
