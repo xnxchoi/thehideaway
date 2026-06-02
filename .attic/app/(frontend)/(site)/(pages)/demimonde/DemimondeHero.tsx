@@ -5,7 +5,7 @@ import * as m from "motion/react-m";
 import { useScroll, useTransform } from "motion/react";
 import { HERO } from "./content";
 import { HERO_IMAGES, stockImage } from "./images";
-import { FrontImage } from "@/components/core/Media/FrontImage";
+import { FrontImage } from "../../../../../../src/components/core/Media/FrontImage";
 
 /**
  * Hero — text-first per Athens-26 reference, with one summer-tone

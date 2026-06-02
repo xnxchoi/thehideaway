@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Proxy (Next 16 — replaces `middleware.ts`). Runs in the Node.js
- * runtime by default. Three responsibilities, in order:
+ * runtime by default. Three responsibilities:
  *
- *   1. LOSTINSEOUL host routing. Public requests on lostinseoul.com
- *      are rewritten to the internal `/lostinseoul/*` routes.
+ *   1. Host routing for lostinseoul.com into the internal storefront.
  *   2. Per-IP rate limiting on selected `/api/*` prefixes.
  *   3. Auth redirect for `/me`, `/prive`, `/account`, `/admin-ba`
  *      when no Better Auth session cookie is present.
@@ -264,13 +263,17 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Catch-all for LOSTINSEOUL host routing. Excludes Next internals and
-    // static assets so ordinary asset requests don't pay the proxy cost.
-    "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
+    {
+      source:
+        "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
+      has: [{ type: "host", value: "(?:www\\.)?lostinseoul\\.com" }]
+    },
     "/api/:path*",
     "/me/:path*",
     "/prive/:path*",
     "/account/:path*",
-    "/admin-ba/:path*"
+    "/admin-ba/:path*",
+    "/lostinseoul/checkout/:path*",
+    "/lostinseoul/orders/:path*"
   ]
 };

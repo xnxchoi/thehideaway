@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { RPage } from "@/components/UX/Transition";
+import { RPage } from "../../../../../../src/components/UX/Transition";
 import DemimondePageClient from "./page.client";
 import { DemimondeCursor } from "./DemimondeCursor";
 import { DemimondeHero } from "./DemimondeHero";

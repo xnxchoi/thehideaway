@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
-import { proxy } from "./proxy";
+import { config, proxy } from "./proxy";
 
 function makeRequest(
   pathname: string,
@@ -13,7 +13,7 @@ function makeRequest(
 }
 
 describe("proxy routing", () => {
-  it("lets anonymous site routes keep the route they requested", async () => {
+  it("lets anonymous routes reach the path they requested", async () => {
     const res = await proxy(makeRequest("/essays"));
 
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
@@ -34,6 +34,14 @@ describe("proxy routing", () => {
 
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("does not rewrite nested /plans paths", async () => {
+    const res = await proxy(
+      makeRequest("/plans/subscription", "better-auth.session_token=abc")
+    );
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
   });
 
   it("still redirects protected routes when no session is present", async () => {
@@ -96,5 +104,22 @@ describe("proxy routing", () => {
         process.env.NEXT_PUBLIC_LOSTINSEOUL_URL = previousLostUrl;
       }
     }
+  });
+
+  it("keeps the proxy matcher scoped to operational routes", () => {
+    expect(config.matcher).toEqual([
+      {
+        source:
+          "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
+        has: [{ type: "host", value: "(?:www\\.)?lostinseoul\\.com" }]
+      },
+      "/api/:path*",
+      "/me/:path*",
+      "/prive/:path*",
+      "/account/:path*",
+      "/admin-ba/:path*",
+      "/lostinseoul/checkout/:path*",
+      "/lostinseoul/orders/:path*"
+    ]);
   });
 });
