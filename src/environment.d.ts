@@ -12,6 +12,8 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
   AUTH_NAVER_ID: z.string(),
   AUTH_NAVER_SECRET: z.string(),
+  AUTH_KAKAO_ID: z.string(),
+  AUTH_KAKAO_SECRET: z.string(),
   EXCHANGE_RATE_API_KEY: z.string(),
   HOLIDAY_API_KEY: z.string(),
   NEXT_PUBLIC_SERVER_URL: z.string(),

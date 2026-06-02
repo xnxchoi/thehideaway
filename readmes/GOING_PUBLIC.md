@@ -1,7 +1,7 @@
 # Going public — pre-flip checklist
 
 > **Status:** The repo is currently **private** (`xnxchoi/thehideaway`).
-> This document captures everything that must happen *before* the visibility
+> This document captures everything that must happen _before_ the visibility
 > flips to public, because the git history contains real secrets that were
 > tracked at one point.
 
@@ -33,46 +33,47 @@ whether you also rewrite git history (section 3).
 
 ### High-impact (auth + payment + DB)
 
-| Variable               | Where to rotate                                                                 |
-|------------------------|---------------------------------------------------------------------------------|
-| `PAYLOAD_SECRET`       | Generate: `openssl rand -hex 32`. Update `.env.production` on the VPS, restart. |
-| `BETTER_AUTH_SECRET`   | Generate: `openssl rand -hex 32`. Update `.env.production`, restart. **Invalidates all active sessions** — users sign in again. |
-| `CRON_SECRET`          | Generate: `openssl rand -hex 16`. Update `.env.production`, restart.            |
-| `PREVIEW_SECRET`       | Generate: `openssl rand -hex 16`. Update `.env.production`, restart.            |
-| `DATABASE_URI` password (= `POSTGRES_PASSWORD`) | Stop pg container, `ALTER USER postgres PASSWORD '<new>'`, update `.env.production`, restart. |
+| Variable                                        | Where to rotate                                                                                                                 |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `PAYLOAD_SECRET`                                | Generate: `openssl rand -hex 32`. Update `.env.production` on the VPS, restart.                                                 |
+| `BETTER_AUTH_SECRET`                            | Generate: `openssl rand -hex 32`. Update `.env.production`, restart. **Invalidates all active sessions** — users sign in again. |
+| `CRON_SECRET`                                   | Generate: `openssl rand -hex 16`. Update `.env.production`, restart.                                                            |
+| `PREVIEW_SECRET`                                | Generate: `openssl rand -hex 16`. Update `.env.production`, restart.                                                            |
+| `DATABASE_URI` password (= `POSTGRES_PASSWORD`) | Stop pg container, `ALTER USER postgres PASSWORD '<new>'`, update `.env.production`, restart.                                   |
 
-### OAuth (Google + Naver)
+### OAuth (Google + Naver + Kakao)
 
-| Variable                    | Where to rotate                                                                 |
-|-----------------------------|---------------------------------------------------------------------------------|
-| `GOOGLE_CLIENT_SECRET`      | Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client → ⋮ → Reset secret. Then update `.env.production`. |
-| `AUTH_ADMINS_GOOGLE_SECRET` | Same flow on the *admin* OAuth client.                                          |
-| `AUTH_NAVER_SECRET`         | Naver Developers → 내 애플리케이션 → 개요 → Client Secret → 재발급 (Re-issue). Update `.env.production`. |
-| (`*_ID` values)             | OAuth *client IDs* are not strictly secret — they're sent to the browser on every consent screen. Leaking them lets someone impersonate the consent screen ("phishing"), but they cannot mint tokens. Rotate only if you suspect active phishing. |
+| Variable                    | Where to rotate                                                                                                                                                                                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_CLIENT_SECRET`      | Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client → ⋮ → Reset secret. Then update `.env.production`.                                                                                                                        |
+| `AUTH_ADMINS_GOOGLE_SECRET` | Same flow on the _admin_ OAuth client.                                                                                                                                                                                                            |
+| `AUTH_NAVER_SECRET`         | Naver Developers → 내 애플리케이션 → 개요 → Client Secret → 재발급 (Re-issue). Update `.env.production`.                                                                                                                                          |
+| `AUTH_KAKAO_SECRET`         | Kakao Developers → 내 애플리케이션 → 카카오 로그인 → 보안 → Client Secret. Rotate and update `.env.production`.                                                                                                                                   |
+| (`*_ID` values)             | OAuth _client IDs_ are not strictly secret — they're sent to the browser on every consent screen. Leaking them lets someone impersonate the consent screen ("phishing"), but they cannot mint tokens. Rotate only if you suspect active phishing. |
 
 ### Third-party API keys
 
-| Variable               | Where to rotate                                                       |
-|------------------------|-----------------------------------------------------------------------|
-| `BREVO_SMTP_PASS`      | Brevo dashboard → Settings → SMTP & API → SMTP → regenerate.          |
-| `API_KEY_UNSPLASH`     | Unsplash → Your Applications → app → ⋮ → Regenerate access key.       |
-| `HOLIDAY_API_KEY`      | data.go.kr → My Page → API → Re-issue.                                |
-| `EXCHANGE_RATE_API_KEY`| koreaexim.go.kr → My Page → API key reset. (Free tier; low impact.)   |
-| `MAPBOX_API_KEY`       | Mapbox → Account → Access tokens → rotate. Restrict the new token to `hideawayseoul.com` referrers. |
-| `SPOTIFY_*`            | Spotify Developer Dashboard → app → Rotate client secret. (Dev-only.) |
+| Variable                | Where to rotate                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------- |
+| `BREVO_SMTP_PASS`       | Brevo dashboard → Settings → SMTP & API → SMTP → regenerate.                                        |
+| `API_KEY_UNSPLASH`      | Unsplash → Your Applications → app → ⋮ → Regenerate access key.                                     |
+| `HOLIDAY_API_KEY`       | data.go.kr → My Page → API → Re-issue.                                                              |
+| `EXCHANGE_RATE_API_KEY` | koreaexim.go.kr → My Page → API key reset. (Free tier; low impact.)                                 |
+| `MAPBOX_API_KEY`        | Mapbox → Account → Access tokens → rotate. Restrict the new token to `hideawayseoul.com` referrers. |
+| `SPOTIFY_*`             | Spotify Developer Dashboard → app → Rotate client secret. (Dev-only.)                               |
 
 ### Dev-only (no rotation strictly needed)
 
-| Variable                | Note                                                                  |
-|-------------------------|-----------------------------------------------------------------------|
-| `DEV_BUTLER_PASSWORD`   | Only meaningful in dev (`NODE_ENV !== 'production'`). Pick a new local value, no further action. |
-| `DEV_READER_PASSWORD`   | Same.                                                                 |
+| Variable              | Note                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| `DEV_BUTLER_PASSWORD` | Only meaningful in dev (`NODE_ENV !== 'production'`). Pick a new local value, no further action. |
+| `DEV_READER_PASSWORD` | Same.                                                                                            |
 
 ---
 
 ## 3. (Optional) Scrubbing git history
 
-Rotation is the *real* fix. History rewrite is cosmetic — it stops casual
+Rotation is the _real_ fix. History rewrite is cosmetic — it stops casual
 crawlers from finding the old values, but anyone who cloned the repo while
 visibility was public already has the secrets locally.
 
@@ -100,6 +101,7 @@ git push --force --tags
 ```
 
 After the rewrite:
+
 - Every open pull request points to dead SHAs. Re-open them against the new history.
 - Every CI cache that keyed on commit SHA is invalid. Clear it.
 - Every collaborator's local clone is broken until they re-clone.
@@ -118,7 +120,7 @@ Run this in order. Don't flip visibility until every box is checked.
 - [ ] All secrets in section 2 rotated, new values deployed, old values revoked at the provider.
 - [ ] `pnpm tsc --noEmit | grep "error TS" | wc -l` is at or below the current TYPE_DEBT.md baseline.
 - [ ] `pnpm build` succeeds locally.
-- [ ] Production smoke test: sign-in flows for Google + Naver work with the rotated secrets.
+- [ ] Production smoke test: sign-in flows for Google + Naver + Kakao work with the rotated secrets.
 - [ ] `gitleaks detect --no-banner` returns clean against the current working tree.
   ```bash
   # Quick install: brew install gitleaks

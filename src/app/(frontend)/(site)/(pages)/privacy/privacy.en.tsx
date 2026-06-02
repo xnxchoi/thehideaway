@@ -75,8 +75,9 @@ export function PrivacyEn({ business }: Props) {
             location, external link.
           </li>
           <li>
-            <strong>Social sign-in:</strong> email, name, profile image from
-            Google or Naver.
+            <strong>Social sign-in:</strong> Google provides email, name, and
+            profile image; Naver provides email and name; Kakao provides email
+            and nickname.
           </li>
           <li>
             <strong>Paid services:</strong> payment-method tokens (issued by the
@@ -156,6 +157,11 @@ export function PrivacyEn({ business }: Props) {
               </tr>
               <tr className="border-b border-foreground/10">
                 <td className="py-[.5em] pr-[1em]">NAVER Corp.</td>
+                <td className="py-[.5em] pr-[1em]">Social sign-in</td>
+                <td className="py-[.5em]">Until account deletion</td>
+              </tr>
+              <tr className="border-b border-foreground/10">
+                <td className="py-[.5em] pr-[1em]">Kakao Corp.</td>
                 <td className="py-[.5em] pr-[1em]">Social sign-in</td>
                 <td className="py-[.5em]">Until account deletion</td>
               </tr>

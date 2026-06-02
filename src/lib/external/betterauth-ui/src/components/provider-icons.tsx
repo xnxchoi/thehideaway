@@ -397,3 +397,16 @@ export const NaverIcon: ProviderIcon = ({ className }) => (
         />
     </svg>
 )
+
+export const KakaoIcon: ProviderIcon = ({ className }) => (
+    <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+    >
+        <path
+            fill="#FEE500"
+            d="M12 3C6.477 3 2 6.506 2 10.83c0 2.82 1.905 5.292 4.763 6.67l-.917 3.36a.36.36 0 0 0 .548.39l4.02-2.67c.518.053 1.047.08 1.586.08c5.523 0 10-3.506 10-7.83S17.523 3 12 3z"
+        />
+    </svg>
+)

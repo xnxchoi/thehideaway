@@ -356,6 +356,29 @@
         "blurb": "What you hear from us — and how often."
       }
     },
+    "providers": {
+      "labels": {
+        "google": "Google",
+        "naver": "Naver",
+        "kakao": "Kakao",
+        "credential": "Email & Password",
+        "passkey": "Passkey",
+        "credential-2fa": "2FA"
+      },
+      "blurbs": {
+        "google": "Sign in with your Google account.",
+        "naver": "Sign in with your Naver account.",
+        "kakao": "Sign in with your Kakao account.",
+        "credential": "Email and password sign-in.",
+        "passkey": "Hardware-backed sign-in via passkeys.",
+        "credential-2fa": "One-time code after password sign-in."
+      },
+      "status": {
+        "linked": "Linked",
+        "notSet": "Not set",
+        "signInToLink": "Sign in with {provider} to link"
+      }
+    },
     "save": {
       "saving": "Saving…",
       "saved": "Saved",

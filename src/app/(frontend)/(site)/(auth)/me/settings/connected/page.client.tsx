@@ -25,23 +25,9 @@ import {
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient } from "@/lib/auth/client";
 import { Fingerprint, Loader2, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { use, useMemo, useState } from "react";
 import { RPage } from "@/components/UX/Transition";
-
-const PROVIDER_LABEL: Record<string, string> = {
-  google: "Google",
-  naver: "Naver",
-  credential: "Email & Password",
-  passkey: "Passkey",
-  "credential-2fa": "2FA"
-};
-
-const PROVIDER_BLURB: Record<string, string> = {
-  google: "Sign in with your Google account.",
-  naver: "Sign in with your Naver account.",
-  credential: "Email and password sign-in.",
-  passkey: "Hardware-backed sign-in via passkeys."
-};
 
 export default function ConnectedSectionClient() {
   const { userAccountsPromise } = useBetterAuth();
@@ -80,6 +66,7 @@ export default function ConnectedSectionClient() {
               />
               <ProviderRow slug="google" isLinked={linked.has("google")} />
               <ProviderRow slug="naver" isLinked={linked.has("naver")} />
+              <ProviderRow slug="kakao" isLinked={linked.has("kakao")} />
             </PanelControls>
           </PanelGrid>
         </Panel>
@@ -137,13 +124,14 @@ function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
   // provider, so unlinked providers show a "Sign in to link" hint rather
   // than the previous "Available" label, which read as a dead end.
   // Audit breakpoint-4 finding.
-  const providerName = PROVIDER_LABEL[slug] ?? slug;
+  const t = useTranslations("Settings.providers");
+  const providerName = t(`labels.${slug}`);
   return (
     <div className="flex items-center justify-between gap-4 rounded-lg bg-foreground/[0.025] px-4 py-3 dark:bg-foreground/[0.03]">
       <div className="flex min-w-0 flex-col">
         <span className="text-sm text-foreground">{providerName}</span>
         <span className="text-xs text-foreground/65 dark:text-foreground/60">
-          {PROVIDER_BLURB[slug] ?? ""}
+          {t(`blurbs.${slug}`)}
         </span>
       </div>
       <span
@@ -154,10 +142,10 @@ function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
         }
       >
         {isLinked
-          ? "Linked"
+          ? t("status.linked")
           : slug === "credential"
-            ? "Not set"
-            : `Sign in with ${providerName} to link`}
+            ? t("status.notSet")
+            : t("status.signInToLink", { provider: providerName })}
       </span>
     </div>
   );

@@ -9,6 +9,7 @@ How to add and submit a new OAuth provider to The Hideaway.
 ### Step 1 — Server: `src/lib/auth/options.ts`
 
 **Native provider** (Google, GitHub, etc. — check [better-auth docs](https://www.better-auth.com/docs/authentication/social-sign-on)):
+
 ```ts
 socialProviders: {
   yourProvider: {
@@ -24,6 +25,7 @@ socialProviders: {
 ```
 
 **Non-native provider** (Naver, Kakao, etc. — use `genericOAuth`):
+
 ```ts
 // Already imported: import { genericOAuth } from "better-auth/plugins/generic-oauth"
 // Add to betterAuthPlugins array alongside existing genericOAuth config:
@@ -40,17 +42,18 @@ genericOAuth({
       scopes: ["profile", "email"],
       mapProfileToUser: async (profile) => ({
         email: profile.email,
-        name: profile.name,
+        name: profile.name
         // ...
       })
     }
   ]
-})
+});
 ```
 
 Also add to `account.accountLinking.trustedProviders`:
+
 ```ts
-trustedProviders: ["google", "email-password", "naver", "yourprovider"]
+trustedProviders: ["google", "email-password", "naver", "yourprovider"];
 ```
 
 ### Step 2 — Client: `src/lib/auth/client.ts`
@@ -62,22 +65,29 @@ For genericOAuth providers: already included via `genericOAuthClient()` — no a
 ### Step 3 — UI: `src/lib/auth/betterauth-ui/src/components/provider-icons.tsx`
 
 Add the provider icon:
+
 ```tsx
 export const YourProviderIcon: ProviderIcon = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     {/* SVG path */}
   </svg>
-)
+);
 ```
 
 ### Step 4 — UI: `src/app/(frontend)/(site)/(auth)/authProviders.tsx`
 
 **Native provider** — add to `social.providers`:
+
 ```tsx
 social={{ providers: ["google", "yourprovider"] }}
 ```
 
 **genericOAuth provider** — add to `genericOAuth.providers`:
+
 ```tsx
 genericOAuth={{
   providers: [
@@ -90,6 +100,7 @@ genericOAuth={{
 ### Step 5 — Environment variables
 
 Add to `.env` and deployment secrets:
+
 ```env
 YOUR_PROVIDER_CLIENT_ID=
 YOUR_PROVIDER_CLIENT_SECRET=
@@ -101,14 +112,13 @@ YOUR_PROVIDER_CLIENT_SECRET=
 
 ### URLs required for ALL providers
 
-| Item | Value |
-|---|---|
-| **Authorized callback URL** | `https://yourdomain.com/api/auth/callback/yourprovider` |
-| **Homepage URL** | `https://yourdomain.com` |
-| **Privacy Policy URL** | `https://yourdomain.com/privacy` |
-| **Terms of Service URL** | `https://yourdomain.com/terms` |
-
-For local development, use `http://localhost:3000` variants.
+| Item                             | Value                                                          |
+| -------------------------------- | -------------------------------------------------------------- |
+| **Google callback URL**        | `https://hideawayseoul.com/api/auth/callback/google`        |
+| **Generic OAuth callback URL** | `https://hideawayseoul.com/api/auth/oauth2/callback/{id}`   |
+| **Homepage URL**               | `https://hideawayseoul.com`                                 |
+| **Privacy Policy URL**         | `https://hideawayseoul.com/privacy`                         |
+| **Terms of Service URL**       | `https://hideawayseoul.com/terms`                           |
 
 ---
 
@@ -126,21 +136,21 @@ For local development, use `http://localhost:3000` variants.
   - App name: `The Hideaway`
   - User support email
   - Developer contact email
-  - Authorized domains: `yourdomain.com`
-  - Privacy Policy URL: `https://yourdomain.com/privacy`
-  - Terms of Service URL: `https://yourdomain.com/terms`
+  - Authorized domains: `hideawayseoul.com`
+  - Privacy Policy URL: `https://hideawayseoul.com/privacy`
+  - Terms of Service URL: `https://hideawayseoul.com/terms`
   - Logo uploaded
 - [ ] Scopes justified (we use: `openid`, `profile`, `email` — all non-sensitive)
 - [ ] Test users added for internal testing
-- [ ] OAuth callback URL registered: `https://yourdomain.com/api/auth/callback/google`
+- [ ] OAuth callback URL registered: `https://hideawayseoul.com/api/auth/callback/google`
 
 ### Scopes used
 
-| Scope | Data received | Why we need it |
-|---|---|---|
-| `openid` | User's Google ID | To uniquely identify the user |
+| Scope     | Data received         | Why we need it                                 |
+| --------- | --------------------- | ---------------------------------------------- |
+| `openid`  | User's Google ID      | To uniquely identify the user                  |
 | `profile` | Name, profile picture | To populate the user's display name and avatar |
-| `email` | Email address | Primary account identifier |
+| `email`   | Email address         | Primary account identifier                     |
 
 ### Review timeline
 
@@ -156,11 +166,11 @@ Google's verification process typically takes **3–5 business days** for apps r
 
 - [ ] Naver developer account created
 - [ ] Application registered with service type: `Web`
-- [ ] Callback URL registered: `https://yourdomain.com/api/auth/callback/naver` (and localhost for dev)
-- [ ] Required permissions requested: `회원이름(name)`, `이메일 주소(email)`, `프로필 사진(profile_image)`, `별명(nickname)`
+- [ ] Callback URL registered: `https://hideawayseoul.com/api/auth/oauth2/callback/naver`
+- [ ] Required permissions requested: `회원이름(name)`, `이메일 주소(email)`
 - [ ] Service description (Korean required): 회원가입 및 간편 로그인
 - [ ] Icon/logo uploaded
-- [ ] Privacy policy URL registered: `https://yourdomain.com/privacy`
+- [ ] Privacy policy URL registered: `https://hideawayseoul.com/privacy`
 
 ### Env vars
 
@@ -177,11 +187,11 @@ AUTH_NAVER_SECRET= # "Client Secret" from Naver developer console
 
 ---
 
-## Kakao OAuth (카카오 로그인) — Template for future use
+## Kakao OAuth (카카오 로그인)
 
 **Developer Console:** https://developers.kakao.com/
 
-> Not yet integrated. Env vars `AUTH_KAKAO_ID` and `AUTH_KAKAO_SECRET` are defined in `.env`.
+Kakao is integrated as a Better Auth generic OAuth provider.
 
 ### Implementation notes
 
@@ -189,15 +199,25 @@ AUTH_NAVER_SECRET= # "Client Secret" from Naver developer console
 - Authorization URL: `https://kauth.kakao.com/oauth/authorize`
 - Token URL: `https://kauth.kakao.com/oauth/token`
 - User info URL: `https://kapi.kakao.com/v2/user/me`
-- Scopes: `profile_nickname`, `profile_image`, `account_email`
+- Scopes: `profile_nickname`, `account_email`
 - User info response path: `profile.kakao_account.profile`, `profile.kakao_account.email`
+- Required env vars: `AUTH_KAKAO_ID`, `AUTH_KAKAO_SECRET`
+- Production callback shape: `https://hideawayseoul.com/api/auth/oauth2/callback/kakao`
+
+### Approval notes
+
+- Request only `account_email` and `profile_nickname`.
+- Use `readmes/oauth-approval/03-kakao-console.md` for console submission copy.
+- Generate the exact callback URL and screenshots with
+  `BASE_URL=https://hideawayseoul.com pnpm oauth:approval:report`.
 
 ---
 
 ## Adding a Future Provider — Quick Reference
 
 1. Register app at provider's developer portal, get `CLIENT_ID` and `CLIENT_SECRET`
-2. Register callback URL: `https://yourdomain.com/api/auth/callback/<providerId>`
+2. Register callback URL: native providers use `/api/auth/callback/<providerId>`;
+   generic OAuth providers use `/api/auth/oauth2/callback/<providerId>`
 3. Add env vars to `.env` and deployment
 4. Add to `options.ts` (native via `socialProviders` or generic via `genericOAuth`)
 5. Add icon to `provider-icons.tsx`

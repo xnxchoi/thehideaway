@@ -28,6 +28,34 @@ if (process.env.NEXT_PUBLIC_LOSTINSEOUL_URL) {
   trustedOrigins.push(process.env.NEXT_PUBLIC_LOSTINSEOUL_URL);
 }
 
+function mapKakaoProfileToUser(profile: any) {
+  const account = profile?.kakao_account ?? {};
+  const kakaoProfile = account.profile ?? {};
+  const email = account.email;
+
+  if (!email) {
+    throw new Error("Kakao did not return an email address.");
+  }
+
+  const username = email.split("@")[0] || `kakao-${profile.id}`;
+  const displayName =
+    kakaoProfile.nickname || profile?.properties?.nickname || username;
+  const nameParts = displayName.split(" ").filter(Boolean);
+
+  return {
+    email,
+    name: displayName,
+    username,
+    displayUsername: displayName,
+    emailVerified: account.is_email_verified ?? account.email_verified ?? true,
+    slug: formatUserHandle(username),
+    firstName: nameParts[0] || displayName,
+    lastName: nameParts[1] || generateName("last"),
+    banned: false,
+    onboarded: false
+  };
+}
+
 const options: BetterAuthOptionsType = {
   appName: "hideaway-validator",
   // Drives whether Better Auth issues the `__Secure-` prefixed cookie
@@ -161,7 +189,7 @@ const options: BetterAuthOptionsType = {
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google", "email-password", "naver"]
+      trustedProviders: ["google", "email-password", "naver", "kakao"]
     }
   },
 
@@ -258,6 +286,16 @@ export const betterAuthPlugins = [
             onboarded: false
           };
         }
+      },
+      {
+        providerId: "kakao",
+        clientId: process.env.AUTH_KAKAO_ID!,
+        clientSecret: process.env.AUTH_KAKAO_SECRET!,
+        authorizationUrl: "https://kauth.kakao.com/oauth/authorize",
+        tokenUrl: "https://kauth.kakao.com/oauth/token",
+        userInfoUrl: "https://kapi.kakao.com/v2/user/me",
+        scopes: ["profile_nickname", "account_email"],
+        mapProfileToUser: mapKakaoProfileToUser
       }
     ]
   }),

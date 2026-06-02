@@ -124,6 +124,22 @@ const schema = z.object({
       "https://developers.naver.com/apps/"
     )
   ),
+  AUTH_KAKAO_ID: required.describe(
+    d(
+      "required",
+      "auth-oauth",
+      "Kakao OAuth REST API key for end-user sign-in.",
+      "https://developers.kakao.com/console/app"
+    )
+  ),
+  AUTH_KAKAO_SECRET: required.describe(
+    d(
+      "required",
+      "auth-oauth",
+      "Kakao OAuth client secret.",
+      "https://developers.kakao.com/console/app"
+    )
+  ),
 
   // ── External APIs (currency / holiday) ──────────────────────────────────
   EXCHANGE_RATE_API_KEY: required.describe(

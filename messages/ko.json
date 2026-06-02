@@ -357,6 +357,29 @@
         "blurb": "어떤 알림을 — 얼마나 자주 보낼지."
       }
     },
+    "providers": {
+      "labels": {
+        "google": "Google",
+        "naver": "네이버",
+        "kakao": "카카오",
+        "credential": "이메일 및 비밀번호",
+        "passkey": "패스키",
+        "credential-2fa": "2단계 인증"
+      },
+      "blurbs": {
+        "google": "Google 계정으로 로그인합니다.",
+        "naver": "네이버 계정으로 로그인합니다.",
+        "kakao": "카카오 계정으로 로그인합니다.",
+        "credential": "이메일과 비밀번호로 로그인합니다.",
+        "passkey": "패스키로 기기 기반 로그인을 사용합니다.",
+        "credential-2fa": "비밀번호 로그인 후 일회용 코드를 입력합니다."
+      },
+      "status": {
+        "linked": "연결됨",
+        "notSet": "설정 안 됨",
+        "signInToLink": "{provider} 계정으로 로그인하면 연결됩니다"
+      }
+    },
     "save": {
       "saving": "저장 중…",
       "saved": "저장됨",

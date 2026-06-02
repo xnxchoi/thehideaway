@@ -58,8 +58,9 @@ export function PrivacyKo({ business }: Props) {
             외부 링크
           </li>
           <li>
-            <strong>소셜 로그인:</strong> Google 또는 Naver로부터 제공받은
-            이메일, 이름, 프로필 이미지
+            <strong>소셜 로그인:</strong> Google로부터 제공받은 이메일, 이름,
+            프로필 이미지, Naver로부터 제공받은 이메일과 이름, Kakao로부터
+            제공받은 이메일과 닉네임
           </li>
           <li>
             <strong>유료 서비스 이용 시:</strong> 결제정보(카드사명·결제 수단
@@ -140,6 +141,11 @@ export function PrivacyKo({ business }: Props) {
                 <td className="py-[.5em]">회원 탈퇴 시까지</td>
               </tr>
               <tr className="border-b border-foreground/10">
+                <td className="py-[.5em] pr-[1em]">Kakao Corp.</td>
+                <td className="py-[.5em] pr-[1em]">소셜 로그인 인증</td>
+                <td className="py-[.5em]">회원 탈퇴 시까지</td>
+              </tr>
+              <tr className="border-b border-foreground/10">
                 <td className="py-[.5em] pr-[1em]">Brevo (Sendinblue SAS)</td>
                 <td className="py-[.5em] pr-[1em]">이메일 발송 (인증·알림)</td>
                 <td className="py-[.5em]">위탁계약 종료 시까지</td>
@@ -163,9 +169,9 @@ export function PrivacyKo({ business }: Props) {
           </table>
         </div>
         <p className="mt-[.75em] text-[.9em] opacity-70">
-          Google·Brevo 등 일부 수탁자는 국외에 소재하고 있으며, 회사는 개인정보
-          처리를 위탁할 때 「개인정보 보호법」 제26조에 따라 필요한 사항을
-          계약서 등에 명시하고 있습니다.
+          Google·NAVER·Kakao·Brevo 등 일부 수탁자는 국외에 소재하고 있으며,
+          회사는 개인정보 처리를 위탁할 때 「개인정보 보호법」 제26조에 따라
+          필요한 사항을 계약서 등에 명시하고 있습니다.
         </p>
       </section>
 
