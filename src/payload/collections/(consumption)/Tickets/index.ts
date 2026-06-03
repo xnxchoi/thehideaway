@@ -9,11 +9,13 @@ import { onTicketPaid } from "./hooks/onTicketPaid";
 // ticket and trigger the activation email + QR code without paying.
 const adminOnlyField: FieldAccess = ({ req }) =>
   isAdmin({ req } as Parameters<typeof isAdmin>[0]);
+const staffOnlyField: FieldAccess = ({ req }) => {
+  const role = req.user?.role;
+  return role === "admin" || role === "editor";
+};
 
 const ticketAccess = {
-  create: ({ req }: { req: { user?: { id?: string } | null } }) => {
-    return Boolean(req.user);
-  },
+  create: isAdmin,
   read: ({ req }: { req: { user?: { id?: string } | null } }) => {
     if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
     if (!req.user?.id) return false;
@@ -24,13 +26,7 @@ const ticketAccess = {
       ]
     } as Where;
   },
-  update: ({ req }: { req: { user?: { id?: string } | null } }) => {
-    if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
-    if (!req.user?.id) return false;
-    return {
-      user: { equals: req.user.id }
-    } as Where;
-  },
+  update: isAdmin,
   delete: isAdmin
 };
 
@@ -126,6 +122,7 @@ export const Tickets: CollectionConfig = {
       type: "text",
       unique: true,
       index: true,
+      access: { read: staffOnlyField },
       admin: {
         description:
           "Single-use nanoid for gift ticket claim URLs. Null after claim or for the purchaser's own ticket."
@@ -181,6 +178,7 @@ export const Tickets: CollectionConfig = {
       type: "text",
       unique: true,
       index: true,
+      access: { read: staffOnlyField },
       admin: {
         readOnly: true,
         description: "System: nanoid encoded into the QR code for check-in."
@@ -216,6 +214,7 @@ export const Tickets: CollectionConfig = {
     {
       name: "passkey_credential_id",
       type: "text",
+      access: { read: staffOnlyField },
       admin: {
         description:
           "Optional: passkey credential ID bound to this ticket for device verification."
@@ -234,6 +233,7 @@ export const Tickets: CollectionConfig = {
     {
       name: "delivery_address",
       type: "group",
+      access: { read: staffOnlyField },
       admin: {
         description: "Submitted by attendee on the exclusive content page."
       },

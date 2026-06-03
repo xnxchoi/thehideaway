@@ -55,6 +55,7 @@ type TicketDoc = {
   paid?: boolean | null;
   user?: unknown;
   event?: unknown;
+  order?: unknown;
 };
 
 type EventLite = {
@@ -67,6 +68,13 @@ type EventLite = {
 type UserLite = {
   email?: string | null;
   name?: string | null;
+};
+
+type TicketOrderLite = {
+  unit_amount?: number | null;
+  total_amount?: number | null;
+  quantity?: number | null;
+  currency?: string | null;
 };
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -154,7 +162,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         .catch(() => null)) as EventLite | null)
     : null;
 
-  const ticketPrice = event?.ticket_price ?? 0;
+  const orderId = idOf(ticket.order);
+  const order = orderId
+    ? ((await payload
+        .findByID({
+          collection: "ticket-orders",
+          id: orderId,
+          depth: 0,
+          overrideAccess: true
+        })
+        .catch(() => null)) as TicketOrderLite | null)
+    : null;
+
+  const snapshotUnitAmount =
+    typeof order?.unit_amount === "number" && order.unit_amount > 0
+      ? order.unit_amount
+      : null;
+  const ticketPrice = snapshotUnitAmount ?? event?.ticket_price ?? 0;
   const quote = quoteRefund(ticketPrice, event?.date ?? null);
   const refundPercent = body.override_percent ?? quote.refundPercent;
   const refundAmount =

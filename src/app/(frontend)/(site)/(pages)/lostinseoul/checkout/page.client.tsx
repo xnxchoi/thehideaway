@@ -58,6 +58,23 @@ function loadPortOneSdk(): Promise<void> {
   });
 }
 
+function createIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `lis_${Date.now().toString(36)}_${Math.random()
+    .toString(36)
+    .slice(2, 18)}`;
+}
+
+async function cancelUnpaidOrder(orderRef: string): Promise<void> {
+  await fetch("/api/lost/checkout/cancel", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ order_ref: orderRef })
+  }).catch(() => undefined);
+}
+
 export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
   const { lines, total, clear } = useLostCart();
   const [provider, setProvider] = useState<"portone" | "manual">("portone");
@@ -69,7 +86,10 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
     const formData = new FormData(form);
     const response = await fetch("/api/lost/checkout/intent", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "idempotency-key": createIdempotencyKey()
+      },
       body: JSON.stringify({
         paymentProvider: provider,
         contact: {
@@ -91,8 +111,16 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
     }
 
     if (provider === "portone" && data.portone) {
-      await loadPortOneSdk();
-      await window.PortOne?.requestPayment?.(data.portone);
+      try {
+        await loadPortOneSdk();
+        await window.PortOne?.requestPayment?.(data.portone);
+      } catch {
+        await cancelUnpaidOrder(data.order.order_ref);
+        window.location.href = `/lostinseoul/payment/failure?order=${encodeURIComponent(
+          data.order.order_ref
+        )}`;
+        return;
+      }
     }
 
     clear();

@@ -28,6 +28,7 @@ type TicketDoc = {
   ticket_number?: number | null;
   user?: unknown;
   event?: unknown;
+  order?: unknown;
   status?: string | null;
   paid?: boolean | null;
   claim_token?: string | null;
@@ -36,6 +37,7 @@ type TicketDoc = {
 
 type EventLite = {
   name?: string;
+  slug?: string | null;
   date?: string | null;
   location?: string | null;
   ticket_price?: number | null;
@@ -101,6 +103,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         overrideAccess: true
       })
       .catch(() => null)) as EventLite | null;
+    if (event?.slug === "day-n-night" && idOf(ticket.order)) {
+      return NextResponse.json(
+        { ok: false, error: "password-required" },
+        { status: 403 }
+      );
+    }
     capLimit = event?.max_per_user ?? 3;
     const countResult = await payload.count({
       collection: "tickets",

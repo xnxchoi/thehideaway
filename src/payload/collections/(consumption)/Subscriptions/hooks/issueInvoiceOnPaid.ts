@@ -1,5 +1,4 @@
 import type { CollectionAfterChangeHook } from "payload";
-import type { Price } from "@/payload-types";
 
 import { nextInvoiceNumber } from "@/lib/db/sequences";
 
@@ -22,19 +21,6 @@ const idOf = (rel: unknown): string | null => {
   }
   return null;
 };
-
-const resolvePrice = async (
-  payload: Parameters<CollectionAfterChangeHook>[0]["req"]["payload"],
-  priceId: string
-): Promise<Price | null> =>
-  (await payload
-    .findByID({
-      collection: "prices",
-      id: priceId,
-      depth: 0,
-      overrideAccess: true
-    })
-    .catch(() => null)) as Price | null;
 
 export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
   doc,
@@ -69,18 +55,18 @@ export const issueInvoiceOnPaid: CollectionAfterChangeHook = async ({
     });
     if (existing.totalDocs > 0) return doc;
 
-    const price = await resolvePrice(req.payload, priceId);
-    if (!price) {
+    const amount =
+      typeof doc.amount === "number" && doc.amount >= 0 ? doc.amount : null;
+    const currencyId = idOf(doc.currency);
+    if (amount === null) {
       req.payload.logger.error?.(
-        `[issueInvoice] subscription ${doc.id} references missing price ${priceId}`
+        `[issueInvoice] subscription ${doc.id} has no amount snapshot`
       );
       return doc;
     }
-    const amount = price.unit_amount;
-    const currencyId = idOf(price.currency);
     if (!currencyId) {
       req.payload.logger.error?.(
-        `[issueInvoice] price ${priceId} has no currency id`
+        `[issueInvoice] subscription ${doc.id} has no currency snapshot`
       );
       return doc;
     }

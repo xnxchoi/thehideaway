@@ -76,6 +76,16 @@ export default async function ExclusivePage(props: { params: Params }) {
         } | null;
       }
     | undefined;
+  const isAttendee = Boolean(ticket);
+  const exclusiveLinks = isAttendee
+    ? (event.exclusive_links ?? [])
+        .filter((l) => l && l.label && l.url)
+        .map((l) => ({
+          label: l.label!,
+          url: l.url!,
+          type: l.type ?? "link"
+        }))
+    : [];
 
   return (
     <ExclusiveContentClient
@@ -83,17 +93,11 @@ export default async function ExclusivePage(props: { params: Params }) {
       eventSlug={event.slug}
       eventDate={event.date ?? null}
       eventLocation={event.location ?? null}
-      isAttendee={Boolean(ticket)}
-      exclusiveLinks={(event.exclusive_links ?? [])
-        .filter((l) => l && l.label && l.url)
-        .map((l) => ({
-          label: l.label!,
-          url: l.url!,
-          type: l.type ?? "link"
-        }))}
-      goodsDropEnabled={Boolean(event.goods_drop_enabled)}
-      ticketId={ticket?.id ?? null}
-      existingDelivery={ticket?.delivery_address ?? null}
+      isAttendee={isAttendee}
+      exclusiveLinks={exclusiveLinks}
+      goodsDropEnabled={isAttendee && Boolean(event.goods_drop_enabled)}
+      ticketId={isAttendee ? (ticket?.id ?? null) : null}
+      existingDelivery={isAttendee ? (ticket?.delivery_address ?? null) : null}
     />
   );
 }

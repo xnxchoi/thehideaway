@@ -54,6 +54,43 @@ interface TxnSession {
   db: { execute: (q: unknown) => Promise<unknown> };
 }
 
+function advisoryLockKey(value: string): string {
+  // 64-bit FNV-1a — deterministic, fast, fits in a Postgres bigint.
+  // Constants written via BigInt() constructor so this compiles under
+  // targets older than ES2020 (the repo's current tsconfig).
+  const FNV_OFFSET = BigInt("0xcbf29ce484222325");
+  const FNV_PRIME = BigInt("0x100000001b3");
+  const MASK_64 = BigInt("0xffffffffffffffff");
+  const SIGNED_MAX = BigInt("0x7fffffffffffffff");
+  const SIGNED_RANGE = BigInt("0x10000000000000000");
+
+  let hash = FNV_OFFSET;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= BigInt(value.charCodeAt(i));
+    hash = (hash * FNV_PRIME) & MASK_64;
+  }
+  return (hash > SIGNED_MAX ? hash - SIGNED_RANGE : hash).toString();
+}
+
+async function transactionAdvisoryLock(
+  payload: Payload,
+  transactionID: string | number,
+  key: string
+): Promise<void> {
+  const sessions = (
+    payload.db as unknown as { sessions: Record<string, TxnSession> }
+  ).sessions;
+  const session = sessions[String(transactionID)];
+  if (!session) {
+    throw new Error(
+      `[transactionAdvisoryLock] no active session for transactionID ${transactionID}`
+    );
+  }
+  await session.db.execute(
+    sql.raw(`SELECT pg_advisory_xact_lock(${key}::bigint)`)
+  );
+}
+
 /**
  * Postgres transaction-scoped advisory lock. Keyed by a 64-bit signed
  * integer derived from the event id. Multiple holders are queued; the
@@ -74,32 +111,58 @@ export async function eventPurchaseLock(
   transactionID: string | number,
   eventId: string
 ): Promise<void> {
-  // 64-bit FNV-1a — deterministic, fast, fits in a Postgres bigint.
-  // Constants written via BigInt() constructor so this compiles under
-  // targets older than ES2020 (the repo's current tsconfig).
-  const FNV_OFFSET = BigInt("0xcbf29ce484222325");
-  const FNV_PRIME = BigInt("0x100000001b3");
-  const MASK_64 = BigInt("0xffffffffffffffff");
-  const SIGNED_MAX = BigInt("0x7fffffffffffffff");
-  const SIGNED_RANGE = BigInt("0x10000000000000000");
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`event:${eventId}`)
+  );
+}
 
-  let hash = FNV_OFFSET;
-  for (let i = 0; i < eventId.length; i++) {
-    hash ^= BigInt(eventId.charCodeAt(i));
-    hash = (hash * FNV_PRIME) & MASK_64;
-  }
-  const signed = hash > SIGNED_MAX ? hash - SIGNED_RANGE : hash;
+/**
+ * Serializes LOSTINSEOUL standard-product reservations for one product.
+ * Held until transaction commit/rollback. Different products do not contend.
+ */
+export async function productInventoryLock(
+  payload: Payload,
+  transactionID: string | number,
+  productId: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`product:${productId}`)
+  );
+}
 
-  const sessions = (
-    payload.db as unknown as { sessions: Record<string, TxnSession> }
-  ).sessions;
-  const session = sessions[String(transactionID)];
-  if (!session) {
-    throw new Error(
-      `[eventPurchaseLock] no active session for transactionID ${transactionID}`
-    );
-  }
-  await session.db.execute(
-    sql.raw(`SELECT pg_advisory_xact_lock(${signed.toString()}::bigint)`)
+/**
+ * Serializes paid commitment transitions for a single request-to-order
+ * campaign. Held until transaction commit/rollback.
+ */
+export async function campaignCommitmentLock(
+  payload: Payload,
+  transactionID: string | number,
+  campaignId: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`campaign:${campaignId}`)
+  );
+}
+
+/**
+ * Serializes provider webhook processing for one commerce order reference.
+ * This keeps duplicate-event checks and event append/update in one critical
+ * section even when the provider retries concurrently.
+ */
+export async function paymentWebhookLock(
+  payload: Payload,
+  transactionID: string | number,
+  orderRef: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`payment-webhook:${orderRef}`)
   );
 }

@@ -35,9 +35,7 @@ const adminOnlyField: FieldAccess = ({ req }) =>
   isAdmin({ req } as Parameters<typeof isAdmin>[0]);
 
 const orderAccess = {
-  create: ({ req }: { req: { user?: { id?: string } | null } }) => {
-    return Boolean(req.user);
-  },
+  create: isAdmin,
   read: ({ req }: { req: { user?: { id?: string } | null } }) => {
     if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
     if (!req.user?.id) return false;
@@ -45,13 +43,7 @@ const orderAccess = {
       purchaser: { equals: req.user.id }
     } as Where;
   },
-  update: ({ req }: { req: { user?: { id?: string } | null } }) => {
-    if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
-    if (!req.user?.id) return false;
-    return {
-      purchaser: { equals: req.user.id }
-    } as Where;
-  },
+  update: isAdmin,
   delete: isAdmin
 };
 
@@ -110,6 +102,57 @@ export const TicketOrders: CollectionConfig = {
       admin: {
         description:
           "Name the purchaser says will appear on the bank transfer. Used by hosts to match pending Toss transfers."
+      }
+    },
+    {
+      type: "number",
+      name: "quantity",
+      label: "Ticket quantity",
+      required: true,
+      defaultValue: 1,
+      min: 1,
+      admin: {
+        readOnly: true,
+        description:
+          "Number of sibling Tickets created for this order. Snapshotted at purchase."
+      }
+    },
+    {
+      type: "number",
+      name: "unit_amount",
+      label: "Unit amount",
+      required: true,
+      defaultValue: 0,
+      min: 0,
+      admin: {
+        readOnly: true,
+        description:
+          "Per-ticket amount in the order currency. Snapshotted at purchase."
+      }
+    },
+    {
+      type: "number",
+      name: "total_amount",
+      label: "Total amount",
+      required: true,
+      defaultValue: 0,
+      min: 0,
+      admin: {
+        readOnly: true,
+        description:
+          "Total order amount in the order currency. Snapshotted at purchase."
+      }
+    },
+    {
+      type: "select",
+      name: "currency",
+      label: "Currency",
+      required: true,
+      defaultValue: "KRW",
+      options: ["KRW"],
+      admin: {
+        readOnly: true,
+        description: "Currency used for this ticket order."
       }
     },
     {

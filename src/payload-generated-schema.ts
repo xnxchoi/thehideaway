@@ -538,6 +538,96 @@ export const enum_subscriptions_request_method = pgEnum(
   "enum_subscriptions_request_method",
   ["bank_transfer", "cash"]
 );
+export const enum_products_currency = pgEnum("enum_products_currency", [
+  "KRW",
+  "USD",
+  "JPY",
+  "EUR"
+]);
+export const enum_products_stock_state = pgEnum("enum_products_stock_state", [
+  "in_stock",
+  "out_of_stock",
+  "pre_order",
+  "on_request"
+]);
+export const enum_products_private_tier_gate = pgEnum(
+  "enum_products_private_tier_gate",
+  ["anyone", "resident", "patron", "cofounder", "staff"]
+);
+export const enum_product_order_campaigns_state = pgEnum(
+  "enum_product_order_campaigns_state",
+  ["draft", "open", "met", "failed", "converted", "canceled"]
+);
+export const enum_product_order_campaigns_progress_visibility = pgEnum(
+  "enum_product_order_campaigns_progress_visibility",
+  ["hidden", "percentage", "count"]
+);
+export const enum_product_carts_status = pgEnum("enum_product_carts_status", [
+  "active",
+  "converted",
+  "abandoned"
+]);
+export const enum_product_carts_currency = pgEnum(
+  "enum_product_carts_currency",
+  ["KRW", "USD", "JPY", "EUR"]
+);
+export const enum_product_orders_order_mode = pgEnum(
+  "enum_product_orders_order_mode",
+  ["standard_purchase", "request_to_order", "private_order"]
+);
+export const enum_product_orders_status = pgEnum("enum_product_orders_status", [
+  "draft",
+  "quote_requested",
+  "quote_ready",
+  "pending_payment",
+  "paid",
+  "committed",
+  "confirmed",
+  "converted",
+  "failed",
+  "canceled",
+  "refunded"
+]);
+export const enum_product_orders_payment_status = pgEnum(
+  "enum_product_orders_payment_status",
+  [
+    "unpaid",
+    "pending",
+    "paid",
+    "pending_manual",
+    "failed",
+    "refunded",
+    "partially_refunded"
+  ]
+);
+export const enum_product_orders_fulfillment_status = pgEnum(
+  "enum_product_orders_fulfillment_status",
+  ["unfulfilled", "reserved", "in_production", "fulfilled", "canceled"]
+);
+export const enum_product_orders_currency = pgEnum(
+  "enum_product_orders_currency",
+  ["KRW", "USD", "JPY", "EUR"]
+);
+export const enum_product_payments_provider = pgEnum(
+  "enum_product_payments_provider",
+  ["portone", "manual"]
+);
+export const enum_product_payments_status = pgEnum(
+  "enum_product_payments_status",
+  [
+    "initiated",
+    "pending",
+    "paid",
+    "failed",
+    "refunded",
+    "partially_refunded",
+    "manual_pending"
+  ]
+);
+export const enum_product_payments_currency = pgEnum(
+  "enum_product_payments_currency",
+  ["KRW", "USD", "JPY", "EUR"]
+);
 export const enum_events_exclusive_links_type = pgEnum(
   "enum_events_exclusive_links_type",
   ["link", "form"]
@@ -548,6 +638,10 @@ export const enum_events_state = pgEnum("enum_events_state", [
   "closed",
   "ended"
 ]);
+export const enum_ticket_orders_currency = pgEnum(
+  "enum_ticket_orders_currency",
+  ["KRW"]
+);
 export const enum_ticket_orders_locale = pgEnum("enum_ticket_orders_locale", [
   "ko",
   "en"
@@ -6080,6 +6174,12 @@ export const subscriptions = pgTable(
       .references(() => prices.id, {
         onDelete: "set null"
       }),
+    amount: numeric("amount", { mode: "number" }).notNull().default(0),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
     start_date: timestamp("start_date", {
       mode: "string",
       withTimezone: true,
@@ -6125,6 +6225,7 @@ export const subscriptions = pgTable(
     index("subscriptions_user_idx").on(columns.user),
     index("subscriptions_plan_idx").on(columns.plan),
     index("subscriptions_price_idx").on(columns.price),
+    index("subscriptions_currency_idx").on(columns.currency),
     index("subscriptions_expires_at_idx").on(columns.expires_at),
     index("subscriptions_subscription_status_idx").on(
       columns.subscription_status
@@ -6281,6 +6382,470 @@ export const holidays = pgTable(
   ]
 );
 
+export const product_category = pgTable(
+  "product_category",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    slug: varchar("slug").notNull(),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_category_slug_idx").on(columns.slug),
+    index("product_category_sort_idx").on(columns.sort),
+    index("product_category_updated_at_idx").on(columns.updatedAt),
+    index("product_category_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_sub = pgTable(
+  "product_sub",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    slug: varchar("slug").notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_sub_slug_idx").on(columns.slug),
+    index("product_sub_updated_at_idx").on(columns.updatedAt),
+    index("product_sub_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_drops = pgTable(
+  "product_drops",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title").notNull(),
+    slug: varchar("slug").notNull(),
+    active: boolean("active").notNull().default(false),
+    kicker: varchar("kicker"),
+    lede: varchar("lede"),
+    hero_media: varchar("hero_media_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_drops_slug_idx").on(columns.slug),
+    index("product_drops_active_idx").on(columns.active),
+    index("product_drops_hero_media_idx").on(columns.hero_media),
+    index("product_drops_sort_idx").on(columns.sort),
+    index("product_drops_updated_at_idx").on(columns.updatedAt),
+    index("product_drops_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    slug: varchar("slug").notNull(),
+    active: boolean("active").notNull().default(false),
+    storefront: varchar("storefront").notNull().default("lostinseoul"),
+    drop: uuid("drop_id").references(() => product_drops.id, {
+      onDelete: "set null"
+    }),
+    category: uuid("category_id").references(() => product_category.id, {
+      onDelete: "set null"
+    }),
+    summary: varchar("summary"),
+    description: jsonb("description"),
+    details: varchar("details"),
+    care: varchar("care"),
+    shipping_returns: varchar("shipping_returns"),
+    hero_media: varchar("hero_media_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
+    currency: enum_products_currency("currency").notNull().default("KRW"),
+    unit_amount: numeric("unit_amount", { mode: "number" })
+      .notNull()
+      .default(0),
+    compare_at_amount: numeric("compare_at_amount", { mode: "number" }),
+    stock_state: enum_products_stock_state("stock_state")
+      .notNull()
+      .default("on_request"),
+    inventory: numeric("inventory", { mode: "number" }).default(0),
+    max_order_quantity: numeric("max_order_quantity", { mode: "number" })
+      .notNull()
+      .default(1),
+    min_order_quantity: numeric("min_order_quantity", { mode: "number" })
+      .notNull()
+      .default(1),
+    variants: jsonb("variants"),
+    standard_enabled: boolean("standard_enabled").notNull().default(true),
+    request_to_order_enabled: boolean("request_to_order_enabled")
+      .notNull()
+      .default(false),
+    private_order_enabled: boolean("private_order_enabled")
+      .notNull()
+      .default(false),
+    private_preset_price_enabled: boolean("private_preset_price_enabled")
+      .notNull()
+      .default(false),
+    private_unit_amount: numeric("private_unit_amount", { mode: "number" }),
+    private_tier_gate: enum_products_private_tier_gate("private_tier_gate")
+      .notNull()
+      .default("anyone"),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("products_name_idx").on(columns.name),
+    uniqueIndex("products_slug_idx").on(columns.slug),
+    index("products_active_idx").on(columns.active),
+    index("products_storefront_idx").on(columns.storefront),
+    index("products_drop_idx").on(columns.drop),
+    index("products_category_idx").on(columns.category),
+    index("products_hero_media_idx").on(columns.hero_media),
+    index("products_currency_idx").on(columns.currency),
+    index("products_unit_amount_idx").on(columns.unit_amount),
+    index("products_stock_state_idx").on(columns.stock_state),
+    index("products_inventory_idx").on(columns.inventory),
+    index("products_max_order_quantity_idx").on(columns.max_order_quantity),
+    index("products_min_order_quantity_idx").on(columns.min_order_quantity),
+    index("products_standard_enabled_idx").on(columns.standard_enabled),
+    index("products_request_to_order_enabled_idx").on(
+      columns.request_to_order_enabled
+    ),
+    index("products_private_order_enabled_idx").on(
+      columns.private_order_enabled
+    ),
+    index("products_private_tier_gate_idx").on(columns.private_tier_gate),
+    index("products_sort_idx").on(columns.sort),
+    index("products_updated_at_idx").on(columns.updatedAt),
+    index("products_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const products_rels = pgTable(
+  "products_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    mediaID: varchar("media_id")
+  },
+  (columns) => [
+    index("products_rels_order_idx").on(columns.order),
+    index("products_rels_parent_idx").on(columns.parent),
+    index("products_rels_path_idx").on(columns.path),
+    index("products_rels_media_id_idx").on(columns.mediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [products.id],
+      name: "products_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "products_rels_media_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const product_order_campaigns = pgTable(
+  "product_order_campaigns",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title").notNull(),
+    product: uuid("product_id")
+      .notNull()
+      .references(() => products.id, {
+        onDelete: "set null"
+      }),
+    state: enum_product_order_campaigns_state("state")
+      .notNull()
+      .default("draft"),
+    minimum_commitments: numeric("minimum_commitments", { mode: "number" })
+      .notNull()
+      .default(1),
+    maximum_commitments: numeric("maximum_commitments", { mode: "number" }),
+    paid_commitments: numeric("paid_commitments", { mode: "number" }).default(
+      0
+    ),
+    deadline: timestamp("deadline", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    progress_visibility: enum_product_order_campaigns_progress_visibility(
+      "progress_visibility"
+    )
+      .notNull()
+      .default("hidden"),
+    eligible_variants: jsonb("eligible_variants"),
+    refund_policy: varchar("refund_policy"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("product_order_campaigns_product_idx").on(columns.product),
+    index("product_order_campaigns_state_idx").on(columns.state),
+    index("product_order_campaigns_deadline_idx").on(columns.deadline),
+    index("product_order_campaigns_updated_at_idx").on(columns.updatedAt),
+    index("product_order_campaigns_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_carts = pgTable(
+  "product_carts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    user: uuid("user_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    storefront: varchar("storefront").notNull().default("lostinseoul"),
+    status: enum_product_carts_status("status").notNull().default("active"),
+    currency: enum_product_carts_currency("currency").notNull().default("KRW"),
+    lines: jsonb("lines")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("product_carts_user_idx").on(columns.user),
+    index("product_carts_storefront_idx").on(columns.storefront),
+    index("product_carts_status_idx").on(columns.status),
+    index("product_carts_updated_at_idx").on(columns.updatedAt),
+    index("product_carts_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_orders = pgTable(
+  "product_orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    order_ref: varchar("order_ref").notNull(),
+    user: uuid("user_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    storefront: varchar("storefront").notNull().default("lostinseoul"),
+    order_mode: enum_product_orders_order_mode("order_mode").notNull(),
+    status: enum_product_orders_status("status").notNull().default("draft"),
+    payment_status: enum_product_orders_payment_status("payment_status")
+      .notNull()
+      .default("unpaid"),
+    fulfillment_status: enum_product_orders_fulfillment_status(
+      "fulfillment_status"
+    )
+      .notNull()
+      .default("unfulfilled"),
+    currency: enum_product_orders_currency("currency").notNull().default("KRW"),
+    subtotal_amount: numeric("subtotal_amount", { mode: "number" })
+      .notNull()
+      .default(0),
+    total_amount: numeric("total_amount", { mode: "number" })
+      .notNull()
+      .default(0),
+    campaign: uuid("campaign_id").references(() => product_order_campaigns.id, {
+      onDelete: "set null"
+    }),
+    lines: jsonb("lines")
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    shipping: jsonb("shipping"),
+    contact: jsonb("contact"),
+    quote: jsonb("quote"),
+    paid_at: timestamp("paid_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    expires_at: timestamp("expires_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_orders_order_ref_idx").on(columns.order_ref),
+    index("product_orders_user_idx").on(columns.user),
+    index("product_orders_storefront_idx").on(columns.storefront),
+    index("product_orders_order_mode_idx").on(columns.order_mode),
+    index("product_orders_status_idx").on(columns.status),
+    index("product_orders_payment_status_idx").on(columns.payment_status),
+    index("product_orders_fulfillment_status_idx").on(
+      columns.fulfillment_status
+    ),
+    index("product_orders_total_amount_idx").on(columns.total_amount),
+    index("product_orders_campaign_idx").on(columns.campaign),
+    index("product_orders_paid_at_idx").on(columns.paid_at),
+    index("product_orders_expires_at_idx").on(columns.expires_at),
+    index("product_orders_updated_at_idx").on(columns.updatedAt),
+    index("product_orders_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_payments = pgTable(
+  "product_payments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    payment_ref: varchar("payment_ref").notNull(),
+    order: uuid("order_id")
+      .notNull()
+      .references(() => product_orders.id, {
+        onDelete: "set null"
+      }),
+    user: uuid("user_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    provider: enum_product_payments_provider("provider")
+      .notNull()
+      .default("portone"),
+    status: enum_product_payments_status("status")
+      .notNull()
+      .default("initiated"),
+    amount: numeric("amount", { mode: "number" }).notNull(),
+    currency: enum_product_payments_currency("currency")
+      .notNull()
+      .default("KRW"),
+    portone_order_ref: varchar("portone_order_ref"),
+    portone_transaction_ref: varchar("portone_transaction_ref"),
+    payment_channel: varchar("payment_channel"),
+    payment_method: varchar("payment_method"),
+    request_payload: jsonb("request_payload"),
+    events: jsonb("events").default(sql`'[]'::jsonb`),
+    paid_at: timestamp("paid_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_payments_payment_ref_idx").on(columns.payment_ref),
+    index("product_payments_order_idx").on(columns.order),
+    index("product_payments_user_idx").on(columns.user),
+    index("product_payments_provider_idx").on(columns.provider),
+    index("product_payments_status_idx").on(columns.status),
+    index("product_payments_portone_order_ref_idx").on(
+      columns.portone_order_ref
+    ),
+    index("product_payments_portone_transaction_ref_idx").on(
+      columns.portone_transaction_ref
+    ),
+    index("product_payments_paid_at_idx").on(columns.paid_at),
+    index("product_payments_updated_at_idx").on(columns.updatedAt),
+    index("product_payments_created_at_idx").on(columns.createdAt)
+  ]
+);
+
 export const events_exclusive_links = pgTable(
   "events_exclusive_links",
   {
@@ -6372,7 +6937,21 @@ export const ticket_orders = pgTable(
         onDelete: "set null"
       }),
     purchaser_name: varchar("purchaser_name"),
+    sender_name: varchar("sender_name"),
+    quantity: numeric("quantity", { mode: "number" }).notNull().default(1),
+    unit_amount: numeric("unit_amount", { mode: "number" })
+      .notNull()
+      .default(0),
+    total_amount: numeric("total_amount", { mode: "number" })
+      .notNull()
+      .default(0),
+    currency: enum_ticket_orders_currency("currency").notNull().default("KRW"),
     paid: boolean("paid").default(false),
+    payment_submitted_at: timestamp("payment_submitted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
     paid_at: timestamp("paid_at", {
       mode: "string",
       withTimezone: true,
@@ -6729,6 +7308,14 @@ export const payload_locked_documents_rels = pgTable(
     "exchange-rateID": uuid("exchange_rate_id"),
     currencyID: uuid("currency_id"),
     holidaysID: uuid("holidays_id"),
+    "product-categoryID": uuid("product_category_id"),
+    "product-subID": uuid("product_sub_id"),
+    "product-dropsID": uuid("product_drops_id"),
+    productsID: uuid("products_id"),
+    "product-order-campaignsID": uuid("product_order_campaigns_id"),
+    "product-cartsID": uuid("product_carts_id"),
+    "product-ordersID": uuid("product_orders_id"),
+    "product-paymentsID": uuid("product_payments_id"),
     eventsID: uuid("events_id"),
     "ticket-ordersID": uuid("ticket_orders_id"),
     ticketsID: uuid("tickets_id"),
@@ -6821,6 +7408,30 @@ export const payload_locked_documents_rels = pgTable(
     ),
     index("payload_locked_documents_rels_holidays_id_idx").on(
       columns.holidaysID
+    ),
+    index("payload_locked_documents_rels_product_category_id_idx").on(
+      columns["product-categoryID"]
+    ),
+    index("payload_locked_documents_rels_product_sub_id_idx").on(
+      columns["product-subID"]
+    ),
+    index("payload_locked_documents_rels_product_drops_id_idx").on(
+      columns["product-dropsID"]
+    ),
+    index("payload_locked_documents_rels_products_id_idx").on(
+      columns.productsID
+    ),
+    index("payload_locked_documents_rels_product_order_campaigns_id_idx").on(
+      columns["product-order-campaignsID"]
+    ),
+    index("payload_locked_documents_rels_product_carts_id_idx").on(
+      columns["product-cartsID"]
+    ),
+    index("payload_locked_documents_rels_product_orders_id_idx").on(
+      columns["product-ordersID"]
+    ),
+    index("payload_locked_documents_rels_product_payments_id_idx").on(
+      columns["product-paymentsID"]
     ),
     index("payload_locked_documents_rels_events_id_idx").on(columns.eventsID),
     index("payload_locked_documents_rels_ticket_orders_id_idx").on(
@@ -7014,6 +7625,46 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["holidaysID"]],
       foreignColumns: [holidays.id],
       name: "payload_locked_documents_rels_holidays_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-categoryID"]],
+      foreignColumns: [product_category.id],
+      name: "payload_locked_documents_rels_product_category_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-subID"]],
+      foreignColumns: [product_sub.id],
+      name: "payload_locked_documents_rels_product_sub_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-dropsID"]],
+      foreignColumns: [product_drops.id],
+      name: "payload_locked_documents_rels_product_drops_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["productsID"]],
+      foreignColumns: [products.id],
+      name: "payload_locked_documents_rels_products_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-order-campaignsID"]],
+      foreignColumns: [product_order_campaigns.id],
+      name: "payload_locked_documents_rels_product_order_campaigns_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-cartsID"]],
+      foreignColumns: [product_carts.id],
+      name: "payload_locked_documents_rels_product_carts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-ordersID"]],
+      foreignColumns: [product_orders.id],
+      name: "payload_locked_documents_rels_product_orders_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-paymentsID"]],
+      foreignColumns: [product_payments.id],
+      name: "payload_locked_documents_rels_product_payments_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["eventsID"]],
@@ -9503,6 +10154,11 @@ export const relations_subscriptions = relations(subscriptions, ({ one }) => ({
     fields: [subscriptions.price],
     references: [prices.id],
     relationName: "price"
+  }),
+  currency: one(currency, {
+    fields: [subscriptions.currency],
+    references: [currency.id],
+    relationName: "currency"
   })
 }));
 export const relations_exchange_rate_rates = relations(
@@ -9541,6 +10197,97 @@ export const relations_holidays = relations(holidays, ({ many }) => ({
     relationName: "dates"
   })
 }));
+export const relations_product_category = relations(
+  product_category,
+  () => ({})
+);
+export const relations_product_sub = relations(product_sub, () => ({}));
+export const relations_product_drops = relations(product_drops, ({ one }) => ({
+  hero_media: one(media, {
+    fields: [product_drops.hero_media],
+    references: [media.id],
+    relationName: "hero_media"
+  })
+}));
+export const relations_products_rels = relations(products_rels, ({ one }) => ({
+  parent: one(products, {
+    fields: [products_rels.parent],
+    references: [products.id],
+    relationName: "_rels"
+  }),
+  mediaID: one(media, {
+    fields: [products_rels.mediaID],
+    references: [media.id],
+    relationName: "media"
+  })
+}));
+export const relations_products = relations(products, ({ one, many }) => ({
+  drop: one(product_drops, {
+    fields: [products.drop],
+    references: [product_drops.id],
+    relationName: "drop"
+  }),
+  category: one(product_category, {
+    fields: [products.category],
+    references: [product_category.id],
+    relationName: "category"
+  }),
+  hero_media: one(media, {
+    fields: [products.hero_media],
+    references: [media.id],
+    relationName: "hero_media"
+  }),
+  _rels: many(products_rels, {
+    relationName: "_rels"
+  })
+}));
+export const relations_product_order_campaigns = relations(
+  product_order_campaigns,
+  ({ one }) => ({
+    product: one(products, {
+      fields: [product_order_campaigns.product],
+      references: [products.id],
+      relationName: "product"
+    })
+  })
+);
+export const relations_product_carts = relations(product_carts, ({ one }) => ({
+  user: one(users, {
+    fields: [product_carts.user],
+    references: [users.id],
+    relationName: "user"
+  })
+}));
+export const relations_product_orders = relations(
+  product_orders,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [product_orders.user],
+      references: [users.id],
+      relationName: "user"
+    }),
+    campaign: one(product_order_campaigns, {
+      fields: [product_orders.campaign],
+      references: [product_order_campaigns.id],
+      relationName: "campaign"
+    })
+  })
+);
+export const relations_product_payments = relations(
+  product_payments,
+  ({ one }) => ({
+    order: one(product_orders, {
+      fields: [product_payments.order],
+      references: [product_orders.id],
+      relationName: "order"
+    }),
+    user: one(users, {
+      fields: [product_payments.user],
+      references: [users.id],
+      relationName: "user"
+    })
+  })
+);
 export const relations_events_exclusive_links = relations(
   events_exclusive_links,
   ({ one }) => ({
@@ -9826,6 +10573,46 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.holidaysID],
       references: [holidays.id],
       relationName: "holidays"
+    }),
+    "product-categoryID": one(product_category, {
+      fields: [payload_locked_documents_rels["product-categoryID"]],
+      references: [product_category.id],
+      relationName: "product-category"
+    }),
+    "product-subID": one(product_sub, {
+      fields: [payload_locked_documents_rels["product-subID"]],
+      references: [product_sub.id],
+      relationName: "product-sub"
+    }),
+    "product-dropsID": one(product_drops, {
+      fields: [payload_locked_documents_rels["product-dropsID"]],
+      references: [product_drops.id],
+      relationName: "product-drops"
+    }),
+    productsID: one(products, {
+      fields: [payload_locked_documents_rels.productsID],
+      references: [products.id],
+      relationName: "products"
+    }),
+    "product-order-campaignsID": one(product_order_campaigns, {
+      fields: [payload_locked_documents_rels["product-order-campaignsID"]],
+      references: [product_order_campaigns.id],
+      relationName: "product-order-campaigns"
+    }),
+    "product-cartsID": one(product_carts, {
+      fields: [payload_locked_documents_rels["product-cartsID"]],
+      references: [product_carts.id],
+      relationName: "product-carts"
+    }),
+    "product-ordersID": one(product_orders, {
+      fields: [payload_locked_documents_rels["product-ordersID"]],
+      references: [product_orders.id],
+      relationName: "product-orders"
+    }),
+    "product-paymentsID": one(product_payments, {
+      fields: [payload_locked_documents_rels["product-paymentsID"]],
+      references: [product_payments.id],
+      relationName: "product-payments"
     }),
     eventsID: one(events, {
       fields: [payload_locked_documents_rels.eventsID],
@@ -10215,8 +11002,24 @@ type DatabaseSchema = {
   enum_prices_recurring_interval: typeof enum_prices_recurring_interval;
   enum_subscriptions_subscription_status: typeof enum_subscriptions_subscription_status;
   enum_subscriptions_request_method: typeof enum_subscriptions_request_method;
+  enum_products_currency: typeof enum_products_currency;
+  enum_products_stock_state: typeof enum_products_stock_state;
+  enum_products_private_tier_gate: typeof enum_products_private_tier_gate;
+  enum_product_order_campaigns_state: typeof enum_product_order_campaigns_state;
+  enum_product_order_campaigns_progress_visibility: typeof enum_product_order_campaigns_progress_visibility;
+  enum_product_carts_status: typeof enum_product_carts_status;
+  enum_product_carts_currency: typeof enum_product_carts_currency;
+  enum_product_orders_order_mode: typeof enum_product_orders_order_mode;
+  enum_product_orders_status: typeof enum_product_orders_status;
+  enum_product_orders_payment_status: typeof enum_product_orders_payment_status;
+  enum_product_orders_fulfillment_status: typeof enum_product_orders_fulfillment_status;
+  enum_product_orders_currency: typeof enum_product_orders_currency;
+  enum_product_payments_provider: typeof enum_product_payments_provider;
+  enum_product_payments_status: typeof enum_product_payments_status;
+  enum_product_payments_currency: typeof enum_product_payments_currency;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
   enum_events_state: typeof enum_events_state;
+  enum_ticket_orders_currency: typeof enum_ticket_orders_currency;
   enum_ticket_orders_locale: typeof enum_ticket_orders_locale;
   enum_tickets_status: typeof enum_tickets_status;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
@@ -10355,6 +11158,15 @@ type DatabaseSchema = {
   currency: typeof currency;
   holidays_dates: typeof holidays_dates;
   holidays: typeof holidays;
+  product_category: typeof product_category;
+  product_sub: typeof product_sub;
+  product_drops: typeof product_drops;
+  products: typeof products;
+  products_rels: typeof products_rels;
+  product_order_campaigns: typeof product_order_campaigns;
+  product_carts: typeof product_carts;
+  product_orders: typeof product_orders;
+  product_payments: typeof product_payments;
   events_exclusive_links: typeof events_exclusive_links;
   events: typeof events;
   ticket_orders: typeof ticket_orders;
@@ -10503,6 +11315,15 @@ type DatabaseSchema = {
   relations_currency: typeof relations_currency;
   relations_holidays_dates: typeof relations_holidays_dates;
   relations_holidays: typeof relations_holidays;
+  relations_product_category: typeof relations_product_category;
+  relations_product_sub: typeof relations_product_sub;
+  relations_product_drops: typeof relations_product_drops;
+  relations_products_rels: typeof relations_products_rels;
+  relations_products: typeof relations_products;
+  relations_product_order_campaigns: typeof relations_product_order_campaigns;
+  relations_product_carts: typeof relations_product_carts;
+  relations_product_orders: typeof relations_product_orders;
+  relations_product_payments: typeof relations_product_payments;
   relations_events_exclusive_links: typeof relations_events_exclusive_links;
   relations_events: typeof relations_events;
   relations_ticket_orders: typeof relations_ticket_orders;

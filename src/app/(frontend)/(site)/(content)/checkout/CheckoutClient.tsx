@@ -6,6 +6,7 @@ import s from "@/components/sections/Pricing/Pricing.module.scss";
 
 export type CheckoutClientProps = {
   planId: string;
+  priceId: string;
   tierLabel: string;
 };
 
@@ -28,6 +29,7 @@ export function CheckoutClient(props: CheckoutClientProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           plan_id: props.planId,
+          price_id: props.priceId,
           method,
           ...(note.trim() ? { note: note.trim() } : {})
         })

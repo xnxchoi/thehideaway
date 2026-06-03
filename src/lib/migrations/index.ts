@@ -33,6 +33,8 @@ import * as migration_20260523_204500_ticket_order_sender_name from "./20260523_
 import * as migration_20260524_011500_ticket_order_payment_submitted from "./20260524_011500_ticket_order_payment_submitted";
 import * as migration_20260525_000000_day_n_night_event_ended from "./20260525_000000_day_n_night_event_ended";
 import * as migration_20260526_120000_lostinseoul_commerce_v1 from "./20260526_120000_lostinseoul_commerce_v1";
+import * as migration_20260603_010000_ticket_order_money_snapshots from "./20260603_010000_ticket_order_money_snapshots";
+import * as migration_20260603_011000_subscription_money_snapshots from "./20260603_011000_subscription_money_snapshots";
 import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
@@ -215,5 +217,15 @@ export const migrations = [
     up: migration_20260526_120000_lostinseoul_commerce_v1.up,
     down: migration_20260526_120000_lostinseoul_commerce_v1.down,
     name: "20260526_120000_lostinseoul_commerce_v1"
+  },
+  {
+    up: migration_20260603_010000_ticket_order_money_snapshots.up,
+    down: migration_20260603_010000_ticket_order_money_snapshots.down,
+    name: "20260603_010000_ticket_order_money_snapshots"
+  },
+  {
+    up: migration_20260603_011000_subscription_money_snapshots.up,
+    down: migration_20260603_011000_subscription_money_snapshots.down,
+    name: "20260603_011000_subscription_money_snapshots"
   }
 ];

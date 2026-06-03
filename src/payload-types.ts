@@ -2710,6 +2710,14 @@ export interface Subscription {
    * The specific Price (currency × amount × cadence) the subscriber transacted. Captured at checkout; never rewritten.
    */
   price: string | Price;
+  /**
+   * Snapshot of the selected Price amount at checkout. Invoice issuance must use this, not mutable catalog prices.
+   */
+  amount: number;
+  /**
+   * Snapshot of the selected Price currency at checkout. Invoice issuance must use this, not mutable catalog prices.
+   */
+  currency: string | Currency;
   start_date: string;
   /**
    * Date the subscription expires (null = lifetime). Set on activation; extended quarterly when waiver criteria are met.
@@ -3245,6 +3253,22 @@ export interface TicketOrder {
    * Name the purchaser says will appear on the bank transfer. Used by hosts to match pending Toss transfers.
    */
   sender_name?: string | null;
+  /**
+   * Number of sibling Tickets created for this order. Snapshotted at purchase.
+   */
+  quantity: number;
+  /**
+   * Per-ticket amount in the order currency. Snapshotted at purchase.
+   */
+  unit_amount: number;
+  /**
+   * Total order amount in the order currency. Snapshotted at purchase.
+   */
+  total_amount: number;
+  /**
+   * Currency used for this ticket order.
+   */
+  currency: 'KRW';
   /**
    * Admin-only. Flip this after confirming the bank transfer. Triggers password issuance + email.
    */
@@ -5009,6 +5033,8 @@ export interface SubscriptionsSelect<T extends boolean = true> {
   user?: T;
   plan?: T;
   price?: T;
+  amount?: T;
+  currency?: T;
   start_date?: T;
   expires_at?: T;
   subscription_status?: T;
@@ -5257,6 +5283,10 @@ export interface TicketOrdersSelect<T extends boolean = true> {
   event?: T;
   purchaser_name?: T;
   sender_name?: T;
+  quantity?: T;
+  unit_amount?: T;
+  total_amount?: T;
+  currency?: T;
   paid?: T;
   payment_submitted_at?: T;
   paid_at?: T;

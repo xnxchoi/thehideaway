@@ -253,6 +253,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const orderPurchaserName =
     body.purchaser_name ?? session.user.name?.trim() ?? null;
   const orderSenderName = body.sender_name ?? orderPurchaserName;
+  const unitAmount = event.ticket_price ?? 0;
+  const totalAmount = unitAmount * body.quantity;
 
   let created: CreatedTicket[];
   let orderId: string;
@@ -324,6 +326,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         event: event.id,
         purchaser_name: orderPurchaserName,
         sender_name: orderSenderName,
+        quantity: body.quantity,
+        unit_amount: unitAmount,
+        total_amount: totalAmount,
+        currency: "KRW",
         locale: orderLocale,
         paid: false
       } as never
@@ -386,7 +392,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Customer-facing emails. All best-effort: a mail failure must not roll
   // back the reservation, since the purchaser already has a record in DB.
   const mailer = new TicketMailer(payload);
-  const totalAmount = (event.ticket_price ?? 0) * body.quantity;
   const purchaserEmail = session.user.email ?? null;
   const purchaserName = session.user.name ?? null;
 

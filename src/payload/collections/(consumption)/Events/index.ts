@@ -1,6 +1,11 @@
 import type { CollectionConfig } from "payload";
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 
+const isAdminOrEditor = ({ req }: { req: { user?: { role?: string } | null } }) => {
+  const role = req.user?.role;
+  return role === "admin" || role === "editor";
+};
+
 export const Events: CollectionConfig = {
   slug: "events",
   admin: {
@@ -139,6 +144,9 @@ export const Events: CollectionConfig = {
     {
       name: "exclusive_content",
       type: "richText",
+      access: {
+        read: isAdminOrEditor
+      },
       admin: {
         description:
           "Post-event content shown only to checked-in attendees on /tickets/{slug}/exclusive."
@@ -147,6 +155,9 @@ export const Events: CollectionConfig = {
     {
       name: "exclusive_links",
       type: "array",
+      access: {
+        read: isAdminOrEditor
+      },
       admin: {
         description: "Links shown on the exclusive content page."
       },

@@ -2,13 +2,41 @@ import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import type { Plan, Price, Currency } from "@/payload-types";
+import type { Plan, Price } from "@/payload-types";
 import { CheckoutClient } from "./CheckoutClient";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 import { RPage } from "@/components/UX/Transition";
 import { signInRedirectPath } from "@/lib/routes/auth";
 
 export const runtime = "nodejs";
+
+function currencyCodeOf(price: Price): string | null {
+  const currency = price.currency;
+  return typeof currency === "string" ? currency : (currency?.name ?? null);
+}
+
+async function findKrwCheckoutPrice(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  planId: string
+): Promise<Price | null> {
+  const prices = await payload
+    .find({
+      collection: "prices",
+      depth: 1,
+      limit: 50,
+      overrideAccess: true,
+      where: {
+        and: [{ plan: { equals: planId } }, { active: { equals: true } }]
+      }
+    })
+    .catch(() => null);
+
+  return (
+    ((prices?.docs as Price[] | undefined) ?? []).find(
+      (price) => currencyCodeOf(price) === "KRW"
+    ) ?? null
+  );
+}
 
 type SearchParams = Promise<{ plan?: string }>;
 
@@ -38,11 +66,8 @@ export default async function CheckoutPage(props: {
     .catch(() => null)) as Plan | null;
   if (!plan || plan.state !== "active") redirect("/plans");
 
-  const price = plan.price?.[0] as Price | undefined;
-  const krw = price?.currencies?.find(
-    (c) => (c.currency as Currency)?.name === "KRW"
-  );
-  if (!krw) redirect("/plans");
+  const price = await findKrwCheckoutPrice(payload, plan.id);
+  if (!price) redirect("/plans");
 
   // Seat-cap check — refuse to start checkout for a sold-out plan.
   if (plan.seat_limit && plan.seat_limit > 0) {
@@ -65,7 +90,7 @@ export default async function CheckoutPage(props: {
     style: "currency",
     currency: "KRW",
     maximumFractionDigits: 0
-  }).format(krw.amount);
+  }).format(price.unit_amount);
 
   const validityCopy =
     plan.validity === "lifetime"
@@ -183,7 +208,11 @@ export default async function CheckoutPage(props: {
           </p>
         </div>
 
-        <CheckoutClient planId={plan.id} tierLabel={plan.tier_label} />
+        <CheckoutClient
+          planId={plan.id}
+          priceId={price.id}
+          tierLabel={plan.tier_label}
+        />
       </section>
     </RPage>
   );

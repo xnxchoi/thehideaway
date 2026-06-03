@@ -182,7 +182,11 @@ describe("POST /api/tickets/purchase", () => {
         collection: "ticket-orders",
         data: expect.objectContaining({
           purchaser_name: "Buyer Person",
-          sender_name: "Bank Sender"
+          sender_name: "Bank Sender",
+          quantity: 2,
+          unit_amount: 65000,
+          total_amount: 130000,
+          currency: "KRW"
         })
       })
     );

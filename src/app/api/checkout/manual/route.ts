@@ -3,7 +3,7 @@ import { headers as nextHeaders } from "next/headers";
 import { z } from "zod";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import type { Plan, Price } from "@/payload-types";
+import type { Currency, Plan, Price } from "@/payload-types";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { beginIdempotent } from "@/lib/api/idempotency";
@@ -23,6 +23,11 @@ const BodySchema = z.object({
   method: z.enum(["bank_transfer", "cash"]),
   note: z.string().max(500).optional()
 });
+
+function currencyCodeOf(price: Price): string | null {
+  const currency = price.currency;
+  return typeof currency === "string" ? currency : (currency?.name ?? null);
+}
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!isSameOrigin(req)) {
@@ -109,15 +114,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const priceList = await payload
       .find({
         collection: "prices",
-        depth: 0,
-        limit: 1,
+        depth: 1,
+        limit: 50,
         overrideAccess: true,
         where: {
           and: [{ plan: { equals: plan.id } }, { active: { equals: true } }]
         }
       })
       .catch(() => null);
-    price = (priceList?.docs?.[0] ?? null) as Price | null;
+    const activePrices = (priceList?.docs ?? []) as Price[];
+    price =
+      activePrices.find((candidate) => currencyCodeOf(candidate) === "KRW") ??
+      activePrices[0] ??
+      null;
     if (!price) {
       payload.logger.error?.(
         `[manual checkout] no active Price for plan ${plan.id}`
@@ -178,6 +187,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // catch the unique-violation and re-fetch the row the winner created.
   let created: { id: string };
   try {
+    const currencyId =
+      typeof price.currency === "string"
+        ? price.currency
+        : (price.currency as Currency | null | undefined)?.id;
+    if (!currencyId) {
+      payload.logger.error?.(
+        `[manual checkout] price ${price.id} has no currency id`
+      );
+      return NextResponse.json(
+        { ok: false, error: "price-currency-missing" },
+        { status: 500 }
+      );
+    }
     created = (await payload.create({
       collection: "subscriptions",
       overrideAccess: true,
@@ -185,6 +207,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         user: userId,
         plan: plan.id,
         price: price.id,
+        amount: price.unit_amount,
+        currency: currencyId,
         start_date: new Date().toISOString(),
         subscription_status: "pending",
         paid: false,

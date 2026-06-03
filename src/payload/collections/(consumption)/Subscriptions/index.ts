@@ -12,19 +12,15 @@ const subscriptionAccess = {
       user: { equals: req.user?.id }
     };
   },
-  update: ({ req }: { req: { user?: { id?: string } | null } }) => {
-    if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
-    return {
-      user: { equals: req.user?.id }
-    };
+  update: ({ req }: { req: { user?: { role?: string } | null } }) => {
+    const role = req.user?.role;
+    return role === "admin" || role === "editor";
   },
   delete: isAdmin
 };
 
-// Field-level admin lock. Required because the collection-level `update` rule
-// permits a user to PATCH their own row, and the role-sync + invoice-issuance
-// hooks act on `overrideAccess: true` once the field flips — without this
-// guard, a member can self-promote and self-issue an invoice.
+// Field-level admin lock. Required because editors may update operational
+// subscription metadata, while payment/lifecycle fields must remain admin-only.
 const adminOnlyField: FieldAccess = ({ req }) =>
   isAdmin({ req } as Parameters<typeof isAdmin>[0]);
 
@@ -49,7 +45,8 @@ export const Subscriptions: CollectionConfig = {
       relationTo: "users",
       required: true,
       index: true,
-      maxDepth: 0
+      maxDepth: 0,
+      access: { update: adminOnlyField }
     },
     {
       name: "plan",
@@ -57,7 +54,8 @@ export const Subscriptions: CollectionConfig = {
       relationTo: "plans",
       required: true,
       index: true,
-      hasMany: false
+      hasMany: false,
+      access: { update: adminOnlyField }
     },
     {
       name: "price",
@@ -70,6 +68,31 @@ export const Subscriptions: CollectionConfig = {
       admin: {
         description:
           "The specific Price (currency × amount × cadence) the subscriber transacted. Captured at checkout; never rewritten."
+      }
+    },
+    {
+      name: "amount",
+      type: "number",
+      required: true,
+      min: 0,
+      defaultValue: 0,
+      access: { update: adminOnlyField },
+      admin: {
+        description:
+          "Snapshot of the selected Price amount at checkout. Invoice issuance must use this, not mutable catalog prices."
+      }
+    },
+    {
+      name: "currency",
+      type: "relationship",
+      relationTo: "currency",
+      required: true,
+      index: true,
+      maxDepth: 0,
+      access: { update: adminOnlyField },
+      admin: {
+        description:
+          "Snapshot of the selected Price currency at checkout. Invoice issuance must use this, not mutable catalog prices."
       }
     },
     {
@@ -111,20 +134,16 @@ export const Subscriptions: CollectionConfig = {
       name: "validity_waived",
       type: "checkbox",
       defaultValue: false,
-      access: {
-        update: ({ req }) => {
-          const role = req.user?.role;
-          return role === "admin" || role === "editor";
-        }
-      },
+      access: { update: adminOnlyField },
       admin: {
         description:
-          "Editor flag — at the next quarterly check, extend the subscription 90 days for free (Member tier merit waiver)."
+          "Admin flag — at the next quarterly check, extend the subscription 90 days for free (Member tier merit waiver)."
       }
     },
     {
       name: "last_waiver_check",
       type: "date",
+      access: { update: adminOnlyField },
       admin: {
         readOnly: true,
         description:
@@ -137,6 +156,7 @@ export const Subscriptions: CollectionConfig = {
       required: true,
       defaultValue: "bank_transfer",
       options: ["bank_transfer", "cash"],
+      access: { update: adminOnlyField },
       admin: {
         description:
           "Method the user requested at checkout. Admin uses this to confirm the matching receipt."
@@ -145,6 +165,7 @@ export const Subscriptions: CollectionConfig = {
     {
       name: "request_note",
       type: "textarea",
+      access: { update: adminOnlyField },
       admin: {
         description: "Free-text note attached at checkout."
       }

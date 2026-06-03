@@ -1,10 +1,12 @@
 import type { Payload } from "payload";
+import { campaignCommitmentLock } from "@/lib/db/sequences";
 
 type AnyDoc = Record<string, any>;
 
 export async function markRequestOrderPaid(input: {
   payload: Payload;
   order: AnyDoc;
+  req?: Record<string, unknown>;
 }): Promise<void> {
   const campaignId =
     typeof input.order.campaign === "string"
@@ -12,10 +14,16 @@ export async function markRequestOrderPaid(input: {
       : input.order.campaign?.id;
   if (input.order.order_mode !== "request_to_order" || !campaignId) return;
 
+  const transactionID = input.req?.transactionID as string | number | undefined;
+  if (transactionID) {
+    await campaignCommitmentLock(input.payload, transactionID, campaignId);
+  }
+
   const campaign = (await input.payload.findByID({
     collection: "product-order-campaigns" as never,
     id: campaignId,
     depth: 0,
+    req: input.req as never,
     overrideAccess: true
   })) as AnyDoc;
 
@@ -26,6 +34,7 @@ export async function markRequestOrderPaid(input: {
   await input.payload.update({
     collection: "product-order-campaigns" as never,
     id: campaignId,
+    req: input.req as never,
     overrideAccess: true,
     data: {
       paid_commitments: paidCommitments,
@@ -36,6 +45,7 @@ export async function markRequestOrderPaid(input: {
   await input.payload.update({
     collection: "product-orders" as never,
     id: input.order.id,
+    req: input.req as never,
     overrideAccess: true,
     data: {
       status: thresholdMet ? "confirmed" : "committed",
@@ -49,6 +59,7 @@ export async function markRequestOrderPaid(input: {
     collection: "product-orders" as never,
     depth: 0,
     limit: 200,
+    req: input.req as never,
     overrideAccess: true,
     where: {
       and: [
@@ -59,11 +70,13 @@ export async function markRequestOrderPaid(input: {
     } as never
   });
 
+  const committedOrderDocs = committedOrders.docs as Array<{ id: string }>;
   await Promise.all(
-    committedOrders.docs.map((order) =>
+    committedOrderDocs.map((order) =>
       input.payload.update({
         collection: "product-orders" as never,
         id: String(order.id),
+        req: input.req as never,
         overrideAccess: true,
         data: {
           status: "confirmed",

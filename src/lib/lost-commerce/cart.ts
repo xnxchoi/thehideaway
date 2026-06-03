@@ -35,7 +35,11 @@ function readVariants(product: AnyDoc): AnyDoc[] {
 
 function resolveVariant(product: AnyDoc, variantId?: string): AnyDoc | null {
   if (!variantId) return null;
-  return readVariants(product).find((variant) => variant?.id === variantId) ?? null;
+  const variant =
+    readVariants(product).find((candidate) => candidate?.id === variantId) ??
+    null;
+  if (!variant) throw new Error("variant-not-found");
+  return variant;
 }
 
 function assertModeAllowed(product: AnyDoc, mode: LostOrderMode, user: AnyDoc) {
@@ -64,10 +68,50 @@ function resolveUnitAmount(product: AnyDoc, variant: AnyDoc | null, mode: LostOr
   return Number(product.unit_amount ?? 0);
 }
 
+function numericInventory(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function assertStandardAvailability(
+  product: AnyDoc,
+  variant: AnyDoc | null,
+  quantity: number
+) {
+  const stockState = String(variant?.stock_state ?? product.stock_state ?? "in_stock");
+  if (stockState === "out_of_stock") throw new Error("out-of-stock");
+  if (stockState === "on_request") throw new Error("standard-unavailable");
+
+  const inventory =
+    numericInventory(variant?.inventory) ?? numericInventory(product.inventory);
+  if (inventory !== null && quantity > inventory) {
+    throw new Error("insufficient-inventory");
+  }
+}
+
+function aggregateCheckoutLines(lines: LostCartLineInput[]): LostCartLineInput[] {
+  const merged = new Map<string, LostCartLineInput>();
+  for (const line of lines) {
+    const key = [
+      line.productId,
+      line.variantId ?? "",
+      line.mode,
+      line.campaignId ?? ""
+    ].join(":");
+    const existing = merged.get(key);
+    if (existing) {
+      existing.quantity += line.quantity;
+      continue;
+    }
+    merged.set(key, { ...line });
+  }
+  return [...merged.values()];
+}
+
 async function assertCampaign(
   payload: Payload,
   line: LostCartLineInput,
-  product: AnyDoc
+  product: AnyDoc,
+  req?: Record<string, unknown>
 ): Promise<AnyDoc | null> {
   if (line.mode !== "request_to_order") return null;
   if (!line.campaignId) throw new Error("campaign-required");
@@ -76,6 +120,7 @@ async function assertCampaign(
     collection: "product-order-campaigns" as never,
     id: line.campaignId,
     depth: 0,
+    req: req as never,
     overrideAccess: true
   })) as AnyDoc;
 
@@ -110,6 +155,7 @@ async function assertCampaign(
 export async function resolveLostCheckout(input: {
   payload: Payload;
   lines: LostCartLineInput[];
+  req?: Record<string, unknown>;
   user: AnyDoc;
 }): Promise<LostResolvedCheckout> {
   if (!Array.isArray(input.lines) || input.lines.length === 0) {
@@ -121,7 +167,7 @@ export async function resolveLostCheckout(input: {
   let campaignId: string | undefined;
   let currency: LostCurrency | null = null;
 
-  for (const line of input.lines) {
+  for (const line of aggregateCheckoutLines(input.lines)) {
     const quantity = normalizeQuantity(line.quantity);
     if (mode && mode !== line.mode) throw new Error("mixed-order-modes");
     mode = line.mode;
@@ -134,18 +180,22 @@ export async function resolveLostCheckout(input: {
       collection: "products" as never,
       id: line.productId,
       depth: 0,
+      req: input.req as never,
       overrideAccess: true
     })) as AnyDoc;
 
     if (!product?.active) throw new Error("product-unavailable");
     assertModeAllowed(product, line.mode, input.user);
-    await assertCampaign(input.payload, line, product);
+    await assertCampaign(input.payload, line, product, input.req);
 
     const min = Number(product.min_order_quantity ?? 1);
     const max = Number(product.max_order_quantity ?? 1);
     if (quantity < min || quantity > max) throw new Error("quantity-out-of-range");
 
     const variant = resolveVariant(product, line.variantId);
+    if (line.mode === "standard_purchase") {
+      assertStandardAvailability(product, variant, quantity);
+    }
     const unitAmount = resolveUnitAmount(product, variant, line.mode);
     const lineCurrency = (product.currency ?? "KRW") as LostCurrency;
     if (currency && currency !== lineCurrency) throw new Error("mixed-currency");

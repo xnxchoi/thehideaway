@@ -11,6 +11,10 @@ type EventLite = {
   name?: string | null;
 };
 
+type TicketLite = {
+  id: string;
+};
+
 const idOf = (rel: unknown): string | null => {
   if (typeof rel === "string") return rel;
   if (rel && typeof rel === "object" && "id" in rel) {
@@ -46,13 +50,15 @@ export const onOrderPaid: CollectionAfterChangeHook = async ({
   previousDoc,
   req
 }) => {
+  const current = doc as OrderDoc;
+  const prev = previousDoc as OrderDoc | undefined;
+
+  const becamePaid = current.paid === true && prev?.paid !== true;
+  if (!becamePaid) return doc;
+
+  await activateSiblingTickets({ orderId: current.id, req });
+
   try {
-    const current = doc as OrderDoc;
-    const prev = previousDoc as OrderDoc | undefined;
-
-    const becamePaid = current.paid === true && prev?.paid !== true;
-    if (!becamePaid) return doc;
-
     const purchaserId = idOf(current.purchaser);
     if (!purchaserId) {
       req.payload.logger?.warn?.(
@@ -99,3 +105,38 @@ export const onOrderPaid: CollectionAfterChangeHook = async ({
     return doc;
   }
 };
+
+async function activateSiblingTickets({
+  orderId,
+  req
+}: {
+  orderId: string;
+  req: Parameters<CollectionAfterChangeHook>[0]["req"];
+}) {
+  const tickets = await req.payload.find({
+    collection: "tickets",
+    where: {
+      and: [
+        { order: { equals: orderId } },
+        { paid: { not_equals: true } }
+      ]
+    },
+    limit: 200,
+    depth: 0,
+    overrideAccess: true
+  });
+
+  await Promise.all(
+    ((tickets?.docs ?? []) as TicketLite[]).map((ticket) =>
+      req.payload.update({
+        collection: "tickets",
+        id: ticket.id,
+        overrideAccess: true,
+        data: {
+          paid: true,
+          status: "active"
+        } as never
+      })
+    )
+  );
+}
