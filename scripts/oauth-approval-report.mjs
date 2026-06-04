@@ -16,6 +16,12 @@ const callbackReportPath = resolve(
   projectRoot,
   "readmes/oauth-approval/callbacks.md"
 );
+const authProbeDelayMs = Number(
+  process.env.OAUTH_REPORT_AUTH_PROBE_DELAY_MS || 7500
+);
+const rateLimitRetryDelayMs = Number(
+  process.env.OAUTH_REPORT_RATE_LIMIT_RETRY_MS || 70000
+);
 
 const screenshotTargets = [
   {
@@ -79,6 +85,12 @@ function markdownFence(value) {
   return `\`\`\`\n${value || "(not returned)"}\n\`\`\``;
 }
 
+function wait(ms) {
+  return new Promise((resolveWait) => {
+    setTimeout(resolveWait, ms);
+  });
+}
+
 async function captureScreenshots(page) {
   await mkdir(screenshotDir, { recursive: true });
 
@@ -101,12 +113,7 @@ async function readProviderRedirects(request) {
   const rows = [];
 
   for (const provider of providers) {
-    const response = await request.post(absoluteURL(provider.endpoint), {
-      data: provider.body,
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    const response = await requestProviderRedirect(request, provider);
     const status = response.status();
     let data = null;
     try {
@@ -132,9 +139,38 @@ async function readProviderRedirects(request) {
       redirectURI,
       error: authURL ? "" : JSON.stringify(data)
     });
+
+    if (authProbeDelayMs > 0) {
+      await wait(authProbeDelayMs);
+    }
   }
 
   return rows;
+}
+
+async function requestProviderRedirect(request, provider) {
+  const response = await postProviderRedirect(request, provider);
+  if (response.status() !== 429) {
+    return response;
+  }
+
+  console.warn(
+    `rate limited while probing ${provider.id}; retrying in ${rateLimitRetryDelayMs}ms`
+  );
+  await wait(rateLimitRetryDelayMs);
+  return postProviderRedirect(request, provider);
+}
+
+async function postProviderRedirect(request, provider) {
+  return request.post(absoluteURL(provider.endpoint), {
+    data: provider.body,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Origin: baseURL.origin,
+      Referer: absoluteURL("/sign-in")
+    }
+  });
 }
 
 async function writeCallbackReport(rows) {
@@ -177,8 +213,8 @@ const browser = await chromium.launch();
 try {
   const context = await browser.newContext();
   const page = await context.newPage();
-  await captureScreenshots(page);
   const redirects = await readProviderRedirects(context.request);
+  await captureScreenshots(page);
   await writeCallbackReport(redirects);
 } finally {
   await browser.close();
