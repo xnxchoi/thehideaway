@@ -20,26 +20,30 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       ADD COLUMN IF NOT EXISTS "total_amount" numeric,
       ADD COLUMN IF NOT EXISTS "currency" "enum_ticket_orders_currency";
 
+    WITH ticket_order_snapshots AS (
+      SELECT
+        o."id",
+        greatest(1, count(t."order_id")::numeric) AS "quantity",
+        coalesce(e."ticket_price", 0) AS "unit_amount"
+      FROM "ticket_orders" o
+      JOIN "events" e ON e."id" = o."event_id"
+      LEFT JOIN "tickets" t ON t."order_id" = o."id"
+      WHERE (
+        o."quantity" IS NULL
+        OR o."unit_amount" IS NULL
+        OR o."total_amount" IS NULL
+        OR o."currency" IS NULL
+      )
+      GROUP BY o."id", e."ticket_price"
+    )
     UPDATE "ticket_orders" o
       SET
-        "quantity" = greatest(1, coalesce(t.ticket_count, 0)),
-        "unit_amount" = coalesce(e."ticket_price", 0),
-        "total_amount" = coalesce(e."ticket_price", 0) * greatest(1, coalesce(t.ticket_count, 0)),
+        "quantity" = s."quantity",
+        "unit_amount" = s."unit_amount",
+        "total_amount" = s."unit_amount" * s."quantity",
         "currency" = 'KRW'
-      FROM "events" e
-      LEFT JOIN (
-        SELECT "order_id", count(*)::numeric AS ticket_count
-        FROM "tickets"
-        WHERE "order_id" IS NOT NULL
-        GROUP BY "order_id"
-      ) t ON t."order_id" = o."id"
-      WHERE o."event_id" = e."id"
-        AND (
-          o."quantity" IS NULL
-          OR o."unit_amount" IS NULL
-          OR o."total_amount" IS NULL
-          OR o."currency" IS NULL
-        );
+      FROM ticket_order_snapshots s
+      WHERE o."id" = s."id";
 
     UPDATE "ticket_orders"
       SET
