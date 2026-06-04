@@ -33,7 +33,7 @@ RUN apk add --no-cache libc6-compat && \
 # The migrate runner uses Payload CLI + tsx only — none of the native
 # packages (sharp, @swc/core, @parcel/watcher, esbuild, unrs-resolver)
 # are exercised here, so skipping their build scripts is safe.
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Source files needed by payload.config.ts and the migration files.
