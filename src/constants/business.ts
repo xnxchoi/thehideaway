@@ -1,8 +1,9 @@
 /**
  * Business identification — required by 전자상거래법 §13.
  *
- * Values marked TBD must be filled in before the PG (PortOne / TossPayments)
- * goes live. The 통신판매업 신고번호 is obtained from the merchant's 관할 구청.
+ * Values with pending fallbacks must be replaced with final company details
+ * before PG (PortOne / TossPayments) go-live. The 통신판매업 신고번호 is obtained
+ * from the merchant's 관할 구청.
  *
  * **Locale-bearing display values live in `messages/*.json`, not here.**
  * The `*Ko` / `*En` parallel fields below are scheduled for removal — they
@@ -54,11 +55,14 @@ const env = (key: string, fallback: string): string =>
     : fallback;
 
 export const BUSINESS: BusinessInfo = {
-  registrationNumber: env("NEXT_PUBLIC_BIZ_REG_NO", "TBD"),
+  registrationNumber: env("NEXT_PUBLIC_BIZ_REG_NO", "Registration pending"),
   mailOrderRegistrationNumber: env("NEXT_PUBLIC_BIZ_MAIL_ORDER_NO", ""),
-  phone: env("NEXT_PUBLIC_BIZ_PHONE", "TBD"),
+  phone: env("NEXT_PUBLIC_BIZ_PHONE", "Email support"),
   email: env("NEXT_PUBLIC_BIZ_EMAIL", "concierge@hideawayseoul.com"),
-  privacyOfficerName: env("NEXT_PUBLIC_BIZ_PRIVACY_OFFICER", "TBD"),
+  privacyOfficerName: env(
+    "NEXT_PUBLIC_BIZ_PRIVACY_OFFICER",
+    "Restored Projects Privacy Desk"
+  ),
   privacyOfficerEmail: env(
     "NEXT_PUBLIC_BIZ_PRIVACY_EMAIL",
     "concierge@hideawayseoul.com"
@@ -69,8 +73,8 @@ export const BUSINESS: BusinessInfo = {
   // Deprecated locale-pair fields (see interface JSDoc).
   legalName: env("NEXT_PUBLIC_BIZ_NAME", "Restored Projects"),
   legalNameKo: env("NEXT_PUBLIC_BIZ_NAME_KO", "Restored Projects"),
-  representative: env("NEXT_PUBLIC_BIZ_REP", "TBD"),
-  representativeKo: env("NEXT_PUBLIC_BIZ_REP_KO", "TBD"),
+  representative: env("NEXT_PUBLIC_BIZ_REP", "Pending appointment"),
+  representativeKo: env("NEXT_PUBLIC_BIZ_REP_KO", "확인 중"),
   addressEn: env(
     "NEXT_PUBLIC_BIZ_ADDR_EN",
     "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea"
