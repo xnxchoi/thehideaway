@@ -27,32 +27,38 @@ const screenshotTargets = [
   {
     name: "04-homepage-prod.png",
     path: "/",
-    viewport: { width: 1440, height: 900 }
+    viewport: { width: 1440, height: 900 },
+    waitForText: "The Hideaway"
   },
   {
     name: "01-sign-in-page-prod.png",
     path: "/sign-in",
-    viewport: { width: 1440, height: 900 }
+    viewport: { width: 1440, height: 900 },
+    waitForText: "Sign in with Kakao"
   },
   {
     name: "01b-sign-in-mobile-prod.png",
     path: "/sign-in",
-    viewport: { width: 390, height: 844 }
+    viewport: { width: 390, height: 844 },
+    waitForText: "Sign in with Kakao"
   },
   {
     name: "05-sign-up-page-prod.png",
     path: "/sign-up",
-    viewport: { width: 1440, height: 900 }
+    viewport: { width: 1440, height: 900 },
+    waitForText: "Before you sign up"
   },
   {
     name: "02-privacy-page-prod.png",
     path: "/privacy",
-    viewport: { width: 1440, height: 900 }
+    viewport: { width: 1440, height: 900 },
+    waitForText: "Privacy Policy"
   },
   {
     name: "03-terms-page-prod.png",
     path: "/terms",
-    viewport: { width: 1440, height: 900 }
+    viewport: { width: 1440, height: 900 },
+    waitForText: "Terms of Service"
   }
 ];
 
@@ -91,21 +97,34 @@ function wait(ms) {
   });
 }
 
-async function captureScreenshots(page) {
+async function captureScreenshots(context) {
   await mkdir(screenshotDir, { recursive: true });
 
   for (const target of screenshotTargets) {
+    const page = await context.newPage();
     await page.setViewportSize(target.viewport);
     await page.emulateMedia({ colorScheme: "dark" });
-    await page.goto(absoluteURL(target.path), {
-      waitUntil: "networkidle",
-      timeout: 45000
-    });
-    await page.screenshot({
-      path: resolve(screenshotDir, target.name),
-      fullPage: true
-    });
-    console.log(`captured ${target.name}`);
+    try {
+      await page.goto(absoluteURL(target.path), {
+        waitUntil: "domcontentloaded",
+        timeout: 45000
+      });
+      if (target.waitForText) {
+        await page.waitForFunction(
+          (expectedText) => document.body.innerText.includes(expectedText),
+          target.waitForText,
+          { timeout: 30000 }
+        );
+      }
+      await page.waitForTimeout(1500);
+      await page.screenshot({
+        path: resolve(screenshotDir, target.name),
+        fullPage: true
+      });
+      console.log(`captured ${target.name}`);
+    } finally {
+      await page.close();
+    }
   }
 }
 
@@ -212,9 +231,8 @@ async function writeCallbackReport(rows) {
 const browser = await chromium.launch();
 try {
   const context = await browser.newContext();
-  const page = await context.newPage();
   const redirects = await readProviderRedirects(context.request);
-  await captureScreenshots(page);
+  await captureScreenshots(context);
   await writeCallbackReport(redirects);
 } finally {
   await browser.close();
