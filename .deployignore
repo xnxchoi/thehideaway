@@ -55,6 +55,8 @@ AGENTS.md
 CLAUDE.md
 vitest.config.ts
 index.d.ts
+.env.local.example
+.env.example
 .env
 tsconfig.json
 .prettierrc
