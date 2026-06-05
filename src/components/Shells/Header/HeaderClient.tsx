@@ -15,11 +15,15 @@ import { useIsMobile } from "src/providers/MiddleMan";
 import { useCursor, useFrameState, useRPStore } from "src/providers/RP_Pro";
 import { useTheme } from "src/providers/Theme";
 import { useVoyageur } from "src/stores/Routing/RP_Voyageur";
-import { delay, lerp } from "src/utilities/rp_utils";
+import { delay } from "src/utilities/rp_utils";
 import { useWindowResize } from "src/utilities/use_window_resize";
 import { SignedIn } from "@/lib/external/betterauth-ui/src";
 import { useLenis } from "lenis/react";
 import { animate, AnimationPlaybackControls, cancelFrame, frame } from "motion";
+import {
+  getHeaderScrollProgress,
+  getNextHeaderScrubPosition
+} from "./headerMotion";
 import {
   AnimatePresence,
   HTMLMotionProps,
@@ -169,7 +173,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const tweenNumber = useRef(0);
 
   const getTweenPercentBasedOnScroll = useCallback(
-    (lv: number) => Math.min(1, Math.max(0, lv / 350)),
+    (lv: number) => getHeaderScrollProgress(lv),
     []
   );
 
@@ -414,17 +418,16 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
           // animate-to-previous: lerp scrubPosition back toward current scroll value
           callback?.();
 
-          const lerp = () => {
+          const stepScrubPosition = () => {
             scrubPosition.set(
-              lerp(
-                scrubPosition.get(),
-                getTweenPercentBasedOnScroll(tweenNumber.current),
-                0.08
-              )
+              getNextHeaderScrubPosition({
+                currentScrub: scrubPosition.get(),
+                latestScroll: tweenNumber.current
+              })
             );
           };
-          frame.update(lerp, true);
-          setTimeout(() => cancelFrame(lerp), 1000);
+          frame.update(stepScrubPosition, true);
+          setTimeout(() => cancelFrame(stepScrubPosition), 1000);
           return;
         }
       }

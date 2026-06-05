@@ -1,5 +1,5 @@
 import { RPage } from "@/components/UX/Transition";
-import { AuthCard } from "@/lib/external/betterauth-ui/src";
+import { AuthCard } from "@/lib/external/betterauth-ui/src/components/auth/auth-card";
 
 export default function Page() {
   return (

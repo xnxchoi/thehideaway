@@ -25,7 +25,7 @@ pnpm add @payload-bites/image-search
 
 | Name             | CORS URL                    | Description                                    |
 | ---------------- | --------------------------- | ---------------------------------------------- |
-| API_KEY_UNSPLASH | https://images.unsplash.com | The key you configured to use the Unsplash API |
+| UNSPLASH_ACCESS_KEY | https://images.unsplash.com | The key you configured to use the Unsplash API |
 | API_KEY_PEXELS   | https://images.pexels.com   | The key you configured to use the Pexels API   |
 | API_KEY_PIXABAY  | https://pixabay.com         | The key you configured to use the Pixabay API  |
 

@@ -56,7 +56,7 @@ whether you also rewrite git history (section 3).
 | Variable                | Where to rotate                                                                                     |
 | ----------------------- | --------------------------------------------------------------------------------------------------- |
 | `BREVO_SMTP_PASS`       | Brevo dashboard → Settings → SMTP & API → SMTP → regenerate.                                        |
-| `API_KEY_UNSPLASH`      | Unsplash → Your Applications → app → ⋮ → Regenerate access key.                                     |
+| `UNSPLASH_ACCESS_KEY`      | Unsplash → Your Applications → app → ⋮ → Regenerate access key.                                     |
 | `HOLIDAY_API_KEY`       | data.go.kr → My Page → API → Re-issue.                                                              |
 | `EXCHANGE_RATE_API_KEY` | koreaexim.go.kr → My Page → API key reset. (Free tier; low impact.)                                 |
 | `MAPBOX_API_KEY`        | Mapbox → Account → Access tokens → rotate. Restrict the new token to `hideawayseoul.com` referrers. |

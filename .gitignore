@@ -23,8 +23,6 @@
 .env.test.local
 .env.production
 .env.production.local
-!.env.example
-!.env.local.example
 !.env.production.template
 !.env.production.enc
 

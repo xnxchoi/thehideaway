@@ -458,12 +458,11 @@ const schema = z.object({
   // ── Plugins — image search providers ────────────────────────────────────
   UNSPLASH_ACCESS_KEY: z
     .string()
-    .optional()
     .describe(
       d(
         "optional",
         "plugins",
-        "Unsplash provider key for the image-search plugin.",
+        "Unsplash access key, mandatory since the site technically relies on unsplash to maintain a image-richlayout",
         "https://unsplash.com/developers"
       )
     ),
@@ -477,17 +476,6 @@ const schema = z.object({
         "Default Unsplash collection ID used by image-search."
       )
     ),
-  API_KEY_UNSPLASH: z
-    .string()
-    .optional()
-    .describe(
-      d(
-        "optional",
-        "plugins",
-        "Image-search provider key read dynamically as API_KEY_${provider.key} by the plugin's Provider class."
-      )
-    ),
-
   // ── Plugins — audio (Radio collection) ──────────────────────────────────
   SPOTIFY_CLIENT_ID: z
     .string()
