@@ -167,13 +167,14 @@ jobs:
           . ./.env.production
           set +a
           export DATABASE_URI=postgres://postgres:postgres@localhost:5432/theestate
+          export CI=true
+          export NODE_ENV=production
+          echo "CI=${CI} NODE_ENV=${NODE_ENV}"
           node -v
           pnpm migrate:fresh --force-accept-warning
           schema_ready="$(PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -tAc "select to_regclass('public.tags') is not null")"
           echo "tags table present: ${schema_ready}"
-          if [[ "${schema_ready}" != "t" ]]; then
-            echo "::warning::tags table was not visible after migrate:fresh; continuing to Next build for route-level schema smoke"
-          fi
+          test "${schema_ready}" = "t"
 
       - name: Build Next.js (standalone)
         run: pnpm build
