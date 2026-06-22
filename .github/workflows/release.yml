@@ -167,9 +167,7 @@ jobs:
           . ./.env.production
           set +a
           export DATABASE_URI=postgres://postgres:postgres@localhost:5432/theestate
-          pnpm migrate:fresh
           pnpm migrate
-          PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -v ON_ERROR_STOP=1 -c "select to_regclass('public.tags') as tags_table;"
 
       - name: Build Next.js (standalone)
         run: pnpm build
@@ -177,10 +175,6 @@ jobs:
           # Next.js loads .env.production automatically when NODE_ENV=production
           # OR when invoked as `next build`. Set explicitly for clarity.
           NODE_ENV: production
-          # Override the prod DATABASE_URI (which points at the compose
-          # hostname `postgres:5432`) so the build talks to the CI service.
-          # All other prod env values from .env.production still apply.
-          DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
 
       - name: Standalone preflight
         run: |
