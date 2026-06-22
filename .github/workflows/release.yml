@@ -168,13 +168,16 @@ jobs:
           set +a
           export DATABASE_URI=postgres://postgres:postgres@localhost:5432/theestate
           pnpm migrate
+          [[ "$(PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -tAc "select case when to_regclass('public.tags') is null then 'missing' else 'ok' end")" == "ok" ]]
 
       - name: Build Next.js (standalone)
         run: pnpm build
         env:
           # Next.js loads .env.production automatically when NODE_ENV=production
           # OR when invoked as `next build`. Set explicitly for clarity.
-          NODE_ENV: production
+        NODE_ENV: production
+        # Build-time static queries run against the migrated CI database.
+        DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
 
       - name: Standalone preflight
         run: |
