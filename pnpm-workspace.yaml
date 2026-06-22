@@ -8,9 +8,6 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
-  '@clerk/shared': true
-  '@tailwindcss/oxide': true
-  browser-tabs-lock: true
 
 publicHoistPattern:
   - '*eslint*'

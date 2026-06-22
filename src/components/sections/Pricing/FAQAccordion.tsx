@@ -1,19 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useInView } from "react-intersection-observer";
 import s from "./Pricing.module.scss";
 
-const FAQ_IDS = [
-  "payment",
-  "cancel",
-  "refund",
-  "invoice",
-  "cofounder"
-] as const;
+type FAQ = { q: string; a: string };
+
+const FAQS: FAQ[] = [
+  {
+    q: "How do I pay?",
+    a: "Bank transfer is the primary method — pick it at checkout and we'll send instructions; your subscription activates once we confirm receipt. Cash is supported on request. Cards are not yet wired."
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Patron is a one-time purchase — there is nothing to cancel. Resident is yearly; cancel from your account before renewal. No retention calls, no friction."
+  },
+  {
+    q: "Refunds?",
+    a: "Within 7 days of first charge, no questions. After that, prorated for technical issues only."
+  },
+  {
+    q: "Korean tax invoice (세금계산서)?",
+    a: "Available on request for Patron memberships. Email concierge@hideawayseoul.com after subscribing."
+  },
+  {
+    q: "What is Cofounder?",
+    a: "By application. Don't ask about it on this page."
+  }
+];
 
 const itemVariants = {
   hidden: { opacity: 0, y: 8 },
@@ -48,23 +64,22 @@ const itemVariants = {
 export function FAQAccordion() {
   const [open, setOpen] = useState<number | null>(0);
   const { ref, inView } = useInView({ triggerOnce: true, rootMargin: "-10%" });
-  const t = useTranslations("Plans.faq");
 
   return (
     <section ref={ref} aria-labelledby="faq" className={s.faqShell}>
       <header className={s.faqHeader}>
-        <p className={`${s.eyebrow} ${s.faqEyebrow}`}>{t("eyebrow")}</p>
+        <p className={`${s.eyebrow} ${s.faqEyebrow}`}>Questions</p>
         <h2 id="faq" className={s.faqTitle}>
-          {t("title")}
+          Things people ask
         </h2>
       </header>
       <div>
-        {FAQ_IDS.map((id, i) => {
+        {FAQS.map((f, i) => {
           const expanded = open === i;
           const answerId = `faq-answer-${i}`;
           return (
             <m.div
-              key={id}
+              key={f.q}
               className={s.faqItem}
               initial="hidden"
               animate={inView ? "visible" : "hidden"}
@@ -82,7 +97,7 @@ export function FAQAccordion() {
                 aria-controls={expanded ? answerId : undefined}
                 onClick={() => setOpen(expanded ? null : i)}
               >
-                <span>{t(`items.${id}.q`)}</span>
+                <span>{f.q}</span>
                 <m.span
                   className={s.faqIcon}
                   aria-hidden
@@ -113,7 +128,7 @@ export function FAQAccordion() {
                     }}
                     style={{ overflow: "hidden" }}
                   >
-                    <div className={s.faqAnswerInner}>{t(`items.${id}.a`)}</div>
+                    <div className={s.faqAnswerInner}>{f.a}</div>
                   </m.div>
                 ) : null}
               </AnimatePresence>

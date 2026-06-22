@@ -3,6 +3,7 @@
 import { setLocale } from "src/lib/actions/locale";
 import { useLocale } from "next-intl";
 import { useTransition } from "react";
+import { Button } from "@/components/core/Button";
 
 interface LocaleOption {
   value: "en" | "ko";
@@ -33,7 +34,7 @@ export function LocaleSwitch() {
                 /
               </span>
             ) : null}
-            <button
+            <Button
               type="button"
               disabled={isPending || isActive}
               aria-pressed={isActive}
@@ -49,7 +50,7 @@ export function LocaleSwitch() {
               }
             >
               {option.label}
-            </button>
+            </Button>
           </span>
         );
       })}

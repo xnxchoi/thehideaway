@@ -8,8 +8,6 @@ export type Benefit = {
 
 export type BenefitListProps = {
   benefits: Benefit[];
-  ariaLabel: string;
-  patronTierLabel: string;
   /** Show the legend row at the bottom. Defaults to true if any benefit is patronOnly. */
   showLegend?: boolean;
 };
@@ -25,17 +23,12 @@ export type BenefitListProps = {
  * to Plan features and feed `benefits` directly from there; today the parent
  * (TheRoom) derives it from a regex against the label text.
  */
-export function BenefitList({
-  benefits,
-  ariaLabel,
-  patronTierLabel,
-  showLegend
-}: BenefitListProps) {
+export function BenefitList({ benefits, showLegend }: BenefitListProps) {
   const hasPatronRow = benefits.some((b) => b.patronOnly);
   const legendVisible = showLegend ?? hasPatronRow;
 
   return (
-    <ul className={s.benefitList} aria-label={ariaLabel}>
+    <ul className={s.benefitList} aria-label="What's included">
       {benefits.map((b, i) => (
         <li
           // Label is the natural identity; index is a tiebreaker for the
@@ -51,7 +44,7 @@ export function BenefitList({
           <span className={s.benefitLabel}>{b.label}</span>
           {b.patronOnly ? (
             <span className={s.benefitTier} aria-hidden>
-              {patronTierLabel}
+              PATRON
             </span>
           ) : null}
         </li>
@@ -64,7 +57,7 @@ export function BenefitList({
         // tier" is the announceable text.
         <li className={s.benefitLegend}>
           <span aria-hidden>◐</span>
-          <span>{patronTierLabel}</span>
+          <span>Patron tier</span>
         </li>
       ) : null}
     </ul>

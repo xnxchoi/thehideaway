@@ -1,4 +1,5 @@
 import { Header } from "../../components/Shells/Header/Component";
+import { AnimatedFavicon } from "@/components/core/AnimatedFavicon";
 import { Main } from "@/components/core/Main";
 import { Toaster } from "@/components/ui/sonner";
 import { ContentMask } from "../../components/Shells/ContentMask";
@@ -89,6 +90,7 @@ export default async function RootLayout({
                 <HideawayFMProvider>
                   {/* Server-rendered components */}
                   <EscapeInAppBrowser />
+                  <AnimatedFavicon />
                   <Toaster />
                   <LivePreviewListener />
                   <Header />

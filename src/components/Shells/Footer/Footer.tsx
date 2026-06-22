@@ -47,7 +47,7 @@ function Colophon({ fields, lang }: { fields: ColophonField[]; lang: string }) {
  * Single-source-via-next-intl footer.
  *
  *   - Every locale-bearing string flows through `t()` from the
- *     `LegalFooter` namespace in `messages/*.json`. There are no
+ *     `Footer` namespace in `messages/*.json`. There are no
  *     `isKo ? ... : ...` ternaries and no reads from `BUSINESS.*Ko` /
  *     `BUSINESS.addressEn` parallel fields. If a label needs to vary by
  *     locale, the variation lives in messages — full stop.
@@ -62,7 +62,7 @@ function Colophon({ fields, lang }: { fields: ColophonField[]; lang: string }) {
  */
 export async function Footer() {
   const locale = await getLocale();
-  const t = await getTranslations("LegalFooter");
+  const t = await getTranslations("Footer");
   const year = new Date().getFullYear();
 
   const colophonFields: ColophonField[] = [
@@ -111,12 +111,34 @@ export async function Footer() {
       className="relative z-10 mt-32 border-t border-border/15 bg-background"
     >
       <div className="mx-auto max-w-2xl px-6 py-20 text-center sm:px-10 xl:py-28">
+        <div
+          aria-hidden
+          className="mx-auto my-12 flex items-center justify-center gap-4 xl:my-16"
+        >
+          <span className="h-px w-12 bg-border/40" />
+          <span className="text-small leading-none text-foreground/40">◇</span>
+          <span className="h-px w-12 bg-border/40" />
+        </div>
+        {/* Bezel-strip motif — three lanes of vertical ticks reading as a
+            rotating focus ring viewed edge-on. Crowns the wordmark below. */}
+        <div className="my-15 flex justify-center">
+          <TickerCrown />
+        </div>
+        {/* Brand sign-off — small, single instance, editorial serif */}
+        <div className="my-15">
+          <p className="font-serif text-2xl font-light tracking-tight text-foreground xl:text-3xl">
+            The Hideaway.
+          </p>
+        </div>
+        <div className="mb-15">
+          <LocaleSwitch />
+        </div>
         {/* Nav strip */}
         <nav aria-label={t("navAria")}>
           <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[14px] font-light tracking-tight">
             {navLinks.map((item, index) => (
               <li key={item.href} className="flex items-center gap-x-5">
-                {index > 0 ? (
+                {index > 0 && index < navLinks.length ? (
                   <span aria-hidden className="text-foreground/30">
                     ·
                   </span>
@@ -133,18 +155,22 @@ export async function Footer() {
         </nav>
 
         {/* Contact line */}
-        <p className="mt-6 text-[13px] text-foreground/80">
-          <a
-            href={`mailto:${BUSINESS.email}`}
-            className="underline-offset-[0.3em] transition-opacity hover:underline hover:opacity-80"
-          >
-            {BUSINESS.email}
-          </a>
+        <div className="mt-6 flex w-full text-[13px] text-foreground/80">
+          <div className="flex grow">
+            <a
+              href={`mailto:${BUSINESS.email}`}
+              className="underline-offset-[0.3em] transition-opacity hover:underline hover:opacity-80"
+            >
+              {BUSINESS.email}
+            </a>
+          </div>
           <span aria-hidden className="mx-3 text-foreground/30">
             ·
           </span>
-          <span className="text-foreground/70">{t("serviceHours")}</span>
-        </p>
+          <div className="flex grow text-left text-wrap wrap-break-word text-foreground/70">
+            {t("serviceHours")}
+          </div>
+        </div>
 
         {/* Ornament — classical editorial divider; single glyph between two
             hairlines. Replaces a plain UI rule with a typographic mark. */}
@@ -153,7 +179,7 @@ export async function Footer() {
           className="mx-auto my-12 flex items-center justify-center gap-4 xl:my-16"
         >
           <span className="h-px w-12 bg-border/40" />
-          <span className="text-[10px] leading-none text-foreground/40">◇</span>
+          <span className="text-small leading-none text-foreground/40">◇</span>
           <span className="h-px w-12 bg-border/40" />
         </div>
 
@@ -172,20 +198,6 @@ export async function Footer() {
           <span className="h-px w-12 bg-border/40" />
         </div>
 
-        {/* Bezel-strip motif — three lanes of vertical ticks reading as a
-            rotating focus ring viewed edge-on. Crowns the wordmark below. */}
-        <div className="mb-3 flex justify-center">
-          <TickerCrown />
-        </div>
-
-        {/* Brand sign-off — small, single instance, editorial serif */}
-        <p
-          className="text-2xl font-light tracking-tight text-foreground xl:text-3xl"
-          style={{ fontFamily: "var(--font-siegfried), serif" }}
-        >
-          The Hideaway
-        </p>
-
         {/* Copyright + locale strip */}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] text-foreground/55">
           <span>© {year}</span>
@@ -193,10 +205,6 @@ export async function Footer() {
             ·
           </span>
           <span lang={locale}>{t("businessName")}</span>
-          <span aria-hidden className="text-foreground/30">
-            ·
-          </span>
-          <LocaleSwitch />
         </div>
       </div>
     </footer>

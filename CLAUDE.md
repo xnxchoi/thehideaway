@@ -267,7 +267,7 @@ This means three things, all enforced:
    files like `src/constants/business.ts` — if a value varies by
    locale, it goes in `messages/`. The `*Ko` / `*En` parallel fields
    currently in `BUSINESS` are deprecated and slated for removal once
-   their non-LegalFooter callers (privacy/terms/refund pages) finish
+   their non-Footer callers (privacy/terms/refund pages) finish
    migrating. **Do not add new locale-pair fields anywhere outside
    `messages/`.**
 3. **Locale detection (`useLocale` / `getLocale`) is for HTML
@@ -288,7 +288,7 @@ component shipped its own locale logic instead of asking next-intl.
 ```
 messages/
 ├── en.json        Authoritative English copy. Group by area: `Settings`,
-├── ko.json        `LegalFooter`, `Highlights`, etc.
+├── ko.json        `Footer`, `Highlights`, etc.
 
 src/i18n/
 ├── locales.ts     Active locales (en, ko)

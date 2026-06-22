@@ -14,10 +14,7 @@ export default function PlansPageClient() {
 
   useEffect(() => {
     setPageTheme("dark", true);
-    document.body.dataset.plansSurface = "true";
-
     return () => {
-      delete document.body.dataset.plansSurface;
       clearPageTheme();
     };
   }, [setPageTheme, clearPageTheme]);

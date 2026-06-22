@@ -2729,7 +2729,7 @@ export interface Subscription {
    */
   paid?: boolean | null;
   /**
-   * Editor flag — at the next quarterly check, extend the subscription 90 days for free (Member tier merit waiver).
+   * Admin flag — at the next quarterly check, extend the subscription 90 days for free (Member tier merit waiver).
    */
   validity_waived?: boolean | null;
   /**

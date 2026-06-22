@@ -98,7 +98,7 @@ const escape = (s: string): string =>
 
 /**
  * Editorial frame for every ticket email. Mono-led, restrained, prints OK.
- * Avoids loud buttons and gradients — matches the LegalFooter aesthetic.
+ * Avoids loud buttons and gradients — matches the Footer aesthetic.
  */
 const frame = (heading: string, bodyHtml: string): string => `
 <div style="font-family:Georgia,'Times New Roman',serif;max-width:560px;margin:0 auto;padding:32px 24px;color:#1a1a1a;">

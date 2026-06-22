@@ -156,7 +156,7 @@ export const CheckInButton = ({
             />
           ))}
         </svg>
-        <span className="max-sm:sr-only">Check-In</span>
+        <span className="max-sm:sr-only sm:mr-5">Check-In</span>
       </MotionLink>
     )
   );

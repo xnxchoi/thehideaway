@@ -9,9 +9,9 @@
  * The `*Ko` / `*En` parallel fields below are scheduled for removal — they
  * predate the next-intl migration and exist only because privacy/terms/
  * refund pages still reference them. Do NOT add new locale-pair fields
- * here. Use `t("LegalFooter.businessName")`, `t("LegalFooter.address")`,
- * `t("LegalFooter.serviceHours")`, `t("LegalFooter.representativeName")`
- * via next-intl instead. See `LegalFooter.tsx` for the canonical shape.
+ * here. Use `t("Footer.businessName")`, `t("Footer.address")`,
+ * `t("Footer.serviceHours")`, `t("Footer.representativeName")`
+ * via next-intl instead. See `Footer.tsx` for the canonical shape.
  *
  * Single-locale identifiers (registration numbers, phone, email, domain)
  * remain here — they're language-agnostic and benefit from env override.
@@ -29,23 +29,23 @@ export interface BusinessInfo {
   readonly domain: string;
 
   /**
-   * @deprecated Use `t("LegalFooter.businessName")`. Kept while
+   * @deprecated Use `t("Footer.businessName")`. Kept while
    *   privacy/terms/refund pages migrate to next-intl.
    */
   readonly legalName: string;
-  /** @deprecated Use `t("LegalFooter.businessName")`. */
+  /** @deprecated Use `t("Footer.businessName")`. */
   readonly legalNameKo: string;
-  /** @deprecated Use `t("LegalFooter.representativeName")`. */
+  /** @deprecated Use `t("Footer.representativeName")`. */
   readonly representative: string;
-  /** @deprecated Use `t("LegalFooter.representativeName")`. */
+  /** @deprecated Use `t("Footer.representativeName")`. */
   readonly representativeKo: string;
-  /** @deprecated Use `t("LegalFooter.address")`. */
+  /** @deprecated Use `t("Footer.address")`. */
   readonly addressEn: string;
-  /** @deprecated Use `t("LegalFooter.address")`. */
+  /** @deprecated Use `t("Footer.address")`. */
   readonly addressKo: string;
-  /** @deprecated Use `t("LegalFooter.serviceHours")`. */
+  /** @deprecated Use `t("Footer.serviceHours")`. */
   readonly serviceHours: string;
-  /** @deprecated Use `t("LegalFooter.serviceHours")`. */
+  /** @deprecated Use `t("Footer.serviceHours")`. */
   readonly serviceHoursKo: string;
 }
 

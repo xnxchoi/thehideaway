@@ -149,85 +149,10 @@
     }
   },
   "Plans": {
-    "hero": {
-      "eyebrow": "Membership",
-      "title": "A private room for people still making meaning.",
-      "lead": "Read, gather, annotate, listen, and keep your own ledger of what mattered. Membership is not a badge; it is the key that keeps the room useful.",
-      "actionsLabel": "Membership actions",
-      "primaryCta": "Choose a key",
-      "secondaryCta": "Questions",
-      "panelEyebrow": "Current opening",
-      "panelTitle": "Two ways in. One room.",
-      "panelFallback": "Memberships are being set at the desk."
-    },
-    "room": {
-      "eyebrow": "The room",
-      "title": "Choose the amount of access you will actually use.",
-      "intro": "Resident keeps the door open. Patron gives you the fuller key: deeper drops, earlier signals, and the print objects that make the archive physical.",
-      "summaryEyebrow": "Decision",
-      "summaryTitle": "If you only need the archive, start Resident. If you want the room to answer back, choose Patron.",
-      "patronBadge": "Full key",
-      "residentBadge": "On-ramp",
-      "validity": {
-        "yearly": "per year",
-        "lifetime": "lifetime · once"
-      },
-      "cta": {
-        "resident": "Begin as Resident",
-        "patron": "Request Patron access",
-        "closed": "Closed"
-      },
-      "ctaNote": {
-        "resident": "Bank transfer is confirmed manually. Access opens after confirmation.",
-        "patron": "We review Patron requests first, then reply with payment and access next steps."
-      },
-      "seats": {
-        "open": "Open enrollment",
-        "closed": "Closed",
-        "remaining": "{count, plural, one {# seat left} other {# seats left}}"
-      },
-      "methods": {
-        "bank_transfer": "Bank transfer",
-        "cash": "Cash on request"
-      },
-      "methodsLabel": "Payment",
-      "benefitsLabel": "What's included",
-      "patronTierLabel": "Patron tier",
-      "residentNote": "Same door, smaller key."
-    },
-    "cofounder": {
-      "eyebrow": "Application only",
-      "title": "Cofounder stays off-menu.",
-      "body": "For people building the room with us, not just entering it. Tell us what you are bringing and why it belongs here.",
-      "cta": "Write to us",
-      "subject": "Cofounder application"
-    },
-    "faq": {
-      "eyebrow": "Questions",
-      "title": "Things people ask",
-      "items": {
-        "payment": {
-          "q": "How do I pay?",
-          "a": "Bank transfer is the primary method. Choose it at checkout and we will send instructions; membership activates once receipt is confirmed. Cash is supported on request. Cards are not wired yet."
-        },
-        "cancel": {
-          "q": "Can I cancel anytime?",
-          "a": "Patron is a one-time purchase, so there is nothing to cancel. Resident is yearly; cancel from your account before renewal."
-        },
-        "refund": {
-          "q": "Refunds?",
-          "a": "Within 7 days of first charge, no questions. After that, prorated refunds are reserved for technical issues."
-        },
-        "invoice": {
-          "q": "Korean tax invoice (세금계산서)?",
-          "a": "Available on request for Patron memberships. Email concierge@hideawayseoul.com after subscribing."
-        },
-        "cofounder": {
-          "q": "What is Cofounder?",
-          "a": "Application-only. The short version: you are helping shape the room, not buying a larger badge."
-        }
-      }
-    }
+    "eyebrow": "Membership",
+    "title": "Life is only meaningful in retrospect.",
+    "subtitle": "Memories are the product of two things - action and recollection.",
+    "description": "We hand you the tools to capture the spark."
   },
   "Policies": {
     "Refunds": {
@@ -407,7 +332,7 @@
       }
     }
   },
-  "LegalFooter": {
+  "Footer": {
     "navAria": "Legal",
     "businessAria": "Business information",
     "links": {
@@ -426,9 +351,9 @@
       "privacyOfficer": "Privacy Officer"
     },
     "businessName": "Restored Projects",
-    "representativeName": "Pending appointment",
+    "representativeName": "Sungyoon Choi",
     "address": "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea",
-    "serviceHours": "Mon–Fri 10:00–18:00 KST (closed weekends and holidays)",
+    "serviceHours": "Sat–Sun 12:00–24:00 KST \n(closed on weekdays)",
     "mailOrderPending": "Pending application"
   },
   "Invoice": {
