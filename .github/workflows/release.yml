@@ -167,10 +167,11 @@ jobs:
           . ./.env.production
           set +a
           export DATABASE_URI=postgres://postgres:postgres@localhost:5432/theestate
+          node -v
           pnpm migrate:fresh --force-accept-warning
-          pnpm migrate
-          PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -tAc "select to_regclass('public.tags') is not null" \
-            | grep -qx t
+          schema_ready="$(PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -tAc "select to_regclass('public.tags') is not null")"
+          echo "tags table present: ${schema_ready}"
+          test "${schema_ready}" = "t"
 
       - name: Build Next.js (standalone)
         run: pnpm build
