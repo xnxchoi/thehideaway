@@ -1,6 +1,14 @@
 import crypto from "crypto";
 import type { LostCurrency } from "./types";
 
+export type PortOnePaymentProduct = {
+  id: string;
+  name: string;
+  amount: number;
+  quantity: number;
+  link?: string;
+};
+
 export type PortOneGlobalPaymentPayload = {
   key: string;
   merchant_order_id: string;
@@ -25,6 +33,7 @@ export type PortOneV2PaymentPayload = {
   redirectUrl: string;
   forceRedirect: true;
   noticeUrls: string[];
+  products: PortOnePaymentProduct[];
   productType: "PRODUCT_TYPE_REAL";
   customData: {
     orderRef: string;
@@ -127,6 +136,7 @@ export function buildPortOnePaymentPayload(input: {
   orderName?: string;
   paymentChannel?: string;
   paymentMethod?: string;
+  products?: PortOnePaymentProduct[];
 }): PortOnePaymentPayload {
   const cfg = getPortOneConfig();
 
@@ -155,6 +165,17 @@ export function buildPortOnePaymentPayload(input: {
       redirectUrl: returnUrl,
       forceRedirect: true,
       noticeUrls: [`${input.origin}/api/lost/webhooks/portone`],
+      products:
+        input.products && input.products.length > 0
+          ? input.products
+          : [
+              {
+                id: input.orderRef,
+                name: input.orderName ?? `LOSTINSEOUL ${input.orderRef}`,
+                amount: input.amount,
+                quantity: 1
+              }
+            ],
       productType: "PRODUCT_TYPE_REAL",
       customData: {
         orderRef: input.orderRef,

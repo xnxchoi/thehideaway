@@ -59,8 +59,11 @@ vi.mock("@/lib/lost-commerce/format", () => ({
   makeLostOrderRef: vi.fn(() => "lis_test_order")
 }));
 
-function request(body: unknown) {
-  return new NextRequest("https://hideaway.test/api/lost/checkout/intent", {
+function request(
+  body: unknown,
+  url = "https://hideaway.test/api/lost/checkout/intent"
+) {
+  return new NextRequest(url, {
     method: "POST",
     body: JSON.stringify(body)
   });
@@ -80,12 +83,14 @@ describe("POST /api/lost/checkout/intent", () => {
       id: "product-1",
       ...data
     }));
-    mocks.create.mockReset().mockImplementation(async ({ collection, data }) => {
-      if (collection === "product-orders") {
-        return { id: "order-1", order_ref: "lis_test_order", ...data };
-      }
-      return { id: "payment-1", ...data };
-    });
+    mocks.create
+      .mockReset()
+      .mockImplementation(async ({ collection, data }) => {
+        if (collection === "product-orders") {
+          return { id: "order-1", order_ref: "lis_test_order", ...data };
+        }
+        return { id: "payment-1", ...data };
+      });
   });
 
   it("reserves standard product inventory in the order transaction", async () => {
@@ -230,5 +235,126 @@ describe("POST /api/lost/checkout/intent", () => {
     });
     expect(mocks.rollbackTransaction).toHaveBeenCalledWith("tx-1");
     expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("includes product details in the PortOne payload", async () => {
+    const oldStoreId = process.env.PORTONE_STORE_ID;
+    const oldChannelKey = process.env.PORTONE_CHANNEL_KEY;
+    process.env.PORTONE_STORE_ID = "store-test";
+    process.env.PORTONE_CHANNEL_KEY = "channel-test";
+
+    try {
+      mocks.findByID.mockReset().mockResolvedValue({
+        id: "product-1",
+        active: true,
+        name: "Jacket",
+        slug: "jacket",
+        currency: "KRW",
+        unit_amount: 120000,
+        min_order_quantity: 1,
+        max_order_quantity: 5,
+        standard_enabled: true,
+        stock_state: "in_stock",
+        inventory: 3
+      });
+
+      const { POST } = await import("./route");
+      const res = await POST(
+        request({
+          paymentProvider: "portone",
+          lines: [
+            {
+              productId: "product-1",
+              mode: "standard_purchase",
+              quantity: 1
+            }
+          ]
+        })
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({
+        ok: true,
+        portone: {
+          products: [
+            {
+              id: "product-1",
+              name: "Jacket",
+              amount: 120000,
+              quantity: 1,
+              link: "https://hideaway.test/lostinseoul/products/jacket"
+            }
+          ]
+        }
+      });
+    } finally {
+      if (oldStoreId === undefined) delete process.env.PORTONE_STORE_ID;
+      else process.env.PORTONE_STORE_ID = oldStoreId;
+
+      if (oldChannelKey === undefined) delete process.env.PORTONE_CHANNEL_KEY;
+      else process.env.PORTONE_CHANNEL_KEY = oldChannelKey;
+    }
+  });
+
+  it("omits the LOSTINSEOUL path prefix for branded-host product links", async () => {
+    const oldStoreId = process.env.PORTONE_STORE_ID;
+    const oldChannelKey = process.env.PORTONE_CHANNEL_KEY;
+    process.env.PORTONE_STORE_ID = "store-test";
+    process.env.PORTONE_CHANNEL_KEY = "channel-test";
+
+    try {
+      mocks.findByID.mockReset().mockResolvedValue({
+        id: "product-1",
+        active: true,
+        name: "Jacket",
+        slug: "jacket",
+        currency: "KRW",
+        unit_amount: 120000,
+        min_order_quantity: 1,
+        max_order_quantity: 5,
+        standard_enabled: true,
+        stock_state: "in_stock",
+        inventory: 3
+      });
+
+      const { POST } = await import("./route");
+      const res = await POST(
+        request(
+          {
+            paymentProvider: "portone",
+            lines: [
+              {
+                productId: "product-1",
+                mode: "standard_purchase",
+                quantity: 1
+              }
+            ]
+          },
+          "https://lostinseoul.com/api/lost/checkout/intent"
+        )
+      );
+
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({
+        ok: true,
+        portone: {
+          products: [
+            {
+              id: "product-1",
+              name: "Jacket",
+              amount: 120000,
+              quantity: 1,
+              link: "https://lostinseoul.com/products/jacket"
+            }
+          ]
+        }
+      });
+    } finally {
+      if (oldStoreId === undefined) delete process.env.PORTONE_STORE_ID;
+      else process.env.PORTONE_STORE_ID = oldStoreId;
+
+      if (oldChannelKey === undefined) delete process.env.PORTONE_CHANNEL_KEY;
+      else process.env.PORTONE_CHANNEL_KEY = oldChannelKey;
+    }
   });
 });

@@ -62,7 +62,16 @@ describe("PortOne payment payloads", () => {
       amount: 120000,
       currency: "KRW",
       origin: "https://lostinseoul.com",
-      orderName: "LOSTINSEOUL Print"
+      orderName: "LOSTINSEOUL Print",
+      products: [
+        {
+          id: "product-1:variant-1",
+          name: "LOSTINSEOUL Print / Framed",
+          amount: 120000,
+          quantity: 1,
+          link: "https://lostinseoul.com/products/print"
+        }
+      ]
     });
 
     expect(payload).toMatchObject({
@@ -76,11 +85,44 @@ describe("PortOne payment payloads", () => {
       redirectUrl: "https://lostinseoul.com/payment/return?order=lis_2",
       forceRedirect: true,
       noticeUrls: ["https://lostinseoul.com/api/lost/webhooks/portone"],
+      products: [
+        {
+          id: "product-1:variant-1",
+          name: "LOSTINSEOUL Print / Framed",
+          amount: 120000,
+          quantity: 1,
+          link: "https://lostinseoul.com/products/print"
+        }
+      ],
       productType: "PRODUCT_TYPE_REAL",
       customData: {
         orderRef: "lis_2",
         service: "lostinseoul"
       }
+    });
+  });
+
+  it("adds a fallback product for V2 payloads without line details", () => {
+    process.env.PORTONE_STORE_ID = "store-test";
+    process.env.PORTONE_CHANNEL_KEY = "channel-test";
+
+    const payload = buildPortOnePaymentPayload({
+      orderRef: "lis_3",
+      amount: 55000,
+      currency: "KRW",
+      origin: "https://lostinseoul.com",
+      orderName: "LOSTINSEOUL order"
+    });
+
+    expect(payload).toMatchObject({
+      products: [
+        {
+          id: "lis_3",
+          name: "LOSTINSEOUL order",
+          amount: 55000,
+          quantity: 1
+        }
+      ]
     });
   });
 });

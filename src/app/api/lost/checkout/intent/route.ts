@@ -39,6 +39,13 @@ function requestOrigin(req: NextRequest): string {
   return new URL(req.url).origin;
 }
 
+function lostStorefrontBase(origin: string): string {
+  const host = new URL(origin).hostname;
+  return host === "lostinseoul.com" || host === "www.lostinseoul.com"
+    ? ""
+    : "/lostinseoul";
+}
+
 function reservationKey(line: LostCartLineSnapshot): string {
   return `${line.productId}:${line.variantId ?? ""}`;
 }
@@ -203,13 +210,19 @@ function checkoutErrorStatus(error: string): number {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!isSameOrigin(req)) {
-    return NextResponse.json({ ok: false, error: "bad-origin" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "bad-origin" },
+      { status: 403 }
+    );
   }
 
   const payload = await getPayload({ config });
   const auth = await payload.auth({ headers: await nextHeaders() });
   if (!auth.user) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "unauthorized" },
+      { status: 401 }
+    );
   }
 
   const userId = String(auth.user.id);
@@ -222,7 +235,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const parsed = BodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: "bad-request" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "bad-request" },
+      { status: 400 }
+    );
   }
 
   const orderRef = makeLostOrderRef(
@@ -264,13 +280,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
     if (parsed.data.paymentProvider === "portone") {
+      const origin = requestOrigin(req);
+      const storefrontBase = lostStorefrontBase(origin);
+
       portonePayload = buildPortOnePaymentPayload({
         orderRef,
         amount: resolved.totalAmount,
         currency: resolved.currency,
-        origin: requestOrigin(req),
+        origin,
         paymentChannel: parsed.data.paymentChannel,
-        paymentMethod: parsed.data.paymentMethod
+        paymentMethod: parsed.data.paymentMethod,
+        products: resolved.lines.map((line) => ({
+          id: line.variantId
+            ? `${line.productId}:${line.variantId}`
+            : line.productId,
+          name: line.variantLabel
+            ? `${line.productName} / ${line.variantLabel}`
+            : line.productName,
+          amount: line.unitAmount,
+          quantity: line.quantity,
+          link: `${origin}${storefrontBase}/products/${line.productSlug}`
+        }))
       });
       paymentStatus = "initiated";
     }
@@ -292,7 +322,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         order_mode: resolved.mode,
         status: "pending_payment",
         payment_status:
-          parsed.data.paymentProvider === "manual" ? "pending_manual" : "pending",
+          parsed.data.paymentProvider === "manual"
+            ? "pending_manual"
+            : "pending",
         fulfillment_status:
           resolved.mode === "request_to_order" ? "reserved" : "unfulfilled",
         currency: resolved.currency,
@@ -337,10 +369,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
     if (status === 503) {
-      return NextResponse.json(
-        { ok: false, error },
-        { status: 503 }
-      );
+      return NextResponse.json({ ok: false, error }, { status: 503 });
     }
     return NextResponse.json({ ok: false, error }, { status });
   }
