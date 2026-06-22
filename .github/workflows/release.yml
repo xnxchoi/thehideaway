@@ -168,7 +168,8 @@ jobs:
           set +a
           export DATABASE_URI=postgres://postgres:postgres@localhost:5432/theestate
           pnpm migrate
-          [[ "$(PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -tAc "select case when to_regclass('public.tags') is null then 'missing' else 'ok' end")" == "ok" ]]
+          PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -tAc "select to_regclass('public.tags') is not null" \
+            | grep -qx t
 
       - name: Build Next.js (standalone)
         run: pnpm build
