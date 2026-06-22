@@ -14,7 +14,7 @@
 #     pg_dump / pg_restore — you cannot simply swap the image tag.
 #     See scripts/pg-upgrade.sh for the procedure.
 
-FROM node:24-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV PNPM_HOME="/pnpm"
