@@ -52,4 +52,35 @@ describe("PortOne payment payloads", () => {
       "https://lostinseoul.com/payment/failure?order=lis_1"
     );
   });
+
+  it("builds a PortOne V2 redirect payload when Store ID is configured", () => {
+    process.env.PORTONE_STORE_ID = "store-test";
+    process.env.PORTONE_CHANNEL_KEY = "channel-test";
+
+    const payload = buildPortOnePaymentPayload({
+      orderRef: "lis_2",
+      amount: 120000,
+      currency: "KRW",
+      origin: "https://lostinseoul.com",
+      orderName: "LOSTINSEOUL Print"
+    });
+
+    expect(payload).toMatchObject({
+      storeId: "store-test",
+      channelKey: "channel-test",
+      paymentId: "lis_2",
+      orderName: "LOSTINSEOUL Print",
+      totalAmount: 120000,
+      currency: "CURRENCY_KRW",
+      payMethod: "CARD",
+      redirectUrl: "https://lostinseoul.com/payment/return?order=lis_2",
+      forceRedirect: true,
+      noticeUrls: ["https://lostinseoul.com/api/lost/webhooks/portone"],
+      productType: "PRODUCT_TYPE_REAL",
+      customData: {
+        orderRef: "lis_2",
+        service: "lostinseoul"
+      }
+    });
+  });
 });

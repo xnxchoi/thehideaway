@@ -37,11 +37,36 @@ type Labels = {
   total: string;
 };
 
-function loadPortOneSdk(): Promise<void> {
+function isPortOneV2Payload(payload: unknown): payload is { storeId: string } {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    "storeId" in payload &&
+    typeof (payload as { storeId?: unknown }).storeId === "string"
+  );
+}
+
+function isPortOneFailure(response: unknown): response is { code: string } {
+  return (
+    typeof response === "object" &&
+    response !== null &&
+    "code" in response &&
+    typeof (response as { code?: unknown }).code === "string"
+  );
+}
+
+function loadPortOneSdk(payload: unknown): Promise<void> {
   if (window.PortOne?.requestPayment) return Promise.resolve();
+
+  const sdkVersion = isPortOneV2Payload(payload) ? "v2" : "global";
+  const sdkUrl =
+    sdkVersion === "v2"
+      ? "https://cdn.portone.io/v2/browser-sdk.js"
+      : "https://cdn.portone.cloud/global-sdk/v1/portone.js";
+
   return new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(
-      "script[data-portone-global]"
+      `script[data-portone-sdk="${sdkVersion}"]`
     );
     if (existing) {
       existing.addEventListener("load", () => resolve(), { once: true });
@@ -49,9 +74,9 @@ function loadPortOneSdk(): Promise<void> {
       return;
     }
     const script = document.createElement("script");
-    script.src = "https://cdn.portone.cloud/global-sdk/v1/portone.js";
+    script.src = sdkUrl;
     script.async = true;
-    script.dataset.portoneGlobal = "true";
+    script.dataset.portoneSdk = sdkVersion;
     script.onload = () => resolve();
     script.onerror = reject;
     document.head.appendChild(script);
@@ -112,8 +137,17 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
 
     if (provider === "portone" && data.portone) {
       try {
-        await loadPortOneSdk();
-        await window.PortOne?.requestPayment?.(data.portone);
+        await loadPortOneSdk(data.portone);
+        const portOneResponse = await window.PortOne?.requestPayment?.(
+          data.portone
+        );
+        if (isPortOneFailure(portOneResponse)) {
+          await cancelUnpaidOrder(data.order.order_ref);
+          window.location.href = `/lostinseoul/payment/failure?order=${encodeURIComponent(
+            data.order.order_ref
+          )}`;
+          return;
+        }
       } catch {
         await cancelUnpaidOrder(data.order.order_ref);
         window.location.href = `/lostinseoul/payment/failure?order=${encodeURIComponent(

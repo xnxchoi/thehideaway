@@ -383,6 +383,42 @@ const schema = z.object({
         "https://docs.portone.cloud/reference/post_api-refund-portone-order-ref"
       )
     ),
+  PORTONE_STORE_ID: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "PortOne V2 Store ID for LOSTINSEOUL checkout.",
+        "https://developers.portone.io/opi/ko/integration/start/v2/checkout?v=v2"
+      )
+    ),
+
+  PORTONE_CHANNEL_KEY: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "PortOne V2 channel key for LOSTINSEOUL checkout.",
+        "https://developers.portone.io/opi/ko/integration/start/v2/checkout?v=v2"
+      )
+    ),
+
+  PORTONE_API_SECRET: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "PortOne V2 API Secret for server-side payment verification.",
+        "https://developers.portone.io/opi/ko/quick-guide/payment?v=v2"
+      )
+    ),
+
   PORTONE_ENVIRONMENT: z
     .enum(["sandbox", "production"])
     .optional()

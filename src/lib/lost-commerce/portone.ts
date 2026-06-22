@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import type { LostCurrency } from "./types";
 
-export type PortOnePaymentPayload = {
+export type PortOneGlobalPaymentPayload = {
   key: string;
   merchant_order_id: string;
   amount: number;
@@ -14,11 +14,35 @@ export type PortOnePaymentPayload = {
   environment: "sandbox" | "live";
 };
 
+export type PortOneV2PaymentPayload = {
+  storeId: string;
+  channelKey: string;
+  paymentId: string;
+  orderName: string;
+  totalAmount: number;
+  currency: `CURRENCY_${LostCurrency}`;
+  payMethod: string;
+  redirectUrl: string;
+  forceRedirect: true;
+  noticeUrls: string[];
+  productType: "PRODUCT_TYPE_REAL";
+  customData: {
+    orderRef: string;
+    service: "lostinseoul";
+  };
+};
+
+export type PortOnePaymentPayload =
+  | PortOneGlobalPaymentPayload
+  | PortOneV2PaymentPayload;
+
 export function getPortOneConfig() {
   return {
     key: process.env.PORTONE_CLIENT_KEY ?? "",
     secret: process.env.PORTONE_SECRET_KEY ?? "",
     apiJwt: process.env.PORTONE_API_JWT ?? "",
+    storeId: process.env.PORTONE_STORE_ID,
+    channelKey: process.env.PORTONE_CHANNEL_KEY,
     environment:
       process.env.PORTONE_ENVIRONMENT === "production" ||
       process.env.PORTONE_ENVIRONMENT === "live"
@@ -100,20 +124,48 @@ export function buildPortOnePaymentPayload(input: {
   amount: number;
   currency: LostCurrency;
   origin: string;
+  orderName?: string;
   paymentChannel?: string;
   paymentMethod?: string;
 }): PortOnePaymentPayload {
   const cfg = getPortOneConfig();
+
+  const host = new URL(input.origin).hostname;
+  const paymentBase =
+    host === "lostinseoul.com" || host === "www.lostinseoul.com"
+      ? "/payment"
+      : "/lostinseoul/payment";
+  const successUrl = `${input.origin}${paymentBase}/success?order=${encodeURIComponent(input.orderRef)}`;
+  const failureUrl = `${input.origin}${paymentBase}/failure?order=${encodeURIComponent(input.orderRef)}`;
+  const returnUrl = `${input.origin}${paymentBase}/return?order=${encodeURIComponent(input.orderRef)}`;
+
+  if (cfg.storeId) {
+    const channelKey =
+      input.paymentChannel ?? cfg.channelKey ?? cfg.defaultChannel;
+    if (!channelKey) throw new Error("portone-not-configured");
+
+    return {
+      storeId: cfg.storeId,
+      channelKey,
+      paymentId: input.orderRef,
+      orderName: input.orderName ?? `LOSTINSEOUL ${input.orderRef}`,
+      totalAmount: input.amount,
+      currency: `CURRENCY_${input.currency}`,
+      payMethod: input.paymentMethod ?? cfg.defaultMethod ?? "CARD",
+      redirectUrl: returnUrl,
+      forceRedirect: true,
+      noticeUrls: [`${input.origin}/api/lost/webhooks/portone`],
+      productType: "PRODUCT_TYPE_REAL",
+      customData: {
+        orderRef: input.orderRef,
+        service: "lostinseoul"
+      }
+    };
+  }
+
   if (!cfg.key || !cfg.secret) {
     throw new Error("portone-not-configured");
   }
-
-  const host = new URL(input.origin).hostname;
-  const paymentBase = host === "lostinseoul.com" || host === "www.lostinseoul.com"
-    ? "/payment"
-    : "/lostinseoul/payment";
-  const successUrl = `${input.origin}${paymentBase}/success?order=${encodeURIComponent(input.orderRef)}`;
-  const failureUrl = `${input.origin}${paymentBase}/failure?order=${encodeURIComponent(input.orderRef)}`;
 
   return {
     key: cfg.key,

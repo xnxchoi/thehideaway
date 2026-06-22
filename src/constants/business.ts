@@ -72,9 +72,9 @@ export const BUSINESS: BusinessInfo = {
 
   // Deprecated locale-pair fields (see interface JSDoc).
   legalName: env("NEXT_PUBLIC_BIZ_NAME", "Restored Projects"),
-  legalNameKo: env("NEXT_PUBLIC_BIZ_NAME_KO", "Restored Projects"),
-  representative: env("NEXT_PUBLIC_BIZ_REP", "Pending appointment"),
-  representativeKo: env("NEXT_PUBLIC_BIZ_REP_KO", "확인 중"),
+  legalNameKo: env("NEXT_PUBLIC_BIZ_NAME_KO", "리스토어드 프로젝트"),
+  representative: env("NEXT_PUBLIC_BIZ_REP", "Sungyoon Choi"),
+  representativeKo: env("NEXT_PUBLIC_BIZ_REP_KO", "최성윤"),
   addressEn: env(
     "NEXT_PUBLIC_BIZ_ADDR_EN",
     "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea"
