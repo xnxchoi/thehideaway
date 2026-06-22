@@ -167,7 +167,9 @@ jobs:
           . ./.env.production
           set +a
           export DATABASE_URI=postgres://postgres:postgres@localhost:5432/theestate
+          pnpm migrate:fresh
           pnpm migrate
+          PGPASSWORD=postgres psql -h localhost -U postgres -d theestate -v ON_ERROR_STOP=1 -c "select to_regclass('public.tags') as tags_table;"
 
       - name: Build Next.js (standalone)
         run: pnpm build
