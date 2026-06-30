@@ -36,6 +36,8 @@
 #     GHCR_TOKEN             (required) Classic PAT (NOT fine-grained) with
 #                            `read:packages` scope. Fine-grained tokens do not
 #                            support the GitHub Packages API. See readmes/DEPLOY.md.
+#     EXTRA_CERT_DOMAINS     Optional space-separated SANs for the primary TLS
+#                            cert. Defaults to "lostinseoul.com www.lostinseoul.com".
 #     --domain DOMAIN        (default: hideawayseoul.com) Domain to verify
 #                            DNS for and request a TLS cert for.
 #     --skip-dns             Bypass the DNS poll (useful if you know DNS is
@@ -101,6 +103,7 @@ GHCR_USER=""
 # anything else so we can fail fast with a clear hint.
 GHCR_TOKEN="${GHCR_TOKEN:-}"
 DOMAIN="hideawayseoul.com"
+EXTRA_CERT_DOMAINS="${EXTRA_CERT_DOMAINS:-lostinseoul.com www.lostinseoul.com}"
 SKIP_DNS=false
 SKIP_CERT=false
 SKIP_GH_KEY=false
@@ -217,11 +220,22 @@ fi
 # ── Phase 4: TLS cert ────────────────────────────────────────────────────────
 heading "Phase 4/8: Let's Encrypt certificate"
 CERT_PATH="/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"
+CERTBOT_DOMAIN_ARGS=(-d "${DOMAIN}" -d "www.${DOMAIN}")
+if [[ -n "${EXTRA_CERT_DOMAINS}" ]]; then
+  # shellcheck disable=SC2206
+  EXTRA_CERT_DOMAIN_LIST=(${EXTRA_CERT_DOMAINS})
+  for extra_domain in "${EXTRA_CERT_DOMAIN_LIST[@]}"; do
+    CERTBOT_DOMAIN_ARGS+=(-d "${extra_domain}")
+  done
+fi
 if [[ "${SKIP_CERT}" == true ]]; then
   warn "Skipping certbot (--skip-cert)."
 elif [[ -f "${CERT_PATH}" ]]; then
   # Reuse the existing cert; certbot will renew automatically via cron.
   info "Cert already present at ${CERT_PATH} — reusing."
+  if [[ -n "${EXTRA_CERT_DOMAINS}" ]]; then
+    warn "Existing cert was not expanded here. If ${EXTRA_CERT_DOMAINS} are new, run the webroot --expand command in readmes/DEPLOY.md."
+  fi
 else
   # Standalone mode binds :80 temporarily. nginx isn't up yet on a fresh box,
   # so this is safe. If something else is on :80, we abort rather than fight.
@@ -232,7 +246,7 @@ else
   fi
   if ! certbot certonly --standalone --non-interactive --agree-tos \
        --email "concierge@${DOMAIN}" \
-       -d "${DOMAIN}" -d "www.${DOMAIN}"; then
+       "${CERTBOT_DOMAIN_ARGS[@]}"; then
     error "Certbot failed. Common causes: DNS not propagated, rate-limited, port 80 blocked."
     exit 5
   fi

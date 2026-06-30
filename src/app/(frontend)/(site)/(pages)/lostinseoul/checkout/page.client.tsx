@@ -28,6 +28,7 @@ type Labels = {
   submit: string;
   pending: string;
   failed: string;
+  portoneUnavailable: string;
   name: string;
   email: string;
   phone: string;
@@ -100,15 +101,24 @@ async function cancelUnpaidOrder(orderRef: string): Promise<void> {
   }).catch(() => undefined);
 }
 
-export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
+export function LostCheckoutPageClient({
+  labels,
+  portOneEnabled
+}: {
+  labels: Labels;
+  portOneEnabled: boolean;
+}) {
   const { lines, total, clear } = useLostCart();
-  const [provider, setProvider] = useState<"portone" | "manual">("portone");
+  const [provider, setProvider] = useState<"portone" | "manual">(
+    portOneEnabled ? "portone" : "manual"
+  );
   const [state, setState] = useState<"idle" | "pending" | "failed">("idle");
   const currency = lines[0]?.currency ?? "KRW";
 
   async function submit(form: HTMLFormElement) {
     setState("pending");
     const formData = new FormData(form);
+    const paymentProvider = portOneEnabled ? provider : "manual";
     const response = await fetch("/api/lost/checkout/intent", {
       method: "POST",
       headers: {
@@ -116,7 +126,7 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
         "idempotency-key": createIdempotencyKey()
       },
       body: JSON.stringify({
-        paymentProvider: provider,
+        paymentProvider,
         contact: {
           name: formData.get("name"),
           email: formData.get("email"),
@@ -135,7 +145,7 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
       return;
     }
 
-    if (provider === "portone" && data.portone) {
+    if (paymentProvider === "portone" && data.portone) {
       try {
         await loadPortOneSdk(data.portone);
         const portOneResponse = await window.PortOne?.requestPayment?.(
@@ -236,7 +246,12 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
                     provider === "portone"
                       ? "bg-[var(--fg)] text-[var(--bg)]"
                       : ""
+                  } ${
+                    portOneEnabled
+                      ? ""
+                      : "cursor-not-allowed text-[oklch(from_var(--fg)_l_c_h_/_0.45)]"
                   }`}
+                  disabled={!portOneEnabled}
                   onClick={() => setProvider("portone")}
                   type="button"
                 >
@@ -254,6 +269,11 @@ export function LostCheckoutPageClient({ labels }: { labels: Labels }) {
                   {labels.manual}
                 </Button>
               </div>
+              {!portOneEnabled ? (
+                <p className="mt-3 text-sm text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
+                  {labels.portoneUnavailable}
+                </p>
+              ) : null}
               <div className="mt-6 divide-y divide-[oklch(from_var(--fg)_l_c_h_/_0.15)]">
                 {lines.map((line) => (
                   <div

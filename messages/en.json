@@ -126,6 +126,7 @@
       "submit": "Place order",
       "pending": "Creating order",
       "failed": "Could not create the order.",
+      "portoneUnavailable": "Card payments are not open yet.",
       "name": "Name",
       "email": "Email",
       "phone": "Phone",

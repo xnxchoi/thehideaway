@@ -56,6 +56,11 @@ describe("auth options", () => {
     );
   });
 
+  it("trusts LOSTINSEOUL auth origins by default", () => {
+    expect(source).toContain('"https://lostinseoul.com"');
+    expect(source).toContain('"https://www.lostinseoul.com"');
+  });
+
   it("renders Kakao in the generic OAuth provider list", () => {
     expect(authProvidersSource).toContain("KakaoIcon");
     expect(authProvidersSource).toContain(
@@ -66,7 +71,9 @@ describe("auth options", () => {
   it("declares Kakao secrets in runtime and type env schemas", () => {
     expect(envSource).toContain("AUTH_KAKAO_ID");
     expect(envSource).toContain("AUTH_KAKAO_SECRET");
-    expect(envTypesSource).toContain("AUTH_KAKAO_ID: z.string()");
-    expect(envTypesSource).toContain("AUTH_KAKAO_SECRET: z.string()");
+    expect(envTypesSource).toContain('import { envSchema } from "./lib/env";');
+    expect(envTypesSource).toContain(
+      "interface ProcessEnv extends z.infer<Env>"
+    );
   });
 });

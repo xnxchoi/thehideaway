@@ -1,4 +1,4 @@
-# Deploy — hideawayseoul.com
+# Deploy — hideawayseoul.com + lostinseoul.com
 
 Canonical deploy reference. The scripts in `scripts/` are authoritative for
 what actually runs; this doc orients you and explains the _why_.
@@ -60,7 +60,7 @@ ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v0.15.0 --mi
 1. Confirm `ghcr.io/xnxchoi/hideaway:v0.15.0` exists (manifest check).
 2. Decrypt `.env.production.enc` via sops.
 3. `docker compose pull` then `up -d --wait` — compose keeps the old container alive until the new one passes its healthcheck. Zero downtime.
-4. Smoke test: `GET https://hideawayseoul.com/api/health` → expect 200, max 60s.
+4. Smoke test: `GET https://hideawayseoul.com/api/health`, `https://lostinseoul.com/api/health`, and `https://www.lostinseoul.com/api/health` → expect 200 after redirects, max 60s each.
 5. **On smoke-test failure**, automatically roll back to the previously-deployed tag.
 6. Persist the new tag to `/var/lib/hideaway/current-tag`.
 7. With `--migrate`: pg_dump backup → `--profile migrate` → migrations.
@@ -379,17 +379,55 @@ In your DNS provider's dashboard:
 | A    | `@` (apex) | `58.229.253.225` | 300 |
 | A    | `www`      | `58.229.253.225` | 300 |
 
+Repeat the same records for the LOSTINSEOUL zone:
+
+| Type | Name       | Value            | TTL |
+| ---- | ---------- | ---------------- | --- |
+| A    | `@` (apex) | `58.229.253.225` | 300 |
+| A    | `www`      | `58.229.253.225` | 300 |
+
 300 s TTL for faster propagation now. Raise to 3600 after a few days.
 
 **Check:**
 
 ```bash
 dig +short A hideawayseoul.com @1.1.1.1
+dig +short A lostinseoul.com @1.1.1.1
+dig +short A www.lostinseoul.com @1.1.1.1
 ```
 
 Should return `58.229.253.225`. Propagation: 30 s to ~30 min. The wrapper
 polls for ~10 min in Phase 3, so you can start Step 6 before DNS fully
 propagates.
+
+### Step 5b — Expand TLS for LOSTINSEOUL on an existing VPS
+
+The production compose stack mounts the `hideawayseoul.com` Let's Encrypt
+lineage into Nginx. When adding `lostinseoul.com` to the same server, expand
+that existing certificate so one mounted cert covers all four hostnames:
+
+```bash
+ssh deploy@hideawayseoul.com 'cd thehideaway && docker compose -f compose.prod.yaml exec nginx nginx -t'
+
+ssh root@hideawayseoul.com 'certbot certonly --webroot -w /var/www/certbot \
+  --cert-name hideawayseoul.com --expand \
+  -d hideawayseoul.com -d www.hideawayseoul.com \
+  -d lostinseoul.com -d www.lostinseoul.com \
+  --deploy-hook /usr/local/bin/certbot-reload-nginx'
+
+ssh deploy@hideawayseoul.com 'cd thehideaway && docker compose -f compose.prod.yaml exec nginx nginx -t && docker compose -f compose.prod.yaml exec nginx nginx -s reload'
+```
+
+Then verify from the laptop:
+
+```bash
+curl -I https://lostinseoul.com/api/health
+curl -I https://www.lostinseoul.com/api/health
+curl -I https://lostinseoul.com/
+```
+
+Expected: health returns `200`; `www.lostinseoul.com` may redirect to
+`lostinseoul.com`, but `curl -L` should end at `200`.
 
 ---
 

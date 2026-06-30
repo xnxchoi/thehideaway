@@ -20,13 +20,17 @@ const emailService = new BetterAuthEmailService();
 
 const appURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL!;
 const appHost = new URL(appURL).hostname;
-const trustedOrigins = [appURL];
-if (process.env.NEXT_PUBLIC_PRODUCTION_URL) {
-  trustedOrigins.push(process.env.NEXT_PUBLIC_PRODUCTION_URL);
-}
-if (process.env.NEXT_PUBLIC_LOSTINSEOUL_URL) {
-  trustedOrigins.push(process.env.NEXT_PUBLIC_LOSTINSEOUL_URL);
-}
+const trustedOrigins = Array.from(
+  new Set(
+    [
+      appURL,
+      process.env.NEXT_PUBLIC_PRODUCTION_URL,
+      process.env.NEXT_PUBLIC_LOSTINSEOUL_URL,
+      "https://lostinseoul.com",
+      "https://www.lostinseoul.com"
+    ].filter((origin): origin is string => Boolean(origin))
+  )
+);
 
 function mapKakaoProfileToUser(profile: any) {
   const account = profile?.kakao_account ?? {};

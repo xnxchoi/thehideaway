@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   buildPortOnePaymentPayload,
-  generatePortOneSignature
+  generatePortOneSignature,
+  isPortOneCheckoutEnabled
 } from "./portone";
 
 const OLD_ENV = { ...process.env };
@@ -11,6 +12,55 @@ afterEach(() => {
 });
 
 describe("PortOne payment payloads", () => {
+  it("keeps checkout disabled until PortOne has a complete payment configuration", () => {
+    delete process.env.PORTONE_CLIENT_KEY;
+    delete process.env.PORTONE_SECRET_KEY;
+    delete process.env.PORTONE_STORE_ID;
+    delete process.env.PORTONE_CHANNEL_KEY;
+    delete process.env.PORTONE_DEFAULT_CHANNEL;
+
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+
+    process.env.PORTONE_STORE_ID = "store-test";
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+
+    process.env.PORTONE_CHANNEL_KEY = "channel-test";
+    expect(isPortOneCheckoutEnabled()).toBe(true);
+
+    delete process.env.PORTONE_CHANNEL_KEY;
+    process.env.PORTONE_DEFAULT_CHANNEL = "default-channel";
+    expect(isPortOneCheckoutEnabled()).toBe(true);
+  });
+
+  it("enables checkout for complete global PortOne credentials", () => {
+    delete process.env.PORTONE_STORE_ID;
+    delete process.env.PORTONE_CHANNEL_KEY;
+    delete process.env.PORTONE_DEFAULT_CHANNEL;
+
+    process.env.PORTONE_CLIENT_KEY = "client";
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+
+    process.env.PORTONE_SECRET_KEY = "secret";
+    expect(isPortOneCheckoutEnabled()).toBe(true);
+  });
+
+  it("does not treat template placeholders as configured credentials", () => {
+    process.env.PORTONE_CLIENT_KEY = "CHANGE_ME_API_KEY";
+    process.env.PORTONE_SECRET_KEY = "CHANGE_ME_API_KEY";
+    process.env.PORTONE_STORE_ID = "CHANGE_ME_API_KEY";
+    process.env.PORTONE_CHANNEL_KEY = "CHANGE_ME_API_KEY";
+
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+    expect(() =>
+      buildPortOnePaymentPayload({
+        orderRef: "lis_placeholder",
+        amount: 1000,
+        currency: "KRW",
+        origin: "https://lostinseoul.com"
+      })
+    ).toThrow("portone-not-configured");
+  });
+
   it("signs stable payment request fields", () => {
     const first = generatePortOneSignature({
       clientKey: "client",
