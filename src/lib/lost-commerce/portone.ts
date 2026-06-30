@@ -62,6 +62,26 @@ export function getPortOneConfig() {
   } as const;
 }
 
+function hasPortOneValue(value: string | undefined): value is string {
+  const trimmed = value?.trim();
+  return (
+    typeof trimmed === "string" &&
+    trimmed.length > 0 &&
+    !trimmed.startsWith("CHANGE_ME")
+  );
+}
+
+export function isPortOneCheckoutEnabled(
+  cfg: ReturnType<typeof getPortOneConfig> = getPortOneConfig()
+): boolean {
+  const hasV2Config =
+    hasPortOneValue(cfg.storeId) &&
+    (hasPortOneValue(cfg.channelKey) || hasPortOneValue(cfg.defaultChannel));
+  const hasGlobalConfig =
+    hasPortOneValue(cfg.key) && hasPortOneValue(cfg.secret);
+  return hasV2Config || hasGlobalConfig;
+}
+
 export async function createPortOneRefund(input: {
   orderRef: string;
   amount: number;
@@ -71,7 +91,7 @@ export async function createPortOneRefund(input: {
   refundType?: "full" | "partial";
 }): Promise<unknown> {
   const cfg = getPortOneConfig();
-  if (!cfg.key || !cfg.apiJwt) {
+  if (!hasPortOneValue(cfg.key) || !hasPortOneValue(cfg.apiJwt)) {
     throw new Error("portone-refund-not-configured");
   }
 
@@ -149,10 +169,10 @@ export function buildPortOnePaymentPayload(input: {
   const failureUrl = `${input.origin}${paymentBase}/failure?order=${encodeURIComponent(input.orderRef)}`;
   const returnUrl = `${input.origin}${paymentBase}/return?order=${encodeURIComponent(input.orderRef)}`;
 
-  if (cfg.storeId) {
+  if (hasPortOneValue(cfg.storeId)) {
     const channelKey =
       input.paymentChannel ?? cfg.channelKey ?? cfg.defaultChannel;
-    if (!channelKey) throw new Error("portone-not-configured");
+    if (!hasPortOneValue(channelKey)) throw new Error("portone-not-configured");
 
     return {
       storeId: cfg.storeId,
@@ -184,7 +204,7 @@ export function buildPortOnePaymentPayload(input: {
     };
   }
 
-  if (!cfg.key || !cfg.secret) {
+  if (!hasPortOneValue(cfg.key) || !hasPortOneValue(cfg.secret)) {
     throw new Error("portone-not-configured");
   }
 

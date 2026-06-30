@@ -3,9 +3,9 @@ import { headers as nextHeaders } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { getPayload } from "payload";
 import { RPage } from "@/components/UX/Transition";
-import { Link } from "@/components/core/Link/Link";
 import { getServerSession } from "@/lib/auth/getServerSession";
 import { cancelUnpaidProductOrder } from "@/lib/lost-commerce/orders";
+import { LostPaymentStatusShell } from "../status-shell";
 
 type Props = {
   searchParams: Promise<{ order?: string }>;
@@ -47,22 +47,12 @@ export default async function LostPaymentFailurePage({ searchParams }: Props) {
 
   return (
     <RPage slug={["lostinseoul", "payment", "failure"]} type="pages">
-      <main className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-6 text-[var(--fg)]">
-        <section className="max-w-xl text-center">
-          <p className="font-mono text-[11px] tracking-[0.22em] text-[oklch(from_var(--fg)_l_c_h_/_0.6)] uppercase">
-            {t("failureEyebrow")}
-          </p>
-          <h1 className="mt-4 font-serif text-6xl font-bold tracking-tight">
-            {t("failureTitle")}
-          </h1>
-          <Link
-            className="mt-8 inline-flex min-h-12 items-center bg-[var(--fg)] px-6 text-sm font-medium text-[var(--bg)]"
-            href="/lostinseoul/cart"
-          >
-            {t("retry")}
-          </Link>
-        </section>
-      </main>
+      <LostPaymentStatusShell
+        actionHref="/lostinseoul/cart"
+        actionLabel={t("retry")}
+        eyebrow={t("failureEyebrow")}
+        title={t("failureTitle")}
+      />
     </RPage>
   );
 }

@@ -35,7 +35,8 @@ body:has(.lost-commerce-root) .pt_cornerstones,
 body:has(.lost-commerce-root) .scroll-indicator,
 body:has(.lost-commerce-root) [class*="z-239"],
 body:has(.lost-commerce-root) [class*="z-[248]"],
-body:has(.lost-commerce-root) [class*="top-fx-bottom"] {
+body:has(.lost-commerce-root) [class*="top-fx-bottom"],
+body:has(.lost-commerce-root) nextjs-portal {
   display: none !important;
 }
 body:has(.lost-commerce-root):not([data-lost-bag-frame="open"]):not(
@@ -60,6 +61,54 @@ body:has(.lost-commerce-root) {
   --lost-logo-top: calc(48px + 1.94rem);
   background: var(--bg);
 }
+
+html:has(.lost-standalone-root),
+html:has(.lost-cart-root),
+html:has(.lost-checkout-root),
+body:has(.lost-standalone-root),
+body:has(.lost-cart-root),
+body:has(.lost-checkout-root) {
+  background: var(--black);
+  color-scheme: dark;
+}
+
+body:has(.lost-standalone-root) #rp-header,
+body:has(.lost-standalone-root) footer,
+body:has(.lost-standalone-root) .rp__cursor,
+body:has(.lost-standalone-root) .menu__body,
+body:has(.lost-standalone-root) .menu__frame,
+body:has(.lost-standalone-root) .menu__frame-corner,
+body:has(.lost-standalone-root) .menu__corner-svg,
+body:has(.lost-standalone-root) .menu__preview-preview,
+body:has(.lost-standalone-root) .preview__gradient,
+body:has(.lost-standalone-root) .pt_container,
+body:has(.lost-standalone-root) .pt_mask,
+body:has(.lost-standalone-root) .pt_cornerstones,
+body:has(.lost-standalone-root) .scroll-indicator,
+body:has(.lost-standalone-root) [data-footer-fx],
+body:has(.lost-standalone-root) [data-tour="controlbar"],
+body:has(.lost-standalone-root) nextjs-portal,
+body:has(.lost-standalone-root) [class*="z-[238]"],
+body:has(.lost-standalone-root) [class*="z-239"],
+body:has(.lost-standalone-root) [class*="z-[248]"],
+body:has(.lost-standalone-root) [class*="top-fx-bottom"],
+body:has(.lost-cart-root) .menu__body,
+body:has(.lost-cart-root) .preview__gradient,
+body:has(.lost-cart-root) .pt_container,
+body:has(.lost-cart-root) [data-footer-fx],
+body:has(.lost-cart-root) [data-tour="controlbar"],
+body:has(.lost-cart-root) nextjs-portal,
+body:has(.lost-cart-root) [class*="z-[238]"],
+body:has(.lost-checkout-root) .menu__body,
+body:has(.lost-checkout-root) .preview__gradient,
+body:has(.lost-checkout-root) .pt_container,
+body:has(.lost-checkout-root) [data-footer-fx],
+body:has(.lost-checkout-root) [data-tour="controlbar"],
+body:has(.lost-checkout-root) nextjs-portal,
+body:has(.lost-checkout-root) [class*="z-[238]"] {
+  display: none !important;
+}
+
 @media (min-width: 1024px) {
   body:has(.lost-commerce-root) {
     --lost-logo-top: calc(4rem + 1.94rem + 1.8rem);
