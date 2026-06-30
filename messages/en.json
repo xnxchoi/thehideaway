@@ -380,6 +380,8 @@
     "methods": {
       "label": "Means of Payment",
       "amt": "Amt.",
+      "date": "Date",
+      "reference": "Ref.",
       "bank_transfer": "Bank transfer",
       "cash": "Cash"
     },

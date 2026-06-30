@@ -381,6 +381,8 @@
     "methods": {
       "label": "결제 수단",
       "amt": "금액",
+      "date": "일자",
+      "reference": "참조",
       "bank_transfer": "계좌이체",
       "cash": "현금"
     },

@@ -46,10 +46,10 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
         `}
       </style>
 
-      <header className="grid min-h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.1)] pb-5">
+      <header className="grid min-h-[56px] grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.1)] pb-5">
         <Link
           aria-label="LOSTINSEOUL home"
-          className="font-mono text-sm font-bold tracking-[0.24em] uppercase"
+          className="inline-flex min-h-[44px] items-center font-mono text-sm font-bold tracking-[0.24em] uppercase"
           href="/lostinseoul"
         >
           LOSTINSEOUL
@@ -59,7 +59,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
         </h1>
         <div className="flex justify-end">
           <Link
-            className="inline-flex min-h-9 items-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] px-3 text-sm font-medium text-[var(--n-s-fg)] backdrop-blur-md"
+            className="inline-flex min-h-[44px] items-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] px-4 text-sm font-medium text-[var(--n-s-fg)] backdrop-blur-md"
             href="/lostinseoul"
           >
             {labels.back}
@@ -90,7 +90,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                   {labels.empty}
                 </p>
                 <Link
-                  className="inline-flex min-h-10 items-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] px-4 text-sm font-medium text-[var(--n-s-fg)]"
+                  className="inline-flex min-h-[44px] items-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] px-4 text-sm font-medium text-[var(--n-s-fg)]"
                   href="/lostinseoul"
                 >
                   {labels.back}
@@ -117,7 +117,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                     </Link>
                     <div>
                       <Link
-                        className="text-2xl font-medium tracking-tight"
+                        className="inline-flex min-h-[44px] items-center text-2xl font-medium tracking-tight"
                         href={`/lostinseoul/products/${line.productSlug}`}
                       >
                         {line.productName}
@@ -127,7 +127,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                         {line.mode.replaceAll("_", " ")} / x {line.quantity}
                       </p>
                       <Button
-                        className="mt-5 rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] px-3 py-1.5 text-sm text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] transition hover:bg-[var(--n-s-fg)] hover:text-[var(--n-s-bg)]"
+                        className="mt-5 inline-flex min-h-[44px] items-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] px-4 text-sm text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] transition hover:bg-[var(--n-s-fg)] hover:text-[var(--n-s-bg)]"
                         onClick={() => remove(line)}
                         type="button"
                       >
@@ -155,14 +155,14 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
           <div className="grid gap-3 pt-5">
             {lines.length > 0 ? (
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-[4px] bg-[var(--n-s-fg)] px-5 text-sm font-medium text-[var(--n-s-bg)]"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-[4px] bg-[var(--n-s-fg)] px-5 text-sm font-medium text-[var(--n-s-bg)]"
                 href="/lostinseoul/checkout"
               >
                 {labels.checkout}
               </Link>
             ) : (
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] px-5 text-sm font-medium text-[var(--n-s-fg)]"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] px-5 text-sm font-medium text-[var(--n-s-fg)]"
                 href="/lostinseoul"
               >
                 {labels.back}
