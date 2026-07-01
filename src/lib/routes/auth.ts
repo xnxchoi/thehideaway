@@ -19,7 +19,8 @@ export function normalizeLocalReturnTo(
 export function signInRedirectPath(returnTo: string): string {
   const localReturnTo = normalizeLocalReturnTo(returnTo);
   const signInPath =
-    localReturnTo === "/lostinseoul" || localReturnTo.startsWith("/lostinseoul/")
+    localReturnTo === "/lostinseoul" ||
+    localReturnTo.startsWith("/lostinseoul/")
       ? "/lostinseoul/auth/sign-in"
       : "/sign-in";
 

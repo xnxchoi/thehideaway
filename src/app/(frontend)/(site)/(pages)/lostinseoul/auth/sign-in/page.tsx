@@ -29,11 +29,11 @@ export default async function LostSignInPage(props: {
           <section className="max-w-2xl">
             <Link
               href="/lostinseoul"
-              className="font-mono text-xs uppercase tracking-[0.2em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.68)] transition-opacity hover:opacity-75"
+              className="font-mono text-xs tracking-[0.2em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.68)] uppercase transition-opacity hover:opacity-75"
             >
               {t("home.eyebrow")}
             </Link>
-            <h1 className="mt-5 text-4xl font-serif font-bold tracking-tight md:text-6xl xl:text-7xl">
+            <h1 className="mt-5 font-serif text-4xl font-bold tracking-tight md:text-6xl xl:text-7xl">
               {t("home.title")}
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] md:text-base">
