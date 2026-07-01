@@ -49,6 +49,7 @@ import {
   getLostBagRegularChromeState
 } from "./cart-frame";
 import { LostCartOverlay } from "./cart-overlay";
+import { getLostProductSectionMetaLabel } from "./product-section-state";
 import {
   getLostCursorSurfaceTheme,
   getLostPageCursorTheme,
@@ -405,12 +406,12 @@ export function LostHeader({
 
   return (
     <m.header
-      className="pointer-events-none sticky top-[4.9rem] z-50 h-0 px-4 pt-2 md:px-14 md:pt-3"
+      className="pointer-events-none sticky top-[7.6rem] z-[1003] mt-[4.4rem] h-0 px-4 pt-2 md:px-14 md:pt-3 lg:top-[4.9rem] lg:mt-0"
       data-lost-header
       initial={false}
     >
       <div
-        className="flex items-start justify-end gap-4 lg:justify-between"
+        className="relative z-10 flex items-start justify-end gap-4 lg:justify-between"
         data-lost-header-grid
       >
         <div className="hidden overflow-hidden lg:block">
@@ -483,7 +484,7 @@ function LostHeaderLogo({ bagOpen }: { bagOpen: boolean }) {
 
   return createPortal(
     <div
-      className="pointer-events-auto fixed top-[var(--lost-logo-top)] left-1/2 z-50 flex items-center justify-center overflow-hidden"
+      className="pointer-events-auto fixed top-[var(--lost-logo-top)] left-1/2 z-[1004] flex items-center justify-center overflow-hidden"
       data-lost-entry-logo
     >
       <m.div
@@ -1080,6 +1081,14 @@ export function LostProductSection({
   const gridCount = Math.min(Math.max(products.length, 1), 5);
   const gridPushProduct =
     layout === "collection" ? (products[1] ?? products[0] ?? null) : null;
+  const sectionMetaText = getLostProductSectionMetaLabel({
+    cartLabel,
+    incomingLabel,
+    productCount: products.length,
+    searchQuery,
+    searchResultsLabel,
+    sectionMetaLabel
+  });
 
   return (
     <section
@@ -1110,27 +1119,18 @@ export function LostProductSection({
           </div>
         </div>
         <p className="justify-self-end font-mono text-[1.1rem] leading-none text-[var(--lost-paper-muted)]">
-          <LostBlurAppear
-            text={
-              searching
-                ? `${searchResultsLabel} / ${products.length.toString().padStart(2, "0")}`
-                : (sectionMetaLabel ?? `${cartLabel} / 00`)
-            }
-          />
+          <LostBlurAppear text={sectionMetaText} />
         </p>
       </div>
 
       <div className="grid gap-y-8">
         {products.length === 0 ? (
-          <div className="grid gap-3 md:grid-cols-3">
-            {[0, 1, 2].map((index) => (
-              <LostEmptyProductCard
-                emptyLabel={searching ? searchNoResultsLabel : emptyLabel}
-                incomingLabel={searching ? searchLabel : incomingLabel}
-                index={index}
-                key={index}
-              />
-            ))}
+          <div className="grid">
+            <LostEmptyProductCard
+              emptyLabel={searching ? searchNoResultsLabel : emptyLabel}
+              incomingLabel={searching ? searchLabel : incomingLabel}
+              index={0}
+            />
           </div>
         ) : (
           <div
@@ -1265,25 +1265,18 @@ function LostEmptyProductCard({
   index: number;
 }) {
   return (
-    <div className="group relative min-h-[32rem] overflow-hidden rounded-[4px] border border-[var(--lost-paper-line)] bg-[oklch(from_var(--fg)_l_c_h_/_0.035)]">
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(130deg,rgba(8,34,255,0.18),oklch(from_var(--bg)_l_c_h_/_0.42)_42%,oklch(from_var(--fg)_l_c_h_/_0.1))] opacity-90"
-      />
-      <div
-        aria-hidden
-        className="absolute inset-x-8 top-16 h-16 bg-foreground/75 transition-transform duration-500 group-hover:translate-x-3"
-      />
-      <div className="absolute inset-x-4 bottom-4 flex items-end justify-between">
+    <div className="relative grid min-h-[21rem] content-between overflow-hidden rounded-[4px] border border-[var(--lost-paper-line)] bg-[oklch(from_var(--fg)_l_c_h_/_0.035)] p-5 md:min-h-[32rem] md:p-6">
+      <LostTopBar />
+      <div className="flex items-end justify-between gap-5">
         <div>
-          <p className="font-mono text-[1rem] leading-none tracking-[0.2em] text-[oklch(from_var(--fg)_l_c_h_/_0.45)] uppercase">
+          <p className="font-mono text-[1rem] leading-none tracking-[0.2em] text-[var(--lost-paper-muted)] uppercase">
             {incomingLabel}
           </p>
-          <p className="mt-2 text-[1.6rem] leading-tight font-medium text-[var(--fg)]">
+          <p className="mt-3 max-w-[34rem] text-[1.6rem] leading-tight font-medium text-[var(--fg)] md:text-[1.9rem]">
             {emptyLabel}
           </p>
         </div>
-        <span className="font-mono text-[1.1rem] leading-none text-[oklch(from_var(--fg)_l_c_h_/_0.45)]">
+        <span className="shrink-0 font-mono text-[1.1rem] leading-none text-[var(--lost-paper-muted)]">
           0{index + 1}
         </span>
       </div>
