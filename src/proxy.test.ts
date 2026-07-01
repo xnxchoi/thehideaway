@@ -49,7 +49,16 @@ describe("proxy routing", () => {
 
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBe(
-      "https://hideaway.test/sign-in?callbackUrl=%2Fme"
+      "https://hideaway.test/sign-in?redirectTo=%2Fme"
+    );
+  });
+
+  it("redirects anonymous LOST checkout users back to checkout after sign-in", async () => {
+    const res = await proxy(makeRequest("/lostinseoul/checkout"));
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://hideaway.test/sign-in?redirectTo=%2Flostinseoul%2Fcheckout"
     );
   });
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { signInRedirectPath } from "@/lib/routes/auth";
 
 /**
  * Proxy (Next 16 — replaces `middleware.ts`). Runs in the Node.js
@@ -246,8 +247,7 @@ export async function proxy(request: NextRequest) {
   );
 
   if (isProtected && !hasSessionCookie(request)) {
-    const signInUrl = new URL("/sign-in", request.url);
-    signInUrl.searchParams.set("callbackUrl", pathname);
+    const signInUrl = new URL(signInRedirectPath(pathname), request.url);
     return NextResponse.redirect(signInUrl);
   }
 

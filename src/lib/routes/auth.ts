@@ -25,9 +25,14 @@ export function signInRedirectPath(returnTo: string): string {
 export function signInRedirectTarget(searchParams: {
   redirectTo?: SearchParamValue;
   redirect?: SearchParamValue;
+  callbackUrl?: SearchParamValue;
+  next?: SearchParamValue;
 }): string {
   return normalizeLocalReturnTo(
-    searchParams.redirectTo ?? searchParams.redirect,
+    searchParams.redirectTo ??
+      searchParams.redirect ??
+      searchParams.callbackUrl ??
+      searchParams.next,
     DEFAULT_SIGN_IN_RETURN_TO
   );
 }

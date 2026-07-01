@@ -29,6 +29,7 @@ import {
   getLostProductDesktopThumbStyle,
   getLostProductThumbClassName
 } from "./product-gallery-state";
+import { getLostProductMobileBuybarClassName } from "./product-mobile-buybar-state";
 import "../../index.css";
 
 type Labels = {
@@ -755,7 +756,7 @@ export function LostProductDetailClient({
           />
         ))}
 
-        <div className="lost-product-mobile-buybar lg:hidden">
+        <div className={getLostProductMobileBuybarClassName()}>
           <p className="font-sans text-[1.8rem] leading-none font-light tabular-nums">
             {isQuoteOnly ? product.price : selectedPrice}
           </p>

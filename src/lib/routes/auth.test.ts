@@ -18,6 +18,18 @@ describe("auth route helpers", () => {
     );
   });
 
+  it("accepts callbackUrl query values from protected-route redirects", () => {
+    expect(signInRedirectTarget({ callbackUrl: "/lostinseoul/checkout" })).toBe(
+      "/lostinseoul/checkout"
+    );
+  });
+
+  it("accepts next query values from older protected pages", () => {
+    expect(signInRedirectTarget({ next: "/me/settings/general" })).toBe(
+      "/me/settings/general"
+    );
+  });
+
   it("prefers redirectTo when both query names are present", () => {
     expect(
       signInRedirectTarget({
@@ -27,7 +39,7 @@ describe("auth route helpers", () => {
     ).toBe("/day-n-night/my");
   });
 
-  it("rejects external or protocol-relative return targets", () => {
+  it("rejects external protocol-relative return targets", () => {
     expect(normalizeLocalReturnTo("https://evil.test")).toBe("/me");
     expect(normalizeLocalReturnTo("//evil.test")).toBe("/me");
   });

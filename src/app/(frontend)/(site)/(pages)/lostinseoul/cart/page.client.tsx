@@ -4,6 +4,7 @@ import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
 import { useLostCart } from "@/lib/lost-commerce/useLostCart";
+import { LostCartLineImage } from "../cart-line-image";
 import "../index.css";
 
 type Labels = {
@@ -108,10 +109,10 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                       href={`/lostinseoul/products/${line.productSlug}`}
                     >
                       {line.imageUrl ? (
-                        <img
+                        <LostCartLineImage
                           alt={line.productName}
-                          className="h-full w-full object-cover grayscale"
                           src={line.imageUrl}
+                          surface="page"
                         />
                       ) : null}
                     </Link>
