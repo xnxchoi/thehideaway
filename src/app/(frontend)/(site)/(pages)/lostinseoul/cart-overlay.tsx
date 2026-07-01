@@ -19,6 +19,7 @@ import { formatLostMoney } from "@/lib/lost-commerce/format";
 import { cn } from "@/lib/utils";
 import { useLostCart } from "@/lib/lost-commerce/useLostCart";
 import { LostCurrency } from "@/lib/lost-commerce/types";
+import { LostCartLineImage } from "./cart-line-image";
 import {
   getLostBagFallbackFrameMetrics,
   getLostBagFixedDocumentMinHeight,
@@ -769,10 +770,10 @@ function LostBagLine({
         href={`/lostinseoul/products/${line.productSlug}`}
       >
         {line.imageUrl ? (
-          <img
+          <LostCartLineImage
             alt={line.productName}
-            className="h-full w-full object-cover grayscale"
             src={line.imageUrl}
+            surface="overlay"
           />
         ) : null}
       </Link>
