@@ -17,17 +17,26 @@ export function normalizeLocalReturnTo(
 }
 
 export function signInRedirectPath(returnTo: string): string {
-  return `/sign-in?redirectTo=${encodeURIComponent(
-    normalizeLocalReturnTo(returnTo)
-  )}`;
+  const localReturnTo = normalizeLocalReturnTo(returnTo);
+  const signInPath =
+    localReturnTo === "/lostinseoul" || localReturnTo.startsWith("/lostinseoul/")
+      ? "/lostinseoul/auth/sign-in"
+      : "/sign-in";
+
+  return `${signInPath}?redirectTo=${encodeURIComponent(localReturnTo)}`;
 }
 
 export function signInRedirectTarget(searchParams: {
   redirectTo?: SearchParamValue;
   redirect?: SearchParamValue;
+  callbackUrl?: SearchParamValue;
+  next?: SearchParamValue;
 }): string {
   return normalizeLocalReturnTo(
-    searchParams.redirectTo ?? searchParams.redirect,
+    searchParams.redirectTo ??
+      searchParams.redirect ??
+      searchParams.callbackUrl ??
+      searchParams.next,
     DEFAULT_SIGN_IN_RETURN_TO
   );
 }

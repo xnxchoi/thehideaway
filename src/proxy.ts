@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { signInRedirectPath } from "@/lib/routes/auth";
 
 /**
  * Proxy (Next 16 — replaces `middleware.ts`). Runs in the Node.js
@@ -51,29 +52,18 @@ function isLostHost(host: string | null | undefined): boolean {
   }
 }
 
-function lostInternalPath(pathname: string): string | null {
-  if (pathname === "/") return "/lostinseoul";
-  if (pathname === "/lostinseoul" || pathname.startsWith("/lostinseoul/")) {
-    return pathname;
-  }
+function lostRootRewritePath(pathname: string): string | null {
+  return pathname === "/" ? "/lostinseoul" : null;
+}
 
-  const storefrontPrefixes = [
-    "/collections",
-    "/products",
-    "/cart",
-    "/checkout",
-    "/orders",
-    "/payment"
-  ];
-  if (
-    storefrontPrefixes.some(
-      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-    )
-  ) {
-    return `/lostinseoul${pathname}`;
-  }
-
-  return null;
+function isLostScopedPath(pathname: string): boolean {
+  return (
+    pathname === "/api" ||
+    pathname.startsWith("/api/") ||
+    pathname === "/lostinseoul" ||
+    pathname.startsWith("/lostinseoul/") ||
+    pathname.startsWith("/_next/")
+  );
 }
 
 function hasSessionCookie(req: NextRequest): boolean {
@@ -156,11 +146,21 @@ function getClientIP(req: NextRequest): string {
 
 export async function proxy(request: NextRequest) {
   const originalPathname = request.nextUrl.pathname;
-  const lostRewritePathname = isLostHost(
-    request.nextUrl.hostname || request.headers.get("host")
-  )
-    ? lostInternalPath(originalPathname)
+  const isLostRequest = isLostHost(
+    request.headers.get("host") || request.nextUrl.hostname
+  );
+  const lostRewritePathname = isLostRequest
+    ? lostRootRewritePath(originalPathname)
     : null;
+
+  if (
+    isLostRequest &&
+    !lostRewritePathname &&
+    !isLostScopedPath(originalPathname)
+  ) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   const pathname = lostRewritePathname ?? originalPathname;
 
   // Forward the route pathname seen by app code after host-based rewrites.
@@ -246,8 +246,7 @@ export async function proxy(request: NextRequest) {
   );
 
   if (isProtected && !hasSessionCookie(request)) {
-    const signInUrl = new URL("/sign-in", request.url);
-    signInUrl.searchParams.set("callbackUrl", pathname);
+    const signInUrl = new URL(signInRedirectPath(pathname), request.url);
     return NextResponse.redirect(signInUrl);
   }
 
@@ -263,11 +262,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    {
-      source:
-        "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
-      has: [{ type: "host", value: "(?:www\\.)?lostinseoul\\.com" }]
-    },
+    "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
     "/api/:path*",
     "/me/:path*",
     "/prive/:path*",
