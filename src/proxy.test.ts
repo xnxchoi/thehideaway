@@ -12,6 +12,12 @@ function makeRequest(
   });
 }
 
+function makeForwardedHostRequest(pathname: string, host: string): NextRequest {
+  return new NextRequest(`http://payload:3000${pathname}`, {
+    headers: { host, "x-forwarded-proto": "https" }
+  });
+}
+
 describe("proxy routing", () => {
   it("lets anonymous routes reach the path they requested", async () => {
     const res = await proxy(makeRequest("/essays"));
@@ -78,6 +84,25 @@ describe("proxy routing", () => {
 
     expect(res.headers.get("x-middleware-rewrite")).toBe(
       "https://lostinseoul.com/lostinseoul"
+    );
+  });
+
+  it("host-routes forwarded lostinseoul.com root requests behind the production proxy", async () => {
+    const res = await proxy(makeForwardedHostRequest("/", "lostinseoul.com"));
+
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      "http://payload:3000/lostinseoul"
+    );
+  });
+
+  it("redirects forwarded anonymous LOST checkout users on the public host", async () => {
+    const res = await proxy(
+      makeForwardedHostRequest("/checkout", "lostinseoul.com")
+    );
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://lostinseoul.com/sign-in?redirectTo=%2Flostinseoul%2Fcheckout"
     );
   });
 

@@ -52,6 +52,29 @@ function isLostHost(host: string | null | undefined): boolean {
   }
 }
 
+function forwardedProtocol(req: NextRequest): "http" | "https" | null {
+  const value = req.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    ?.trim()
+    .toLowerCase();
+  return value === "http" || value === "https" ? value : null;
+}
+
+function publicRedirectBaseURL(req: NextRequest): URL {
+  const url = new URL(req.url);
+  const host = req.headers.get("host");
+
+  if (isLostHost(host)) {
+    url.hostname = hostnameFromHostHeader(host);
+    url.port = "";
+    const protocol = forwardedProtocol(req);
+    if (protocol) url.protocol = `${protocol}:`;
+  }
+
+  return url;
+}
+
 function lostInternalPath(pathname: string): string | null {
   if (pathname === "/") return "/lostinseoul";
   if (pathname === "/lostinseoul" || pathname.startsWith("/lostinseoul/")) {
@@ -158,7 +181,7 @@ function getClientIP(req: NextRequest): string {
 export async function proxy(request: NextRequest) {
   const originalPathname = request.nextUrl.pathname;
   const lostRewritePathname = isLostHost(
-    request.nextUrl.hostname || request.headers.get("host")
+    request.headers.get("host") || request.nextUrl.hostname
   )
     ? lostInternalPath(originalPathname)
     : null;
@@ -247,7 +270,10 @@ export async function proxy(request: NextRequest) {
   );
 
   if (isProtected && !hasSessionCookie(request)) {
-    const signInUrl = new URL(signInRedirectPath(pathname), request.url);
+    const signInUrl = new URL(
+      signInRedirectPath(pathname),
+      publicRedirectBaseURL(request)
+    );
     return NextResponse.redirect(signInUrl);
   }
 
