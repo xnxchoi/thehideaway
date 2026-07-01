@@ -52,8 +52,18 @@ function isLostHost(host: string | null | undefined): boolean {
   }
 }
 
-function lostRootRewritePath(pathname: string): string | null {
-  return pathname === "/" ? "/lostinseoul" : null;
+function lostRootRedirectURL(request: NextRequest): URL | null {
+  if (request.nextUrl.pathname !== "/") return null;
+
+  const host = request.headers.get("host") || request.nextUrl.host;
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const protocol = forwardedProto ? `${forwardedProto}:` : request.nextUrl.protocol;
+  const url = new URL(
+    `${protocol}//${host}${request.nextUrl.pathname}${request.nextUrl.search}`
+  );
+
+  url.pathname = "/lostinseoul";
+  return url;
 }
 
 function isLostScopedPath(pathname: string): boolean {
@@ -149,19 +159,20 @@ export async function proxy(request: NextRequest) {
   const isLostRequest = isLostHost(
     request.headers.get("host") || request.nextUrl.hostname
   );
-  const lostRewritePathname = isLostRequest
-    ? lostRootRewritePath(originalPathname)
-    : null;
+  const lostRedirectURL = isLostRequest ? lostRootRedirectURL(request) : null;
+
+  if (lostRedirectURL) {
+    return NextResponse.redirect(lostRedirectURL);
+  }
 
   if (
     isLostRequest &&
-    !lostRewritePathname &&
     !isLostScopedPath(originalPathname)
   ) {
     return new NextResponse(null, { status: 404 });
   }
 
-  const pathname = lostRewritePathname ?? originalPathname;
+  const pathname = originalPathname;
 
   // Forward the route pathname seen by app code after host-based rewrites.
   const fwdHeaders = new Headers(request.headers);
@@ -248,12 +259,6 @@ export async function proxy(request: NextRequest) {
   if (isProtected && !hasSessionCookie(request)) {
     const signInUrl = new URL(signInRedirectPath(pathname), request.url);
     return NextResponse.redirect(signInUrl);
-  }
-
-  if (lostRewritePathname) {
-    const url = request.nextUrl.clone();
-    url.pathname = lostRewritePathname;
-    return NextResponse.rewrite(url, { request: { headers: fwdHeaders } });
   }
 
   // Default: forward with the x-pathname header set above.
