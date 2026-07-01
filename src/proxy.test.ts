@@ -59,13 +59,12 @@ describe("proxy routing", () => {
     );
   });
 
-  it("redirects anonymous LOST checkout users back to checkout after sign-in", async () => {
+  it("does not expose internal LOST checkout paths directly", async () => {
     const res = await proxy(makeRequest("/lostinseoul/checkout"));
 
+    expect(res.status).toBe(404);
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
-    expect(res.headers.get("location")).toBe(
-      "https://hideaway.test/lostinseoul/auth/sign-in?redirectTo=%2Flostinseoul%2Fcheckout"
-    );
+    expect(res.headers.get("location")).toBeNull();
   });
 
   it("lets signed-in users keep protected routes", async () => {
@@ -82,22 +81,33 @@ describe("proxy routing", () => {
       makeRequest("/", undefined, "https://lostinseoul.com")
     );
 
-    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
-    expect(res.headers.get("location")).toBe(
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
       "https://lostinseoul.com/lostinseoul"
     );
+    expect(res.headers.get("location")).toBeNull();
   });
 
   it("host-routes forwarded lostinseoul.com root requests behind the production proxy", async () => {
     const res = await proxy(makeForwardedHostRequest("/", "lostinseoul.com"));
 
-    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
-    expect(res.headers.get("location")).toBe(
-      "https://lostinseoul.com/lostinseoul"
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      "http://payload:3000/lostinseoul"
     );
+    expect(res.headers.get("location")).toBeNull();
   });
 
-  it("lets scoped lostinseoul.com product paths pass through", async () => {
+  it("scopes clean lostinseoul.com product paths into the internal storefront", async () => {
+    const res = await proxy(
+      makeRequest("/products/coat", undefined, "https://lostinseoul.com")
+    );
+
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      "https://lostinseoul.com/lostinseoul/products/coat"
+    );
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("does not expose prefixed LOST product paths directly", async () => {
     const res = await proxy(
       makeRequest(
         "/lostinseoul/products/coat",
@@ -106,38 +116,50 @@ describe("proxy routing", () => {
       )
     );
 
+    expect(res.status).toBe(404);
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("does not expose root-level product shortcuts on lostinseoul.com", async () => {
-    const res = await proxy(
-      makeRequest("/products/coat", undefined, "https://lostinseoul.com")
-    );
+  it("does not expose prefixed LOST paths on the Hideaway host", async () => {
+    const res = await proxy(makeRequest("/lostinseoul"));
 
     expect(res.status).toBe(404);
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("does not expose Hideaway page routes on lostinseoul.com", async () => {
+  it("scopes Hideaway page routes into the LOST namespace on lostinseoul.com", async () => {
     const res = await proxy(
       makeRequest("/plans", undefined, "https://lostinseoul.com")
     );
 
-    expect(res.status).toBe(404);
-    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      "https://lostinseoul.com/lostinseoul/plans"
+    );
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("does not expose vanity author routes on lostinseoul.com", async () => {
+  it("scopes vanity author routes into the LOST namespace on lostinseoul.com", async () => {
     const res = await proxy(
       makeRequest("/@sean/essays/post", undefined, "https://lostinseoul.com")
     );
 
-    expect(res.status).toBe(404);
-    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      "https://lostinseoul.com/lostinseoul/@sean/essays/post"
+    );
     expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("redirects clean LOST checkout users to clean LOST sign-in URLs", async () => {
+    const res = await proxy(
+      makeRequest("/checkout", undefined, "https://lostinseoul.com")
+    );
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://lostinseoul.com/auth/sign-in?redirectTo=%2Fcheckout"
+    );
   });
 
   it("keeps api routes available on lostinseoul.com", async () => {

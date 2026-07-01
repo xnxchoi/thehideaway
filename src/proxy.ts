@@ -52,28 +52,40 @@ function isLostHost(host: string | null | undefined): boolean {
   }
 }
 
-function lostRootRedirectURL(request: NextRequest): URL | null {
-  if (request.nextUrl.pathname !== "/") return null;
-
-  const host = request.headers.get("host") || request.nextUrl.host;
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const protocol = forwardedProto ? `${forwardedProto}:` : request.nextUrl.protocol;
-  const url = new URL(
-    `${protocol}//${host}${request.nextUrl.pathname}${request.nextUrl.search}`
+function isLostInternalPath(pathname: string): boolean {
+  return (
+    pathname === "/lostinseoul" ||
+    pathname.startsWith("/lostinseoul/")
   );
-
-  url.pathname = "/lostinseoul";
-  return url;
 }
 
-function isLostScopedPath(pathname: string): boolean {
+function isLostPassthroughPath(pathname: string): boolean {
   return (
     pathname === "/api" ||
     pathname.startsWith("/api/") ||
-    pathname === "/lostinseoul" ||
-    pathname.startsWith("/lostinseoul/") ||
     pathname.startsWith("/_next/")
   );
+}
+
+function lostHostRewritePath(pathname: string): string | null {
+  if (isLostPassthroughPath(pathname) || isLostInternalPath(pathname)) {
+    return null;
+  }
+
+  return pathname === "/" ? "/lostinseoul" : `/lostinseoul${pathname}`;
+}
+
+function cleanLostExternalPath(pathname: string): string {
+  if (pathname === "/lostinseoul") return "/";
+  if (pathname.startsWith("/lostinseoul/")) {
+    return pathname.slice("/lostinseoul".length) || "/";
+  }
+  return pathname;
+}
+
+function lostHostSignInRedirectPath(returnTo: string): string {
+  const cleanReturnTo = cleanLostExternalPath(returnTo);
+  return `/auth/sign-in?redirectTo=${encodeURIComponent(cleanReturnTo)}`;
 }
 
 function hasSessionCookie(req: NextRequest): boolean {
@@ -159,20 +171,15 @@ export async function proxy(request: NextRequest) {
   const isLostRequest = isLostHost(
     request.headers.get("host") || request.nextUrl.hostname
   );
-  const lostRedirectURL = isLostRequest ? lostRootRedirectURL(request) : null;
+  const lostRewritePathname = isLostRequest
+    ? lostHostRewritePath(originalPathname)
+    : null;
 
-  if (lostRedirectURL) {
-    return NextResponse.redirect(lostRedirectURL);
-  }
-
-  if (
-    isLostRequest &&
-    !isLostScopedPath(originalPathname)
-  ) {
+  if (isLostInternalPath(originalPathname)) {
     return new NextResponse(null, { status: 404 });
   }
 
-  const pathname = originalPathname;
+  const pathname = lostRewritePathname ?? originalPathname;
 
   // Forward the route pathname seen by app code after host-based rewrites.
   const fwdHeaders = new Headers(request.headers);
@@ -257,8 +264,17 @@ export async function proxy(request: NextRequest) {
   );
 
   if (isProtected && !hasSessionCookie(request)) {
-    const signInUrl = new URL(signInRedirectPath(pathname), request.url);
+    const redirectPath = isLostRequest
+      ? lostHostSignInRedirectPath(pathname)
+      : signInRedirectPath(pathname);
+    const signInUrl = new URL(redirectPath, request.url);
     return NextResponse.redirect(signInUrl);
+  }
+
+  if (lostRewritePathname) {
+    const url = request.nextUrl.clone();
+    url.pathname = lostRewritePathname;
+    return NextResponse.rewrite(url, { request: { headers: fwdHeaders } });
   }
 
   // Default: forward with the x-pathname header set above.
