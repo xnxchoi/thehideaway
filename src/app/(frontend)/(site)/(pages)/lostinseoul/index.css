@@ -59,6 +59,7 @@ body[data-lost-bag-frame="closing"] .menu__body {
 }
 body:has(.lost-commerce-root) {
   --lost-logo-top: calc(48px + 1.94rem);
+  --lost-mobile-chrome-safe-height: 13.2rem;
   background: var(--bg);
 }
 
@@ -136,9 +137,33 @@ body:has(.lost-checkout-root) [class*="z-[238]"] {
   color: var(--lost-paper-ink);
 }
 
+.lost-commerce-chrome::before {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: var(--lost-mobile-chrome-safe-height);
+  pointer-events: none;
+  border-bottom: 1px solid oklch(from var(--fg) l c h / 0.12);
+  background: linear-gradient(
+    180deg,
+    var(--lost-paper) 0%,
+    oklch(from var(--lost-paper) l c h / 0.97) 72%,
+    oklch(from var(--lost-paper) l c h / 0) 100%
+  );
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  content: "";
+}
+
 .lost-commerce-root {
   background: var(--lost-paper);
   color: var(--lost-paper-ink);
+}
+
+@media (min-width: 1024px) {
+  .lost-commerce-chrome::before {
+    display: none;
+  }
 }
 
 [data-lost-route-fog] {
