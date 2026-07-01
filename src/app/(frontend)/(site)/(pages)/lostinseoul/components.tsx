@@ -65,6 +65,10 @@ import {
   type LostEntryPhase
 } from "./entry-motion";
 import { LostHeroScene } from "./hero-three";
+import {
+  LOST_HERO_VIDEO_BUTTON_LABEL_CLASS,
+  LOST_STATEMENT_CHROME_SAFE_CLASS
+} from "./mobile-chrome-state";
 
 const LOST_ENTRY_MIN_MS = 1100;
 const LOST_ENTRY_FAILSAFE_MS = 2600;
@@ -779,7 +783,7 @@ export function LostHero({
               weight="regular"
             />
           </span>
-          <span className="hidden min-h-16 items-center px-5 backdrop-blur-xl md:flex">
+          <span className={LOST_HERO_VIDEO_BUTTON_LABEL_CLASS}>
             {watchLabel}
           </span>
         </m.button>
@@ -1024,7 +1028,12 @@ export function LostStatement({
   objectsLabel: string;
 }) {
   return (
-    <section className="relative grid bg-[var(--lost-paper)] px-4 py-24 text-center text-[var(--lost-paper-ink)] md:px-14 md:py-40">
+    <section
+      className={cn(
+        "relative grid bg-[var(--lost-paper)] px-4 text-center text-[var(--lost-paper-ink)] md:px-14",
+        LOST_STATEMENT_CHROME_SAFE_CLASS
+      )}
+    >
       <p className="mx-auto max-w-[89.4rem] text-[2.4rem] leading-[1.08] font-medium tracking-tight md:text-[3.8rem]">
         <LostBlurAppear lines={splitLostBlurLines(lede)} text={lede} />
       </p>

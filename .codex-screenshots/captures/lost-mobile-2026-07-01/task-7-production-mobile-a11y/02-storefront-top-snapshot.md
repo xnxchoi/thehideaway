@@ -1,0 +1,61 @@
+- generic [active] [ref=e2] [box=0,0,390,3356]:
+  - alert [ref=e1] [box=-1,-1,1,1]: LOSTINSEOUL
+  - generic [ref=e3] [box=0,0,390,3356]:
+    - generic [box=552,359,96,96]:
+      - img [box=552,359,96,96]
+    - region "Notifications alt+T" [box=0,0,390,0]
+    - generic [box=0,0,390,844]:
+      - navigation [box=16,353,0,0]
+    - main [ref=e4] [box=0,0,390,3356]:
+      - generic [ref=e8] [box=0,0,390,3356]:
+        - generic [ref=e9] [box=0,0,390,80]:
+          - generic [box=0,0,390,31]: Limited runs, Seoul dispatch
+          - generic [ref=e10] [box=248,80,132,42]:
+            - search [ref=e11] [box=248,80,40,42]:
+              - button "Search" [ref=e12] [box=249,81,40,40]:
+                - img [ref=e13] [box=262,94,15,15]
+              - searchbox "Search" [ref=e15] [box=289,81,8,40]
+            - button "Cart / 0" [ref=e16] [box=291,80,89,42]:
+              - img [ref=e17] [box=302,92,18,18]
+              - generic [ref=e19] [box=327,95,42,12]: Cart / 0
+        - main [ref=e20] [box=0,0,390,3356]:
+          - generic [ref=e21] [box=0,0,390,3356]:
+            - generic [ref=e22] [box=0,0,390,844]:
+              - generic [box=0,0,390,844]:
+                - generic [ref=e25] [box=10,443,370,12]
+                - button "Watch video" [ref=e28] [box=174,426,42,42]
+                - link "Available now" [ref=e33] [box=120,758,150,62]:
+                  - /url: "#products"
+            - generic [ref=e36] [box=0,844,390,281]:
+              - paragraph [ref=e37] [box=10,904,370,130]:
+                - generic [ref=e38] [box=10,904,370,130]
+              - paragraph [ref=e42] [box=10,1054,370,11]: 00 Objects
+            - generic [ref=e43] [box=0,1125,390,499]:
+              - generic [ref=e45] [box=10,1196,370,52]:
+                - heading "Available now" [level=2] [ref=e47] [box=10,1196,370,16]
+                - paragraph [ref=e48] [box=314,1237,66,11]: Incoming / 00
+              - generic [ref=e49] [box=10,1268,370,276]:
+                - generic [ref=e53] [box=24,1427,343,38]
+                - link "Available now" [ref=e59] [box=135,1498,120,46]:
+                  - /url: "#products"
+            - article "Selected objects" [ref=e61] [box=0,1624,390,743]:
+              - figure [ref=e62] [box=0,1624,390,743]
+              - generic [ref=e67] [box=16,1683,358,460]:
+                - heading "Selected objects" [level=3] [ref=e68] [box=16,1683,285,13]
+                - generic [ref=e69] [box=16,2097,358,46]
+            - generic [ref=e77] [box=0,2367,390,989]:
+              - generic [ref=e81] [box=10,2436,77,18]: Editions
+              - generic [ref=e82] [box=0,2486,390,790]:
+                - generic [ref=e83] [box=0,2486,390,141]
+                - generic [ref=e92] [box=0,2642,390,325]
+                - generic [ref=e102] [box=0,2983,390,292]
+  - link "LOSTINSEOUL home" [ref=e124] [box=137,61,115,13]:
+    - /url: /lostinseoul
+    - text: LOSTINSEOUL
+  - generic [box=0,0,390,844]:
+    - button [ref=e125] [box=10,789,45,45]:
+      - img [ref=e126] [box=24,803,18,18]
+    - generic [box=244,779,146,65]:
+      - button [ref=e128] [box=254,789,45,45]:
+        - img [ref=e129] [box=268,803,18,18]
+      - generic [box=302,789,78,45]: 0:00 / 0:00

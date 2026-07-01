@@ -1,0 +1,68 @@
+- generic [active] [ref=f2e11] [box=0,0,390,5792]:
+  - alert [ref=f2e10] [box=-1,-1,1,1]: LOSTINSEOUL
+  - generic [ref=f2e12] [box=0,0,390,5792]:
+    - generic [box=147,374,96,96]:
+      - img [box=147,374,96,96]
+    - region "Notifications alt+T" [box=0,0,390,0]
+    - generic [box=0,0,390,844]:
+      - navigation [box=16,353,0,0]
+    - main [ref=f2e13] [box=0,0,390,5792]:
+      - generic [ref=f2e17] [box=0,0,390,5792]:
+        - generic [ref=f2e19] [box=0,0,390,80]:
+          - generic [box=0,0,390,31]: Limited runs, Seoul dispatch
+          - generic [ref=f2e20] [box=248,80,132,42]:
+            - search [ref=f2e21] [box=248,80,40,42]:
+              - button "Search" [ref=f2e22] [box=249,81,40,40]:
+                - img [ref=f2e23] [box=262,94,15,15]
+              - searchbox "Search" [ref=f2e25] [box=289,81,8,40]
+            - button "Cart / 0" [ref=f2e26] [box=291,80,89,42]:
+              - img [ref=f2e27] [box=302,92,18,18]
+              - generic [ref=f2e29] [box=327,95,42,12]: Cart / 0
+        - main [ref=f2e30] [box=0,0,390,5792]:
+          - generic [ref=f2e31] [box=0,0,390,5792]:
+            - generic [ref=f2e32] [box=0,0,390,844]:
+              - generic [box=0,0,390,844]:
+                - generic [ref=f2e35] [box=10,443,370,12]
+                - button "Watch video" [ref=f2e38] [box=128,426,134,42]
+                - link "Available now" [ref=f2e44] [box=120,758,150,62]:
+                  - /url: "#products"
+            - generic [ref=f2e47] [box=0,844,390,393]:
+              - paragraph [ref=f2e48] [box=10,1016,370,130]:
+                - generic [ref=f2e49] [box=10,1016,370,130]
+              - paragraph [ref=f2e53] [box=10,1166,370,11]: 04 Objects
+            - generic [ref=f2e54] [box=0,1237,390,3004]:
+              - generic [ref=f2e56] [box=10,1308,370,52]:
+                - heading "Available now" [level=2] [ref=f2e58] [box=10,1308,370,16]
+                - paragraph [ref=f2e59] [box=335,1349,45,11]: Cart / 00
+              - generic [ref=f2e60] [box=10,1380,370,2781]:
+                - generic [ref=f2e61] [box=10,1380,370,2715]
+                - link "Available now" [ref=f2e207] [box=135,4115,120,46]:
+                  - /url: "#products"
+            - article "Selected objects" [ref=f2e209] [box=0,4241,390,692]:
+              - figure [ref=f2e210] [box=0,4241,390,692]
+              - generic [ref=f2e215] [box=16,4300,358,460]:
+                - heading "Selected objects" [level=3] [ref=f2e216] [box=16,4300,285,13]
+                - generic [ref=f2e217] [box=16,4714,358,46]
+              - generic [ref=f2e223] [box=16,4750,358,124]:
+                - link "Parasol 0230 ₩118,000" [ref=f2e224] [box=16,4750,358,38]:
+                  - /url: /lostinseoul/products/parasol-0230
+                - link "Memory Tee ₩72,000" [ref=f2e227] [box=16,4793,358,38]:
+                  - /url: /lostinseoul/products/memory-tee
+                - link "Window Study 01 ₩64,000" [ref=f2e230] [box=16,4836,358,38]:
+                  - /url: /lostinseoul/products/window-study-01
+            - generic [ref=f2e235] [box=0,4933,390,860]:
+              - generic [ref=f2e239] [box=10,5002,77,18]: Editions
+              - generic [ref=f2e240] [box=0,5052,390,661]:
+                - generic [ref=f2e241] [box=0,5052,390,141]
+                - generic [ref=f2e250] [box=0,5208,390,196]
+                - generic [ref=f2e260] [box=0,5420,390,292]
+  - link "LOSTINSEOUL home" [ref=f2e282] [box=137,61,115,13]:
+    - /url: /lostinseoul
+    - text: LOSTINSEOUL
+  - generic [box=0,0,390,844]:
+    - button [ref=f2e283] [box=10,789,45,45]:
+      - img [ref=f2e284] [box=24,803,18,18]
+    - generic [box=244,779,146,65]:
+      - button [ref=f2e286] [box=254,789,45,45]:
+        - img [ref=f2e287] [box=268,803,18,18]
+      - generic [box=302,789,78,45]: 0:00 / 0:00
