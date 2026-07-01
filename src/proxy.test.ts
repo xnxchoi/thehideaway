@@ -115,13 +115,15 @@ describe("proxy routing", () => {
     }
   });
 
+  it("runs proxy on public page routes so LOST host routing can fire", () => {
+    expect(config.matcher[0]).toBe(
+      "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)"
+    );
+  });
+
   it("keeps the proxy matcher scoped to operational routes", () => {
     expect(config.matcher).toEqual([
-      {
-        source:
-          "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
-        has: [{ type: "host", value: "(?:www\\.)?lostinseoul\\.com" }]
-      },
+      "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
       "/api/:path*",
       "/me/:path*",
       "/prive/:path*",

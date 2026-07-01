@@ -263,11 +263,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    {
-      source:
-        "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
-      has: [{ type: "host", value: "(?:www\\.)?lostinseoul\\.com" }]
-    },
+    "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
     "/api/:path*",
     "/me/:path*",
     "/prive/:path*",
