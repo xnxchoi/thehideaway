@@ -10,7 +10,11 @@ import {
   HIDEAWAY_LOGO_DATA_URL
 } from "./branding";
 import { instrumentSerif } from "./fonts";
-import { formatAmount, formatInvoiceNumber } from "./format";
+import {
+  formatAmount,
+  formatInvoiceNumber,
+  formatInvoiceOrderNumber
+} from "./format";
 import { InvoicePanel } from "./InvoicePanel";
 import type { InvoiceCertificateProps, InvoiceDisplay } from "./types";
 
@@ -333,8 +337,11 @@ function PaperContent({ invoice }: { invoice: InvoiceDisplay }) {
 
   const issuedAt = invoice.issued_at ?? invoice.paid_at ?? null;
   const clientPrimary = invoice.client.name ?? invoice.client.email ?? "—";
-  const orderRef =
-    invoice.bank_reference ?? formatInvoiceNumber(invoice.invoice_number);
+  const orderRef = formatInvoiceOrderNumber({
+    invoiceNumber: invoice.invoice_number,
+    issuedAt,
+    bankReference: invoice.bank_reference
+  });
   const memberYear = issuedAt ? new Date(issuedAt).getFullYear() : null;
   const planName = invoice.plan.title ?? t("planFallback");
   const isPaid =

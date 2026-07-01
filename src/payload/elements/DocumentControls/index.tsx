@@ -27,16 +27,16 @@ import {
   useEditDepth,
   useFormInitializing,
   useFormProcessing,
-  useTranslation
+  useTranslation,
+  useLivePreviewContext
 } from "@payloadcms/ui";
-import { LivePreviewToggler } from "@payloadcms/ui/elements/LivePreview/Toggler";
+import { EyeIcon } from "@payloadcms/ui/icons/Eye";
 import { PermanentlyDeleteButton } from "@payloadcms/ui/elements/PermanentlyDeleteButton";
 import { formatDate } from "@payloadcms/ui/shared";
 import { useLenis } from "lenis/react";
 import { AnimatePresence } from "motion/react";
 import Link from "next/link";
 import type { DocumentDrawerContextType } from "node_modules/@payloadcms/ui/dist/elements/DocumentDrawer/Provider";
-import { useLivePreviewContext } from "node_modules/@payloadcms/ui/dist/providers/LivePreview/context";
 import type {
   ClientUser,
   Data,
@@ -144,7 +144,25 @@ export const DocumentControls: FC<{
 
   const globalConfig = getEntityConfig({ globalSlug: slug });
 
-  const { isLivePreviewEnabled } = useLivePreviewContext();
+  const {
+    isLivePreviewEnabled,
+    isLivePreviewing,
+    setIsLivePreviewing,
+    url: livePreviewURL
+  } = useLivePreviewContext();
+  const isLivePreviewConfigured = Boolean(
+    collectionConfig?.admin?.livePreview ||
+      globalConfig?.admin?.livePreview ||
+      (collectionConfig?.slug &&
+        config.admin.livePreview?.collections?.includes(collectionConfig.slug)) ||
+      (globalConfig?.slug &&
+        config.admin.livePreview?.globals?.includes(globalConfig.slug))
+  );
+  const shouldShowLivePreviewToggler =
+    isLivePreviewEnabled || isLivePreviewConfigured || livePreviewURL;
+  const livePreviewLabel = isLivePreviewing
+    ? t("general:exitLivePreview")
+    : t("general:livePreview");
 
   const dateFormat = config.admin.dateFormat;
   const localization = config.localization;
@@ -343,7 +361,25 @@ export const DocumentControls: FC<{
           <div className={`${baseClass}__controls-wrapper`}>
             <div className={`${baseClass}__controls`}>
               {BeforeDocumentControls}
-              {isLivePreviewEnabled && !isInDrawer && <LivePreviewToggler />}
+              {shouldShowLivePreviewToggler && !isInDrawer && livePreviewURL && (
+                <button
+                  aria-label={livePreviewLabel}
+                  className={[
+                    "live-preview-toggler",
+                    isLivePreviewing && "live-preview-toggler--active"
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  id="live-preview-toggler"
+                  onClick={() => {
+                    setIsLivePreviewing(!isLivePreviewing);
+                  }}
+                  title={livePreviewLabel}
+                  type="button"
+                >
+                  <EyeIcon active={isLivePreviewing} />
+                </button>
+              )}
               {(collectionConfig?.admin.preview ||
                 globalConfig?.admin.preview) && (
                 <RenderCustomComponent

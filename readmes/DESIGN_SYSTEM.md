@@ -382,6 +382,40 @@ Risks:
 - poor mobile interaction,
 - uncleared body/document side effects.
 
+### Formal Artifact / Receipt
+
+Printed or printable brand documents: invoices, receipts, certificates,
+membership artifacts, order confirmations, and similar records.
+
+Use when the interface becomes an object of record rather than an app screen.
+Lineage may reference Cartier-like receipt typography: centered brand ritual,
+wide margins, sparse unruled tables, precise metadata, and restrained legal
+copy.
+
+Rules:
+
+- Treat the document as a formal artifact, not an admin table.
+- Prefer typography, tabular alignment, whitespace, and one or two hairlines
+  over boxes, cards, pills, or grid chrome.
+- Header and footer may repeat across pages; page identity should be minimal
+  and archival, such as `2 / 3`, not loud navigation.
+- Totals belong after the final line item, even when line items continue onto
+  later pages.
+- Preallocated empty rows are only a fillable-template affordance. Finalized
+  generated artifacts must render only actual purchase/payment rows, then pull
+  totals, terms, payment details, and footer-adjacent content up accordingly.
+- Metadata is conditional. Service periods belong to services and memberships,
+  not physical SKU orders.
+- Payment records should include enough receipt evidence to stand alone:
+  method, amount, date, and reference where available.
+
+Risks:
+
+- importing dashboard density into a document,
+- making the artifact too decorative to audit,
+- copying luxury references as ornament rather than using their restraint,
+- letting legal copy overwhelm the receipt hierarchy.
+
 ## Component Lineage Protocol
 
 Run this before generating or modifying visible UI.

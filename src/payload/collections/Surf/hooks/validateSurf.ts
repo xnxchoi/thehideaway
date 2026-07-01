@@ -1,13 +1,17 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import type { CollectionAfterChangeHook } from "payload";
-import { Surf } from "@/payload-types";
+import type { Surf } from "@/payload-types";
 
 export const validateSurf: CollectionAfterChangeHook<Surf> = async ({
   doc,
   previousDoc,
-  req: { payload }
+  req: { payload, context }
 }) => {
+  if (context.disableRevalidate) {
+    return doc;
+  }
+
   if (doc._status === "published") {
     const path = `/surf/${doc.slug}`;
 

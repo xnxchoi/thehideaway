@@ -63,7 +63,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname)
     },
     livePreview: {
-      collections: ["posts", "pages", "profile"],
+      collections: ["posts", "surf", "pages", "profile"],
       breakpoints: [
         {
           label: "Mobile",

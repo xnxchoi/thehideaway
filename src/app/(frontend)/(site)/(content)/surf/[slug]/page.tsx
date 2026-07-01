@@ -1,4 +1,5 @@
 import configPromise from "@payload-config";
+import { SurfContent } from "@/components/content/surf/surf";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";
@@ -16,7 +17,11 @@ export default async function SurfPage({ params }: Args) {
     notFound();
   }
   const surfsData = surfs.docs[0]!;
-  return <div>{surfsData.title}</div>;
+  return (
+    <main className="mx-auto min-h-screen w-full max-w-3xl px-6 py-16 xl:px-10 xl:py-24">
+      <SurfContent title={surfsData.title} content={surfsData.content} />
+    </main>
+  );
 }
 
 async function getSurf({ slug }: { slug: string }) {

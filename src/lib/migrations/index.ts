@@ -35,6 +35,7 @@ import * as migration_20260525_000000_day_n_night_event_ended from "./20260525_0
 import * as migration_20260526_120000_lostinseoul_commerce_v1 from "./20260526_120000_lostinseoul_commerce_v1";
 import * as migration_20260603_010000_ticket_order_money_snapshots from "./20260603_010000_ticket_order_money_snapshots";
 import * as migration_20260603_011000_subscription_money_snapshots from "./20260603_011000_subscription_money_snapshots";
+import * as migration_20260625_120000_invoice_number_public_floor from "./20260625_120000_invoice_number_public_floor";
 import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
@@ -227,5 +228,10 @@ export const migrations = [
     up: migration_20260603_011000_subscription_money_snapshots.up,
     down: migration_20260603_011000_subscription_money_snapshots.down,
     name: "20260603_011000_subscription_money_snapshots"
+  },
+  {
+    up: migration_20260625_120000_invoice_number_public_floor.up,
+    down: migration_20260625_120000_invoice_number_public_floor.down,
+    name: "20260625_120000_invoice_number_public_floor"
   }
 ];

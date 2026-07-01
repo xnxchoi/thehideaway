@@ -1,0 +1,168 @@
+- generic [active] [ref=e1] [box=0,0,1200,929]:
+  - generic [box=540,387,120,96]:
+    - generic [box=540,415,120,40]:
+      - generic [box=540,429,120,12]: LOADING...
+  - generic [ref=e4] [box=0,0,1200,929]:
+    - button "Open Menu" [ref=e7] [box=20,12,19,19]:
+      - generic "Open" [ref=e9] [box=22,14,15,15]:
+        - img [ref=e10] [box=22,12,15,20]
+    - generic [ref=e12] [box=0,0,1200,929]:
+      - complementary [ref=e13] [box=-236,112,234,709]:
+        - navigation [ref=e15] [box=-220,155,202,1337]:
+          - link "Browse by Folder" [ref=e16] [box=-220,159,202,37]:
+            - /url: /vault/vault/folio
+            - img [ref=e17] [box=-212,170,15,15]
+            - text: Browse by Folder
+          - generic [ref=e19] [box=-220,212,202,1025]:
+            - button "Collections" [ref=e20] [box=-220,212,202,20]:
+              - generic [ref=e21] [box=-220,212,65,20]: Collections
+              - img [ref=e23] [box=-34,213,15,15]
+            - generic [ref=e27] [box=-220,237,202,1000]:
+              - link "Assets" [ref=e28] [box=-220,237,202,25]:
+                - /url: /vault/collections/assets
+              - link "Categories" [ref=e30] [box=-220,262,202,25]:
+                - /url: /vault/collections/categories
+              - link "Media" [ref=e32] [box=-220,287,202,25]:
+                - /url: /vault/collections/media
+              - link "Tags" [ref=e34] [box=-220,312,202,25]:
+                - /url: /vault/collections/tags
+              - link "Notifications" [ref=e36] [box=-220,337,202,25]:
+                - /url: /vault/collections/notifications
+              - link "Pages" [ref=e38] [box=-220,362,202,25]:
+                - /url: /vault/collections/pages
+              - link "Posts" [ref=e40] [box=-220,387,202,25]:
+                - /url: /vault/collections/posts
+              - link "User Medias" [ref=e43] [box=-220,412,202,25]:
+                - /url: /vault/collections/userMedia
+              - link "Profiles" [ref=e45] [box=-220,437,202,25]:
+                - /url: /vault/collections/profile
+              - link "Albums" [ref=e47] [box=-220,462,202,25]:
+                - /url: /vault/collections/albums
+              - link "Tracks" [ref=e49] [box=-220,487,202,25]:
+                - /url: /vault/collections/tracks
+              - link "Playlists" [ref=e51] [box=-220,512,202,25]:
+                - /url: /vault/collections/playlists
+              - link "Follows" [ref=e53] [box=-220,537,202,25]:
+                - /url: /vault/collections/follows
+              - link "Bookmarks" [ref=e55] [box=-220,562,202,25]:
+                - /url: /vault/collections/bookmarks
+              - link "User Views" [ref=e57] [box=-220,587,202,25]:
+                - /url: /vault/collections/userViews
+              - link "Surfs" [ref=e59] [box=-220,612,202,25]:
+                - /url: /vault/collections/surf
+              - link "Citations" [ref=e61] [box=-220,637,202,25]:
+                - /url: /vault/collections/citations
+              - link "Compilations" [ref=e63] [box=-220,662,202,25]:
+                - /url: /vault/collections/compilations
+              - link "Admins" [ref=e65] [box=-220,687,202,25]:
+                - /url: /vault/collections/admins
+              - link "Email Quotas" [ref=e67] [box=-220,712,202,25]:
+                - /url: /vault/collections/email-quota
+              - link "Deferred Emails" [ref=e69] [box=-220,737,202,25]:
+                - /url: /vault/collections/deferred-emails
+              - link "Search Results" [ref=e71] [box=-220,762,202,25]:
+                - /url: /vault/collections/search
+              - link "Plans" [ref=e73] [box=-220,787,202,25]:
+                - /url: /vault/collections/plans
+              - link "Invoices" [ref=e75] [box=-220,812,202,25]:
+                - /url: /vault/collections/invoices
+              - link "Prices" [ref=e77] [box=-220,837,202,25]:
+                - /url: /vault/collections/prices
+              - link "Subscriptions" [ref=e79] [box=-220,862,202,25]:
+                - /url: /vault/collections/subscriptions
+              - link "FXRates" [ref=e81] [box=-220,887,202,25]:
+                - /url: /vault/collections/exchange-rate
+              - link "Currencies" [ref=e83] [box=-220,912,202,25]:
+                - /url: /vault/collections/currency
+              - link "Holidays" [ref=e85] [box=-220,937,202,25]:
+                - /url: /vault/collections/holidays
+              - link "Product Categories" [ref=e87] [box=-220,962,202,25]:
+                - /url: /vault/collections/product-category
+              - link "Product Sub Categories" [ref=e89] [box=-220,987,202,25]:
+                - /url: /vault/collections/product-sub
+              - link "Product Drops" [ref=e91] [box=-220,1012,202,25]:
+                - /url: /vault/collections/product-drops
+              - link "Products" [ref=e93] [box=-220,1037,202,25]:
+                - /url: /vault/collections/products
+              - link "Product Order Campaigns" [ref=e95] [box=-220,1062,202,25]:
+                - /url: /vault/collections/product-order-campaigns
+              - link "Product Carts" [ref=e97] [box=-220,1087,202,25]:
+                - /url: /vault/collections/product-carts
+              - link "Product Orders" [ref=e99] [box=-220,1112,202,25]:
+                - /url: /vault/collections/product-orders
+              - link "Product Payments" [ref=e101] [box=-220,1137,202,25]:
+                - /url: /vault/collections/product-payments
+              - link "Events" [ref=e103] [box=-220,1162,202,25]:
+                - /url: /vault/collections/events
+              - link "Ticket Orders" [ref=e105] [box=-220,1187,202,25]:
+                - /url: /vault/collections/ticket-orders
+              - link "Tickets" [ref=e107] [box=-220,1212,202,25]:
+                - /url: /vault/collections/tickets
+          - generic [ref=e109] [box=-220,1247,202,75]:
+            - button "Globals" [ref=e110] [box=-220,1247,202,20]:
+              - generic [ref=e111] [box=-220,1247,45,20]: Globals
+              - img [ref=e113] [box=-34,1248,15,15]
+            - generic [ref=e117] [box=-220,1272,202,50]:
+              - link "Header" [ref=e118] [box=-220,1272,202,25]:
+                - /url: /vault/globals/header
+              - link "Footer" [ref=e120] [box=-220,1297,202,25]:
+                - /url: /vault/globals/footer
+          - generic [ref=e122] [box=-220,1332,202,150]:
+            - button "Auth" [ref=e123] [box=-220,1332,202,20]:
+              - generic [ref=e124] [box=-220,1332,27,20]: Auth
+              - img [ref=e126] [box=-34,1333,15,15]
+            - generic [ref=e130] [box=-220,1357,202,125]:
+              - link "Users" [ref=e131] [box=-220,1357,202,25]:
+                - /url: /vault/collections/users
+              - link "Sessions" [ref=e133] [box=-220,1382,202,25]:
+                - /url: /vault/collections/sessions
+              - link "Accounts" [ref=e135] [box=-220,1407,202,25]:
+                - /url: /vault/collections/accounts
+              - link "Verifications" [ref=e137] [box=-220,1432,202,25]:
+                - /url: /vault/collections/verifications
+              - link "Admin Invitations" [ref=e139] [box=-220,1457,202,25]:
+                - /url: /vault/collections/admin-invitations
+          - button "SN Butler butler@hideaway.dev" [ref=e141] [box=-226,767,213,44]:
+            - generic [ref=e142] [box=-222,773,32,32]: SN
+            - generic [ref=e143] [box=-184,775,145,28]:
+              - generic [ref=e144] [box=-184,775,145,15]: Butler
+              - generic [ref=e145] [box=-184,790,145,13]: butler@hideaway.dev
+            - img [ref=e146] [box=-33,781,16,16]
+      - generic [ref=e151] [box=0,0,1200,929]:
+        - banner [ref=e152] [box=0,0,1200,43]:
+          - generic [ref=e155] [box=60,9,1080,25]:
+            - navigation [ref=e157] [box=60,12,189,20]:
+              - link [ref=e158] [box=60,13,18,18]:
+                - /url: /vault
+              - generic [ref=e162] [box=86,12,4,20]: /
+              - link "Posts" [ref=e163] [box=97,12,33,20]:
+                - /url: /vault/collections/posts
+              - generic [ref=e165] [box=139,12,4,20]: /
+              - generic [ref=e166] [box=150,12,76,20]: Create New
+            - generic [ref=e170] [box=946,10,61,24]:
+              - link [ref=e171] [box=946,10,24,24]:
+                - /url: /home
+              - button "Switch to dark mode." [ref=e175] [box=982,10,24,24]
+            - link "Account" [ref=e186] [box=1115,9,25,25]:
+              - /url: /vault/account
+              - img "yas" [ref=e187] [box=1115,9,25,25]
+          - button "Locale" [ref=e191] [box=1021,12,89,20]:
+            - generic "Locale" [ref=e192] [box=1021,12,89,20]:
+              - generic [ref=e193] [box=1029,12,47,20]: "Locale:"
+              - generic [ref=e194] [box=1076,12,30,20]
+        - heading "[Untitled]" [level=1] [ref=e200] [box=60,841,1080,18]
+        - main [ref=e201] [box=0,103,1200,826]:
+          - generic [ref=e202] [box=0,103,1200,826]:
+            - generic [ref=e204] [box=15,50,1170,43]:
+              - list [ref=e206] [box=15,59,871,24]
+              - generic [ref=e209] [box=902,50,283,42]
+            - generic [ref=e228] [box=0,103,1200,826]:
+              - generic [ref=e231] [box=0,103,1199,199]
+              - generic [box=1200,146,0,826]
+        - status [ref=e270] [box=-1,-1,1,1]
+  - region "Notifications alt+T" [box=0,929,1200,0]
+  - status [ref=e272] [box=-1,-1,1,1]
+  - region "Notifications alt+T" [box=0,929,1200,0]
+  - button "Open Next.js Dev Tools" [ref=e278] [cursor=pointer] [box=22,815,32,32]:
+    - img [ref=e279] [box=22,811,40,40]
+  - alert [ref=e282] [box=-1,928,1,1]

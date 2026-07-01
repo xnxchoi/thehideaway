@@ -44,3 +44,22 @@ export const formatDate = (
 
 export const formatInvoiceNumber = (n: number): string =>
   String(n).padStart(7, "0");
+
+export const formatInvoiceOrderNumber = ({
+  invoiceNumber,
+  issuedAt,
+  bankReference
+}: {
+  invoiceNumber: number;
+  issuedAt?: string | null;
+  bankReference?: string | null;
+}): string => {
+  const reference = bankReference?.trim();
+  if (reference) return reference;
+
+  const issued = issuedAt ? new Date(issuedAt) : null;
+  const year =
+    issued && !Number.isNaN(issued.getTime()) ? issued.getFullYear() : null;
+  const formatted = formatInvoiceNumber(invoiceNumber);
+  return year ? `HW-${year}-${formatted}` : `HW-${formatted}`;
+};

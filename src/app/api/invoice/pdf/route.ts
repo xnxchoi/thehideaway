@@ -18,6 +18,7 @@ import {
 } from "@/payload/collections/(consumption)/Invoices/pdfmake/template";
 import {
   formatAmount,
+  formatInvoiceOrderNumber,
   formatInvoiceNumber
 } from "@/components/UX/Invoice/format";
 import type {
@@ -203,8 +204,11 @@ function toTemplateInput(invoice: InvoiceDisplay) {
     invoice.issued_at ?? invoice.paid_at ?? new Date().toISOString();
   const planTitle = invoice.plan.title ?? "Membership";
   const moneyLabel = formatAmount(invoice.amount, invoice.currency);
-  const orderRef =
-    invoice.bank_reference ?? formatInvoiceNumber(invoice.invoice_number);
+  const orderRef = formatInvoiceOrderNumber({
+    invoiceNumber: invoice.invoice_number,
+    issuedAt,
+    bankReference: invoice.bank_reference
+  });
 
   return {
     invoice_number: formatInvoiceNumber(invoice.invoice_number),
@@ -214,7 +218,9 @@ function toTemplateInput(invoice: InvoiceDisplay) {
     payment_method: (invoice.payment_method ?? []).map((m) => ({
       method: m.method,
       amount: m.amount,
-      currency: m.currency
+      currency: m.currency,
+      payment_date: m.payment_date,
+      reference: m.reference ?? null
     })),
     client: {
       name: invoice.client.name ?? invoice.client.email ?? "Member",
@@ -332,6 +338,8 @@ export async function POST(req: NextRequest): Promise<NextResponse | Response> {
     methods: {
       label: t("methods.label"),
       amt: t("methods.amt"),
+      date: t("methods.date"),
+      reference: t("methods.reference"),
       bank_transfer: t("methods.bank_transfer"),
       cash: t("methods.cash")
     },

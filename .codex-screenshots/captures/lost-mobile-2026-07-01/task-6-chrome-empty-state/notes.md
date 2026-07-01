@@ -16,3 +16,15 @@ Health: improved.
 ## Remaining Limit
 
 The production catalog is still empty. The empty-catalog label is covered by `product-section-state.test.ts`; visual verification of the production-empty state requires either production content publishing or a production-safe fixture decision.
+
+## Step 2 - Live production after v33.0.15 deploy
+
+Screenshot: `02-live-v33-0-15-empty-products-390.png`
+
+Health: improved, with content-ops blocker remaining.
+
+- Live URL: `https://lostinseoul.com/lostinseoul`
+- The visible product-section metadata is `Incoming / 00`, not `Cart / 00`.
+- The empty card copy is visible: `No products are open right now.`
+- The mobile header chrome no longer overprints the statement copy in this scrolled state.
+- Production still has no product catalog entries, so public commerce QA remains blocked until products/drops are published or a production-safe fixture path is approved.

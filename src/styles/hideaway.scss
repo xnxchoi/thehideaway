@@ -1580,6 +1580,10 @@ body[data-browser="chrome"][data-device="mobile"] .menu__frame.frame-bottom {
   .menu__frame.frame-bottom {
     bottom: 0;
   }
+
+  .menu__body:not(.menu__open) .menu__frame.frame-bottom {
+    transform: translateY(100%) !important;
+  }
 }
 
 @media (min-width: 967px) {

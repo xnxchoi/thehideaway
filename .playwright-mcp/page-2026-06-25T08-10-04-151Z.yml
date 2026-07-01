@@ -1,0 +1,116 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - generic:
+      - img
+    - region "Notifications alt+T"
+    - generic [ref=e4]:
+      - button "Open The Menu" [ref=e7]:
+        - generic [ref=e8]: MENU
+        - generic [ref=e9]:
+          - generic [ref=e10]: BACK
+          - img [ref=e12]
+      - link "Logo" [ref=e16]:
+        - /url: /home
+        - img [ref=e17]
+      - generic [ref=e20]:
+        - button "Open search" [ref=e21]:
+          - img [ref=e22]
+        - generic [ref=e24]:
+          - heading "Command Palette" [level=2] [ref=e25]
+          - paragraph [ref=e26]: Search for a command to run...
+    - generic:
+      - navigation
+      - paragraph: ©2026
+      - generic:
+        - generic:
+          - generic:
+            - img
+        - generic:
+          - generic:
+            - img
+        - generic:
+          - generic:
+            - img
+        - generic:
+          - generic:
+            - img
+    - main [ref=e27]:
+      - generic [ref=e34]:
+        - link "The Hideaway." [ref=e35]:
+          - /url: /
+          - img [ref=e37]
+          - text: The Hideaway.
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - generic [ref=e43]: Sign In
+              - generic [ref=e44]: Enter your email below to login to your account
+            - generic [ref=e45]:
+              - generic [ref=e47]:
+                - generic [ref=e49]:
+                  - textbox "Username" [ref=e50]:
+                    - /placeholder: Username or email
+                  - generic: Username
+                - generic [ref=e51]:
+                  - generic [ref=e52]:
+                    - textbox "Password" [ref=e54]
+                    - generic [ref=e55]: Password
+                  - link "Forgot your password?" [ref=e58]:
+                    - /url: /forgot-password
+                - button "Login" [ref=e60]:
+                  - generic [ref=e61]: Login
+              - generic [ref=e64]: Or continue with
+              - generic [ref=e66]:
+                - generic [ref=e67]:
+                  - button "Sign in with Google" [ref=e68]:
+                    - img
+                    - text: Sign in with Google
+                  - button "Sign in with Naver" [ref=e69]:
+                    - img
+                    - text: Sign in with Naver
+                  - button "Sign in with Kakao" [ref=e70]:
+                    - img
+                    - text: Sign in with Kakao
+                - button "Sign in with Passkey" [ref=e71]:
+                  - img
+                  - text: Sign in with Passkey
+          - generic [ref=e72]:
+            - text: By clicking continue, you agree to our
+            - link "Terms of Service" [ref=e74]:
+              - /url: /terms-of-service
+            - text: and
+            - link "Privacy Policy" [ref=e77]:
+              - /url: /policy
+            - text: .
+        - generic [ref=e79]:
+          - generic [ref=e82]: dev only
+          - button "Sign in as Butler" [ref=e84]
+          - paragraph [ref=e85]: Local development bypass. Never visible in production builds.
+        - paragraph [ref=e86]:
+          - text: By signing in, you agree to our
+          - link "Terms" [ref=e87]:
+            - /url: /terms
+          - text: and
+          - link "Privacy Policy" [ref=e88]:
+            - /url: /privacy
+          - text: .
+  - generic:
+    - generic:
+      - generic:
+        - img
+    - generic:
+      - generic:
+        - img
+    - generic:
+      - generic:
+        - img
+    - generic:
+      - generic:
+        - img
+  - dialog "Shortcuts" [ref=e90]:
+    - generic [ref=e91]:
+      - generic:
+        - heading "Shortcuts" [level=2]
+      - paragraph [ref=e92]: Site navigation, search, notifications, and player controls.
+    - button [ref=e96]

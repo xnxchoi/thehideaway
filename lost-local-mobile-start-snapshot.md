@@ -1,0 +1,19 @@
+- generic [active] [ref=e12] [box=0,0,1200,5546]:
+  - alert [ref=e10] [box=-1,-1,1,1]: LOSTINSEOUL
+  - generic [ref=e13] [box=0,0,1200,5546]:
+    - generic [box=552,359,96,96]:
+      - img [box=552,359,96,96]
+    - region "Notifications alt+T" [box=0,0,1200,0]
+    - generic [box=0,0,1200,813]:
+      - navigation [box=20,407,0,0]
+    - main [ref=e14] [box=0,0,1200,5546]:
+      - generic [ref=e18] [box=0,0,1200,5546]
+  - link "LOSTINSEOUL home" [ref=e319] [box=523,72,154,13]:
+    - /url: /lostinseoul
+    - text: LOSTINSEOUL
+  - generic [box=0,0,1200,813]:
+    - button [ref=e320] [box=30,738,45,45]:
+      - img [ref=e321] [box=44,752,18,18]
+    - generic [box=1014,708,186,105]:
+      - button [ref=e323] [box=1044,738,45,45]
+      - generic [box=1092,738,78,45]: 0:00 / 0:00

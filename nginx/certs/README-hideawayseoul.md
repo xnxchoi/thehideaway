@@ -1,4 +1,4 @@
-# SSL Certificate Setup for hideawayseoul.com
+# SSL Certificate Setup for hideawayseoul.com + lostinseoul.com
 
 ## Production SSL Certificate Generation
 
@@ -20,7 +20,9 @@ sudo certbot certonly --standalone \
   --agree-tos \
   --no-eff-email \
   -d hideawayseoul.com \
-  -d www.hideawayseoul.com
+  -d www.hideawayseoul.com \
+  -d lostinseoul.com \
+  -d www.lostinseoul.com
 
 # Certificates are automatically available at /etc/letsencrypt/live/hideawayseoul.com/
 # No need to copy - they're mounted directly in Docker Compose
@@ -98,6 +100,7 @@ docker compose -f compose.prod.yaml exec nginx nginx -t
 
 # Check SSL connection
 curl -I https://hideawayseoul.com
+curl -I https://lostinseoul.com
 ```
 
 ## Troubleshooting
@@ -122,5 +125,5 @@ curl -I https://hideawayseoul.com
 openssl x509 -in certificate.pem -noout -dates
 
 # Check certificate domain names
-openssl x509 -in certificate.pem -noout -subject -issuer
+openssl x509 -in certificate.pem -noout -subject -issuer -ext subjectAltName
 ```

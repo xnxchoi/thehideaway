@@ -1,4 +1,4 @@
-# Deploy — hideawayseoul.com
+# Deploy — hideawayseoul.com + lostinseoul.com
 
 Canonical deploy reference. The scripts in `scripts/` are authoritative for
 what actually runs; this doc orients you and explains the _why_.
@@ -6,16 +6,37 @@ what actually runs; this doc orients you and explains the _why_.
 ```
 LAPTOP                          GITHUB ACTIONS               GHCR                       VPS
 ──────                          ──────────────               ────                       ───
-pnpm release:cut 0.15.0 ───────► release workflow ─────────►  hideaway:v0.15.0            ./scripts/deploy.sh v0.15.0
-  └─ tag + push                   build + push                hideaway-migrate:v0.15.0   └─ pull + rotate + smoke
+pnpm release:cut ──────────────► release workflow ─────────►  hideaway:vX.Y.Z             ./scripts/deploy.sh vX.Y.Z
+  └─ tag + push                   build + push                hideaway-migrate:vX.Y.Z    └─ pull + rotate + smoke
                                                                                           └─ auto-rollback on fail
 ```
 
 Three boundaries, each crossed by exactly one script:
 
-1. **Laptop → GitHub** — `pnpm release:cut 0.15.0` (validation gates, semver tag, push).
+1. **Laptop → GitHub** — `pnpm release:cut` (version plan, validation gates, package version sync, semver tag, push).
 2. **GitHub → GHCR** — `.github/workflows/release.yml` (triggered by the tag).
-3. **GHCR → VPS** — `./scripts/deploy.sh v0.15.0` (pull, rotate, smoke-test, persist tag).
+3. **GHCR → VPS** — `./scripts/deploy.sh vX.Y.Z` (pull, rotate, smoke-test, persist tag).
+
+### Versioning convention
+
+Release tags are the source of truth. Routine cuts derive the next patch from
+the highest stable semver tag on `origin`, then synchronize `package.json` to
+that planned version before creating the annotated tag.
+
+```bash
+pnpm release:cut              # next patch after the latest stable vX.Y.Z tag
+pnpm release:cut minor        # next minor
+pnpm release:cut major        # next major
+pnpm release:cut 34.0.0-rc.1  # exact prerelease / override
+```
+
+`package.json` follows the tag plan; it is not the release clock. If it drifts
+from the latest tag, `release:cut` reports the drift and, on a real cut,
+commits `chore(release): vX.Y.Z` before pushing `main` and the tag together.
+`pnpm release:check [target]` is read-only for release metadata: it reads origin
+tags, prints the planned version, warns about dirty worktrees, and then runs the
+same local gates without syncing `package.json`, creating a tag, or pushing.
+Those gates can still create normal local build/install artifacts.
 
 ---
 
@@ -23,8 +44,8 @@ Three boundaries, each crossed by exactly one script:
 
 | Script                           | Run from                              | Purpose                                                                   |
 | -------------------------------- | ------------------------------------- | ------------------------------------------------------------------------- |
-| `pnpm release:cut <version>`     | laptop                                | Validation gates + signed git tag + push. Triggers CI.                    |
-| `pnpm release:check <version>`   | laptop                                | Same gates as `release:cut` but stops before tagging.                     |
+| `pnpm release:cut [target]`      | laptop                                | Plan next version, run gates, sync `package.json`, signed git tag + push. Triggers CI. |
+| `pnpm release:check [target]`    | laptop                                | Same gates as `release:cut` but read-only; no package write, tag, or push. |
 | `pnpm env:edit`                  | laptop                                | Open `.env.production.enc` in `$EDITOR` via sops. Re-encrypts on save.    |
 | `pnpm sync:deploy-rules`         | laptop                                | Regenerate `.dockerignore` / `.deployignore` from `deploy-manifest.json`. |
 | `pnpm env:template:gen`          | laptop                                | Regenerate `.env.production.template` from `src/lib/env.ts`.              |
@@ -42,25 +63,29 @@ Three boundaries, each crossed by exactly one script:
 ## § 2 — Subsequent deploys (the 99% case)
 
 ```bash
-# Laptop — tag + push (triggers CI)
-pnpm release:cut 0.15.0
+# Laptop — plan next patch, sync package version, tag + push (triggers CI)
+pnpm release:cut
+
+# For intentional jumps or prereleases, pass an explicit target:
+pnpm release:cut 33.1.0
+pnpm release:cut 34.0.0-rc.1
 
 # Watch CI: https://github.com/xnxchoi/thehideaway/actions
 # When the run goes green (~5–8 min cold cache, ~2–3 min thereafter):
 
 # VPS — pull and rotate
-ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v0.15.0'
+ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh vX.Y.Z'
 
 # If the deploy also requires migrations:
-ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh v0.15.0 --migrate'
+ssh deploy@hideawayseoul.com 'cd thehideaway && ./scripts/deploy.sh vX.Y.Z --migrate'
 ```
 
 `deploy.sh` does:
 
-1. Confirm `ghcr.io/xnxchoi/hideaway:v0.15.0` exists (manifest check).
+1. Confirm `ghcr.io/xnxchoi/hideaway:vX.Y.Z` exists (manifest check).
 2. Decrypt `.env.production.enc` via sops.
 3. `docker compose pull` then `up -d --wait` — compose keeps the old container alive until the new one passes its healthcheck. Zero downtime.
-4. Smoke test: `GET https://hideawayseoul.com/api/health` → expect 200, max 60s.
+4. Smoke test: `GET https://hideawayseoul.com/api/health`, `https://lostinseoul.com/api/health`, and `https://www.lostinseoul.com/api/health` → expect 200 after redirects, max 60s each.
 5. **On smoke-test failure**, automatically roll back to the previously-deployed tag.
 6. Persist the new tag to `/var/lib/hideaway/current-tag`.
 7. With `--migrate`: pg_dump backup → `--profile migrate` → migrations.
@@ -379,17 +404,55 @@ In your DNS provider's dashboard:
 | A    | `@` (apex) | `58.229.253.225` | 300 |
 | A    | `www`      | `58.229.253.225` | 300 |
 
+Repeat the same records for the LOSTINSEOUL zone:
+
+| Type | Name       | Value            | TTL |
+| ---- | ---------- | ---------------- | --- |
+| A    | `@` (apex) | `58.229.253.225` | 300 |
+| A    | `www`      | `58.229.253.225` | 300 |
+
 300 s TTL for faster propagation now. Raise to 3600 after a few days.
 
 **Check:**
 
 ```bash
 dig +short A hideawayseoul.com @1.1.1.1
+dig +short A lostinseoul.com @1.1.1.1
+dig +short A www.lostinseoul.com @1.1.1.1
 ```
 
 Should return `58.229.253.225`. Propagation: 30 s to ~30 min. The wrapper
 polls for ~10 min in Phase 3, so you can start Step 6 before DNS fully
 propagates.
+
+### Step 5b — Expand TLS for LOSTINSEOUL on an existing VPS
+
+The production compose stack mounts the `hideawayseoul.com` Let's Encrypt
+lineage into Nginx. When adding `lostinseoul.com` to the same server, expand
+that existing certificate so one mounted cert covers all four hostnames:
+
+```bash
+ssh deploy@hideawayseoul.com 'cd thehideaway && docker compose -f compose.prod.yaml exec nginx nginx -t'
+
+ssh root@hideawayseoul.com 'certbot certonly --webroot -w /var/www/certbot \
+  --cert-name hideawayseoul.com --expand \
+  -d hideawayseoul.com -d www.hideawayseoul.com \
+  -d lostinseoul.com -d www.lostinseoul.com \
+  --deploy-hook /usr/local/bin/certbot-reload-nginx'
+
+ssh deploy@hideawayseoul.com 'cd thehideaway && docker compose -f compose.prod.yaml exec nginx nginx -t && docker compose -f compose.prod.yaml exec nginx nginx -s reload'
+```
+
+Then verify from the laptop:
+
+```bash
+curl -I https://lostinseoul.com/api/health
+curl -I https://www.lostinseoul.com/api/health
+curl -I https://lostinseoul.com/
+```
+
+Expected: health returns `200`; `www.lostinseoul.com` may redirect to
+`lostinseoul.com`, but `curl -L` should end at `200`.
 
 ---
 
@@ -406,7 +469,7 @@ ssh -i ~/.ssh/hideaway_deploy root@rp.hideawayseoul.com
 cd /root/thehideaway
 
 # Write the PAT to a mode-600 file; read it inline; shred it after.
-echo "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" > ~/.ghcr-token
+echo "<GHCR_CLASSIC_PAT>" > ~/.ghcr-token
 chmod 600 ~/.ghcr-token
 
 GHCR_TOKEN="$(cat ~/.ghcr-token)" \

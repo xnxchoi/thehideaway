@@ -30,10 +30,11 @@ import {
   useRouteCache,
   useRouteTransition,
   useServerFunctions,
-  useUploadEdits
+  useUploadEdits,
+  useLivePreviewContext,
+  LivePreviewWindow
 } from "@payloadcms/ui";
 import { DocumentDrawerHeader } from "@payloadcms/ui/elements/DocumentDrawer/DrawerHeader";
-import { LivePreviewWindow } from "@payloadcms/ui/elements/LivePreview/Window";
 import { UploadControlsProvider } from "@payloadcms/ui/providers/UploadControls";
 import {
   abortAndIgnore,
@@ -46,10 +47,7 @@ import type { LockedState } from "@payloadcms/ui/utilities/buildFormState";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import type { FormOnSuccess } from "node_modules/@payloadcms/ui/dist/forms/Form/types";
-import {
-  useLivePreviewContext,
-  usePreviewURL
-} from "node_modules/@payloadcms/ui/dist/providers/LivePreview/context";
+import { usePreviewURL } from "node_modules/@payloadcms/ui/dist/providers/LivePreview/context";
 import type {
   ClientCollectionConfig,
   ClientGlobalConfig,
@@ -213,9 +211,9 @@ export function DefaultEditView({
     isLivePreviewing,
     previewWindowType,
     setURL: setLivePreviewURL,
-    typeofLivePreviewURL,
     url: livePreviewURL
   } = useLivePreviewContext();
+  const shouldResolveLivePreviewURL = Boolean(collectionSlug || globalSlug);
   const { isPreviewEnabled, setPreviewURL } = usePreviewURL();
 
   const abortOnChangeRef = useRef<AbortController>(null);
@@ -450,8 +448,7 @@ export function DefaultEditView({
           globalSlug,
           operation,
           renderAllFields: false,
-          returnLivePreviewURL:
-            isLivePreviewEnabled && typeofLivePreviewURL === "function",
+          returnLivePreviewURL: shouldResolveLivePreviewURL,
           returnLockStatus: false,
           schemaPath: schemaPathSegments.join("."),
           signal: controller.signal,
@@ -464,8 +461,7 @@ export function DefaultEditView({
         }
 
         if (
-          isLivePreviewEnabled &&
-          typeofLivePreviewURL === "function" &&
+          shouldResolveLivePreviewURL &&
           livePreviewURL
         ) {
           setLivePreviewURL(livePreviewURL);
@@ -524,9 +520,8 @@ export function DefaultEditView({
       getFormState,
       docPermissions,
       operation,
-      isLivePreviewEnabled,
+      shouldResolveLivePreviewURL,
       isPreviewEnabled,
-      typeofLivePreviewURL,
       schemaPathSegments,
       isLockingEnabled,
       setDocumentIsLocked
@@ -562,6 +557,7 @@ export function DefaultEditView({
         globalSlug,
         operation,
         renderAllFields: false,
+        returnLivePreviewURL: shouldResolveLivePreviewURL,
         returnLockStatus: isLockingEnabled,
         schemaPath: schemaPathSegments.join("."),
         signal: controller.signal,
@@ -573,10 +569,14 @@ export function DefaultEditView({
         throw new Error("Failed to get form state");
       }
 
-      const { lockedState, state } = result;
+      const { livePreviewURL, lockedState, state } = result;
 
       if (isLockingEnabled) {
         lockedState && handleDocumentLocking(lockedState);
+      }
+
+      if (shouldResolveLivePreviewURL && livePreviewURL) {
+        setLivePreviewURL(livePreviewURL);
       }
 
       abortOnChangeRef.current = null;
@@ -597,7 +597,9 @@ export function DefaultEditView({
       globalSlug,
       operation,
       schemaPathSegments,
-      handleDocumentLocking
+      handleDocumentLocking,
+      shouldResolveLivePreviewURL,
+      setLivePreviewURL
     ]
   );
 
@@ -907,7 +909,7 @@ export function DefaultEditView({
                     />
                     {AfterDocument}
                   </div>
-                  {isLivePreviewEnabled && !isInDrawer && livePreviewURL && (
+                  {shouldResolveLivePreviewURL && !isInDrawer && livePreviewURL && (
                     <>
                       {
                         <LivePreviewWindow

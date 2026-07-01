@@ -1,6 +1,6 @@
 # compose.prod.yaml
 #
-# Production deployment for hideawayseoul.com
+# Production deployment for hideawayseoul.com + lostinseoul.com
 # VPS: ITEASY EasyCloud — 2 vCPU / 4 GB RAM / 100 GB HDD (Seoul)
 #
 # ── DEPLOY FLOW ──────────────────────────────────────────────────────────────
@@ -115,11 +115,15 @@ services:
       # Override the built-in site config (same path → volume shadows the COPY)
       - ./nginx/sites-enabled/production.conf:/etc/nginx/sites-enabled/production.conf
       - ./nginx/logs:/var/log/nginx
-      # Let's Encrypt certs — managed by certbot on the host
+      # Let's Encrypt certs — managed by certbot on the host. The
+      # hideawayseoul.com lineage must include SANs for:
+      # hideawayseoul.com, www.hideawayseoul.com, lostinseoul.com,
+      # and www.lostinseoul.com.
       - /etc/letsencrypt/live/hideawayseoul.com/fullchain.pem:/etc/nginx/certs/hideawayseoul.com/hideawayseoul.com.pem:ro
       - /etc/letsencrypt/live/hideawayseoul.com/privkey.pem:/etc/nginx/certs/hideawayseoul.com/hideawayseoul.com-key.pem:ro
       # Certbot ACME webroot challenge directory
-      # On host: certbot certonly --webroot -w /var/www/certbot -d hideawayseoul.com
+      # On host: certbot certonly --webroot -w /var/www/certbot --cert-name hideawayseoul.com --expand \
+      #   -d hideawayseoul.com -d www.hideawayseoul.com -d lostinseoul.com -d www.lostinseoul.com
       - /var/www/certbot:/var/www/certbot:ro
     ports:
       - "80:80"

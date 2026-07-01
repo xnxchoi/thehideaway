@@ -15,7 +15,9 @@
 #   4. `docker compose pull` the new image.
 #   5. `docker compose up -d --wait` (compose keeps the old container alive
 #       until the new one passes its healthcheck).
-#   6. Smoke test: GET https://${DOMAIN}/api/health -> expect 200.
+#   6. Smoke test: GET https://${DOMAIN}/api/health plus LOSTINSEOUL hosts
+#      -> expect 200 after redirects. Override with SMOKE_URLS, or set
+#      SKIP_LOST_SMOKE=1 for a Hideaway-only emergency deploy.
 #   7. On smoke-test failure, roll back to the previous tag automatically.
 #   8. Persist the new tag to /var/lib/hideaway/current-tag.
 #   9. With --migrate, take a pg_dump backup THEN run --profile migrate.
@@ -29,6 +31,7 @@ set -Eeuo pipefail
 # ── Config ───────────────────────────────────────────────────────────────────
 
 DOMAIN="${DOMAIN:-hideawayseoul.com}"
+LOST_DOMAIN="${LOST_DOMAIN:-lostinseoul.com}"
 REGISTRY="${REGISTRY:-ghcr.io/xnxchoi/hideaway}"
 COMPOSE_FILE="${COMPOSE_FILE:-compose.prod.yaml}"
 ENV_ENC=".env.production.enc"
@@ -38,6 +41,7 @@ STATE_DIR="/var/lib/hideaway"
 CURRENT_TAG_FILE="${STATE_DIR}/current-tag"
 PREVIOUS_TAG_FILE="${STATE_DIR}/previous-tag"
 SMOKE_TIMEOUT_SECONDS=60
+SMOKE_URLS="${SMOKE_URLS:-}"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -130,13 +134,29 @@ record_tag() {
   ( umask 077; echo "${new}" > "${CURRENT_TAG_FILE}" )
 }
 
-smoke_test() {
-  local url="https://${DOMAIN}/api/health"
+build_smoke_urls() {
+  if [[ -n "${SMOKE_URLS}" ]]; then
+    # shellcheck disable=SC2206
+    SMOKE_URL_LIST=(${SMOKE_URLS})
+    return
+  fi
+
+  SMOKE_URL_LIST=("https://${DOMAIN}/api/health")
+  if [[ "${SKIP_LOST_SMOKE:-0}" != "1" ]]; then
+    SMOKE_URL_LIST+=(
+      "https://${LOST_DOMAIN}/api/health"
+      "https://www.${LOST_DOMAIN}/api/health"
+    )
+  fi
+}
+
+smoke_one_url() {
+  local url="$1"
   local deadline=$(( $(date +%s) + SMOKE_TIMEOUT_SECONDS ))
   local last_code=""
   info "smoke test: GET ${url} (deadline +${SMOKE_TIMEOUT_SECONDS}s wall-clock)"
   while (( $(date +%s) < deadline )); do
-    last_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "${url}" || true)"
+    last_code="$(curl -Ls -o /dev/null -w '%{http_code}' --max-time 5 "${url}" || true)"
     if [[ "${last_code}" == "200" ]]; then
       info "smoke test passed (200)"
       return 0
@@ -145,6 +165,16 @@ smoke_test() {
   done
   error "smoke test failed: never observed HTTP 200 within ${SMOKE_TIMEOUT_SECONDS}s (last code: ${last_code:-<none>})"
   return 1
+}
+
+smoke_test() {
+  local SMOKE_URL_LIST=()
+  build_smoke_urls
+
+  local url
+  for url in "${SMOKE_URL_LIST[@]}"; do
+    smoke_one_url "${url}" || return 1
+  done
 }
 
 deploy_tag() {

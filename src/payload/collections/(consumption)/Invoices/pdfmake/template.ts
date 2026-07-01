@@ -16,6 +16,11 @@ type RecurringPlan = {
   price: string;
 };
 
+type InvoiceLineItem = RecurringPlan & {
+  quantity?: string | number;
+  tax?: string;
+};
+
 type InvoiceCurrencyCode = "usd" | "krw" | "eur";
 
 const toCurrencyCode = (value: unknown): InvoiceCurrencyCode => {
@@ -68,6 +73,8 @@ export type InvoiceStrings = {
   methods: {
     label: string;
     amt: string;
+    date: string;
+    reference: string;
     bank_transfer: string;
     cash: string;
   };
@@ -91,6 +98,8 @@ type InvoiceProps = Invoice & {
     user: User["id"];
   };
   item: RecurringPlan;
+  items?: InvoiceLineItem[];
+  breakBeforeTerms?: boolean;
 };
 
 /* ---------------------------------------------------------------- *
@@ -160,33 +169,49 @@ const header = (strings: InvoiceStrings): TDocumentDefinitions["header"] => ({
 // Footer is pure brand chrome — every line is English in every locale, so
 // every cell is pinned to Joly to keep the editorial voice intact even
 // when the locale's default font is Pretendard.
-const footer = (strings: InvoiceStrings): TDocumentDefinitions["footer"] => ({
-  stack: [
-    {
-      text: strings.footer.tagline,
-      font: "Joly",
-      alignment: "center",
-      italics: true,
-      fontSize: 9,
-      margin: [0, 5, 0, 0]
-    },
-    {
-      text: strings.footer.thanks,
-      font: "Joly",
-      alignment: "center",
-      fontSize: 7,
-      margin: [0, 0, 0, 15]
-    },
-    {
-      text: strings.footer.brand,
-      font: "Joly",
-      alignment: "center",
-      fontSize: 7,
-      bold: true,
-      margin: [0, 10, 0, 0]
-    }
-  ]
-});
+const footer =
+  (strings: InvoiceStrings): TDocumentDefinitions["footer"] =>
+  (currentPage, pageCount) => ({
+    stack: [
+      {
+        text: strings.footer.tagline,
+        font: "Joly",
+        alignment: "center",
+        italics: true,
+        fontSize: 9,
+        margin: [0, 5, 0, 0]
+      },
+      {
+        text: strings.footer.thanks,
+        font: "Joly",
+        alignment: "center",
+        fontSize: 7,
+        margin: [0, 0, 0, 15]
+      },
+      {
+        columns: [
+          { text: "", width: "*" },
+          {
+            text: strings.footer.brand,
+            font: "Joly",
+            alignment: "center",
+            fontSize: 7,
+            bold: true,
+            width: "auto"
+          },
+          {
+            text: `${currentPage} / ${pageCount}`,
+            font: "Joly",
+            alignment: "right",
+            fontSize: 6,
+            width: "*",
+            margin: [0, 1, 50, 0]
+          }
+        ],
+        margin: [0, 10, 0, 0]
+      }
+    ]
+  });
 
 const formatShortRange = (
   start: string | null | undefined,
@@ -399,55 +424,172 @@ const dateField = (
   };
 };
 
+type PaymentMethodLine = {
+  method: string;
+  amount: number;
+  currency: "usd" | "krw" | "eur";
+  payment_date?: string | null;
+  reference?: string | null;
+};
+
 const methodField = (
-  methods: {
-    [method: string]: { amount: number; currency: "usd" | "krw" };
-  },
-  strings: InvoiceStrings
-): ContentStack => {
-  const entries = Object.entries(methods).filter(([, c]) => !!c);
+  methods: PaymentMethodLine[],
+  strings: InvoiceStrings,
+  locale: InvoiceLocale
+): ContentTable => {
+  const entries = methods.filter((method) => !!method);
   const methodLabel = (key: string): string => {
     if (key === "bank_transfer") return strings.methods.bank_transfer;
     if (key === "cash") return strings.methods.cash;
     return key;
   };
-  const rows: ContentColumns[] = entries.map(([methodName, cont], i) => {
-    const formatted = new Intl.NumberFormat(
-      cont.currency === "krw" ? "ko-KR" : "en-US",
+  const bcp47 = locale === "ko" ? "ko-KR" : "en-US";
+  const formatPaymentDate = (value: string | null | undefined): string => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat(bcp47, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit"
+    }).format(date);
+  };
+  const formatPaymentAmount = (method: PaymentMethodLine): string =>
+    new Intl.NumberFormat(
+      method.currency === "krw"
+        ? "ko-KR"
+        : method.currency === "eur"
+          ? "en-IE"
+          : "en-US",
       {
         style: "decimal",
-        minimumFractionDigits: cont.currency === "krw" ? 0 : 2,
-        maximumFractionDigits: cont.currency === "krw" ? 0 : 2
+        minimumFractionDigits: method.currency === "krw" ? 0 : 2,
+        maximumFractionDigits: method.currency === "krw" ? 0 : 2
       }
-    ).format(cont.amount);
-    return {
-      columns: [
-        { text: i === 0 ? strings.methods.label : "", width: "auto" },
-        { text: methodLabel(methodName), width: "auto" },
-        { text: i === 0 ? strings.methods.amt : "", width: "auto" },
-        // Numeric value stays in Joly so the figures keep their tabular
-        // proportions regardless of locale.
-        { text: formatted, font: "Joly", width: "auto" }
-      ],
-      columnGap: 18
-    };
+    ).format(method.amount);
+  const cell = (text: string, extra: Partial<TableCell> = {}): TableCell => ({
+    text,
+    border: [false, false, false, false],
+    ...extra
   });
   return {
-    stack: rows,
+    table: {
+      widths: [locale === "ko" ? 62 : 112, "*", 62, 82, 112],
+      body: [
+        [
+          cell(strings.methods.label),
+          cell(""),
+          cell(strings.methods.amt, { alignment: "right" }),
+          cell(strings.methods.date),
+          cell(strings.methods.reference)
+        ],
+        ...entries.map((method) => [
+          cell(""),
+          cell(methodLabel(method.method)),
+          cell(formatPaymentAmount(method), {
+            alignment: "right",
+            font: "Joly"
+          }),
+          cell(formatPaymentDate(method.payment_date), {
+            ...(locale === "en" ? { font: "Joly" } : {})
+          }),
+          cell(method.reference?.trim() ?? "", { font: "Joly" })
+        ])
+      ]
+    },
+    layout: "noBorders",
     margin: [0, 20, 0, 20]
   };
 };
 
+const currencyLikePattern = /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/;
+
+const parseLineAmount = (value: unknown): number | null => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || !currencyLikePattern.test(trimmed)) return null;
+  const parsed = Number(trimmed.replace(/,/g, ""));
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const decimalPlaces = (value: unknown): number => {
+  if (typeof value !== "string") return 0;
+  const [, fraction = ""] = value.split(".");
+  return fraction.length;
+};
+
+const formatLineAmount = (value: number, samples: unknown[]): string => {
+  const fractionDigits = Math.max(0, ...samples.map(decimalPlaces));
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  }).format(value);
+};
+
+const sumLineAmounts = (
+  items: InvoiceLineItem[],
+  select: (item: InvoiceLineItem) => unknown
+): string | null => {
+  let total = 0;
+  const samples: unknown[] = [];
+  for (const item of items) {
+    const raw = select(item);
+    if (raw === undefined || raw === null || String(raw).trim() === "") {
+      continue;
+    }
+    const amount = parseLineAmount(raw);
+    if (amount === null) return null;
+    total += amount;
+    samples.push(raw);
+  }
+  return samples.length > 0 ? formatLineAmount(total, samples) : null;
+};
+
 const invoiceTable = (
-  items: RecurringPlan & { tax?: string },
+  items: InvoiceLineItem[],
   strings: InvoiceStrings
 ): ContentTable => {
   // Cartier-style: Description / Quantity / Total Amount / Tax Amount.
   // Per-line tax defaults to "0" so the column is always populated even when
   // no tax is collected.
-  const tax = items.tax ?? "0";
+  const rows = items.map((item) => {
+    const hasValue = Boolean(
+      item.name || item.price || item.quantity || item.tax
+    );
+    const quantity = item.quantity ?? (hasValue ? "1" : "");
+    const tax = item.tax ?? (hasValue ? "0" : "");
+    return [
+      {
+        text: item.name,
+        bold: true,
+        border: [false, false, false, false]
+      },
+      {
+        text: String(quantity),
+        font: "Joly",
+        border: [false, false, false, false],
+        alignment: "right"
+      },
+      {
+        text: item.price,
+        font: "Joly",
+        border: [false, false, false, false],
+        alignment: "right"
+      },
+      {
+        text: tax,
+        font: "Joly",
+        border: [false, false, false, false],
+        alignment: "right"
+      }
+    ];
+  });
   return {
     table: {
+      headerRows: 1,
       widths: ["*", "auto", "auto", "auto"],
       body: [
         [
@@ -468,36 +610,38 @@ const invoiceTable = (
             alignment: "right"
           }
         ],
-        [
-          {
-            text: items.name,
-            bold: true,
-            border: [false, false, false, false]
-          },
-          {
-            text: "1",
-            font: "Joly",
-            border: [false, false, false, false],
-            alignment: "right"
-          },
-          {
-            text: items.price,
-            font: "Joly",
-            border: [false, false, false, false],
-            alignment: "right"
-          },
-          {
-            text: tax,
-            font: "Joly",
-            border: [false, false, false, false],
-            alignment: "right"
-          }
-        ]
+        ...rows
       ]
     },
     layout: "invoice"
   };
 };
+
+const FIRST_ITEM_PAGE_ROWS = 12;
+const CONTINUATION_ITEM_PAGE_ROWS = 14;
+
+const chunkLineItems = (items: InvoiceLineItem[]): InvoiceLineItem[][] => {
+  if (items.length <= FIRST_ITEM_PAGE_ROWS) return [items];
+  const first = items.slice(0, FIRST_ITEM_PAGE_ROWS);
+  const rest = items.slice(FIRST_ITEM_PAGE_ROWS);
+  const continuations = Array.from(
+    { length: Math.ceil(rest.length / CONTINUATION_ITEM_PAGE_ROWS) },
+    (_, index) => {
+      const start = index * CONTINUATION_ITEM_PAGE_ROWS;
+      return rest.slice(start, start + CONTINUATION_ITEM_PAGE_ROWS);
+    }
+  );
+  return [first, ...continuations];
+};
+
+const invoiceTables = (
+  items: InvoiceLineItem[],
+  strings: InvoiceStrings
+): ContentTable[] =>
+  chunkLineItems(items).map((chunk, index) => ({
+    ...invoiceTable(chunk, strings),
+    ...(index > 0 ? { pageBreak: "before" as const } : {})
+  }));
 
 const totalTable = (
   info: {
@@ -559,6 +703,16 @@ export const invoiceTemplate = (
   strings: InvoiceStrings,
   locale: InvoiceLocale = "en"
 ): TDocumentDefinitions => {
+  // Finalized invoices must not preserve empty template capacity. The only
+  // caller that should pass placeholder rows is the fillable-template source
+  // renderer; normal invoice generation should pass actual purchase rows so
+  // totals, terms, and payment details pull up after the last real item.
+  const items =
+    info.items && info.items.length > 0
+      ? info.items
+      : [{ ...info.item, name: info.item.name || strings.planFallback }];
+  const subtotal = sumLineAmounts(items, (item) => item.price);
+  const tax = sumLineAmounts(items, (item) => item.tax);
   const template: TDocumentDefinitions & { content: Content[] } = {
     header: header(strings),
     content: [
@@ -566,20 +720,19 @@ export const invoiceTemplate = (
       customerField(info.client, strings),
       invoiceInfo(info, strings, locale),
       clientCopy(strings),
-      invoiceTable(
-        // Fall back to the localized "Membership" if the plan didn't supply
-        // its own title — the line-item bold row should never be blank.
-        { ...info.item, name: info.item.name || strings.planFallback },
-        strings
-      ),
+      ...invoiceTables(items, strings),
       totalTable(
         {
-          subtotal: info.item.price.toString(),
+          subtotal: subtotal ?? info.item.price.toString(),
+          ...(tax !== null ? { tax } : {}),
           total: info.amount.toString()
         },
         strings
       ),
-      terms(strings)
+      {
+        ...terms(strings),
+        ...(info.breakBeforeTerms ? { pageBreak: "before" as const } : {})
+      }
     ],
     footer: footer(strings),
     ...pageMargins(),
@@ -587,23 +740,18 @@ export const invoiceTemplate = (
     ...defaultStyle(locale)
   };
   if (info.subscription?.paid && info.paid_at && info.payment_method) {
-    const methods: {
-      [method: string]: { amount: number; currency: "usd" | "krw" | "eur" };
-    } = {};
-    info.payment_method?.forEach((m) => {
-      methods[m.method] = {
+    const methods = info.payment_method?.map((m) => {
+      return {
+        method: m.method,
         amount: m.amount,
-        currency: toCurrencyCode(m.currency)
+        currency: toCurrencyCode(m.currency),
+        payment_date: m.payment_date ?? null,
+        reference: m.reference ?? null
       };
     });
-    template.content.push(
-      methodField(
-        methods as {
-          [method: string]: { amount: number; currency: "usd" | "krw" };
-        },
-        strings
-      )
-    );
+    if (methods.length > 0) {
+      template.content.push(methodField(methods, strings, locale));
+    }
   }
   return template;
 };

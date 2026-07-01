@@ -45,6 +45,15 @@ describe("isSameOrigin", () => {
     expect(isSameOrigin(makeReq("https://lostinseoul.com"))).toBe(true);
   });
 
+  it("accepts LOSTINSEOUL storefront origin when optional env is absent", async () => {
+    delete process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
+
+    const { isSameOrigin } = await import("./isSameOrigin");
+
+    expect(isSameOrigin(makeReq("https://lostinseoul.com"))).toBe(true);
+    expect(isSameOrigin(makeReq("https://www.lostinseoul.com"))).toBe(true);
+  });
+
   it("rejects a different host", async () => {
     const { isSameOrigin } = await import("./isSameOrigin");
     expect(isSameOrigin(makeReq("https://evil.com"))).toBe(false);

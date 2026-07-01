@@ -13,7 +13,11 @@
  */
 
 import { useLocale, useTranslations } from "next-intl";
-import { formatAmount, formatInvoiceNumber } from "./format";
+import {
+  formatAmount,
+  formatInvoiceNumber,
+  formatInvoiceOrderNumber
+} from "./format";
 import type { InvoiceDisplay, InvoicePaymentMethod } from "./types";
 
 const cn = (...c: Array<string | false | null | undefined>) =>
@@ -47,8 +51,11 @@ export function InvoicePanel({ invoice, className }: InvoicePanelProps) {
   const cycleStart = invoice.cycle_start ?? null;
   const cycleEnd = invoice.cycle_end ?? null;
   const hasCycle = !!cycleStart || !!cycleEnd;
-  const orderRef =
-    invoice.bank_reference ?? formatInvoiceNumber(invoice.invoice_number);
+  const orderRef = formatInvoiceOrderNumber({
+    invoiceNumber: invoice.invoice_number,
+    issuedAt,
+    bankReference: invoice.bank_reference
+  });
   const planName = invoice.plan.title ?? t("planFallback");
   const totalLabel = formatAmount(invoice.amount, invoice.currency);
   const memberYear = issuedAt ? new Date(issuedAt).getFullYear() : null;

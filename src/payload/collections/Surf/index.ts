@@ -7,7 +7,7 @@ import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {slugField} from "@/payload/fields/slug";
 import {surfAccess} from "@/payload/plugins/locker/access";
 import {filterDocByCurrentUser} from "@/payload/utilities/filterDocByCurrentUser";
-import {generatePreviewPathWithAuthor} from "@/utilities/generatePreviewPath";
+import {generatePreviewPathWithAuthor, resolveRelationshipID} from "@/utilities/generatePreviewPath";
 import {getServerSideURL} from "@/utilities/getURL";
 import {
 	MetaDescriptionField,
@@ -50,7 +50,7 @@ export const Surfs: CollectionConfig = {
 		defaultColumns: ["title", "slug", "updatedAt"],
 		livePreview: {
 			url: async ({data, req}) => {
-				const author = (data?.author as string | undefined) || req.user?.id;
+				const author = resolveRelationshipID(data?.author) || req.user?.id;
 				if (!author) {
 					throw new Error("Author is required to generate preview path");
 				}
@@ -68,7 +68,7 @@ export const Surfs: CollectionConfig = {
 			if (!doc) {
 				throw new Error("Doc is required to generate preview path");
 			}
-			const author = (doc.author as string | undefined) || options.req.user?.id;
+			const author = resolveRelationshipID(doc.author) || options.req.user?.id;
 			if (!author) {
 				throw new Error("Author is required to generate preview path");
 			}

@@ -15,7 +15,9 @@ export function isSameOrigin(req: NextRequest): boolean {
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_SERVER_URL,
     process.env.NEXT_PUBLIC_LOSTINSEOUL_URL,
-    process.env.NEXT_PUBLIC_PRODUCTION_URL
+    process.env.NEXT_PUBLIC_PRODUCTION_URL,
+    "https://lostinseoul.com",
+    "https://www.lostinseoul.com"
   ].filter((origin): origin is string => Boolean(origin));
   if (allowedOrigins.length === 0) return false;
 

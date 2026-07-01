@@ -9,8 +9,10 @@ import { slugField } from "@/payload/fields/slug";
 import { filterDocByCurrentUser } from "@/payload/utilities/filterDocByCurrentUser";
 import {
   generatePreviewPath,
-  generatePreviewPathWithAuthor
+  generatePreviewPathWithAuthor,
+  resolveRelationshipID
 } from "@/utilities/generatePreviewPath";
+import { getServerSideURL } from "@/utilities/getURL";
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -131,7 +133,7 @@ export const Posts: CollectionConfig<"posts"> = {
         if (!currentUser) {
           throw new Error("You must be logged in to generate a preview path");
         }
-        const author = (data?.author as string | undefined) || currentUser?.id;
+        const author = resolveRelationshipID(data?.author) || currentUser.id;
         if (!author) {
           throw new Error("Author is required to generate preview path");
         }
@@ -142,7 +144,8 @@ export const Posts: CollectionConfig<"posts"> = {
           userID: author
         });
 
-        return path;
+        const livePreviewURL = `${getServerSideURL()}${path}`;
+        return livePreviewURL;
       }
     },
     preview: (data, { req }) =>
