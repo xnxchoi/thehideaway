@@ -2,6 +2,10 @@
 
 import type { LostProductCard } from "@/lib/lost-commerce/queries";
 import { useCallback, useMemo, useRef, useState } from "react";
+import type {
+  LostBusinessDisclosureIdentifiers,
+  LostBusinessDisclosureLabels
+} from "./business-footer";
 import {
   LostAnnouncementBar,
   LostCursorBridge,
@@ -52,6 +56,8 @@ type Props = {
   standardModeLabel: string;
   requestModeLabel: string;
   privateModeLabel: string;
+  footerBusinessIdentifiers: LostBusinessDisclosureIdentifiers;
+  footerBusinessLabels: LostBusinessDisclosureLabels;
   footerInfoLabel: string;
   footerMediaLabel: string;
   footerContactLabel: string;
@@ -82,6 +88,8 @@ export function LostStorefront({
   focusTitleLabel,
   collectionsEyebrowLabel,
   collectionsTitleLabel,
+  footerBusinessIdentifiers,
+  footerBusinessLabels,
   footerContactLabel,
   footerCopyrightLabel,
   footerInfoLabel,
@@ -231,6 +239,8 @@ export function LostStorefront({
           />
           <LostFooter
             archiveLabel={archiveLabel}
+            footerBusinessIdentifiers={footerBusinessIdentifiers}
+            footerBusinessLabels={footerBusinessLabels}
             footerContactLabel={footerContactLabel}
             footerCopyrightLabel={footerCopyrightLabel}
             footerInfoLabel={footerInfoLabel}

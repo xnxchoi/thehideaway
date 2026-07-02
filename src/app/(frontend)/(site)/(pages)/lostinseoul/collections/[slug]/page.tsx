@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
 import { getLostCollectionBySlug } from "@/lib/lost-commerce/queries";
+import { getLostBusinessFooterProps } from "../../business-footer-props";
 import { LostStorefront } from "../../storefront";
 
 type PageProps = {
@@ -14,6 +15,7 @@ export default async function LostCollectionPage({ params }: PageProps) {
   if (!collection) notFound();
 
   const t = await getTranslations("LOSTINSEOUL");
+  const businessFooterProps = getLostBusinessFooterProps(t);
 
   return (
     <RPage slug={["lostinseoul", "collections", slug]} type="pages">
@@ -52,6 +54,7 @@ export default async function LostCollectionPage({ params }: PageProps) {
         standardModeLabel={t("modes.standard")}
         requestModeLabel={t("modes.request")}
         privateModeLabel={t("modes.private")}
+        {...businessFooterProps}
         footerInfoLabel={t("footer.info")}
         footerMediaLabel={t("footer.media")}
         footerContactLabel={t("footer.contact")}

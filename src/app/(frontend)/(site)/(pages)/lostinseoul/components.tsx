@@ -37,6 +37,11 @@ import {
   splitLostBlurLines
 } from "./blur-motion";
 import {
+  getLostBusinessDisclosure,
+  type LostBusinessDisclosureIdentifiers,
+  type LostBusinessDisclosureLabels
+} from "./business-footer";
+import {
   getLostCollectionTagState,
   getLostCollectionVideoState,
   lostCollectionTransition,
@@ -1997,6 +2002,8 @@ export function LostVideoCollections({
 
 export function LostFooter({
   archiveLabel,
+  footerBusinessIdentifiers,
+  footerBusinessLabels,
   footerContactLabel,
   footerCopyrightLabel,
   footerInfoLabel,
@@ -2007,6 +2014,8 @@ export function LostFooter({
   shopLabel
 }: {
   archiveLabel: string;
+  footerBusinessIdentifiers: LostBusinessDisclosureIdentifiers;
+  footerBusinessLabels: LostBusinessDisclosureLabels;
   footerContactLabel: string;
   footerCopyrightLabel: string;
   footerInfoLabel: string;
@@ -2016,6 +2025,11 @@ export function LostFooter({
   footerTermsLabel: string;
   shopLabel: string;
 }) {
+  const businessDisclosure = getLostBusinessDisclosure(
+    footerBusinessLabels,
+    footerBusinessIdentifiers
+  );
+
   return (
     <footer className="lost-footer relative grid content-start items-start gap-y-10 bg-[var(--black)] text-[var(--white)]">
       <div className="z-[2] grid gap-y-12 px-4 pt-32 md:px-14 md:pt-60">
@@ -2079,6 +2093,38 @@ export function LostFooter({
             {footerContactLabel}
           </Link>
         </div>
+        <section
+          aria-labelledby="lost-footer-business"
+          className="grid gap-y-5 border-t border-[oklch(from_var(--white)_l_c_h_/_0.22)] pt-8 md:grid-cols-12 md:gap-5"
+        >
+          <h3
+            className="font-mono text-[1.1rem] leading-none font-bold tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.72)] uppercase md:col-span-3"
+            id="lost-footer-business"
+          >
+            {businessDisclosure.heading}
+          </h3>
+          <dl className="grid gap-x-6 gap-y-4 text-[1.05rem] leading-snug md:col-span-9 md:grid-cols-2 xl:grid-cols-3">
+            {businessDisclosure.items.map((item) => (
+              <div className="min-w-0" key={item.label}>
+                <dt className="font-mono text-[0.78rem] leading-tight font-bold tracking-[0.08em] text-[oklch(from_var(--white)_l_c_h_/_0.65)] uppercase">
+                  {item.label}
+                </dt>
+                <dd className="mt-1 break-words text-[oklch(from_var(--white)_l_c_h_/_0.84)]">
+                  {item.href ? (
+                    <a
+                      className="underline-offset-4 hover:underline"
+                      href={item.href}
+                    >
+                      {item.value}
+                    </a>
+                  ) : (
+                    item.value
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
         <LostTopBar pale />
       </div>
       <div className="sticky bottom-0 z-0 grid gap-y-8 px-4 pb-20 md:px-14 md:pb-10">
