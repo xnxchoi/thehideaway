@@ -28,7 +28,7 @@ html.lenis.lenis-smooth:has(.lost-commerce-root) iframe {
 }
 
 body:has(.lost-commerce-root) #rp-header,
-body:has(.lost-commerce-root) footer,
+body:has(.lost-commerce-root) footer:not(.lost-footer),
 body:has(.lost-commerce-root) .menu__preview-preview,
 body:has(.lost-commerce-root) .pt_mask,
 body:has(.lost-commerce-root) .pt_cornerstones,
