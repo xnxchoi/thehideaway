@@ -29,7 +29,7 @@ export type ResolvedPlan = {
   features: { label: string; included: boolean }[];
   discount_label: string | null;
   price: ResolvedPrice;
-  payment_methods: ("bank_transfer" | "cash")[];
+  payment_methods: ("card" | "bank_transfer" | "cash")[];
   seat_limit: number | null;
   seats_taken: number;
   seats_remaining: number | null;

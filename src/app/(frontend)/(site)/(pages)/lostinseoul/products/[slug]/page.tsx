@@ -35,7 +35,10 @@ export default async function LostProductPage({ params }: PageProps) {
     .filter((item) => item.id !== product.id)
     .slice(0, 3);
 
-  const t = await getTranslations("LOSTINSEOUL");
+  const [t, tCommerce] = await Promise.all([
+    getTranslations("LOSTINSEOUL"),
+    getTranslations("Commerce.product")
+  ]);
 
   return (
     <RPage slug={["lostinseoul", "products", slug]} type="pages">
@@ -43,6 +46,14 @@ export default async function LostProductPage({ params }: PageProps) {
         drops={data.drops}
         product={product}
         relatedProducts={relatedProducts}
+        commerce={{
+          eyebrow: tCommerce("eyebrow"),
+          refundTitle: tCommerce("refundTitle"),
+          refundBody: tCommerce("refundBody"),
+          deliveryTitle: tCommerce("deliveryTitle"),
+          deliveryBody: tCommerce("deliveryBody"),
+          link: tCommerce("link")
+        }}
         labels={{
           announcement: t("home.announcement"),
           back: t("nav.back"),

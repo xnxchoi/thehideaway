@@ -89,10 +89,10 @@ const Plans: CollectionConfig = {
       hasMany: true,
       required: true,
       defaultValue: ["bank_transfer"],
-      options: ["bank_transfer", "cash"],
+      options: ["card", "bank_transfer", "cash"],
       admin: {
         description:
-          "Online card / KakaoPay / Toss disabled at launch. Manual flow only."
+          "Accepted checkout methods. 'card' enables the PortOne one-time card flow; bank_transfer / cash use the manual receipt-confirm flow. The plans checkout surfaces only the methods enabled here."
       }
     },
     {

@@ -155,11 +155,45 @@ export const Subscriptions: CollectionConfig = {
       type: "select",
       required: true,
       defaultValue: "bank_transfer",
-      options: ["bank_transfer", "cash"],
+      options: ["bank_transfer", "cash", "card"],
       access: { update: adminOnlyField },
       admin: {
         description:
-          "Method the user requested at checkout. Admin uses this to confirm the matching receipt."
+          "Method the user requested at checkout. bank_transfer / cash are confirmed manually by admin; card is confirmed automatically by PortOne verification."
+      }
+    },
+    {
+      name: "provider",
+      type: "select",
+      required: true,
+      defaultValue: "manual",
+      options: ["manual", "portone"],
+      index: true,
+      access: { update: adminOnlyField },
+      admin: {
+        description:
+          "manual = bank transfer / cash (admin confirms receipt). portone = one-time card payment (server verifies the payment before marking paid)."
+      }
+    },
+    {
+      name: "payment_ref",
+      type: "text",
+      unique: true,
+      index: true,
+      access: { update: adminOnlyField },
+      admin: {
+        description:
+          "PortOne paymentId captured at card-checkout start. Unique — the verify route and webhook reconcile the pending→paid edge idempotently against this ref."
+      }
+    },
+    {
+      name: "portone_transaction_ref",
+      type: "text",
+      index: true,
+      access: { update: adminOnlyField },
+      admin: {
+        readOnly: true,
+        description: "Settled PortOne transaction id, stamped on verification."
       }
     },
     {

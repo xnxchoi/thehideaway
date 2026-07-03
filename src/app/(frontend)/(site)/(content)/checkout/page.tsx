@@ -2,13 +2,19 @@ import { headers as nextHeaders } from "next/headers";
 import { redirect } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { getTranslations } from "next-intl/server";
 import type { Plan, Price } from "@/payload-types";
 import { CheckoutClient } from "./CheckoutClient";
+import { CheckoutRefundInfo } from "./CheckoutRefundInfo";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 import { RPage } from "@/components/UX/Transition";
+import { CheckoutColophon } from "@/components/Shells/Footer/CheckoutColophon";
 import { signInRedirectPath } from "@/lib/routes/auth";
+import { isPortOneCheckoutEnabled } from "@/lib/lost-commerce/portone";
 
 export const runtime = "nodejs";
+
+type PlanPaymentMethod = "card" | "bank_transfer" | "cash";
 
 function currencyCodeOf(price: Price): string | null {
   const currency = price.currency;
@@ -101,6 +107,16 @@ export default async function CheckoutPage(props: {
     process.env.NEXT_PUBLIC_BANK_ACCOUNT ??
     "기업은행 · 000-000000-00-000 · The Hideaway";
 
+  const planMethods = (plan.payment_methods ?? []) as PlanPaymentMethod[];
+  const cardEnabled =
+    planMethods.includes("card") && isPortOneCheckoutEnabled();
+  const manualMethods = planMethods.filter(
+    (method): method is "bank_transfer" | "cash" =>
+      method === "bank_transfer" || method === "cash"
+  );
+
+  const tCheckout = await getTranslations("Plans.checkout");
+
   return (
     <RPage type="pages" slug={[]} className={s.pricingShell}>
       <section
@@ -172,47 +188,70 @@ export default async function CheckoutPage(props: {
           </div>
         </div>
 
-        <div
-          style={{
-            border: "1px solid var(--pricing-line)",
-            borderRadius: 10,
-            padding: 24,
-            marginBottom: 32
-          }}
-        >
-          <p className={s.eyebrow} style={{ marginBottom: 14 }}>
-            Bank transfer
-          </p>
-          <p
+        {manualMethods.length > 0 ? (
+          <div
             style={{
-              fontFamily: "var(--font-mono, ui-monospace, monospace)",
-              fontSize: 13,
-              lineHeight: 1.6,
-              color: "var(--pricing-fg)",
-              marginBottom: 12
+              border: "1px solid var(--pricing-line)",
+              borderRadius: 10,
+              padding: 24,
+              marginBottom: 32
             }}
           >
-            {bankAccount}
-          </p>
-          <p
-            style={{
-              fontSize: 13,
-              lineHeight: 1.6,
-              color: "var(--pricing-fg-mute)",
-              margin: 0
-            }}
-          >
-            Send {display} to the account above. After you click below we'll
-            start watching for your transfer; access unlocks the moment we
-            confirm receipt.
-          </p>
-        </div>
+            <p className={s.eyebrow} style={{ marginBottom: 14 }}>
+              Bank transfer
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-mono, ui-monospace, monospace)",
+                fontSize: 13,
+                lineHeight: 1.6,
+                color: "var(--pricing-fg)",
+                marginBottom: 12
+              }}
+            >
+              {bankAccount}
+            </p>
+            <p
+              style={{
+                fontSize: 13,
+                lineHeight: 1.6,
+                color: "var(--pricing-fg-mute)",
+                margin: 0
+              }}
+            >
+              Send {display} to the account above. After you click below we'll
+              start watching for your transfer; access unlocks the moment we
+              confirm receipt.
+            </p>
+          </div>
+        ) : null}
 
         <CheckoutClient
           planId={plan.id}
           priceId={price.id}
           tierLabel={plan.tier_label}
+          cardEnabled={cardEnabled}
+          manualMethods={manualMethods}
+          amountDisplay={display}
+          labels={{
+            methodLabel: tCheckout("methodLabel"),
+            methodCard: tCheckout("methodCard"),
+            methodBankTransfer: tCheckout("methodBankTransfer"),
+            methodCash: tCheckout("methodCash"),
+            payWithCard: tCheckout("payWithCard", { amount: display }),
+            processing: tCheckout("processing"),
+            verifying: tCheckout("verifying"),
+            cardHelp: tCheckout("cardHelp", { amount: display }),
+            soldOut: tCheckout("soldOut"),
+            genericError: tCheckout("genericError"),
+            verifyError: tCheckout("verifyError"),
+            cardUnavailable: tCheckout("cardUnavailable")
+          }}
         />
+
+        <CheckoutRefundInfo />
+
+        <CheckoutColophon />
       </section>
     </RPage>
   );

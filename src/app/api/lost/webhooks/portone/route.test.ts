@@ -8,8 +8,13 @@ const commitTransaction = vi.fn();
 const rollbackTransaction = vi.fn();
 const markRequestOrderPaid = vi.fn(async () => undefined);
 const releaseStandardInventory = vi.fn(async () => undefined);
+const syncPlanPayment = vi.fn();
 
 vi.mock("@payload-config", () => ({ default: {} }));
+
+vi.mock("@/lib/lost-commerce/plan-payment", () => ({
+  syncPlanPayment
+}));
 
 vi.mock("payload", () => ({
   getPayload: vi.fn(async () => ({
@@ -65,6 +70,7 @@ describe("POST /api/lost/webhooks/portone", () => {
     rollbackTransaction.mockReset().mockResolvedValue(undefined);
     markRequestOrderPaid.mockClear();
     releaseStandardInventory.mockClear();
+    syncPlanPayment.mockReset();
 
     find.mockImplementation(async ({ collection }) => {
       if (collection === "product-orders") {
@@ -147,7 +153,6 @@ describe("POST /api/lost/webhooks/portone", () => {
     expect(update).not.toHaveBeenCalled();
     expect(markRequestOrderPaid).not.toHaveBeenCalled();
   });
-
 
   it("rejects amount and currency mismatches before mutating state", async () => {
     const { POST } = await import("./route");
@@ -357,5 +362,122 @@ describe("POST /api/lost/webhooks/portone", () => {
         })
       })
     );
+  });
+
+  describe("plans (membership) branch", () => {
+    function withPlanSub(overrides: Record<string, unknown> = {}) {
+      // A subscription carries this paymentId as its payment_ref → plan event.
+      find.mockImplementation(async ({ collection }) => {
+        if (collection === "subscriptions") {
+          return {
+            docs: [
+              {
+                id: "sub-1",
+                payment_ref: "hda_plan_1",
+                subscription_status: "pending",
+                paid: false,
+                ...overrides
+              }
+            ]
+          };
+        }
+        return { docs: [] };
+      });
+    }
+
+    it("reconciles a paid plan webhook via syncPlanPayment (2xx)", async () => {
+      withPlanSub();
+      syncPlanPayment.mockResolvedValue({
+        ok: true,
+        subscriptionId: "sub-1",
+        status: "active",
+        alreadyProcessed: false
+      });
+      const { POST } = await import("./route");
+      const res = await POST(
+        webhookRequest(
+          { type: "Transaction.Paid", data: { paymentId: "hda_plan_1" } },
+          "webhook-secret"
+        )
+      );
+      expect(res.status).toBe(200);
+      expect(syncPlanPayment).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentId: "hda_plan_1" })
+      );
+    });
+
+    it("ACKs a FAILED plan webhook 2xx and cancels the pending hold (no retry storm)", async () => {
+      withPlanSub();
+      const { POST } = await import("./route");
+      const res = await POST(
+        webhookRequest(
+          { type: "Transaction.Failed", data: { paymentId: "hda_plan_1" } },
+          "webhook-secret"
+        )
+      );
+      const body = (await res.json()) as { ok: boolean; terminal?: string };
+      expect(res.status).toBe(200);
+      expect(body).toMatchObject({ ok: true, terminal: "failed" });
+      // Terminal path must NOT re-fetch PortOne.
+      expect(syncPlanPayment).not.toHaveBeenCalled();
+      // Pending hold canceled so its seat is freed.
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: "subscriptions",
+          id: "sub-1",
+          data: expect.objectContaining({ subscription_status: "canceled" })
+        })
+      );
+    });
+
+    it("a duplicate/reordered FAILED does NOT cancel an already-active membership", async () => {
+      withPlanSub({ subscription_status: "active", paid: true });
+      const { POST } = await import("./route");
+      const res = await POST(
+        webhookRequest(
+          { type: "Transaction.Failed", data: { paymentId: "hda_plan_1" } },
+          "webhook-secret"
+        )
+      );
+      expect(res.status).toBe(200);
+      // No cancel write against the active row.
+      expect(update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: "subscriptions",
+          data: expect.objectContaining({ subscription_status: "canceled" })
+        })
+      );
+    });
+
+    it("ACKs a verified rejection 2xx (terminal), only 503s on verify-unavailable", async () => {
+      withPlanSub();
+      syncPlanPayment.mockResolvedValue({
+        ok: false,
+        status: 409,
+        reason: "amount-mismatch"
+      });
+      const { POST } = await import("./route");
+      const rejected = await POST(
+        webhookRequest(
+          { type: "Transaction.Paid", data: { paymentId: "hda_plan_1" } },
+          "webhook-secret"
+        )
+      );
+      expect(rejected.status).toBe(200);
+      expect((await rejected.json()).rejected).toBe("amount-mismatch");
+
+      syncPlanPayment.mockResolvedValue({
+        ok: false,
+        status: 503,
+        reason: "verify-unavailable"
+      });
+      const transient = await POST(
+        webhookRequest(
+          { type: "Transaction.Paid", data: { paymentId: "hda_plan_1" } },
+          "webhook-secret"
+        )
+      );
+      expect(transient.status).toBe(503);
+    });
   });
 });

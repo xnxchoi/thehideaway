@@ -5,15 +5,63 @@ import config from "@payload-config";
 import { paymentWebhookLock } from "@/lib/db/sequences";
 import { markRequestOrderPaid } from "@/lib/lost-commerce/campaigns";
 import { releaseStandardInventory } from "@/lib/lost-commerce/inventory";
+import { syncPlanPayment } from "@/lib/lost-commerce/plan-payment";
 
 export const runtime = "nodejs";
+
+/**
+ * Extract the paymentId a PortOne webhook carries, from every shape we might
+ * receive: V2 Standard-Webhook (`data.paymentId`), and the legacy / echoed
+ * top-level fields. We do NOT rely on `customData.service` here — customData
+ * lives on the *payment record* (the GET response), not reliably on the
+ * webhook body. Instead the caller decides "is this a plan payment?" by
+ * looking up a subscription whose `payment_ref` equals this id. The paymentId
+ * itself is always present in the webhook.
+ */
+function webhookPaymentIdOf(event: Record<string, unknown>): string | null {
+  const data = event.data;
+  const nested =
+    data && typeof data === "object"
+      ? (data as Record<string, unknown>).paymentId
+      : undefined;
+  const ref =
+    event.paymentId ??
+    event.payment_ref ??
+    nested ??
+    event.merchant_order_id ??
+    event.portone_order_ref ??
+    event.order_ref;
+  return typeof ref === "string" && ref.length > 0 ? ref : null;
+}
 
 function normalizePaymentStatus(status: unknown) {
   const value = String(status ?? "").toUpperCase();
   if (["SUCCESS", "PAID", "CAPTURED"].includes(value)) return "paid";
-  if (["FAILED", "FAILURE", "CANCELLED", "CANCELED"].includes(value)) return "failed";
+  if (["FAILED", "FAILURE", "CANCELLED", "CANCELED"].includes(value))
+    return "failed";
   if (["REFUNDED"].includes(value)) return "refunded";
   return "pending";
+}
+
+/**
+ * Read the status a plans webhook carries. PortOne V2 uses a `type`
+ * discriminator (e.g. `Transaction.Paid`, `Transaction.Failed`,
+ * `Transaction.Cancelled`) and/or a `data.status` / top-level `status`. We
+ * normalize any of these to paid | failed | refunded | pending.
+ */
+function webhookStatusOf(event: Record<string, unknown>): string {
+  const data = event.data;
+  const nestedStatus =
+    data && typeof data === "object"
+      ? (data as Record<string, unknown>).status
+      : undefined;
+  const type = String(event.type ?? "").toUpperCase();
+  if (type.includes("PAID") || type.includes("CAPTURED")) return "paid";
+  if (type.includes("FAILED") || type.includes("CANCEL")) return "failed";
+  if (type.includes("REFUND")) return "refunded";
+  return normalizePaymentStatus(
+    event.status ?? event.payment_status ?? nestedStatus
+  );
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -77,20 +125,110 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       req.headers.get("x-webhook-secret") ??
       "";
     if (!safeEqual(supplied, secret)) {
-      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: "unauthorized" },
+        { status: 401 }
+      );
     }
   }
 
-  const event = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+  const event = (await req.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null;
   if (!event) {
-    return NextResponse.json({ ok: false, error: "bad-request" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "bad-request" },
+      { status: 400 }
+    );
+  }
+
+  // Plans (membership) branch — decided by data, not by customData: if a
+  // subscription carries this paymentId as its `payment_ref`, reconcile the
+  // subscription rather than a product order. Idempotent and shared with the
+  // browser-return verify route: whichever runs first drives the pending→
+  // paid edge; the second is a no-op (advisory lock + re-read).
+  const webhookPaymentId = webhookPaymentIdOf(event);
+  if (webhookPaymentId) {
+    const payload = await getPayload({ config });
+    const planSub = await payload
+      .find({
+        collection: "subscriptions" as never,
+        overrideAccess: true,
+        depth: 0,
+        limit: 1,
+        where: { payment_ref: { equals: webhookPaymentId } }
+      })
+      .catch(() => null);
+    const sub = planSub?.docs?.[0] as
+      { id: string; subscription_status?: string; paid?: boolean } | undefined;
+    if (sub) {
+      const status = webhookStatusOf(event);
+
+      // Terminal non-paid outcomes (failed / cancelled): record and ACK 2xx.
+      // We must NOT keep returning non-2xx — that provokes a PortOne retry
+      // storm for a payment that will never become paid. Cancel the pending
+      // hold so its seat is freed — but ONLY when the row is still pending and
+      // unpaid; a reordered / duplicate FAILED must never cancel an
+      // already-active (paid) membership.
+      if (status === "failed") {
+        if (sub.subscription_status === "pending" && sub.paid !== true) {
+          await payload
+            .update({
+              collection: "subscriptions" as never,
+              id: sub.id,
+              overrideAccess: true,
+              data: {
+                subscription_status: "canceled"
+              } as never
+            })
+            .catch(() => undefined);
+        }
+        return NextResponse.json({ ok: true, terminal: "failed" });
+      }
+      // Refunds are reconciled out-of-band (admin) at launch; ACK so PortOne
+      // stops retrying.
+      if (status === "refunded") {
+        return NextResponse.json({ ok: true, terminal: "refunded" });
+      }
+
+      const result = await syncPlanPayment({
+        payload,
+        paymentId: webhookPaymentId
+      });
+      if (result.ok) {
+        return NextResponse.json({
+          ok: true,
+          subscriptionId: result.subscriptionId,
+          alreadyProcessed: result.alreadyProcessed
+        });
+      }
+      // Only a genuinely transient failure should provoke a retry. A verified
+      // rejection (amount/currency mismatch, TEST channel, not-paid) is
+      // terminal — ACK 2xx after logging so PortOne stops hammering us; the
+      // row stays pending for admin inspection.
+      if (result.reason === "verify-unavailable") {
+        return NextResponse.json(
+          { ok: false, error: result.reason },
+          { status: 503 }
+        );
+      }
+      payload.logger?.warn?.(
+        `[lost/portone/webhook] plan payment ${webhookPaymentId} rejected: ${result.reason}`
+      );
+      return NextResponse.json({ ok: true, rejected: result.reason });
+    }
+    // No subscription for this id → fall through to the product-order path.
   }
 
   const orderRef = String(
     event.merchant_order_id ?? event.portone_order_ref ?? event.order_ref ?? ""
   );
   if (!orderRef) {
-    return NextResponse.json({ ok: false, error: "missing-order-ref" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "missing-order-ref" },
+      { status: 400 }
+    );
   }
 
   const payload = await getPayload({ config });
@@ -133,7 +271,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       | undefined;
     if (!order) {
       await payload.db.rollbackTransaction(transactionID);
-      return NextResponse.json({ ok: false, error: "order-not-found" }, { status: 404 });
+      return NextResponse.json(
+        { ok: false, error: "order-not-found" },
+        { status: 404 }
+      );
     }
 
     const paymentStatus = normalizePaymentStatus(
@@ -158,7 +299,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       | undefined;
     if (!payment || payment.provider !== "portone") {
       await payload.db.rollbackTransaction(transactionID);
-      return NextResponse.json({ ok: false, error: "payment-not-found" }, { status: 404 });
+      return NextResponse.json(
+        { ok: false, error: "payment-not-found" },
+        { status: 404 }
+      );
     }
     const expectedAmount = Number(payment.amount ?? order.total_amount ?? NaN);
     const eventAmount = eventAmountOf(event);

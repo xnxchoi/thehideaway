@@ -163,13 +163,100 @@
       "status": "Status",
       "payment": "Payment",
       "total": "Total"
+    },
+    "fragrance": {
+      "metaTitle": "Fragrance — LOSTINSEOUL",
+      "metaDescription": "One night in Seoul, bottled. The first fragrance from LOSTINSEOUL.",
+      "eyebrow": "Fragrance",
+      "titleDisplay": "One night",
+      "titleReading": "The first fragrance from the city.",
+      "enter": "Scroll",
+      "placeholderName": "№ 01",
+      "placeholderNote": "The release is being prepared. The object will appear here.",
+      "beats": {
+        "arrival": {
+          "eyebrow": "19:04 — Euljiro",
+          "display": "One night",
+          "reading": "The city puts on its first light."
+        },
+        "neon": {
+          "eyebrow": "21:37 — Seongsu",
+          "display": "Neon",
+          "reading": "Neon on wet asphalt. The night opens."
+        },
+        "rain": {
+          "eyebrow": "23:58 — Han river",
+          "display": "Rain",
+          "reading": "Rain files the city down to its essentials."
+        },
+        "sodium": {
+          "eyebrow": "03:21 — Namsan tunnel 3",
+          "display": "Sodium",
+          "reading": "Sodium light. Nothing moves that doesn't have to."
+        },
+        "dawn": {
+          "eyebrow": "05:48 — First train",
+          "display": "Dawn",
+          "reading": "The night lets go. Something stays on the skin."
+        }
+      },
+      "reveal": {
+        "eyebrow": "The object",
+        "editionNote": "Limited run, Seoul dispatch.",
+        "viewObject": "View the object"
+      }
     }
   },
   "Plans": {
     "eyebrow": "Membership",
     "title": "Life is only meaningful in retrospect.",
     "subtitle": "Memories are the product of two things - action and recollection.",
-    "description": "We hand you the tools to capture the spark."
+    "description": "We hand you the tools to capture the spark.",
+    "checkout": {
+      "cardEyebrow": "Card payment",
+      "cardTitle": "{tier}, by card.",
+      "cardValidityYearly": "valid for 1 year — renews free if your work earns it",
+      "cardValidityLifetime": "lifetime — pay once, never again",
+      "methodLabel": "Payment method",
+      "methodCard": "Card",
+      "methodBankTransfer": "Bank transfer",
+      "methodCash": "Cash",
+      "payWithCard": "Pay {amount} by card",
+      "processing": "Opening secure window…",
+      "verifying": "Confirming your payment…",
+      "cardHelp": "You'll pay {amount} once. No card is stored and there are no recurring charges. Access unlocks the instant we confirm the payment.",
+      "soldOut": "This membership is fully subscribed.",
+      "genericError": "We couldn't start the payment. Please try again.",
+      "verifyError": "We received your payment but couldn't confirm it automatically. We'll reconcile it shortly — no need to pay again.",
+      "cardUnavailable": "Card payments aren't open yet. Use bank transfer below."
+    },
+    "commerce": {
+      "eyebrow": "Refund policy",
+      "title": "Cancellation & refund",
+      "body": "Memberships are digital access. Before your access is first used you may cancel for a full refund; after access begins, refunds follow the statutory content-service rules.",
+      "link": "Read the full refund policy"
+    }
+  },
+  "Commerce": {
+    "colophon": {
+      "aria": "Business information",
+      "tradeName": "Trade name",
+      "representative": "Representative",
+      "registration": "Business Reg. No.",
+      "mailOrder": "Mail-Order Reg.",
+      "address": "Address",
+      "phone": "Phone",
+      "mailOrderPending": "Pending application",
+      "pending": "—"
+    },
+    "product": {
+      "eyebrow": "Buyer information",
+      "refundTitle": "Returns & exchanges",
+      "refundBody": "Unused items in original condition may be returned or exchanged within 7 days of delivery under the Act on Consumer Protection in Electronic Commerce. Return shipping for a change of mind is borne by the buyer; defects or mis-shipments are borne by us.",
+      "deliveryTitle": "Delivery",
+      "deliveryBody": "Ships within 2–5 business days by domestic courier after payment is confirmed. You'll receive a tracking number when your order leaves us.",
+      "link": "Full refund, exchange & delivery policy"
+    }
   },
   "Policies": {
     "Refunds": {

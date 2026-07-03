@@ -1,4 +1,5 @@
 import { Link } from "@/components/core/Link/Link";
+import { CheckoutColophon } from "@/components/Shells/Footer/CheckoutColophon";
 import "../index.css";
 
 type LostPaymentStatusShellProps = {
@@ -50,6 +51,9 @@ export function LostPaymentStatusShell({
         >
           {actionLabel}
         </Link>
+        <div className="mt-16 w-full text-[var(--n-s-fg)]">
+          <CheckoutColophon />
+        </div>
       </section>
     </main>
   );

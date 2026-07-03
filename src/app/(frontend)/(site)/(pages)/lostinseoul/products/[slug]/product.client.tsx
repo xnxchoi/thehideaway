@@ -93,15 +93,26 @@ function stockLabel(stockState: string | null | undefined, labels: Labels) {
   return stockState ?? "";
 }
 
+type CommerceInfo = {
+  eyebrow: string;
+  refundTitle: string;
+  refundBody: string;
+  deliveryTitle: string;
+  deliveryBody: string;
+  link: string;
+};
+
 export function LostProductDetailClient({
   drops,
   product,
   relatedProducts,
+  commerce,
   labels
 }: {
   drops: Array<{ title: string; slug: string }>;
   product: LostProductDetail;
   relatedProducts: LostProductCard[];
+  commerce: CommerceInfo;
   labels: Labels;
 }) {
   const { add } = useLostCart();
@@ -714,6 +725,37 @@ export function LostProductDetailClient({
                   />
                 </article>
               ) : null}
+
+              <section
+                aria-label={commerce.eyebrow}
+                className="grid gap-y-5 border-t border-[oklch(from_var(--white)_l_c_h_/_0.14)] pt-8"
+              >
+                <p className="font-mono text-[1.1rem] tracking-[0.18em] text-[oklch(from_var(--white)_l_c_h_/_0.5)] uppercase">
+                  {commerce.eyebrow}
+                </p>
+                <div className="grid gap-y-2">
+                  <h3 className="text-[1.5rem] font-medium">
+                    {commerce.refundTitle}
+                  </h3>
+                  <p className="text-[1.4rem] leading-relaxed text-[oklch(from_var(--white)_l_c_h_/_0.7)]">
+                    {commerce.refundBody}
+                  </p>
+                </div>
+                <div className="grid gap-y-2">
+                  <h3 className="text-[1.5rem] font-medium">
+                    {commerce.deliveryTitle}
+                  </h3>
+                  <p className="text-[1.4rem] leading-relaxed text-[oklch(from_var(--white)_l_c_h_/_0.7)]">
+                    {commerce.deliveryBody}
+                  </p>
+                </div>
+                <Link
+                  className="justify-self-start font-mono text-[1.2rem] tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.85)] underline underline-offset-[0.3em] transition-opacity hover:opacity-70"
+                  href="/refund"
+                >
+                  {commerce.link}
+                </Link>
+              </section>
             </div>
           </section>
         </section>

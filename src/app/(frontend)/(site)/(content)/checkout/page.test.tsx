@@ -29,6 +29,26 @@ vi.mock("next/navigation", () => ({
   })
 }));
 
+vi.mock("next-intl/server", () => ({
+  getTranslations: vi.fn(
+    async () => (key: string, vars?: Record<string, unknown>) =>
+      vars ? `${key}:${JSON.stringify(vars)}` : key
+  ),
+  getLocale: vi.fn(async () => "en")
+}));
+
+vi.mock("@/lib/lost-commerce/portone", () => ({
+  isPortOneCheckoutEnabled: vi.fn(() => true)
+}));
+
+vi.mock("@/components/Shells/Footer/CheckoutColophon", () => ({
+  CheckoutColophon: () => React.createElement("mock-colophon")
+}));
+
+vi.mock("./CheckoutRefundInfo", () => ({
+  CheckoutRefundInfo: () => React.createElement("mock-refund-info")
+}));
+
 vi.mock("@/components/sections/Pricing/Pricing.module.scss", () => ({
   default: {
     cta: "cta",
@@ -87,7 +107,8 @@ describe("/checkout membership page", () => {
       tier_label: "Resident",
       state: "active",
       validity: "yearly",
-      seat_limit: null
+      seat_limit: null,
+      payment_methods: ["card", "bank_transfer"]
     });
     mocks.find.mockReset().mockResolvedValue({
       docs: [
@@ -114,10 +135,12 @@ describe("/checkout membership page", () => {
         }
       })
     );
-    expect(findCheckoutClientProps(element)).toEqual({
+    expect(findCheckoutClientProps(element)).toMatchObject({
       planId: "plan-1",
       priceId: "price-1",
-      tierLabel: "Resident"
+      tierLabel: "Resident",
+      cardEnabled: true,
+      manualMethods: ["bank_transfer"]
     });
   });
 });

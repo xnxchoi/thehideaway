@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
 import { isPortOneCheckoutEnabled } from "@/lib/lost-commerce/portone";
+import { CheckoutColophon } from "@/components/Shells/Footer/CheckoutColophon";
 import { LostCheckoutPageClient } from "./page.client";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ export default async function LostCheckoutPage() {
   return (
     <RPage slug={["lostinseoul", "checkout"]} type="pages">
       <LostCheckoutPageClient
+        colophon={<CheckoutColophon />}
         portOneEnabled={isPortOneCheckoutEnabled()}
         labels={{
           title: t("checkout.title"),

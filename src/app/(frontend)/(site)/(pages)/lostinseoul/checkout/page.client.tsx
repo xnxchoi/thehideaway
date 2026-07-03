@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
@@ -103,9 +103,11 @@ async function cancelUnpaidOrder(orderRef: string): Promise<void> {
 }
 
 export function LostCheckoutPageClient({
+  colophon,
   labels,
   portOneEnabled
 }: {
+  colophon?: ReactNode;
   labels: Labels;
   portOneEnabled: boolean;
 }) {
@@ -352,6 +354,11 @@ export function LostCheckoutPageClient({
             </aside>
           </form>
         )}
+        {colophon ? (
+          <div className="mx-auto mt-12 max-w-3xl text-[var(--n-s-fg)]">
+            {colophon}
+          </div>
+        ) : null}
       </div>
     </main>
   );

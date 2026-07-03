@@ -1849,16 +1849,7 @@ export interface Notification {
       } | null);
   thumbnail?: (string | null) | Asset;
   type:
-    | 'comment'
-    | 'follow'
-    | 'mention'
-    | 'system'
-    | 'access'
-    | 'bookmark'
-    | 'profile'
-    | 'post'
-    | 'surf'
-    | 'notification';
+    'comment' | 'follow' | 'mention' | 'system' | 'access' | 'bookmark' | 'profile' | 'post' | 'surf' | 'notification';
   importance: number;
   status: 'unread' | 'read' | 'dismissed';
   read: boolean;
@@ -2603,9 +2594,9 @@ export interface Plan {
    */
   type: 'one_time';
   /**
-   * Online card / KakaoPay / Toss disabled at launch. Manual flow only.
+   * Accepted checkout methods. 'card' enables the PortOne one-time card flow; bank_transfer / cash use the manual receipt-confirm flow. The plans checkout surfaces only the methods enabled here.
    */
-  payment_methods: ('bank_transfer' | 'cash')[];
+  payment_methods: ('card' | 'bank_transfer' | 'cash')[];
   /**
    * Short marketing line under the price.
    */
@@ -2737,9 +2728,21 @@ export interface Subscription {
    */
   last_waiver_check?: string | null;
   /**
-   * Method the user requested at checkout. Admin uses this to confirm the matching receipt.
+   * Method the user requested at checkout. bank_transfer / cash are confirmed manually by admin; card is confirmed automatically by PortOne verification.
    */
-  request_method: 'bank_transfer' | 'cash';
+  request_method: 'bank_transfer' | 'cash' | 'card';
+  /**
+   * manual = bank transfer / cash (admin confirms receipt). portone = one-time card payment (server verifies the payment before marking paid).
+   */
+  provider: 'manual' | 'portone';
+  /**
+   * PortOne paymentId captured at card-checkout start. Unique — the verify route and webhook reconcile the pending→paid edge idempotently against this ref.
+   */
+  payment_ref?: string | null;
+  /**
+   * Settled PortOne transaction id, stamped on verification.
+   */
+  portone_transaction_ref?: string | null;
   /**
    * Free-text note attached at checkout.
    */
@@ -5042,6 +5045,9 @@ export interface SubscriptionsSelect<T extends boolean = true> {
   validity_waived?: T;
   last_waiver_check?: T;
   request_method?: T;
+  provider?: T;
+  payment_ref?: T;
+  portone_transaction_ref?: T;
   request_note?: T;
   updatedAt?: T;
   createdAt?: T;

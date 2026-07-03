@@ -52,24 +52,18 @@ function isLostHost(host: string | null | undefined): boolean {
   }
 }
 
-function isLostInternalPath(pathname: string): boolean {
-  return (
-    pathname === "/lostinseoul" ||
-    pathname.startsWith("/lostinseoul/")
-  );
+function lostRootRewritePath(pathname: string): string | null {
+  return pathname === "/" ? "/lostinseoul" : null;
 }
 
-function isLostPassthroughPath(pathname: string): boolean {
+function isLostScopedPath(pathname: string): boolean {
   return (
     pathname === "/api" ||
     pathname.startsWith("/api/") ||
+    pathname === "/lostinseoul" ||
+    pathname.startsWith("/lostinseoul/") ||
     pathname.startsWith("/_next/")
   );
-}
-
-function lostHostRewritePath(pathname: string): string | null {
-  if (isLostPassthroughPath(pathname) || isLostInternalPath(pathname)) {
-    return null;
   }
 
   return pathname === "/" ? "/lostinseoul" : `/lostinseoul${pathname}`;
@@ -172,10 +166,14 @@ export async function proxy(request: NextRequest) {
     request.headers.get("host") || request.nextUrl.hostname
   );
   const lostRewritePathname = isLostRequest
-    ? lostHostRewritePath(originalPathname)
+    ? lostRootRewritePath(originalPathname)
     : null;
 
-  if (isLostInternalPath(originalPathname)) {
+  if (
+    isLostRequest &&
+    !lostRewritePathname &&
+    !isLostScopedPath(originalPathname)
+  ) {
     return new NextResponse(null, { status: 404 });
   }
 
@@ -256,6 +254,7 @@ export async function proxy(request: NextRequest) {
     "/prive",
     "/account",
     "/admin-ba",
+    "/checkout",
     "/lostinseoul/checkout",
     "/lostinseoul/orders"
   ];
@@ -289,6 +288,7 @@ export const config = {
     "/prive/:path*",
     "/account/:path*",
     "/admin-ba/:path*",
+    "/checkout/:path*",
     "/lostinseoul/checkout/:path*",
     "/lostinseoul/orders/:path*"
   ]

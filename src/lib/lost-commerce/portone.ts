@@ -41,9 +41,32 @@ export type PortOneV2PaymentPayload = {
   };
 };
 
+/**
+ * PortOne V2 payload for the plans (digital membership) card flow. Distinct
+ * from the lostinseoul shape: DIGITAL product type, `service: "plans"` so the
+ * shared webhook branches correctly, and a redirect back to the plans
+ * checkout return route.
+ */
+export type PortOnePlanPaymentPayload = {
+  storeId: string;
+  channelKey: string;
+  paymentId: string;
+  orderName: string;
+  totalAmount: number;
+  currency: `CURRENCY_${LostCurrency}`;
+  payMethod: "CARD";
+  redirectUrl: string;
+  noticeUrls: string[];
+  productType: "PRODUCT_TYPE_DIGITAL";
+  customData: {
+    paymentRef: string;
+    subscriptionId: string;
+    service: "plans";
+  };
+};
+
 export type PortOnePaymentPayload =
-  | PortOneGlobalPaymentPayload
-  | PortOneV2PaymentPayload;
+  PortOneGlobalPaymentPayload | PortOneV2PaymentPayload;
 
 export function getPortOneConfig() {
   return {
@@ -227,5 +250,47 @@ export function buildPortOnePaymentPayload(input: {
       successUrl,
       failureUrl
     })
+  };
+}
+
+/**
+ * Build the browser-SDK payload for a one-time plan (membership) card
+ * payment. Requires PortOne V2 config (store + channel). The plans flow is
+ * card-only and digital, and redirects back to `/checkout/return` where the
+ * server verifies the payment before marking the subscription paid.
+ */
+export function buildPlanPortOnePayload(input: {
+  paymentRef: string;
+  subscriptionId: string;
+  amount: number;
+  currency: LostCurrency;
+  origin: string;
+  orderName: string;
+}): PortOnePlanPaymentPayload {
+  const cfg = getPortOneConfig();
+  if (!hasPortOneValue(cfg.storeId)) throw new Error("portone-not-configured");
+  const channelKey = cfg.channelKey ?? cfg.defaultChannel;
+  if (!hasPortOneValue(channelKey)) throw new Error("portone-not-configured");
+
+  const returnUrl = `${input.origin}/checkout/return?payment=${encodeURIComponent(
+    input.paymentRef
+  )}`;
+
+  return {
+    storeId: cfg.storeId,
+    channelKey,
+    paymentId: input.paymentRef,
+    orderName: input.orderName,
+    totalAmount: input.amount,
+    currency: `CURRENCY_${input.currency}`,
+    payMethod: "CARD",
+    redirectUrl: returnUrl,
+    noticeUrls: [`${input.origin}/api/lost/webhooks/portone`],
+    productType: "PRODUCT_TYPE_DIGITAL",
+    customData: {
+      paymentRef: input.paymentRef,
+      subscriptionId: input.subscriptionId,
+      service: "plans"
+    }
   };
 }

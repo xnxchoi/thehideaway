@@ -157,6 +157,48 @@
       "status": "상태",
       "payment": "결제",
       "total": "합계"
+    },
+    "fragrance": {
+      "metaTitle": "향 — LOSTINSEOUL",
+      "metaDescription": "서울의 하룻밤을 담았다. LOSTINSEOUL의 첫 향.",
+      "eyebrow": "향",
+      "titleDisplay": "하룻밤",
+      "titleReading": "도시에서 온 첫 향.",
+      "enter": "스크롤",
+      "placeholderName": "№ 01",
+      "placeholderNote": "출시를 준비하고 있다. 오브제는 이곳에 공개된다.",
+      "beats": {
+        "arrival": {
+          "eyebrow": "19:04 — 을지로",
+          "display": "하룻밤",
+          "reading": "도시가 첫 조명을 켠다."
+        },
+        "neon": {
+          "eyebrow": "21:37 — 성수",
+          "display": "네온",
+          "reading": "젖은 아스팔트 위의 네온. 밤이 열린다."
+        },
+        "rain": {
+          "eyebrow": "23:58 — 한강",
+          "display": "비",
+          "reading": "비가 도시를 본질만 남기고 씻어낸다."
+        },
+        "sodium": {
+          "eyebrow": "03:21 — 남산 3호 터널",
+          "display": "나트륨",
+          "reading": "나트륨 불빛. 움직여야 하는 것만 움직인다."
+        },
+        "dawn": {
+          "eyebrow": "05:48 — 첫차",
+          "display": "새벽",
+          "reading": "밤이 손을 놓는다. 무언가 피부에 남는다."
+        }
+      },
+      "reveal": {
+        "eyebrow": "오브제",
+        "editionNote": "한정 수량, 서울에서 발송.",
+        "viewObject": "오브제 보기"
+      }
     }
   },
   "Register": {
@@ -201,7 +243,52 @@
     "eyebrow": "멤버십",
     "title": "기억에서 추억으로",
     "subtitle": "\"평생 기억할 일\"은 태생적으로 정해진 게 아니니까요.",
-    "description": "하이드어웨이는 일상의 기억을 추억으로 잇는 가교입니다."
+    "description": "하이드어웨이는 일상의 기억을 추억으로 잇는 가교입니다.",
+    "checkout": {
+      "cardEyebrow": "카드 결제",
+      "cardTitle": "{tier}, 카드로.",
+      "cardValidityYearly": "1년간 유효 — 활동이 인정되면 무료로 연장됩니다",
+      "cardValidityLifetime": "평생 — 한 번만 결제하면 끝",
+      "methodLabel": "결제 수단",
+      "methodCard": "카드",
+      "methodBankTransfer": "계좌이체",
+      "methodCash": "현금",
+      "payWithCard": "{amount} 카드로 결제",
+      "processing": "결제창을 여는 중…",
+      "verifying": "결제를 확인하는 중…",
+      "cardHelp": "{amount}을 한 번 결제합니다. 카드 정보는 저장되지 않으며 정기 결제도 없습니다. 결제가 확인되는 즉시 이용이 시작됩니다.",
+      "soldOut": "이 멤버십은 정원이 마감되었습니다.",
+      "genericError": "결제를 시작하지 못했습니다. 다시 시도해 주세요.",
+      "verifyError": "결제는 접수되었으나 자동 확인에 실패했습니다. 곧 정산되니 다시 결제하지 않으셔도 됩니다.",
+      "cardUnavailable": "카드 결제는 아직 준비 중입니다. 아래 계좌이체를 이용해 주세요."
+    },
+    "commerce": {
+      "eyebrow": "환불 안내",
+      "title": "청약철회 및 환불",
+      "body": "멤버십은 디지털 콘텐츠 이용권입니다. 최초 이용 전에는 전액 환불이 가능하며, 이용을 시작한 후에는 콘텐츠 이용에 관한 법령에 따라 환불이 처리됩니다.",
+      "link": "전체 환불 정책 보기"
+    }
+  },
+  "Commerce": {
+    "colophon": {
+      "aria": "사업자 정보",
+      "tradeName": "상호",
+      "representative": "대표자",
+      "registration": "사업자등록번호",
+      "mailOrder": "통신판매업신고",
+      "address": "주소",
+      "phone": "전화",
+      "mailOrderPending": "신고 예정",
+      "pending": "—"
+    },
+    "product": {
+      "eyebrow": "구매 안내",
+      "refundTitle": "환불 · 교환 안내",
+      "refundBody": "전자상거래법에 따라 사용하지 않은 상품은 수령 후 7일 이내에 원상태로 반품 또는 교환할 수 있습니다. 단순 변심에 의한 반품 배송비는 구매자가 부담하며, 상품 하자나 오배송의 경우 판매자가 부담합니다.",
+      "deliveryTitle": "배송 안내",
+      "deliveryBody": "결제 확인 후 영업일 기준 2~5일 이내에 국내 택배로 발송됩니다. 상품이 출고되면 송장번호를 안내해 드립니다.",
+      "link": "환불 · 교환 · 배송 정책 전문 보기"
+    }
   },
   "Policies": {
     "Refunds": {

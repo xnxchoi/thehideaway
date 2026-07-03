@@ -201,6 +201,7 @@ function checkoutErrorStatus(error: string): number {
     error === "mixed-currency" ||
     error === "quantity-out-of-range" ||
     error === "bad-quantity" ||
+    error === "invalid-amount" ||
     error === "empty-cart"
   ) {
     return 400;
@@ -278,6 +279,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       lines: parsed.data.lines,
       req: txReq as never
     });
+
+    // Fixed-price discipline (PG review): no ₩0 / negative-total orders may
+    // enter the payment path. `resolved.totalAmount` is server-computed from
+    // catalog prices, never client-supplied — this rejects a TEST / ₩0
+    // product before it can reach a card window.
+    if (!(resolved.totalAmount > 0)) {
+      throw new Error("invalid-amount");
+    }
 
     if (parsed.data.paymentProvider === "portone") {
       const origin = requestOrigin(req);
