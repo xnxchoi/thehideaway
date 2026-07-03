@@ -44,7 +44,8 @@ describe("readAuthBaseURL", () => {
 
   it("keeps configured alternate origins same-origin", () => {
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL = "https://hideawayseoul.com";
-    process.env.NEXT_PUBLIC_PRODUCTION_URL = "https://preview.hideawayseoul.com";
+    process.env.NEXT_PUBLIC_PRODUCTION_URL =
+      "https://preview.hideawayseoul.com";
 
     expect(
       readAuthBaseURL({

@@ -264,7 +264,7 @@ async function main(): Promise<void> {
   //    sees Payload's migration progress in real time.
   console.log("[seed:rebuild] running migrate:fresh");
   execSync(
-    "yes | cross-env NODE_OPTIONS=--no-deprecation payload migrate:fresh",
+    "yes | cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts ./node_modules/.bin/payload migrate:fresh",
     { stdio: ["inherit", "inherit", "inherit"], shell: "/bin/bash" }
   );
 
@@ -326,9 +326,12 @@ async function main(): Promise<void> {
   //     the new file, every INSERT will hit ON CONFLICT DO NOTHING
   //     (no data change), and payload_migrations gets the row.
   console.log("[seed:rebuild] applying newly-generated migration");
-  execSync("cross-env NODE_OPTIONS=--no-deprecation payload migrate", {
-    stdio: "inherit"
-  });
+  execSync(
+    "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts ./node_modules/.bin/payload migrate",
+    {
+      stdio: "inherit"
+    }
+  );
 
   console.log("[seed:rebuild] done");
   process.exit(0);

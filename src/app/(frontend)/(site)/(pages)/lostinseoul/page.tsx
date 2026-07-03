@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
 import { getLostHomeData } from "@/lib/lost-commerce/queries";
+import { getLostBusinessFooterProps } from "./business-footer-props";
 import { LostStorefront } from "./storefront";
 
 export const metadata: Metadata = {
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function LOSTINSEOULPage() {
   const t = await getTranslations("LOSTINSEOUL");
+  const businessFooterProps = getLostBusinessFooterProps(t);
   const data = await getLostHomeData().catch(() => ({
     products: [],
     drops: []
@@ -55,6 +57,7 @@ export default async function LOSTINSEOULPage() {
         standardModeLabel={t("modes.standard")}
         requestModeLabel={t("modes.request")}
         privateModeLabel={t("modes.private")}
+        {...businessFooterProps}
         footerInfoLabel={t("footer.info")}
         footerMediaLabel={t("footer.media")}
         footerContactLabel={t("footer.contact")}
