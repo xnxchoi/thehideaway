@@ -3,6 +3,14 @@
 *.zip
 *.psd
 
+# ── Agent / tool-generated verification artifacts ─────────────────────────────
+# Screenshots, page snapshots, and audit captures produced by Chrome/Playwright
+# MCP tooling during UI verification. Never source — regenerated on demand.
+.codex-screenshots/
+.playwright-mcp/
+output/*audit*/
+output/**/*audit*/
+
 
 
 # ── Environment files — never commit plaintext secrets ────────────────────────
