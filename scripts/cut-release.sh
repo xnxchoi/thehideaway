@@ -8,6 +8,13 @@
 #   pnpm release:cut 1.2.3-rc.1              — pre-release tag (CI skips :latest)
 #   pnpm release:cut --check [target]        — run gates, do NOT sync/tag/push
 #   pnpm release:cut --force [target]        — skip clean/main guards
+#   pnpm release:cut --ship [target]         — after tagging, watch CI → deploy
+#                                              to prod (auto --migrate if there
+#                                              are new migrations) → live-check
+#
+# --ship env overrides: DEPLOY_HOST (deploy@hideawayseoul.com), DEPLOY_DIR
+#   (thehideaway), DEPLOY_DOMAIN, DEPLOY_LOST_DOMAIN. Needs gh (authed) + SSH
+#   access to the VPS. deploy.sh auto-rolls-back on a failed smoke test.
 #
 # What this does:
 #   1. Read origin tags and plan the release version. By default, the next
@@ -52,6 +59,11 @@ cd "${REPO_DIR}"
 
 CHECK_ONLY=0
 FORCE=0
+SHIP=0
+DEPLOY_DOMAIN="${DEPLOY_DOMAIN:-hideawayseoul.com}"
+DEPLOY_LOST_DOMAIN="${DEPLOY_LOST_DOMAIN:-lostinseoul.com}"
+DEPLOY_HOST="${DEPLOY_HOST:-deploy@hideawayseoul.com}"
+DEPLOY_DIR="${DEPLOY_DIR:-thehideaway}"
 VERSION=""
 BUMP="patch"
 
@@ -73,6 +85,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --check) CHECK_ONLY=1; shift ;;
     --force) FORCE=1; shift ;;
+    --ship) SHIP=1; shift ;;
     --major) set_bump "major"; shift ;;
     --minor) set_bump "minor"; shift ;;
     --patch) set_bump "patch"; shift ;;
@@ -100,6 +113,67 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if (( CHECK_ONLY && SHIP )); then
+  die "--ship cannot be combined with --check (nothing is tagged in check mode)"
+fi
+
+# ── Ship (opt-in): watch CI, then deploy to prod, then live-check ─────────────
+
+ship_release() {
+  local tag="$1"
+  step "ship  CI → deploy → live check"
+
+  command -v gh >/dev/null 2>&1 \
+    || die "ship: gh CLI not found (needed to watch CI). Deploy manually: ssh ${DEPLOY_HOST} 'cd ${DEPLOY_DIR} && ./scripts/deploy.sh ${tag}'"
+  gh auth status >/dev/null 2>&1 \
+    || die "ship: gh not authenticated (run: gh auth login)"
+
+  # The tag push may take a moment to register a workflow run; retry to find it.
+  info "locating the release CI run for ${tag}…"
+  local run_id="" attempt
+  for attempt in $(seq 1 12); do
+    run_id="$(gh run list --limit 20 --json databaseId,headBranch \
+      --jq "[.[] | select(.headBranch==\"${tag}\")][0].databaseId" 2>/dev/null || true)"
+    [[ -n "${run_id}" && "${run_id}" != "null" ]] && break
+    sleep 5
+  done
+  [[ -n "${run_id}" && "${run_id}" != "null" ]] \
+    || die "ship: no CI run found for ${tag}. Check gh run list, then deploy manually."
+
+  info "watching CI run ${run_id} (Ctrl-C is safe — the tag is already pushed)…"
+  gh run watch "${run_id}" --exit-status --interval 20 \
+    || die "ship: CI failed for ${tag}; NOT deploying. Inspect: gh run view ${run_id} --log-failed"
+  info "CI green for ${tag}"
+
+  # Decide --migrate by diffing migrations between the deployed tag and this one.
+  local current="" migrate_flag=""
+  current="$(ssh -o BatchMode=yes -o ConnectTimeout=15 "${DEPLOY_HOST}" \
+    "cd ${DEPLOY_DIR} && ./scripts/deploy.sh --status" 2>/dev/null \
+    | sed -n 's/.*currently deployed: \(v[0-9][0-9.]*\).*/\1/p' | head -1 || true)"
+  if [[ -n "${current}" ]] \
+    && ! git diff --quiet "${current}" "${tag}" -- src/lib/migrations/ 2>/dev/null; then
+    migrate_flag="--migrate"
+    info "new migrations since ${current} → deploying with --migrate (pg_dump backup runs first)"
+  else
+    info "no new migrations since ${current:-<unknown>} → deploying without --migrate"
+  fi
+
+  info "deploying ${tag} on ${DEPLOY_HOST}…"
+  ssh -o BatchMode=yes -o ConnectTimeout=20 "${DEPLOY_HOST}" \
+    "cd ${DEPLOY_DIR} && ./scripts/deploy.sh ${tag} ${migrate_flag}" \
+    || die "ship: remote deploy failed. deploy.sh auto-rolls-back on a failed healthcheck/smoke test; verify with: ssh ${DEPLOY_HOST} 'cd ${DEPLOY_DIR} && ./scripts/deploy.sh --status'"
+
+  # deploy.sh already smoke-tests internally; re-verify from here as an outside observer.
+  info "external live check…"
+  local url code ok=1
+  for url in "https://${DEPLOY_DOMAIN}/api/health" "https://${DEPLOY_LOST_DOMAIN}/api/health"; do
+    code="$(curl -Ls -o /dev/null -w '%{http_code}' --max-time 15 "${url}" || true)"
+    if [[ "${code}" == "200" ]]; then info "  ${url} → 200"; else error "  ${url} → ${code:-no-response}"; ok=0; fi
+  done
+  (( ok )) || die "ship: external live check failed after deploy — investigate immediately (consider --rollback)"
+  info "✓ shipped ${tag} — live on ${DEPLOY_DOMAIN} and ${DEPLOY_LOST_DOMAIN}"
+}
 
 # ── Gates ────────────────────────────────────────────────────────────────────
 
@@ -302,6 +376,10 @@ ${GREEN}✓ release cut.${NC}
 Version:     ${VERSION}
 Package:     package.json -> ${PACKAGE_VERSION}
 Watch CI:    https://github.com/${REPO_SLUG}/actions
-When green:  ssh deploy@${DOMAIN:-hideawayseoul.com} 'cd thehideaway && ./scripts/deploy.sh ${VERSION}'
+When green:  ssh ${DEPLOY_HOST} 'cd ${DEPLOY_DIR} && ./scripts/deploy.sh ${VERSION}'
 
 EOF
+
+if (( SHIP )); then
+  ship_release "${VERSION}"
+fi
