@@ -81,19 +81,31 @@ both MEDIUMs fixed). 77 tests green across affected suites; idempotent migration
    flows route to `/private-quotes`, not card; ₩0/negative rejected in both checkout
    routes. Catalog: 3 fixed-price physical products, no TEST names.
 
+### Card is DARK by default (master kill-switch)
+
+`PORTONE_CARD_CHECKOUT_LIVE` gates all card checkout. Until it is exactly `"true"`,
+`isPortOneCheckoutEnabled()` returns false regardless of keys, so **setting sandbox
+keys for validation never exposes card to users**: both checkout UIs hide the card
+option and the card routes (`/api/checkout/card`, `/api/lost/checkout/intent` with
+`paymentProvider=portone`) reject with 503. Turn it on **only after** step 2 below
+passes, and only in the environment you've validated. The `verify` route is
+intentionally not gated (it completes an already-started payment).
+
 ### Before enabling card in production (launch gate)
 
 1. Set PortOne env (`PORTONE_STORE_ID`, `PORTONE_CHANNEL_KEY`, `PORTONE_API_SECRET`,
-   `PORTONE_WEBHOOK_SECRET`, `PORTONE_ENVIRONMENT=production`) — sandbox first.
+   `PORTONE_WEBHOOK_SECRET`, `PORTONE_ENVIRONMENT=production`) — sandbox first. Keep
+   `PORTONE_CARD_CHECKOUT_LIVE` unset for now (card stays dark).
 2. **Run one real sandbox card payment** end-to-end: the PortOne V2 REST field paths
    (`status`, `amount.total/paid`, `currency`, `channel.type`) are asserted from docs,
    not yet exercised live. Verification now fails CLOSED, so a wrong path = outage,
    not a security hole — but it must be confirmed before go-live.
-3. Enable `card` in `payment_methods` on the target Plans rows (admin toggle in /vault).
-4. Register the webhook URL in the PortOne console.
-5. Known residual (accepted, non-blocking): compound sweep + re-checkout + late-webhook
+3. Flip `PORTONE_CARD_CHECKOUT_LIVE=true` in the validated environment (the master gate).
+4. Enable `card` in `payment_methods` on the target Plans rows (admin toggle in /vault).
+5. Register the webhook URL in the PortOne console.
+6. Known residual (accepted, non-blocking): compound sweep + re-checkout + late-webhook
    race fails to a retryable 503, never double-grant/free access.
-6. Follow-ups queued as separate tasks: webhook HMAC (Standard-Webhooks) migration for
+7. Follow-ups queued as separate tasks: webhook HMAC (Standard-Webhooks) migration for
    the legacy order branch; better-auth/nodemailer audit advisories.
 
 ### SDK decisions (research 2026-07-03)
