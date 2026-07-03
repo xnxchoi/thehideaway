@@ -55,7 +55,7 @@ const env = (key: string, fallback: string): string =>
     : fallback;
 
 export const BUSINESS: BusinessInfo = {
-  registrationNumber: env("NEXT_PUBLIC_BIZ_REG_NO", "Registration pending"),
+  registrationNumber: env("NEXT_PUBLIC_BIZ_REG_NO", "753-32-01007"),
   mailOrderRegistrationNumber: env("NEXT_PUBLIC_BIZ_MAIL_ORDER_NO", ""),
   phone: env("NEXT_PUBLIC_BIZ_PHONE", "Email support"),
   email: env("NEXT_PUBLIC_BIZ_EMAIL", "concierge@hideawayseoul.com"),
@@ -72,14 +72,17 @@ export const BUSINESS: BusinessInfo = {
 
   // Deprecated locale-pair fields (see interface JSDoc).
   legalName: env("NEXT_PUBLIC_BIZ_NAME", "Restored Projects"),
-  legalNameKo: env("NEXT_PUBLIC_BIZ_NAME_KO", "리스토어드 프로젝트"),
+  legalNameKo: env("NEXT_PUBLIC_BIZ_NAME_KO", "리스토어드프로젝트"),
   representative: env("NEXT_PUBLIC_BIZ_REP", "Sungyoon Choi"),
   representativeKo: env("NEXT_PUBLIC_BIZ_REP_KO", "최성윤"),
   addressEn: env(
     "NEXT_PUBLIC_BIZ_ADDR_EN",
-    "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea"
+    "Olympic-ro 4-gil 15, Bldg 7 Unit 705, Songpa-gu, Seoul, Republic of Korea"
   ),
-  addressKo: env("NEXT_PUBLIC_BIZ_ADDR_KO", "서울특별시 송파구 올림픽로4길 15"),
+  addressKo: env(
+    "NEXT_PUBLIC_BIZ_ADDR_KO",
+    "서울특별시 송파구 올림픽로4길 15, 7동 705호(잠실동, 아시아선수촌아파트)"
+  ),
   serviceHours: env(
     "NEXT_PUBLIC_BIZ_HOURS",
     "Mon–Fri 10:00–18:00 KST (closed weekends and holidays)"

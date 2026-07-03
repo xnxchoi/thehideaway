@@ -456,7 +456,17 @@ const schema = z.object({
       d(
         "optional",
         "external-api",
-        "Shared secret accepted by the LOSTINSEOUL PortOne webhook endpoint."
+        "Shared secret accepted by the LOSTINSEOUL PortOne webhook endpoint. For Standard-Webhooks signature verification use the whsec_… secret from the PortOne console."
+      )
+    ),
+  PORTONE_WEBHOOK_REQUIRE_SIGNATURE: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        'When "true", the PortOne webhook rejects requests without Standard-Webhooks signature headers (disables the legacy shared-secret header fallback).'
       )
     ),
 

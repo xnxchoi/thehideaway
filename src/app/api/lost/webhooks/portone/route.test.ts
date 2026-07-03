@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -54,6 +55,43 @@ function webhookRequest(body: unknown, secret?: string) {
       ...(secret ? { "x-portone-webhook-secret": secret } : {})
     },
     body: JSON.stringify(body)
+  });
+}
+
+// Standard-Webhooks secret: whsec_ + base64(raw key bytes). The signature is
+// base64(HMAC-SHA256(`${id}.${timestamp}.${rawBody}`, raw key bytes)).
+const WHSEC_RAW = Buffer.from("lost-webhook-signing-key-0123456789");
+const WHSEC = `whsec_${WHSEC_RAW.toString("base64")}`;
+
+function signWebhook(
+  id: string,
+  timestamp: string,
+  rawBody: string,
+  key: Buffer = WHSEC_RAW
+) {
+  return createHmac("sha256", key)
+    .update(`${id}.${timestamp}.${rawBody}`)
+    .digest("base64");
+}
+
+function signedWebhookRequest(
+  body: unknown,
+  options: { signingKey?: Buffer; sendBody?: string } = {}
+) {
+  const rawBody = JSON.stringify(body);
+  const id = "msg_sig_1";
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const signature = signWebhook(id, timestamp, rawBody, options.signingKey);
+  return new NextRequest("https://hideaway.test/api/lost/webhooks/portone", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "webhook-id": id,
+      "webhook-timestamp": timestamp,
+      "webhook-signature": `v1,${signature}`
+    },
+    // sendBody lets a test tamper with the payload after signing.
+    body: options.sendBody ?? rawBody
   });
 }
 
@@ -362,6 +400,125 @@ describe("POST /api/lost/webhooks/portone", () => {
         })
       })
     );
+  });
+
+  describe("Standard-Webhooks signature verification", () => {
+    const PAID_EVENT = {
+      webhook_id: "evt-signed",
+      merchant_order_id: "lis_1",
+      status: "PAID",
+      amount: 1000,
+      currency: "KRW"
+    };
+
+    beforeEach(() => {
+      process.env.PORTONE_WEBHOOK_SECRET = WHSEC;
+    });
+
+    it("accepts a webhook carrying a valid Standard-Webhooks signature", async () => {
+      const { POST } = await import("./route");
+      const res = await POST(signedWebhookRequest(PAID_EVENT));
+      const body = (await res.json()) as { ok: boolean };
+
+      expect(res.status).toBe(200);
+      expect(body).toEqual({ ok: true });
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: "product-orders",
+          id: "order-1",
+          data: expect.objectContaining({ payment_status: "paid" })
+        })
+      );
+    });
+
+    it("rejects a tampered body with 400 before any processing", async () => {
+      const { POST } = await import("./route");
+      const res = await POST(
+        signedWebhookRequest(PAID_EVENT, {
+          sendBody: JSON.stringify({ ...PAID_EVENT, amount: 999999 })
+        })
+      );
+      const body = (await res.json()) as { ok: boolean; error: string };
+
+      expect(res.status).toBe(400);
+      expect(body).toEqual({ ok: false, error: "invalid-webhook-signature" });
+      expect(find).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+      expect(markRequestOrderPaid).not.toHaveBeenCalled();
+    });
+
+    it("rejects a signature made with the wrong key with 400", async () => {
+      const { POST } = await import("./route");
+      const res = await POST(
+        signedWebhookRequest(PAID_EVENT, {
+          signingKey: Buffer.from("some-other-key-that-is-not-ours!")
+        })
+      );
+      const body = (await res.json()) as { ok: boolean; error: string };
+
+      expect(res.status).toBe(400);
+      expect(body).toEqual({ ok: false, error: "invalid-webhook-signature" });
+      expect(find).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it("rejects a partial Standard-Webhooks header set with 400 (no legacy fallback)", async () => {
+      const { POST } = await import("./route");
+      const res = await POST(
+        new NextRequest("https://hideaway.test/api/lost/webhooks/portone", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "webhook-id": "msg_partial",
+            // signature + timestamp missing; legacy secret must NOT rescue it
+            "x-portone-webhook-secret": WHSEC
+          },
+          body: JSON.stringify(PAID_EVENT)
+        })
+      );
+      const body = (await res.json()) as { ok: boolean; error: string };
+
+      expect(res.status).toBe(400);
+      expect(body).toEqual({ ok: false, error: "invalid-webhook-signature" });
+      expect(find).not.toHaveBeenCalled();
+    });
+
+    it("accepts an unsigned webhook via the legacy shared secret (compat mode)", async () => {
+      const { POST } = await import("./route");
+      const res = await POST(webhookRequest(PAID_EVENT, WHSEC));
+
+      expect(res.status).toBe(200);
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: "product-orders",
+          data: expect.objectContaining({ payment_status: "paid" })
+        })
+      );
+    });
+
+    it("rejects unsigned webhooks with 401 when PORTONE_WEBHOOK_REQUIRE_SIGNATURE=true", async () => {
+      process.env.PORTONE_WEBHOOK_REQUIRE_SIGNATURE = "true";
+
+      const { POST } = await import("./route");
+      // Even a valid legacy shared secret must not be consulted.
+      const res = await POST(webhookRequest(PAID_EVENT, WHSEC));
+      const body = (await res.json()) as { ok: boolean; error: string };
+
+      expect(res.status).toBe(401);
+      expect(body).toEqual({ ok: false, error: "signature-required" });
+      expect(find).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it("still accepts signed webhooks when PORTONE_WEBHOOK_REQUIRE_SIGNATURE=true", async () => {
+      process.env.PORTONE_WEBHOOK_REQUIRE_SIGNATURE = "true";
+
+      const { POST } = await import("./route");
+      const res = await POST(signedWebhookRequest(PAID_EVENT));
+
+      expect(res.status).toBe(200);
+      expect((await res.json()).ok).toBe(true);
+    });
   });
 
   describe("plans (membership) branch", () => {

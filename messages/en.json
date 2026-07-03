@@ -124,7 +124,7 @@
         "mailOrderRegistrationLabel": "Mail-order registration",
         "mailOrderPending": "Mail-order registration pending",
         "addressLabel": "Address",
-        "address": "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea",
+        "address": "Olympic-ro 4-gil 15, Bldg 7 Unit 705, Songpa-gu, Seoul, Republic of Korea",
         "phoneLabel": "Phone",
         "emailLabel": "Email",
         "domainLabel": "Service URL",
@@ -273,6 +273,9 @@
         "title": "Return Conditions",
         "body": "The Hideaway products must be returned in a new and unused state, in perfect condition, with all protective materials in place and tags and stickers attached to them (if applicable), as well as with the original The Hideaway box and delivery package, including all accessories and documents. The Hideaway will not accept any return if the product shows signs of wear, or has been used or altered from its original condition in any way. Engraved or embossed products, as well as special order, personalized and made-to-order creations, cannot be returned to The Hideaway for exchange, merchandise credit or refund. All returns will be subject to strict Quality Control (QC) by The Hideaway to ensure that the returned products satisfy these requirements. If the products do not meet QC standards, The Hideaway will refuse the return, and the products will be sent back to the Customer or the Gift Recipient, as applicable. If the returned product satisfies Quality Control (QC), The Hideaway will proceed with the applicable refund or exchange."
       }
+    },
+    "Invoice": {
+      "refund": "Items purchased from The Hideaway may be exchanged or returned for a refund within seven (7) days. Refunds are not guaranteed for items past seven (7) days from initial reception. The Hideaway products must be returned in a new and unused state, in perfect condition, with all packaging materials including the box and delivery package, with security tags and stickers attached, together with all related accessories and documents (if applicable). The Hideaway may refuse the return, or reduce the refund or exchange amount, if the product shows signs of wear, if the attached security tag has been removed, or if the product has been used or altered from its original condition in any way. Orders for personalized or made-to-order creations of any kind cannot be canceled, and such products cannot be returned for exchange or refund. This includes, but is not limited to, engraved or embossed products. All returns will be subject to strict Quality Control (QC) by The Hideaway to ensure that the returned products satisfy the above conditions. If a product does not meet QC standards, The Hideaway will refuse the return, and the product will be sent back to you. If the product satisfies QC standards, The Hideaway will proceed with the applicable refund or exchange. In the event of any failure to comply with these terms of sale, The Hideaway reserves the right to refuse receipt of the returned product and to send it back at your expense."
     }
   },
   "Register": {
@@ -298,6 +301,18 @@
         "minLength": "Name must be at least 2 characters long",
         "maxLength": "Name must be at most 40 characters long",
         "specialCharacter": "Special characters are not allowed"
+      }
+    }
+  },
+  "Vault": {
+    "Account": {
+      "error": {
+        "slug": {
+          "minLength": "Username must be at least 2 characters long",
+          "maxLength": "Username must be at most 40 characters long",
+          "invalidCharacter": "Username must contain only lowercase letters, numbers, or _, -, .",
+          "exists": "This username is already taken"
+        }
       }
     }
   },
@@ -456,7 +471,7 @@
     },
     "businessName": "Restored Projects",
     "representativeName": "Sungyoon Choi",
-    "address": "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea",
+    "address": "Olympic-ro 4-gil 15, Bldg 7 Unit 705, Songpa-gu, Seoul, Republic of Korea",
     "serviceHours": "Sat–Sun 12:00–24:00 KST \n(closed on weekdays)",
     "mailOrderPending": "Pending application"
   },

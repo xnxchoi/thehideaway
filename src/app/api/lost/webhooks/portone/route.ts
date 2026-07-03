@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
+import { Webhook } from "@portone/server-sdk";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { paymentWebhookLock } from "@/lib/db/sequences";
@@ -119,7 +120,59 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { status: 500 }
     );
   }
-  if (secret) {
+
+  // Read the raw body exactly once, BEFORE any JSON.parse: the
+  // Standard-Webhooks signature is an HMAC over the raw bytes, so the string
+  // we verify must be the string we later parse.
+  const rawBody = await req.text();
+
+  /**
+   * Dual-mode webhook authentication, fail-closed per mode:
+   *
+   * 1. Signature mode — PortOne V2 sends Standard-Webhooks headers
+   *    (`webhook-id` / `webhook-signature` / `webhook-timestamp`; HMAC-SHA256
+   *    over `${id}.${timestamp}.${rawBody}`, secret format `whsec_…`). If ANY
+   *    of these headers is present we verify via @portone/server-sdk's
+   *    `Webhook.verify` against PORTONE_WEBHOOK_SECRET and reject with 400 on
+   *    failure (including a partial header set). The legacy shared-secret
+   *    header is NOT consulted in this mode.
+   * 2. Legacy mode — when no Standard-Webhooks header is present, fall back
+   *    to the `x-portone-webhook-secret` / `x-webhook-secret` shared-secret
+   *    comparison (compat), UNLESS PORTONE_WEBHOOK_REQUIRE_SIGNATURE ===
+   *    "true", in which case unsigned webhooks are rejected with 401.
+   */
+  const hasStandardWebhookHeaders =
+    req.headers.get("webhook-id") !== null ||
+    req.headers.get("webhook-signature") !== null ||
+    req.headers.get("webhook-timestamp") !== null;
+
+  if (hasStandardWebhookHeaders) {
+    try {
+      await Webhook.verify(secret, rawBody, {
+        "webhook-id": req.headers.get("webhook-id") ?? undefined,
+        "webhook-signature": req.headers.get("webhook-signature") ?? undefined,
+        "webhook-timestamp": req.headers.get("webhook-timestamp") ?? undefined
+      });
+    } catch (err) {
+      if (err instanceof Webhook.WebhookVerificationError) {
+        return NextResponse.json(
+          { ok: false, error: "invalid-webhook-signature" },
+          { status: 400 }
+        );
+      }
+      // e.g. InvalidInputError: PORTONE_WEBHOOK_SECRET is not a valid
+      // base64 / whsec_ secret. Server misconfiguration — still fail closed.
+      return NextResponse.json(
+        { ok: false, error: "webhook-verification-unavailable" },
+        { status: 500 }
+      );
+    }
+  } else if (process.env.PORTONE_WEBHOOK_REQUIRE_SIGNATURE === "true") {
+    return NextResponse.json(
+      { ok: false, error: "signature-required" },
+      { status: 401 }
+    );
+  } else {
     const supplied =
       req.headers.get("x-portone-webhook-secret") ??
       req.headers.get("x-webhook-secret") ??
@@ -132,10 +185,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  const event = (await req.json().catch(() => null)) as Record<
-    string,
-    unknown
-  > | null;
+  let event: Record<string, unknown> | null = null;
+  try {
+    event = JSON.parse(rawBody) as Record<string, unknown> | null;
+  } catch {
+    event = null;
+  }
   if (!event) {
     return NextResponse.json(
       { ok: false, error: "bad-request" },

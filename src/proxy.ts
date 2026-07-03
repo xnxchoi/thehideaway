@@ -64,9 +64,6 @@ function isLostScopedPath(pathname: string): boolean {
     pathname.startsWith("/lostinseoul/") ||
     pathname.startsWith("/_next/")
   );
-  }
-
-  return pathname === "/" ? "/lostinseoul" : `/lostinseoul${pathname}`;
 }
 
 function cleanLostExternalPath(pathname: string): string {
