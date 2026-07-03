@@ -45,11 +45,15 @@ no rework of the functioning lostinseoul PortOne plumbing beyond security fixes.
 
 ### Owner tasks (not code)
 
-1. 사업자등록번호 → `NEXT_PUBLIC_BIZ_REG_NO`
-2. 통신판매업신고번호 → `NEXT_PUBLIC_BIZ_MAIL_ORDER_NO` (file with 관할 구청; request 구매안전확인증 from PG)
+1. ~~사업자등록번호~~ **DONE 2026-07-03**: 753-32-01007 baked into `business.ts` defaults
+   (from 사업자등록증명; trade name 리스토어드프로젝트, full Songpa address applied)
+2. 통신판매업신고번호 → `NEXT_PUBLIC_BIZ_MAIL_ORDER_NO` — check ftc.go.kr for
+   753-32-01007; if unfiled: 송파구청/정부24 filing, 구매안전확인증 from PG
 3. Landline number → `NEXT_PUBLIC_BIZ_PHONE`
 4. Reconcile service hours (ko says 주말/공휴일 12:00–24:00, en says Mon–Fri 10:00–18:00)
-5. PortOne console: create store, test + live channels, set `PORTONE_*` env vars
+5. PortOne console: create store, test + live channels, set `PORTONE_*` env vars;
+   webhook secret is `whsec_…` — after confirming signed deliveries, set
+   `PORTONE_WEBHOOK_REQUIRE_SIGNATURE=true` (dual-mode verify landed 681f3510)
 6. Confirm chosen PG channel supports the needed methods
 
 ---
