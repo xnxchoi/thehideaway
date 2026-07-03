@@ -196,11 +196,16 @@ fi
 
 remote_tag_exists() {
   local tag="$1"
-  if git ls-remote --exit-code --tags origin "${tag}" >/dev/null 2>&1; then
+  # Capture git's real exit code directly. Do NOT read $? after an
+  # `if git …; then …; fi` — a false `if` with no `else` resets $? to 0,
+  # so the absent-tag case (exit 2) was always mis-read as an error and died.
+  # `|| status=$?` also shields the call from `set -e`.
+  local status=0
+  git ls-remote --exit-code --tags origin "${tag}" >/dev/null 2>&1 || status=$?
+
+  if [[ "${status}" == "0" ]]; then
     return 0
   fi
-
-  local status=$?
   if [[ "${status}" == "2" ]]; then
     return 1
   fi
