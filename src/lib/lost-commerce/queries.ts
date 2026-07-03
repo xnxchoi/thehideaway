@@ -264,6 +264,39 @@ export async function getLostProductBySlug(
   };
 }
 
+const LOST_FRAGRANCE_CATEGORY_PATTERN = /fragrance|perfume|parfum|향/i;
+
+function categoryMatchesFragrance(category: unknown): boolean {
+  if (!category || typeof category === "string") return false;
+  const doc = category as AnyDoc;
+  return [doc.slug, doc.name]
+    .filter((value): value is string => typeof value === "string")
+    .some((value) => LOST_FRAGRANCE_CATEGORY_PATTERN.test(value));
+}
+
+export async function getLostFragranceData(): Promise<LostProductDetail | null> {
+  const payload = await getPayload({ config });
+  const result = await payload.find({
+    collection: "products" as never,
+    depth: 1,
+    limit: 24,
+    overrideAccess: true,
+    sort: "sort",
+    where: {
+      and: [
+        { active: { equals: true } },
+        { storefront: { equals: "lostinseoul" } }
+      ]
+    } as never
+  });
+  const fragrance = (result.docs as AnyDoc[]).find((product) =>
+    categoryMatchesFragrance(product.category)
+  );
+  const slug = fragrance ? stringValue(fragrance.slug) : "";
+  if (!slug) return null;
+  return getLostProductBySlug(slug);
+}
+
 export async function getLostCollectionBySlug(slug: string): Promise<{
   title: string;
   kicker?: string;

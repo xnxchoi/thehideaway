@@ -1,0 +1,321 @@
+/* LOSTINSEOUL fragrance chapter — Seoul-night canvas.
+   Dark ground is functional here (light beats need low luminance),
+   independent of the site theme. */
+
+.lost-fragrance-root {
+  --lost-night: oklch(11% 0.01 260);
+  --lost-night-ink: oklch(96% 0.005 260);
+  --lost-night-muted: oklch(from var(--lost-night-ink) l c h / 0.62);
+  --lost-night-line: oklch(from var(--lost-night-ink) l c h / 0.16);
+  --lost-juice: #d29a5a;
+  --lost-beat-accent: #9aa3ad;
+
+  position: relative;
+  background: var(--lost-night);
+  color: var(--lost-night-ink);
+}
+
+.lost-fragrance-root ::selection {
+  background: var(--lost-night-ink);
+  color: var(--lost-night);
+}
+
+/* Per-beat accents — identity, not decoration; one accent on screen at a time. */
+[data-lost-fragrance-beat="arrival"] {
+  --lost-beat-accent: #9aa3ad;
+}
+[data-lost-fragrance-beat="neon"] {
+  --lost-beat-accent: #ff3d7f;
+}
+[data-lost-fragrance-beat="rain"] {
+  --lost-beat-accent: #8fa3bd;
+}
+[data-lost-fragrance-beat="sodium"] {
+  --lost-beat-accent: #ffb45e;
+}
+[data-lost-fragrance-beat="dawn"] {
+  --lost-beat-accent: #e8ded2;
+}
+[data-lost-fragrance-beat="reveal"] {
+  --lost-beat-accent: var(--lost-juice);
+}
+
+/* Fixed scene layer — WebGL tier only; sits behind all beat DOM. */
+.lost-fragrance-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100lvh;
+  opacity: 0;
+  transition: opacity 1.4s cubic-bezier(0.6, 0, 0.3, 1);
+  pointer-events: none;
+}
+
+.lost-fragrance-canvas-surface {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.lost-fragrance-root[data-lost-fragrance-scene-ready="true"]
+  .lost-fragrance-canvas {
+  opacity: 1;
+}
+
+/* Editorial twin — the no-JS / reduced-motion truth. Each beat carries its
+   own low-intensity glow; when the WebGL scene is live these stay beneath it
+   and simply stop mattering. */
+.lost-fragrance-beat {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-height: 100svh;
+  padding: 12rem 2.4rem 8rem;
+  box-sizing: border-box;
+}
+
+.lost-fragrance-root[data-lost-fragrance-tier="editorial"]
+  .lost-fragrance-beat::before,
+.lost-fragrance-root[data-lost-fragrance-tier="video"]
+  .lost-fragrance-beat::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    58% 42% at 30% 62%,
+    oklch(from var(--lost-beat-accent) l c h / 0.14) 0%,
+    oklch(from var(--lost-beat-accent) l c h / 0) 100%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.lost-fragrance-root[data-lost-fragrance-tier="editorial"]
+  .lost-fragrance-beat--alt::before,
+.lost-fragrance-root[data-lost-fragrance-tier="video"]
+  .lost-fragrance-beat--alt::before {
+  background: radial-gradient(
+    58% 42% at 70% 42%,
+    oklch(from var(--lost-beat-accent) l c h / 0.14) 0%,
+    oklch(from var(--lost-beat-accent) l c h / 0) 100%
+  );
+}
+
+/* Copy protection over the live scene: a quiet directional scrim so
+   additive motes never crush the reading line. */
+.lost-fragrance-root[data-lost-fragrance-tier="webgl"]
+  .lost-fragrance-beat::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    oklch(from var(--lost-night) l c h / 0.5) 0%,
+    oklch(from var(--lost-night) l c h / 0) 62%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.lost-fragrance-root[data-lost-fragrance-tier="webgl"]
+  .lost-fragrance-beat--alt::before {
+  background: linear-gradient(
+    270deg,
+    oklch(from var(--lost-night) l c h / 0.5) 0%,
+    oklch(from var(--lost-night) l c h / 0) 62%
+  );
+}
+
+@media (min-width: 768px) {
+  .lost-fragrance-beat {
+    padding-inline: 5.6rem;
+  }
+
+  .lost-fragrance-beat--alt {
+    justify-items: end;
+    text-align: right;
+  }
+
+  .lost-fragrance-beat--alt .lost-fragrance-reading {
+    margin-left: auto;
+  }
+}
+
+.lost-fragrance-eyebrow {
+  margin-bottom: 2.4rem;
+  color: var(--lost-beat-accent);
+  font-family: var(--font-mono, monospace);
+  font-size: 1.1rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Bilingual display pair: display voice is the opposite script, huge;
+   reading voice is the active locale, quiet. The pairing is deliberate:
+   Latin display = mono 700, Hangul display = SUIT 800 — never OS fallback. */
+.lost-fragrance-display {
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: clamp(4.8rem, 14vw, 15rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.96;
+  text-wrap: balance;
+}
+
+.lost-fragrance-display [lang="ko"],
+.lost-fragrance-display:lang(ko) {
+  font-family: var(--font-sans, sans-serif);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.lost-fragrance-reading {
+  max-width: 44rem;
+  margin: 2.8rem 0 0;
+  color: var(--lost-night-muted);
+  font-size: 1.6rem;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.lost-fragrance-subline {
+  margin-top: 1.2rem;
+  font-size: 1.3rem;
+}
+
+/* Reveal / commerce beat */
+.lost-fragrance-reveal-panel {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  gap: 2rem;
+  max-width: 52rem;
+  padding: 3.2rem 0 0;
+  border-top: 1px solid var(--lost-night-line);
+}
+
+.lost-fragrance-price {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+}
+
+.lost-fragrance-mode {
+  padding: 1rem 1.6rem;
+  border: 1px solid var(--lost-night-line);
+  background: transparent;
+  color: var(--lost-night-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 1.1rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition:
+    border-color 0.3s cubic-bezier(0.6, 0, 0.3, 1),
+    color 0.3s cubic-bezier(0.6, 0, 0.3, 1);
+}
+
+.lost-fragrance-mode:hover {
+  border-color: oklch(from var(--lost-night-ink) l c h / 0.4);
+  color: var(--lost-night-ink);
+}
+
+.lost-fragrance-mode[data-selected="true"] {
+  border-color: oklch(from var(--lost-night-ink) l c h / 0.75);
+  background: oklch(from var(--lost-night-ink) l c h / 0.08);
+  color: var(--lost-night-ink);
+}
+
+.lost-fragrance-mode:focus-visible,
+.lost-fragrance-cta:focus-visible,
+.lost-fragrance-affordance:focus-visible {
+  outline: 1px solid oklch(from var(--lost-night-ink) l c h / 0.7);
+  outline-offset: 3px;
+}
+
+.lost-fragrance-cta {
+  padding: 1.4rem 2.8rem;
+  border: 1px solid oklch(from var(--lost-night-ink) l c h / 0.4);
+  background: transparent;
+  color: var(--lost-night-ink);
+  font-family: var(--font-mono, monospace);
+  font-size: 1.2rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.3s cubic-bezier(0.6, 0, 0.3, 1),
+    color 0.3s cubic-bezier(0.6, 0, 0.3, 1);
+}
+
+.lost-fragrance-cta:hover:not(:disabled) {
+  background: var(--lost-night-ink);
+  color: var(--lost-night);
+}
+
+.lost-fragrance-cta:disabled {
+  border-color: oklch(from var(--lost-night-ink) l c h / 0.16);
+  color: var(--lost-night-muted);
+  cursor: default;
+}
+
+/* CTA rendered as a link (quote-only / multi-variant defers to PDP) */
+a.lost-fragrance-cta {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Scroll hint on arrival — retires with early scroll */
+.lost-fragrance-enter {
+  position: absolute;
+  bottom: 4rem;
+  color: var(--lost-night-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  transition: opacity 0.5s cubic-bezier(0.6, 0, 0.3, 1);
+}
+
+.lost-fragrance-enter[data-faded="true"] {
+  opacity: 0;
+}
+
+/* Quiet sticky affordance — the object, always within reach */
+.lost-fragrance-affordance {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 1004;
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+  padding: 1.1rem 1.6rem;
+  border: 1px solid var(--lost-night-line);
+  background: oklch(from var(--lost-night) l c h / 0.72);
+  color: var(--lost-night-ink);
+  font-family: var(--font-mono, monospace);
+  font-size: 1.1rem;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.lost-fragrance-affordance[data-visible="false"] {
+  pointer-events: none;
+}
+
+.lost-fragrance-affordance-price {
+  color: var(--lost-night-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lost-fragrance-canvas {
+    display: none;
+  }
+}
