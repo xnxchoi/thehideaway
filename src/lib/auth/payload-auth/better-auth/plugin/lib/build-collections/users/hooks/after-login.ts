@@ -57,7 +57,7 @@ export function getAfterLoginHook() {
           ctx.context.authCookies.sessionToken.name,
           session.token,
           ctx.context.secret,
-          ctx.context.authCookies.sessionToken.options
+          ctx.context.authCookies.sessionToken.attributes
         );
         const filteredSessionData = await prepareSessionData({
           sessionData: { session, user },
