@@ -81,7 +81,11 @@ export function getPortOneConfig() {
         ? "live"
         : "sandbox",
     defaultChannel: process.env.PORTONE_DEFAULT_CHANNEL,
-    defaultMethod: process.env.PORTONE_DEFAULT_METHOD
+    defaultMethod: process.env.PORTONE_DEFAULT_METHOD,
+    // Master gate: card checkout stays dark unless this is explicitly "true",
+    // independent of whether PortOne keys happen to be present. Lets the owner
+    // set sandbox keys for validation without exposing card to real users.
+    cardCheckoutLive: process.env.PORTONE_CARD_CHECKOUT_LIVE === "true"
   } as const;
 }
 
@@ -102,7 +106,10 @@ export function isPortOneCheckoutEnabled(
     (hasPortOneValue(cfg.channelKey) || hasPortOneValue(cfg.defaultChannel));
   const hasGlobalConfig =
     hasPortOneValue(cfg.key) && hasPortOneValue(cfg.secret);
-  return hasV2Config || hasGlobalConfig;
+  // Config presence is necessary but not sufficient: the master gate
+  // (PORTONE_CARD_CHECKOUT_LIVE) must be explicitly on. This keeps card dark
+  // by default so setting sandbox keys alone never exposes it to users.
+  return (hasV2Config || hasGlobalConfig) && cfg.cardCheckoutLive;
 }
 
 export async function createPortOneRefund(input: {

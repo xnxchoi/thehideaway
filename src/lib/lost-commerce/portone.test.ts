@@ -13,6 +13,8 @@ afterEach(() => {
 
 describe("PortOne payment payloads", () => {
   it("keeps checkout disabled until PortOne has a complete payment configuration", () => {
+    // Master gate on so this test isolates the config-presence dimension.
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "true";
     delete process.env.PORTONE_CLIENT_KEY;
     delete process.env.PORTONE_SECRET_KEY;
     delete process.env.PORTONE_STORE_ID;
@@ -33,6 +35,7 @@ describe("PortOne payment payloads", () => {
   });
 
   it("enables checkout for complete global PortOne credentials", () => {
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "true";
     delete process.env.PORTONE_STORE_ID;
     delete process.env.PORTONE_CHANNEL_KEY;
     delete process.env.PORTONE_DEFAULT_CHANNEL;
@@ -44,7 +47,34 @@ describe("PortOne payment payloads", () => {
     expect(isPortOneCheckoutEnabled()).toBe(true);
   });
 
+  it("keeps card checkout dark unless the master gate is explicitly on", () => {
+    // Full, valid config present…
+    process.env.PORTONE_STORE_ID = "store-test";
+    process.env.PORTONE_CHANNEL_KEY = "channel-test";
+
+    // …but the master gate is unset → still dark (default-off).
+    delete process.env.PORTONE_CARD_CHECKOUT_LIVE;
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+
+    // Only exactly "true" opens it.
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "1";
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "TRUE";
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "true";
+    expect(isPortOneCheckoutEnabled()).toBe(true);
+
+    // Gate on but no config → still off (the API's card-unavailable path holds).
+    delete process.env.PORTONE_STORE_ID;
+    delete process.env.PORTONE_CHANNEL_KEY;
+    delete process.env.PORTONE_DEFAULT_CHANNEL;
+    delete process.env.PORTONE_CLIENT_KEY;
+    delete process.env.PORTONE_SECRET_KEY;
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+  });
+
   it("does not treat template placeholders as configured credentials", () => {
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "true";
     process.env.PORTONE_CLIENT_KEY = "CHANGE_ME_API_KEY";
     process.env.PORTONE_SECRET_KEY = "CHANGE_ME_API_KEY";
     process.env.PORTONE_STORE_ID = "CHANGE_ME_API_KEY";

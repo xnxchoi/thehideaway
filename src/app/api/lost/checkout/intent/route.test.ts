@@ -240,8 +240,10 @@ describe("POST /api/lost/checkout/intent", () => {
   it("includes product details in the PortOne payload", async () => {
     const oldStoreId = process.env.PORTONE_STORE_ID;
     const oldChannelKey = process.env.PORTONE_CHANNEL_KEY;
+    const oldCardLive = process.env.PORTONE_CARD_CHECKOUT_LIVE;
     process.env.PORTONE_STORE_ID = "store-test";
     process.env.PORTONE_CHANNEL_KEY = "channel-test";
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "true";
 
     try {
       mocks.findByID.mockReset().mockResolvedValue({
@@ -293,14 +295,70 @@ describe("POST /api/lost/checkout/intent", () => {
 
       if (oldChannelKey === undefined) delete process.env.PORTONE_CHANNEL_KEY;
       else process.env.PORTONE_CHANNEL_KEY = oldChannelKey;
+
+      if (oldCardLive === undefined)
+        delete process.env.PORTONE_CARD_CHECKOUT_LIVE;
+      else process.env.PORTONE_CARD_CHECKOUT_LIVE = oldCardLive;
+    }
+  });
+
+  it("rejects a PortOne card intent when the master gate is off, even with keys present", async () => {
+    const oldStoreId = process.env.PORTONE_STORE_ID;
+    const oldChannelKey = process.env.PORTONE_CHANNEL_KEY;
+    const oldCardLive = process.env.PORTONE_CARD_CHECKOUT_LIVE;
+    // Keys present (as during sandbox validation) but the gate is NOT on.
+    process.env.PORTONE_STORE_ID = "store-test";
+    process.env.PORTONE_CHANNEL_KEY = "channel-test";
+    delete process.env.PORTONE_CARD_CHECKOUT_LIVE;
+
+    try {
+      mocks.findByID.mockReset().mockResolvedValue({
+        id: "product-1",
+        active: true,
+        name: "Jacket",
+        slug: "jacket",
+        currency: "KRW",
+        unit_amount: 120000,
+        min_order_quantity: 1,
+        max_order_quantity: 5,
+        standard_enabled: true,
+        stock_state: "in_stock",
+        inventory: 3
+      });
+
+      const { POST } = await import("./route");
+      const res = await POST(
+        request({
+          paymentProvider: "portone",
+          lines: [
+            { productId: "product-1", mode: "standard_purchase", quantity: 1 }
+          ]
+        })
+      );
+
+      // Dark: 503, and no order/PortOne intent is minted.
+      expect(res.status).toBe(503);
+      expect(mocks.create).not.toHaveBeenCalled();
+    } finally {
+      if (oldStoreId === undefined) delete process.env.PORTONE_STORE_ID;
+      else process.env.PORTONE_STORE_ID = oldStoreId;
+
+      if (oldChannelKey === undefined) delete process.env.PORTONE_CHANNEL_KEY;
+      else process.env.PORTONE_CHANNEL_KEY = oldChannelKey;
+
+      if (oldCardLive === undefined)
+        delete process.env.PORTONE_CARD_CHECKOUT_LIVE;
+      else process.env.PORTONE_CARD_CHECKOUT_LIVE = oldCardLive;
     }
   });
 
   it("omits the LOSTINSEOUL path prefix for branded-host product links", async () => {
     const oldStoreId = process.env.PORTONE_STORE_ID;
     const oldChannelKey = process.env.PORTONE_CHANNEL_KEY;
+    const oldCardLive = process.env.PORTONE_CARD_CHECKOUT_LIVE;
     process.env.PORTONE_STORE_ID = "store-test";
     process.env.PORTONE_CHANNEL_KEY = "channel-test";
+    process.env.PORTONE_CARD_CHECKOUT_LIVE = "true";
 
     try {
       mocks.findByID.mockReset().mockResolvedValue({
@@ -355,6 +413,10 @@ describe("POST /api/lost/checkout/intent", () => {
 
       if (oldChannelKey === undefined) delete process.env.PORTONE_CHANNEL_KEY;
       else process.env.PORTONE_CHANNEL_KEY = oldChannelKey;
+
+      if (oldCardLive === undefined)
+        delete process.env.PORTONE_CARD_CHECKOUT_LIVE;
+      else process.env.PORTONE_CARD_CHECKOUT_LIVE = oldCardLive;
     }
   });
 });

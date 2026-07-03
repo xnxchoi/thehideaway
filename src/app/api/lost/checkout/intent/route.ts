@@ -8,7 +8,10 @@ import { beginIdempotent } from "@/lib/api/idempotency";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { productInventoryLock } from "@/lib/db/sequences";
 import { makeLostOrderRef } from "@/lib/lost-commerce/format";
-import { buildPortOnePaymentPayload } from "@/lib/lost-commerce/portone";
+import {
+  buildPortOnePaymentPayload,
+  isPortOneCheckoutEnabled
+} from "@/lib/lost-commerce/portone";
 import { resolveLostCheckout } from "@/lib/lost-commerce/cart";
 import type { LostCartLineSnapshot } from "@/lib/lost-commerce/types";
 
@@ -289,6 +292,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     if (parsed.data.paymentProvider === "portone") {
+      // Master gate: reject the card path server-side when card checkout is
+      // dark, so a direct POST can't mint a PortOne intent even with keys
+      // present (e.g. during sandbox validation). Maps to 503 below.
+      if (!isPortOneCheckoutEnabled()) {
+        throw new Error("portone-not-configured");
+      }
+
       const origin = requestOrigin(req);
       const storefrontBase = lostStorefrontBase(origin);
 

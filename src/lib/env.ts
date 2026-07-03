@@ -469,6 +469,16 @@ const schema = z.object({
         'When "true", the PortOne webhook rejects requests without Standard-Webhooks signature headers (disables the legacy shared-secret header fallback).'
       )
     ),
+  PORTONE_CARD_CHECKOUT_LIVE: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        'Master gate for card checkout. Card options stay hidden and card routes reject unless this is exactly "true", even when PortOne keys are present. Keep unset/false until a sandbox card payment has round-tripped successfully — see readmes/PORTONE_APPLICATION.md.'
+      )
+    ),
 
   // ── Auth misc ───────────────────────────────────────────────────────────
   COOKIE_DOMAIN: z

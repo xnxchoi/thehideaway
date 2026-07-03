@@ -77,7 +77,9 @@ export function getLostBusinessDisclosure(
       },
       {
         label: labels.phoneLabel,
-        value: identifiers.phone
+        // Em-dash when no landline is set yet (matches the Hideaway footer
+        // convention) so the required-disclosure row never renders empty.
+        value: withFallback(identifiers.phone, "—")
       },
       {
         href: `mailto:${identifiers.email}`,

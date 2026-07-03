@@ -64,4 +64,16 @@ describe("getLostBusinessDisclosure", () => {
     ]);
     expect(disclosure.items.every((item) => item.value.length > 0)).toBe(true);
   });
+
+  it("renders an em-dash for phone when no landline is set (never an empty row)", () => {
+    const disclosure = getLostBusinessDisclosure(labels, {
+      ...identifiers,
+      phone: ""
+    });
+
+    const phoneRow = disclosure.items.find((item) => item.label === "Phone");
+    expect(phoneRow?.value).toBe("—");
+    // No required-disclosure row may render empty on the live PG-reviewed domain.
+    expect(disclosure.items.every((item) => item.value.length > 0)).toBe(true);
+  });
 });

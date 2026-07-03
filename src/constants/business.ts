@@ -57,7 +57,10 @@ const env = (key: string, fallback: string): string =>
 export const BUSINESS: BusinessInfo = {
   registrationNumber: env("NEXT_PUBLIC_BIZ_REG_NO", "753-32-01007"),
   mailOrderRegistrationNumber: env("NEXT_PUBLIC_BIZ_MAIL_ORDER_NO", ""),
-  phone: env("NEXT_PUBLIC_BIZ_PHONE", "Email support"),
+  // Empty until a real landline is set — PortOne requires a landline and a
+  // truthy placeholder would render as a fake number. Empty lets the footer /
+  // colophon fall through to their pending / em-dash state.
+  phone: env("NEXT_PUBLIC_BIZ_PHONE", ""),
   email: env("NEXT_PUBLIC_BIZ_EMAIL", "concierge@hideawayseoul.com"),
   privacyOfficerName: env(
     "NEXT_PUBLIC_BIZ_PRIVACY_OFFICER",
@@ -85,10 +88,10 @@ export const BUSINESS: BusinessInfo = {
   ),
   serviceHours: env(
     "NEXT_PUBLIC_BIZ_HOURS",
-    "Mon–Fri 10:00–18:00 KST (closed weekends and holidays)"
+    "Sat–Sun & holidays 12:00–24:00 KST (closed on weekdays)"
   ),
   serviceHoursKo: env(
     "NEXT_PUBLIC_BIZ_HOURS_KO",
-    "평일 10:00–18:00 (주말 및 공휴일 휴무)"
+    "주말, 공휴일 12:00–24:00 (주중 휴무)"
   )
 };
