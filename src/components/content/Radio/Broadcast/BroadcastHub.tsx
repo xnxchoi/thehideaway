@@ -40,7 +40,7 @@ export function BroadcastHub({ releases }: BroadcastHubProps) {
         {/* ── Zone 1: On Air — full-screen player ──────────────────────────── */}
         <section
           aria-labelledby="on-air"
-          className="relative flex min-h-screen w-full items-center justify-center px-6"
+          className="relative flex min-h-[88svh] w-full items-center justify-center px-6 pt-24 pb-14 sm:min-h-[84svh]"
         >
           {/* Eyebrow sits below the floating header chrome (≈ 90px on mobile,
               ≈ 60px on desktop). top-28/sm:top-12 keeps it clear of MENU/H/moon. */}
@@ -76,17 +76,17 @@ function BroadcastArchive({ releases }: BroadcastArchiveProps) {
   return (
     <section
       aria-labelledby="archive"
-      className="relative w-full pt-32 pb-20 sm:pt-24 xl:py-32"
+      className="relative w-full border-y border-border/15 bg-black/80 pt-20 pb-16 backdrop-blur-[1px] sm:pt-20 xl:py-24"
     >
       <div className="mx-auto w-full max-w-7xl px-6 xl:px-10">
-        <header className="mb-10 flex items-end justify-between border-b border-border/20 pb-6 sm:mb-16 sm:pb-8 xl:mb-20">
+        <header className="mb-8 flex items-end justify-between border-b border-border/30 pb-6 sm:mb-12 sm:pb-8 xl:mb-14">
           <p
             id="archive"
-            className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs"
+            className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/65 uppercase xl:text-xs"
           >
             · The Archive
           </p>
-          <p className="font-mono text-[10px] text-muted-foreground/40 tabular-nums xl:text-[11px]">
+          <p className="font-mono text-[10px] text-muted-foreground/60 tabular-nums xl:text-[11px]">
             {String(releases.length).padStart(3, "0")}{" "}
             {releases.length === 1 ? "release" : "releases"}
           </p>
@@ -200,12 +200,12 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
 
 function ArchiveEmpty() {
   return (
-    <div className="flex flex-col items-center py-24 text-center">
-      <span className="mb-4 font-mono text-5xl text-foreground/10">○</span>
-      <p className="text-base font-light text-foreground/70">
+    <div className="flex flex-col items-center py-16 text-center">
+      <span className="mb-4 font-mono text-5xl text-foreground/20">○</span>
+      <p className="text-base font-light text-foreground/85">
         Nothing in rotation yet.
       </p>
-      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/65">
         The first volume drops soon.
       </p>
     </div>
@@ -218,25 +218,25 @@ function Forthcoming() {
   return (
     <section
       aria-labelledby="forthcoming"
-      className="relative w-full border-t border-border/20 py-20 xl:py-24"
+      className="relative w-full border-t border-border/30 bg-black/80 py-14 backdrop-blur-[1px] xl:py-20"
     >
       <div className="mx-auto w-full max-w-7xl px-6 xl:px-10">
         <p
           id="forthcoming"
-          className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs"
+          className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/65 uppercase xl:text-xs"
         >
           · Forthcoming
         </p>
         {/* TODO(forthcoming-cms): pull from a Payload global once the
             Brevo dispatch capture lands (Phase 2 step 9). For now this
             slot stays inert so /radio still ships. */}
-        <p className="max-w-prose text-lg font-light text-foreground/70 xl:text-xl">
+        <p className="max-w-prose text-lg font-light text-foreground/85 xl:text-xl">
           Untitled · Spring 2026
         </p>
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground/50 xl:text-xs">
+        <p className="mt-3 font-mono text-[11px] text-muted-foreground/65 xl:text-xs">
           Sign up for the dispatch{" "}
-          <span className="text-muted-foreground/30">→</span>
-          <span className="ml-2 text-muted-foreground/30">[coming soon]</span>
+          <span className="text-muted-foreground/50">→</span>
+          <span className="ml-2 text-muted-foreground/50">[coming soon]</span>
         </p>
       </div>
     </section>

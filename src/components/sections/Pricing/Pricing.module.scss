@@ -612,14 +612,14 @@
 .theRoom {
 	max-width: 880px;
 	margin: 0 auto;
-	padding: 60px 24px 80px;
+	padding: 40px 24px 48px;
 }
 
 .membershipBand {
 	display: flex;
 	flex-direction: column;
-	gap: 28px;
-	padding: 48px 0;
+	gap: 22px;
+	padding: 32px 0;
 }
 
 .membershipBand[data-variant="inline"] {
@@ -740,7 +740,7 @@
 }
 
 .residentOnRamp {
-	margin: 32px 0 0;
+	margin: 20px 0 0;
 	font-size: 14px;
 	line-height: 1.55;
 	color: var(--pricing-fg);
@@ -753,15 +753,15 @@
 /* CofounderApply ────────────────────────────────────────────────────── */
 
 .cofounderApply {
-	min-height: 100svh;
+	min-height: clamp(560px, 72svh, 760px);
 	max-width: 880px;
 	margin: 0 auto;
-	padding: 24px;
+	padding: 64px 24px 72px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	gap: 36px;
+	justify-content: flex-start;
+	gap: 28px;
 	text-align: center;
 }
 
