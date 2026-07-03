@@ -69,9 +69,8 @@ type Props = {
   drops: Array<{ title: string; slug: string; kicker?: string; lede?: string }>;
 };
 
-const FALLBACK_HERO = "/assets/env_hdr1.webp";
-const FALLBACK_HERO_VIDEO = "/assets/lostinseoul/oflyn/hero-reference.mp4";
-const FALLBACK_FOCUS_IMAGE = "/assets/media/unsplash-omRMbFSqN6A.webp";
+const FALLBACK_HERO = "/assets/lostinseoul/brand/hero-still.svg";
+const FALLBACK_FOCUS_IMAGE = "/assets/lostinseoul/brand/focus-still.svg";
 
 export function LostStorefront({
   announcement,
@@ -124,7 +123,7 @@ export function LostStorefront({
   const commerceRootRef = useRef<HTMLElement>(null);
   const featureImage = products[0]?.imageUrl ?? FALLBACK_HERO;
   const focusImage = products[0]?.imageUrl ?? FALLBACK_FOCUS_IMAGE;
-  const featureVideo = products[0]?.heroVideoUrl ?? FALLBACK_HERO_VIDEO;
+  const featureVideo = products[0]?.heroVideoUrl ?? null;
   const [searchQuery, setSearchQuery] = useState("");
   const [bagOpen, setBagOpen] = useState(false);
   const [heroSceneReady, setHeroSceneReady] = useState(false);

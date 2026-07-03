@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { LostHeroScene } from "./hero-three";
 
 const lostRouteDir = __dirname;
 
@@ -26,5 +27,9 @@ describe("LOSTINSEOUL brand asset boundaries", () => {
     for (const marker of forbiddenBorrowedAssetMarkers) {
       expect(routeSource.toLowerCase()).not.toContain(marker);
     }
+  });
+
+  it("keeps the procedural hero scene importable by the storefront", () => {
+    expect(typeof LostHeroScene).toBe("function");
   });
 });
