@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { LostHeroScene } from "./hero-three";
@@ -31,5 +31,11 @@ describe("LOSTINSEOUL brand asset boundaries", () => {
 
   it("keeps the procedural hero scene importable by the storefront", () => {
     expect(typeof LostHeroScene).toBe("function");
+  });
+
+  it("does not leave borrowed asset packs in the renderable public LOSTINSEOUL tree", () => {
+    expect(
+      existsSync(join(process.cwd(), "public/assets/lostinseoul/oflyn"))
+    ).toBe(false);
   });
 });
