@@ -26,9 +26,9 @@ describe("LOSTINSEOUL hero media state", () => {
   });
 
   it("falls back to target ratio when loaded image dimensions are not usable", () => {
-    expect(getLostHeroTextureMediaRatio({ height: 0, width: 800 }, 21 / 9)).toBe(
-      21 / 9
-    );
+    expect(
+      getLostHeroTextureMediaRatio({ height: 0, width: 800 }, 21 / 9)
+    ).toBe(21 / 9);
     expect(
       getLostHeroTextureMediaRatio({ height: 900, width: 0 }, 21 / 9)
     ).toBe(21 / 9);

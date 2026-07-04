@@ -69,6 +69,7 @@ import {
   shouldFinishLostEntry,
   type LostEntryPhase
 } from "./entry-motion";
+import { shouldShowLostHeroVideoControls } from "./hero-media-state";
 import { LostHeroScene } from "./hero-three";
 import {
   LOST_HERO_VIDEO_BUTTON_LABEL_CLASS,
@@ -663,9 +664,10 @@ export function LostHero({
   const [videoTransitioning, setVideoTransitioning] = useState(false);
   const openTimerRef = useRef<number | null>(null);
   const entryPhase = useLostEntryPhase();
+  const hasVideo = shouldShowLostHeroVideoControls(videoUrl);
 
   const openVideo = () => {
-    if (!videoUrl) return;
+    if (!hasVideo) return;
     if (openTimerRef.current) window.clearTimeout(openTimerRef.current);
     setVideoTransitioning(true);
     document.dispatchEvent(
@@ -764,34 +766,36 @@ export function LostHero({
             {yearLabel}
           </span>
         </m.div>
-        <m.button
-          animate={
-            videoTransitioning
-              ? { opacity: 1, scale: 0, y: 0 }
-              : {
-                  ...getLostEntryElementState("heroButton", entryPhase),
-                  scale: 1
-                }
-          }
-          aria-label={watchLabel}
-          className="pointer-events-auto absolute top-[calc(50%+2.45rem)] left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] p-0 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] shadow-[0_1.2rem_4.8rem_var(--lost-hero-halo)] backdrop-blur-xl transition-[color,background-color,border-color] duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)] hover:bg-[var(--lost-hero-glass-hover)]"
-          id="open-video-button"
-          initial={false}
-          onClick={openVideo}
-          transition={getLostEntryTransition("heroButton", entryPhase)}
-          type="button"
-        >
-          <span className="grid size-16 place-items-center rounded-[3px] border-r border-[var(--lost-hero-line)] bg-[oklch(from_var(--lost-hero-glass)_l_c_h_/_0.45)] backdrop-blur-xl transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]">
-            <ArrowsOutSimpleIcon
-              aria-hidden
-              className="size-6"
-              weight="regular"
-            />
-          </span>
-          <span className={LOST_HERO_VIDEO_BUTTON_LABEL_CLASS}>
-            {watchLabel}
-          </span>
-        </m.button>
+        {hasVideo ? (
+          <m.button
+            animate={
+              videoTransitioning
+                ? { opacity: 1, scale: 0, y: 0 }
+                : {
+                    ...getLostEntryElementState("heroButton", entryPhase),
+                    scale: 1
+                  }
+            }
+            aria-label={watchLabel}
+            className="pointer-events-auto absolute top-[calc(50%+2.45rem)] left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-[4px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)] p-0 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] shadow-[0_1.2rem_4.8rem_var(--lost-hero-halo)] backdrop-blur-xl transition-[color,background-color,border-color] duration-[800ms] ease-[cubic-bezier(0.6,0,0.3,1)] hover:bg-[var(--lost-hero-glass-hover)]"
+            id="open-video-button"
+            initial={false}
+            onClick={openVideo}
+            transition={getLostEntryTransition("heroButton", entryPhase)}
+            type="button"
+          >
+            <span className="grid size-16 place-items-center rounded-[3px] border-r border-[var(--lost-hero-line)] bg-[oklch(from_var(--lost-hero-glass)_l_c_h_/_0.45)] backdrop-blur-xl transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]">
+              <ArrowsOutSimpleIcon
+                aria-hidden
+                className="size-6"
+                weight="regular"
+              />
+            </span>
+            <span className={LOST_HERO_VIDEO_BUTTON_LABEL_CLASS}>
+              {watchLabel}
+            </span>
+          </m.button>
+        ) : null}
         <m.div
           animate={
             videoTransitioning
@@ -820,7 +824,7 @@ export function LostHero({
         </m.div>
       </div>
 
-      {videoUrl ? (
+      {hasVideo ? (
         <LostVideoPlayer
           closeLabel={closeLabel}
           muteLabel={muteLabel}

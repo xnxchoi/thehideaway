@@ -10,6 +10,7 @@ import {
   shouldPauseLostHeroVideo,
   shouldRenderLostHeroFrame
 } from "./hero-scene-state";
+import { getLostHeroTextureMediaRatio } from "./hero-media-state";
 import { getLostHeroScrollProgress } from "./hero-scroll-motion";
 
 type Props = {
@@ -388,7 +389,11 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
         }
 
         texture.colorSpace = THREE.SRGBColorSpace;
-        coverTexture(texture, TARGET_MEDIA_RATIO, TARGET_MEDIA_RATIO);
+        coverTexture(
+          texture,
+          getLostHeroTextureMediaRatio(texture.image, TARGET_MEDIA_RATIO),
+          TARGET_MEDIA_RATIO
+        );
         imageTextureRef.current = texture;
         mediaMaterial.map = texture;
         mediaMaterial.color.set(0xffffff);
