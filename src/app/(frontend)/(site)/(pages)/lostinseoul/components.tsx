@@ -69,7 +69,10 @@ import {
   shouldFinishLostEntry,
   type LostEntryPhase
 } from "./entry-motion";
-import { shouldShowLostHeroVideoControls } from "./hero-media-state";
+import {
+  getLostHeroVideoUrl,
+  shouldShowLostHeroVideoControls
+} from "./hero-media-state";
 import { LostHeroScene } from "./hero-three";
 import {
   LOST_HERO_VIDEO_BUTTON_LABEL_CLASS,
@@ -664,7 +667,8 @@ export function LostHero({
   const [videoTransitioning, setVideoTransitioning] = useState(false);
   const openTimerRef = useRef<number | null>(null);
   const entryPhase = useLostEntryPhase();
-  const hasVideo = shouldShowLostHeroVideoControls(videoUrl);
+  const heroVideoUrl = getLostHeroVideoUrl(videoUrl);
+  const hasVideo = shouldShowLostHeroVideoControls(heroVideoUrl);
 
   const openVideo = () => {
     if (!hasVideo) return;
@@ -710,7 +714,7 @@ export function LostHero({
           imageUrl={imageUrl}
           bagOpen={bagOpen}
           onReady={onSceneReady}
-          videoUrl={videoUrl}
+          videoUrl={heroVideoUrl}
         />
       </m.div>
       <div
@@ -824,7 +828,7 @@ export function LostHero({
         </m.div>
       </div>
 
-      {hasVideo ? (
+      {heroVideoUrl ? (
         <LostVideoPlayer
           closeLabel={closeLabel}
           muteLabel={muteLabel}
@@ -832,7 +836,7 @@ export function LostHero({
           open={videoOpen}
           pauseLabel={pauseLabel}
           playLabel={playLabel}
-          src={videoUrl}
+          src={heroVideoUrl}
           unmuteLabel={unmuteLabel}
         />
       ) : null}

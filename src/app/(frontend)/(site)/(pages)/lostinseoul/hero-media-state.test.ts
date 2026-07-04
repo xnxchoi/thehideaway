@@ -1,6 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   getLostHeroTextureMediaRatio,
+  getLostHeroVideoUrl,
   shouldShowLostHeroVideoControls
 } from "./hero-media-state";
 
@@ -14,6 +17,25 @@ describe("LOSTINSEOUL hero media state", () => {
     expect(shouldShowLostHeroVideoControls(undefined)).toBe(false);
     expect(shouldShowLostHeroVideoControls("")).toBe(false);
     expect(shouldShowLostHeroVideoControls("   ")).toBe(false);
+  });
+
+  it("normalizes hero video URLs before passing them to media runtimes", () => {
+    expect(getLostHeroVideoUrl(" /media/night.mp4 ")).toBe("/media/night.mp4");
+    expect(getLostHeroVideoUrl(" ")).toBeNull();
+    expect(getLostHeroVideoUrl(null)).toBeNull();
+    expect(getLostHeroVideoUrl(undefined)).toBeNull();
+  });
+
+  it("uses the normalized hero video URL at scene and player boundaries", () => {
+    const source = readFileSync(join(__dirname, "components.tsx"), "utf8");
+
+    expect(source).toContain(
+      "const heroVideoUrl = getLostHeroVideoUrl(videoUrl)"
+    );
+    expect(source).toContain("videoUrl={heroVideoUrl}");
+    expect(source).toContain("src={heroVideoUrl}");
+    expect(source).not.toContain("videoUrl={videoUrl}");
+    expect(source).not.toContain("src={videoUrl}");
   });
 
   it("uses loaded image dimensions for still texture cover fitting", () => {

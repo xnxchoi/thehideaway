@@ -4,7 +4,13 @@ type MediaDimensions = {
 };
 
 export function shouldShowLostHeroVideoControls(videoUrl?: string | null) {
-  return Boolean(videoUrl?.trim());
+  return getLostHeroVideoUrl(videoUrl) !== null;
+}
+
+export function getLostHeroVideoUrl(videoUrl?: string | null) {
+  const normalized = videoUrl?.trim();
+
+  return normalized ? normalized : null;
 }
 
 export function getLostHeroTextureMediaRatio(
