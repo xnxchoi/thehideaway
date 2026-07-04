@@ -5,11 +5,14 @@ import { getLostHomeData } from "@/lib/lost-commerce/queries";
 import { getLostBusinessFooterProps } from "./business-footer-props";
 import { LostStorefront } from "./storefront";
 
-export const metadata: Metadata = {
-  title: "LOSTINSEOUL",
-  description:
-    "A small storefront for Seoul objects, editions, and commitments."
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("LOSTINSEOUL.meta");
+
+  return {
+    title: t("title"),
+    description: t("description")
+  };
+}
 
 export default async function LOSTINSEOULPage() {
   const t = await getTranslations("LOSTINSEOUL");

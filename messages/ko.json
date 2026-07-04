@@ -32,31 +32,35 @@
     }
   },
   "LOSTINSEOUL": {
+    "meta": {
+      "title": "LOSTINSEOUL",
+      "description": "서울에서 제작하고 기록하는 한정 오브제와 에디션."
+    },
     "nav": {
-      "cart": "CART",
-      "back": "BACK",
-      "shop": "Shop",
-      "archive": "Archives",
+      "cart": "카트",
+      "back": "뒤로",
+      "shop": "스토어",
+      "archive": "아카이브",
       "search": "검색",
-      "searchPlaceholder": "...",
-      "clearSearch": "검색어 리셋",
-      "searchResults": "검색 결과",
-      "searchNoResults": "일치하는 결과가 없습니다"
+      "searchPlaceholder": "오브제 검색",
+      "clearSearch": "검색 지우기",
+      "searchResults": "결과",
+      "searchNoResults": "일치하는 오브제가 없습니다."
     },
     "home": {
-      "announcement": "A RESTORED PROJECT™",
-      "eyebrow": "BOUTIQUE",
+      "announcement": "한정 수량, 서울 발송",
+      "eyebrow": "스토어프론트",
       "title": "LOSTINSEOUL",
-      "lede": "LOST WITH CARE",
-      "products": "Products",
-      "empty": "--- - - --- -",
+      "lede": "서울의 밤, 소재, 제작 기록에서 나온 오브제와 에디션. 바로 구매할 수 있는 것도, 충분한 약속이 모여야 제작되는 것도 있습니다.",
+      "products": "구매 가능",
+      "empty": "현재 열려 있는 오브제가 없습니다.",
       "collection": "컬렉션",
       "year": "2026",
-      "objects": "Restorations",
-      "incoming": "En Route",
-      "focusTitle": "Selected Objects",
-      "collectionsEyebrow": "Editions",
-      "collectionsTitle": "Limited Runs"
+      "objects": "오브제",
+      "incoming": "입고 예정",
+      "focusTitle": "선택된 오브제",
+      "collectionsEyebrow": "에디션",
+      "collectionsTitle": "한정 발행, 진행 중인 약속"
     },
     "actions": {
       "view": "상품 보기",

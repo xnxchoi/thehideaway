@@ -32,6 +32,10 @@
     }
   },
   "LOSTINSEOUL": {
+    "meta": {
+      "title": "LOSTINSEOUL",
+      "description": "Limited Seoul objects, editions, and commitments from RESTORED PROJECT."
+    },
     "nav": {
       "cart": "Cart",
       "back": "Back",
@@ -47,7 +51,7 @@
       "announcement": "Limited runs, Seoul dispatch",
       "eyebrow": "Storefront",
       "title": "LOSTINSEOUL",
-      "lede": "Objects, editions, and small commitments from the city. Some can be bought now. Some only happen if enough people commit.",
+      "lede": "Objects, editions, and commitments from Seoul. Some are ready now. Some exist only when enough people commit.",
       "products": "Available now",
       "empty": "No products are open right now.",
       "collection": "Collection",
