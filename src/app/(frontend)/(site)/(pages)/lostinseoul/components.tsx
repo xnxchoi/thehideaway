@@ -54,6 +54,11 @@ import {
   getLostBagRegularChromeState
 } from "./cart-frame";
 import { LostCartOverlay } from "./cart-overlay";
+import {
+  getLostProductEvidenceSummary,
+  getLostProductFallbackMark,
+  getLostProductStoryImages
+} from "./product-evidence-state";
 import { getLostProductSectionMetaLabel } from "./product-section-state";
 import {
   getLostCursorSurfaceTheme,
@@ -1316,12 +1321,9 @@ function LostProductTile({
   viewProductLabel: string;
 }) {
   const href = `/lostinseoul/products/${product.slug}`;
-  const storyImages =
-    product.galleryPreview.length > 0
-      ? product.galleryPreview
-      : product.imageUrl
-        ? [{ url: product.imageUrl, alt: product.imageAlt ?? product.name }]
-        : [];
+  const storyImages = getLostProductStoryImages(product);
+  const evidenceSummary = getLostProductEvidenceSummary(product.summary);
+  const fallbackMark = getLostProductFallbackMark(product.name);
   const progressCount = Math.max(storyImages.length, 1);
   const [storyActiveIndex, setStoryActiveIndex] = useState(0);
   const [storyLeavingIndex, setStoryLeavingIndex] = useState<number | null>(
@@ -1457,7 +1459,7 @@ function LostProductTile({
               </>
             ) : (
               <div className="flex h-full items-end bg-[linear-gradient(145deg,oklch(from_var(--fg)_l_c_h_/_0.14),oklch(from_var(--bg)_l_c_h_/_0.38)_40%,oklch(from_var(--fg)_l_c_h_/_0.08))] p-4 font-serif text-[7rem] leading-none font-bold text-[oklch(from_var(--fg)_l_c_h_/_0.1)]">
-                {product.name.slice(0, 1)}
+                {fallbackMark}
               </div>
             )}
           </div>
@@ -1541,6 +1543,11 @@ function LostProductTile({
           <h3 className="font-sans text-[2rem] leading-none font-normal text-[var(--lost-paper-ink)] uppercase">
             {product.name}
           </h3>
+          {evidenceSummary ? (
+            <p className="max-w-[34rem] text-[1.25rem] leading-snug text-[oklch(from_var(--fg)_l_c_h_/_0.68)] md:text-[1.35rem]">
+              {evidenceSummary}
+            </p>
+          ) : null}
           <p
             aria-label={product.price}
             className="font-sans text-[2rem] leading-none text-[var(--lost-paper-muted)] tabular-nums"

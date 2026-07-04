@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   getLostProductEvidenceSummary,
@@ -7,9 +9,9 @@ import {
 
 describe("LOSTINSEOUL product evidence state", () => {
   it("uses CMS-backed summaries as product evidence copy", () => {
-    expect(getLostProductEvidenceSummary("  Seoul-cut cotton, edition 02.  ")).toBe(
-      "Seoul-cut cotton, edition 02."
-    );
+    expect(
+      getLostProductEvidenceSummary("  Seoul-cut cotton, edition 02.  ")
+    ).toBe("Seoul-cut cotton, edition 02.");
     expect(getLostProductEvidenceSummary(" ")).toBeNull();
     expect(getLostProductEvidenceSummary(null)).toBeNull();
   });
@@ -44,5 +46,15 @@ describe("LOSTINSEOUL product evidence state", () => {
     expect(getLostProductFallbackMark("  lost coat  ")).toBe("L");
     expect(getLostProductFallbackMark("향")).toBe("향");
     expect(getLostProductFallbackMark(" ")).toBe("L");
+  });
+
+  it("wires evidence decisions into home product cards", () => {
+    const source = readFileSync(join(__dirname, "components.tsx"), "utf8");
+
+    expect(source).toContain("getLostProductStoryImages(product)");
+    expect(source).toContain("getLostProductEvidenceSummary(product.summary)");
+    expect(source).toContain("getLostProductFallbackMark(product.name)");
+    expect(source).toContain("{evidenceSummary ? (");
+    expect(source).toContain("{fallbackMark}");
   });
 });
