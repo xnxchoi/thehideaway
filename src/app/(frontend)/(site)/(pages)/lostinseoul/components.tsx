@@ -2024,7 +2024,6 @@ export function LostFooter({
   footerContactLabel,
   footerCopyrightLabel,
   footerInfoLabel,
-  footerMediaLabel,
   footerPrivacyLabel,
   footerReturnsLabel,
   footerTermsLabel,
@@ -2036,7 +2035,6 @@ export function LostFooter({
   footerContactLabel: string;
   footerCopyrightLabel: string;
   footerInfoLabel: string;
-  footerMediaLabel: string;
   footerPrivacyLabel: string;
   footerReturnsLabel: string;
   footerTermsLabel: string;
@@ -2084,23 +2082,6 @@ export function LostFooter({
                   {footerReturnsLabel}
                 </Link>
               </li>
-            </ul>
-          </nav>
-          <nav
-            aria-label={footerMediaLabel}
-            className="grid gap-y-6 justify-self-end text-right md:col-span-5 md:col-start-6 md:justify-self-start md:text-left"
-          >
-            <h3 className="font-mono text-[1.3rem] leading-none font-bold tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.5)] uppercase md:hidden">
-              {footerMediaLabel}
-            </h3>
-            <ul className="grid gap-y-4">
-              {["Instagram", "Threads", "YouTube"].map((label) => (
-                <li key={label}>
-                  <Link className="lost-footer-link" href="/lostinseoul">
-                    {label}
-                  </Link>
-                </li>
-              ))}
             </ul>
           </nav>
           <Link

@@ -59,7 +59,6 @@ type Props = {
   footerBusinessIdentifiers: LostBusinessDisclosureIdentifiers;
   footerBusinessLabels: LostBusinessDisclosureLabels;
   footerInfoLabel: string;
-  footerMediaLabel: string;
   footerContactLabel: string;
   footerPrivacyLabel: string;
   footerTermsLabel: string;
@@ -92,7 +91,6 @@ export function LostStorefront({
   footerContactLabel,
   footerCopyrightLabel,
   footerInfoLabel,
-  footerMediaLabel,
   footerPrivacyLabel,
   footerReturnsLabel,
   footerTermsLabel,
@@ -243,7 +241,6 @@ export function LostStorefront({
             footerContactLabel={footerContactLabel}
             footerCopyrightLabel={footerCopyrightLabel}
             footerInfoLabel={footerInfoLabel}
-            footerMediaLabel={footerMediaLabel}
             footerPrivacyLabel={footerPrivacyLabel}
             footerReturnsLabel={footerReturnsLabel}
             footerTermsLabel={footerTermsLabel}
