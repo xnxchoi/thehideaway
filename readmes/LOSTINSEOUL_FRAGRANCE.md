@@ -166,3 +166,30 @@ commitments from the city…", "Limited runs, Seoul dispatch", "Made in Seoul").
     alternating anchors, three.js chrome bundle split (task chip filed),
     replacement of the oflyn-derived storefront hero scene (launch gate for
     the house, separate from this chapter).
+- 2026-07-05 — Scene development pass (v1 read as "dark void with colored
+  fog"; references D.S. & Durga / Bleu de Chanel L'Exclusif / Maison
+  Crivelli). What changed:
+  - **City reads as a place now**: lit-window instancing + hand-placed neon
+    signage on the procedural skyline (`fragrance-city.ts`, deterministic,
+    tested); fog eased 0.05 → 0.034 so the skyline survives.
+  - **Wet-asphalt ground shader** (`fragrance-ground.ts`): puddle-masked
+    stretched reflections of each sign / the sweep light / the reveal column,
+    plus a localized key-light pool per beat. This is the Seoul-night
+    signature surface — tune `uWet` per beat via the light states.
+  - **Authored camera** (`fragrance-camera.ts`, pure + tested): one composed
+    shot per beat, smoothstep-interpolated by scroll — Chanel grammar (user
+    drives the clock, author drives the camera). Keys align to beat starts.
+  - **Particles fixed**: rain is LineSegments streaks, motes are soft round
+    sprites kept ahead of the camera path (no lens-ball blowups).
+  - **Reveal object**: an additive column of light on a plinth at the object
+    slot (bottle stays empty per launch gate); breathes with reveal progress,
+    reflects in the ground, hidden until the reveal beat.
+  - **Film grain** (postprocessing NoiseEffect, overlay 0.11) kills the dark
+    gradient banding.
+  - **Night rail** (DOM): fixed right-edge beat nav on lg+, active tick shows
+    the beat's localized eyebrow (reuses existing strings — no new message
+    keys); hides with bag open and past chapter end.
+  - Light states gained `wet` / `windows` / `signs` channels per beat.
+  - Verified: 119 lostinseoul tests green; desktop/mobile/reduced-motion/ko
+    headless passes; zero new type errors (footer prop + translator errors
+    in this dir are pre-existing type debt).
