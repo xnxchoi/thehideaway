@@ -58,12 +58,15 @@ export function getLostEntryTransition(
 
   return {
     delay: phaseDelays[element],
-    duration: element === "stage" ? 1.25 : element === "heroButton" ? 0.8 : 0.55,
+    duration:
+      element === "stage" ? 1.25 : element === "heroButton" ? 0.8 : 0.55,
     ease: lostEntryEase
   };
 }
 
-export function isLostEntryPhase(value: string | undefined): value is LostEntryPhase {
+export function isLostEntryPhase(
+  value: string | undefined
+): value is LostEntryPhase {
   return value === "loading" || value === "ending" || value === "ready";
 }
 
@@ -77,4 +80,16 @@ export function shouldFinishLostEntry({
   sceneTimedOut: boolean;
 }) {
   return minimumElapsed && (sceneReady || sceneTimedOut);
+}
+
+export function shouldForceLostEntryReady({
+  elapsedMs,
+  forceReadyMs,
+  phase
+}: {
+  elapsedMs: number;
+  forceReadyMs: number;
+  phase: LostEntryPhase;
+}) {
+  return phase !== "ready" && elapsedMs >= forceReadyMs;
 }

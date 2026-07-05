@@ -3,6 +3,7 @@ import {
   getLostEntryElementState,
   lostEntryDelays,
   shouldFinishLostEntry,
+  shouldForceLostEntryReady,
   type LostEntryElement,
   type LostEntryPhase
 } from "./entry-motion";
@@ -91,5 +92,29 @@ describe("lostinseoul entry motion", () => {
         sceneTimedOut: true
       })
     ).toBe(true);
+  });
+
+  it("force-unlocks the entry sequence when runtime readiness stalls", () => {
+    expect(
+      shouldForceLostEntryReady({
+        elapsedMs: 4200,
+        forceReadyMs: 4300,
+        phase: "loading"
+      })
+    ).toBe(false);
+    expect(
+      shouldForceLostEntryReady({
+        elapsedMs: 4300,
+        forceReadyMs: 4300,
+        phase: "loading"
+      })
+    ).toBe(true);
+    expect(
+      shouldForceLostEntryReady({
+        elapsedMs: 6000,
+        forceReadyMs: 4300,
+        phase: "ready"
+      })
+    ).toBe(false);
   });
 });

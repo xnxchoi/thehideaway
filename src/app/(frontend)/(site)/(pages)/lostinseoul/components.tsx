@@ -18,7 +18,7 @@ import {
   XIcon
 } from "@phosphor-icons/react";
 import { useLenis } from "lenis/react";
-import { AnimatePresence, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import {
   type CSSProperties,
@@ -71,6 +71,7 @@ import {
   getLostEntryTransition,
   isLostEntryPhase,
   LOST_ENTRY_PHASE_EVENT,
+  shouldForceLostEntryReady,
   shouldFinishLostEntry,
   type LostEntryPhase
 } from "./entry-motion";
@@ -87,6 +88,8 @@ import {
 const LOST_ENTRY_MIN_MS = 1100;
 const LOST_ENTRY_FAILSAFE_MS = 2600;
 const LOST_ENTRY_EXIT_MS = 1520;
+const LOST_ENTRY_FORCE_READY_MS =
+  LOST_ENTRY_FAILSAFE_MS + LOST_ENTRY_EXIT_MS + 500;
 
 type ChromeLinkProps = ComponentProps<typeof Link> & {
   children: ReactNode;
@@ -229,6 +232,25 @@ export function LostEntrySequence({ sceneReady }: { sceneReady: boolean }) {
   }, []);
 
   useEffect(() => {
+    const startedAt = Date.now();
+    const forceReadyTimer = window.setTimeout(() => {
+      setPhase((currentPhase) =>
+        shouldForceLostEntryReady({
+          elapsedMs: Date.now() - startedAt,
+          forceReadyMs: LOST_ENTRY_FORCE_READY_MS,
+          phase: currentPhase
+        })
+          ? "ready"
+          : currentPhase
+      );
+    }, LOST_ENTRY_FORCE_READY_MS);
+
+    return () => {
+      window.clearTimeout(forceReadyTimer);
+    };
+  }, []);
+
+  useEffect(() => {
     if (phase !== "loading") return undefined;
     if (
       !shouldFinishLostEntry({
@@ -257,22 +279,18 @@ export function LostEntrySequence({ sceneReady }: { sceneReady: boolean }) {
   }, [phase]);
 
   return (
-    <AnimatePresence>
-      {phase !== "ready" ? (
-        <m.div
-          animate={{ y: phase === "ending" ? "-100%" : "0%" }}
-          aria-hidden
-          className="fixed inset-0 z-[1400] overflow-hidden bg-[var(--black)] text-[var(--white)]"
-          data-lost-entry-loader
-          exit={{ opacity: 0 }}
-          initial={{ y: "0%" }}
-          transition={{
-            duration: phase === "ending" ? 1.35 : 0,
-            ease: [0.6, 0, 0.3, 1]
-          }}
-        />
-      ) : null}
-    </AnimatePresence>
+    <m.div
+      animate={{ y: phase === "ready" || phase === "ending" ? "-100%" : "0%" }}
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-[1400] overflow-hidden bg-[var(--black)] text-[var(--white)]"
+      data-lost-entry-loader
+      data-lost-entry-loader-state={phase}
+      initial={{ y: "0%" }}
+      transition={{
+        duration: phase === "ending" || phase === "ready" ? 1.35 : 0,
+        ease: [0.6, 0, 0.3, 1]
+      }}
+    />
   );
 }
 

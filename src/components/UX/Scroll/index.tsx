@@ -5,6 +5,7 @@ import {
   LenisRef,
   ReactLenis
 } from "lenis/react";
+import { getLenisRafTime } from "./lenis-raf-time";
 import { useRef } from "react";
 import { useTempus } from "tempus/react";
 import { LenisOptions } from "lenis";
@@ -16,8 +17,9 @@ interface LenisProps extends Omit<ReactLenisProps, "ref"> {
 
 export function Linus({ root, options }: LenisProps) {
   const lenisRef = useRef<LenisRef>(null!);
-  useTempus((time) => {
-    if (!!lenisRef.current?.lenis) {
+  useTempus((frame) => {
+    const time = getLenisRafTime(frame);
+    if (time !== null && !!lenisRef.current?.lenis) {
       lenisRef.current.lenis.raf(time);
     }
   });
