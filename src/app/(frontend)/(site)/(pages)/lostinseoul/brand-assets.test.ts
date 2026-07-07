@@ -22,6 +22,7 @@ const requiredHeroSceneAssets = [
 ];
 
 const forbiddenMediaMarkers = ["hero-reference.mp4", "unsplash-"];
+const forbiddenPlaceholderMarkers = ["/assets/lostinseoul/brand"];
 
 describe("LOSTINSEOUL brand asset boundaries", () => {
   it("does not hardcode borrowed reference media or random fallback assets in storefront source", () => {
@@ -30,6 +31,10 @@ describe("LOSTINSEOUL brand asset boundaries", () => {
       .join("\n");
 
     for (const marker of forbiddenMediaMarkers) {
+      expect(routeSource.toLowerCase()).not.toContain(marker);
+    }
+
+    for (const marker of forbiddenPlaceholderMarkers) {
       expect(routeSource.toLowerCase()).not.toContain(marker);
     }
   });
@@ -50,5 +55,8 @@ describe("LOSTINSEOUL brand asset boundaries", () => {
     }
 
     expect(existsSync(join(sceneAssetDir, "hero-reference.mp4"))).toBe(false);
+    expect(existsSync(join(process.cwd(), "public/assets/lostinseoul/brand"))).toBe(
+      false
+    );
   });
 });

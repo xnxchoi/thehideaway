@@ -658,7 +658,7 @@ type LostHeroProps = {
   collectionLabel: string;
   yearLabel: string;
   productsLabel: string;
-  imageUrl: string;
+  imageUrl?: string | null;
   videoUrl?: string | null;
   watchLabel: string;
   closeLabel: string;
@@ -839,12 +839,14 @@ export function LostHero({
             href="#products"
           >
             <span className="block aspect-square overflow-hidden rounded-[3px] border border-[var(--lost-hero-line)] bg-[var(--lost-hero-glass)]">
-              <img
-                alt=""
-                aria-hidden
-                className="h-full w-full object-cover opacity-80 grayscale transition-transform duration-500 hover:scale-110"
-                src={imageUrl}
-              />
+              {imageUrl ? (
+                <img
+                  alt=""
+                  aria-hidden
+                  className="h-full w-full object-cover opacity-80 grayscale transition-transform duration-500 hover:scale-110"
+                  src={imageUrl}
+                />
+              ) : null}
             </span>
             {productsLabel}
           </Link>
@@ -1612,12 +1614,12 @@ const LOST_FOCUS_POSITIONS = [
   { left: "81%", top: "40%" }
 ];
 
-function useLostUkiyoImage(imageUrl: string, wrapperClass: string) {
+function useLostUkiyoImage(imageUrl: string | null, wrapperClass: string) {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (shouldReduceMotion) return undefined;
+    if (!imageUrl || shouldReduceMotion) return undefined;
 
     let cancelled = false;
     let parallax: { destroy: () => void } | null = null;
@@ -1651,22 +1653,24 @@ function LostFocusParallaxMedia({
   imageUrl
 }: {
   hasFocusProducts: boolean;
-  imageUrl: string;
+  imageUrl?: string | null;
 }) {
-  const imageRef = useLostUkiyoImage(imageUrl, "lost-focus-ukiyo");
+  const imageRef = useLostUkiyoImage(imageUrl ?? null, "lost-focus-ukiyo");
 
   return (
     <figure className="lost-focus-media col-span-full row-span-full overflow-hidden">
-      <img
-        alt=""
-        className={cn(
-          "ukiyo h-full w-full object-cover",
-          !hasFocusProducts && "is-empty"
-        )}
-        loading="lazy"
-        ref={imageRef}
-        src={imageUrl}
-      />
+      {imageUrl ? (
+        <img
+          alt=""
+          className={cn(
+            "ukiyo h-full w-full object-cover",
+            !hasFocusProducts && "is-empty"
+          )}
+          loading="lazy"
+          ref={imageRef}
+          src={imageUrl}
+        />
+      ) : null}
     </figure>
   );
 }
@@ -1680,10 +1684,7 @@ function LostCollectionPreviewFigure({
   imageUrl?: string | null;
   leaving: boolean;
 }) {
-  const imageRef = useLostUkiyoImage(
-    imageUrl ?? "lost-collection-empty",
-    "lost-collection-ukiyo"
-  );
+  const imageRef = useLostUkiyoImage(imageUrl ?? null, "lost-collection-ukiyo");
   const motionState: LostCollectionMotionState = active
     ? "active"
     : leaving
@@ -1720,7 +1721,7 @@ export function LostFocusProductSection({
   viewProductLabel
 }: {
   focusTitleLabel: string;
-  imageUrl: string;
+  imageUrl?: string | null;
   products: LostProductCard[];
   productsLabel: string;
   viewProductLabel: string;
@@ -1853,7 +1854,7 @@ export function LostVideoCollections({
   collectionsEyebrowLabel: string;
   collectionsTitleLabel: string;
   drops: Array<{ title: string; slug: string; kicker?: string; lede?: string }>;
-  fallbackImageUrl: string;
+  fallbackImageUrl?: string | null;
   products: LostProductCard[];
   productsLabel: string;
 }) {

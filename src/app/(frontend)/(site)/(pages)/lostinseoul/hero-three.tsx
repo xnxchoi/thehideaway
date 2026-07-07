@@ -25,7 +25,7 @@ import { getLostHeroScrollProgress } from "./hero-scroll-motion";
 
 type Props = {
   bagOpen: boolean;
-  imageUrl: string;
+  imageUrl?: string | null;
   onReady: () => void;
   videoUrl?: string | null;
 };
@@ -283,6 +283,18 @@ function createHeroVideo(videoUrl: string) {
   video.setAttribute("disablePictureInPicture", "true");
   video.setAttribute("x-webkit-airplay", "allow");
   return video;
+}
+
+function createFallbackHeroTexture() {
+  const texture = new THREE.DataTexture(
+    new Uint8Array([3, 3, 3, 255]),
+    1,
+    1,
+    THREE.RGBAFormat
+  );
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 function disposeObject(object: THREE.Object3D) {
@@ -914,14 +926,16 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
     let video: HTMLVideoElement | null = videoUrl
       ? createHeroVideo(videoUrl)
       : null;
-    const imageTexture = textureLoader.load(imageUrl, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
-      coverTexture(
-        texture,
-        getLostHeroTextureMediaRatio(texture.image, TARGET_VIDEO_RATIO),
-        TARGET_VIDEO_RATIO
-      );
-    });
+    const imageTexture = imageUrl
+      ? textureLoader.load(imageUrl, (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          coverTexture(
+            texture,
+            getLostHeroTextureMediaRatio(texture.image, TARGET_VIDEO_RATIO),
+            TARGET_VIDEO_RATIO
+          );
+        })
+      : createFallbackHeroTexture();
     imageTexture.colorSpace = THREE.SRGBColorSpace;
     let videoTexture: THREE.VideoTexture | null = null;
 

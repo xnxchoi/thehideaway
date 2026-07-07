@@ -68,9 +68,6 @@ type Props = {
   drops: Array<{ title: string; slug: string; kicker?: string; lede?: string }>;
 };
 
-const FALLBACK_HERO = "/assets/lostinseoul/brand/hero-still.svg";
-const FALLBACK_FOCUS_IMAGE = "/assets/lostinseoul/brand/focus-still.svg";
-
 export function LostStorefront({
   announcement,
   archiveLabel,
@@ -119,8 +116,8 @@ export function LostStorefront({
   privateModeLabel
 }: Props) {
   const commerceRootRef = useRef<HTMLElement>(null);
-  const featureImage = products[0]?.imageUrl ?? FALLBACK_HERO;
-  const focusImage = products[0]?.imageUrl ?? FALLBACK_FOCUS_IMAGE;
+  const featureImage = products[0]?.imageUrl ?? null;
+  const focusImage = products[0]?.imageUrl ?? null;
   const featureVideo = products[0]?.heroVideoUrl ?? null;
   const [searchQuery, setSearchQuery] = useState("");
   const [bagOpen, setBagOpen] = useState(false);
