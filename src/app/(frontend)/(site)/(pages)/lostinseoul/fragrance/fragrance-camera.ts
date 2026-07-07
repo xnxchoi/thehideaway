@@ -1,7 +1,9 @@
 /**
- * Authored camera choreography for the fragrance chapter.
- * The user drives the clock, the author drives the camera: each beat owns
- * one composed shot, and scroll interpolates between neighbouring shots.
+ * Camera path for the fragrance chapter — light and air, not a place.
+ * One slow, continuous push into the haze: the frame never walks through
+ * geometry (there is none), it just draws closer to the shaft as you scroll,
+ * settling toward the suspended object-glow at the resolve. Scroll drives a
+ * smoothstep dolly between a few authored positions.
  */
 
 export type LostFragranceVec3 = readonly [number, number, number];
@@ -20,21 +22,20 @@ export type LostFragranceCameraState = {
   fov: number;
 };
 
-/** Keys are aligned to beat starts (see LOST_FRAGRANCE_BEATS). */
+/** The bottle is the hero and stays framed throughout; the camera only draws
+ *  quietly closer as the reaction climbs, then eases back to the afterglow.
+ *  A long product lens (low fov) keeps the glass undistorted. */
 export const LOST_FRAGRANCE_CAMERA_KEYS: LostFragranceCameraKey[] = [
-  // arrival — wide establishing, street level, far
-  { at: 0, fov: 58, position: [0, 2.6, 15.5], target: [0, 2.1, 0] },
-  // neon — drift left, look across the street at the signs
-  { at: 0.16, fov: 56, position: [-2.4, 1.9, 11], target: [1.4, 2.4, -4] },
-  // rain — lifted, looking down the wet lane
-  { at: 0.36, fov: 54, position: [1.9, 3, 8.6], target: [-0.8, 1.5, -7] },
-  // sodium — low and tight, tunnel compression
-  { at: 0.56, fov: 50, position: [-1.4, 1.55, 6.8], target: [0.5, 1.9, -9] },
-  // dawn — rise, horizon opens
-  { at: 0.74, fov: 60, position: [0.2, 3.6, 5.6], target: [0, 2.8, -14] },
-  // reveal — settle onto the object slot
-  { at: 0.88, fov: 52, position: [0, 1.75, 4.6], target: [0, 1.5, -2] },
-  { at: 1, fov: 50, position: [0, 1.55, 3.6], target: [0, 1.35, -2] }
+  // dormant — full bottle, calm, a touch of distance
+  { at: 0, fov: 30, position: [0, 1.7, 8.6], target: [0, 1.5, 0] },
+  // contact — barely drifts; the reaction registers
+  { at: 0.26, fov: 30, position: [0.3, 1.72, 8.1], target: [0, 1.5, 0] },
+  // ignition — ease in as the bloom takes
+  { at: 0.47, fov: 31, position: [-0.22, 1.76, 7.2], target: [0, 1.55, 0] },
+  // peak — closest; the reaction at its fullest
+  { at: 0.71, fov: 32, position: [0.2, 1.8, 6.6], target: [0, 1.55, 0] },
+  // held — settle back to the afterglow
+  { at: 1, fov: 30, position: [0, 1.64, 7.7], target: [0, 1.44, 0] }
 ];
 
 function smoothstep(t: number) {

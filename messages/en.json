@@ -170,44 +170,163 @@
     },
     "fragrance": {
       "metaTitle": "Fragrance — LOSTINSEOUL",
-      "metaDescription": "One night in Seoul, bottled. The first fragrance from LOSTINSEOUL.",
-      "eyebrow": "Fragrance",
-      "titleDisplay": "One night",
-      "titleReading": "The first fragrance from the city.",
+      "metaDescription": "The first fragrance from LOSTINSEOUL. Light, air, and what stays on the skin.",
+      "eyebrow": "The first fragrance",
+      "titleDisplay": "In the air",
+      "titleReading": "Light, air, and what stays on the skin.",
       "enter": "Scroll",
       "placeholderName": "№ 01",
       "placeholderNote": "The release is being prepared. The object will appear here.",
-      "beats": {
-        "arrival": {
-          "eyebrow": "19:04 — Euljiro",
-          "display": "One night",
-          "reading": "The city puts on its first light."
+      "phases": {
+        "open": {
+          "display": "Light",
+          "reading": "A single light finds the dark."
         },
-        "neon": {
-          "eyebrow": "21:37 — Seongsu",
-          "display": "Neon",
-          "reading": "Neon on wet asphalt. The night opens."
+        "bloom": {
+          "display": "Bloom",
+          "reading": "The air thickens, and holds the light."
         },
-        "rain": {
-          "eyebrow": "23:58 — Han river",
-          "display": "Rain",
-          "reading": "Rain files the city down to its essentials."
-        },
-        "sodium": {
-          "eyebrow": "03:21 — Namsan tunnel 3",
-          "display": "Sodium",
-          "reading": "Sodium light. Nothing moves that doesn't have to."
-        },
-        "dawn": {
-          "eyebrow": "05:48 — First train",
-          "display": "Dawn",
-          "reading": "The night lets go. Something stays on the skin."
+        "suspend": {
+          "display": "Suspension",
+          "reading": "It hangs there — weightless, almost nothing."
         }
       },
       "reveal": {
-        "eyebrow": "The object",
+        "eyebrow": "What stays",
         "editionNote": "Limited run, Seoul dispatch.",
         "viewObject": "View the object"
+      }
+    },
+    "gate": {
+      "metaTitle": "Access — LOSTINSEOUL",
+      "metaDescription": "Private access gate for LOSTINSEOUL.",
+      "eyebrow": "Private",
+      "status": "Locked",
+      "label": "Access",
+      "title": "Enter quietly.",
+      "lede": "LOSTINSEOUL is temporarily password protected while the release is prepared.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter password",
+      "invalid": "Password not recognized.",
+      "submit": "Enter",
+      "footer": "LOSTINSEOUL private preview"
+    },
+    "legal": {
+      "eyebrow": "Legal",
+      "contents": "Contents",
+      "relatedLabel": "Related",
+      "backToShop": "Shop",
+      "related": {
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "refund": "Returns"
+      },
+      "pages": {
+        "privacy": {
+          "metaTitle": "Privacy — LOSTINSEOUL",
+          "metaDescription": "How LOSTINSEOUL handles personal information for orders, inquiries, and limited releases.",
+          "eyebrow": "Privacy",
+          "title": "Privacy",
+          "lede": "LOSTINSEOUL collects only the information needed to receive commitments, fulfill orders, answer inquiries, and keep release records accurate.",
+          "lastUpdatedLabel": "Last updated",
+          "lastUpdated": "2026-07-07",
+          "sections": {
+            "scope": {
+              "title": "Scope",
+              "body": "This notice covers the LOSTINSEOUL storefront, order flow, customer support, and release communications operated by Restored Projects."
+            },
+            "data": {
+              "title": "Information",
+              "body": "We may collect contact details, shipping details, order records, payment status, inquiry content, and technical logs needed to keep the storefront secure and usable."
+            },
+            "use": {
+              "title": "Use",
+              "body": "Information is used to process orders, prepare delivery, respond to support requests, prevent abuse, satisfy legal obligations, and improve release operations."
+            },
+            "sharing": {
+              "title": "Sharing",
+              "body": "We share information only with service providers required for payment, delivery, hosting, analytics, support, or legal compliance, and only to the extent needed for that work."
+            },
+            "rights": {
+              "title": "Rights",
+              "body": "You may request access, correction, deletion, suspension, or withdrawal where applicable. Some records may be retained when law, accounting, fraud prevention, or dispute handling requires it."
+            },
+            "contact": {
+              "title": "Contact",
+              "body": "For privacy requests, contact the privacy officer listed in the business information section below."
+            }
+          }
+        },
+        "terms": {
+          "metaTitle": "Terms — LOSTINSEOUL",
+          "metaDescription": "Terms for using the LOSTINSEOUL storefront and purchasing limited Seoul objects.",
+          "eyebrow": "Terms",
+          "title": "Terms",
+          "lede": "These terms cover access to the LOSTINSEOUL storefront, limited releases, commitments, orders, and related customer support.",
+          "lastUpdatedLabel": "Last updated",
+          "lastUpdated": "2026-07-07",
+          "sections": {
+            "service": {
+              "title": "Service",
+              "body": "LOSTINSEOUL presents limited objects, editions, and commitments. Availability, release timing, imagery, specifications, and prices may change before an order is accepted."
+            },
+            "orders": {
+              "title": "Orders",
+              "body": "An order or commitment is received when the storefront confirms it. We may cancel or refuse orders that cannot be fulfilled, appear abusive, or contain incorrect information."
+            },
+            "payment": {
+              "title": "Payment",
+              "body": "Payment methods, currency, taxes, shipping fees, and confirmation steps are shown during checkout. Orders are fulfilled after payment or manual review is confirmed."
+            },
+            "limits": {
+              "title": "Limits",
+              "body": "Limited releases may have quantity limits, delivery limits, manual allocation, or private-order requirements. Resale, automated purchasing, and abusive use may be restricted."
+            },
+            "changes": {
+              "title": "Changes",
+              "body": "We may update these terms as the storefront changes. The latest posted version applies to new visits, commitments, and orders."
+            },
+            "contact": {
+              "title": "Contact",
+              "body": "Questions about the service or an order can be sent through the contact address listed in the business information section below."
+            }
+          }
+        },
+        "refund": {
+          "metaTitle": "Returns — LOSTINSEOUL",
+          "metaDescription": "Return, cancellation, and refund guidance for LOSTINSEOUL objects and limited releases.",
+          "eyebrow": "Returns",
+          "title": "Returns",
+          "lede": "Returns and cancellations depend on the object type, production status, payment status, and whether the item has already shipped or been made for a specific order.",
+          "lastUpdatedLabel": "Last updated",
+          "lastUpdated": "2026-07-07",
+          "sections": {
+            "window": {
+              "title": "Before shipment",
+              "body": "Orders that have not shipped or entered final production review may usually be cancelled after support confirms the order state."
+            },
+            "custom": {
+              "title": "Custom work",
+              "body": "Made-to-order, private, altered, personalized, or otherwise custom objects may be non-refundable once production or sourcing begins."
+            },
+            "shipping": {
+              "title": "After delivery",
+              "body": "If an object arrives damaged, incorrect, or materially different from the confirmed order, contact us promptly with the order reference and photos so we can review replacement, return, or refund options."
+            },
+            "process": {
+              "title": "Process",
+              "body": "Approved refunds are returned to the original payment method where possible. Manual payment refunds may require account details and additional confirmation."
+            },
+            "exceptions": {
+              "title": "Exceptions",
+              "body": "Return availability may be limited by hygiene, wear, missing components, damaged packaging, completed custom work, or legal restrictions."
+            },
+            "contact": {
+              "title": "Contact",
+              "body": "Return and cancellation requests should be sent to the contact address listed in the business information section below."
+            }
+          }
+        }
       }
     }
   },

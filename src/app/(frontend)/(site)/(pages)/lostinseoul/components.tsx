@@ -2076,7 +2076,7 @@ export function LostFooter({
             </h3>
             <ul className="grid gap-y-4">
               <li>
-                <Link className="lost-footer-link" href="/lostinseoul">
+              <Link className="lost-footer-link" href="/">
                   {shopLabel}
                 </Link>
               </li>

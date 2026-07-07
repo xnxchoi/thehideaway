@@ -170,44 +170,163 @@
     },
     "fragrance": {
       "metaTitle": "향 — LOSTINSEOUL",
-      "metaDescription": "서울의 하룻밤을 담았다. LOSTINSEOUL의 첫 향.",
-      "eyebrow": "향",
-      "titleDisplay": "하룻밤",
-      "titleReading": "도시에서 온 첫 향.",
+      "metaDescription": "LOSTINSEOUL의 첫 향. 빛과 공기, 그리고 피부에 남는 것.",
+      "eyebrow": "첫 번째 향",
+      "titleDisplay": "공기 속에서",
+      "titleReading": "빛과 공기, 그리고 피부에 남는 것.",
       "enter": "스크롤",
       "placeholderName": "№ 01",
       "placeholderNote": "출시를 준비하고 있다. 오브제는 이곳에 공개된다.",
-      "beats": {
-        "arrival": {
-          "eyebrow": "19:04 — 을지로",
-          "display": "하룻밤",
-          "reading": "도시가 첫 조명을 켠다."
+      "phases": {
+        "open": {
+          "display": "빛",
+          "reading": "하나의 빛이 어둠을 찾는다."
         },
-        "neon": {
-          "eyebrow": "21:37 — 성수",
-          "display": "네온",
-          "reading": "젖은 아스팔트 위의 네온. 밤이 열린다."
+        "bloom": {
+          "display": "피어남",
+          "reading": "공기가 짙어지며 빛을 머금는다."
         },
-        "rain": {
-          "eyebrow": "23:58 — 한강",
-          "display": "비",
-          "reading": "비가 도시를 본질만 남기고 씻어낸다."
-        },
-        "sodium": {
-          "eyebrow": "03:21 — 남산 3호 터널",
-          "display": "나트륨",
-          "reading": "나트륨 불빛. 움직여야 하는 것만 움직인다."
-        },
-        "dawn": {
-          "eyebrow": "05:48 — 첫차",
-          "display": "새벽",
-          "reading": "밤이 손을 놓는다. 무언가 피부에 남는다."
+        "suspend": {
+          "display": "머무름",
+          "reading": "무게 없이, 거의 아무것도 아닌 채 떠 있다."
         }
       },
       "reveal": {
-        "eyebrow": "오브제",
+        "eyebrow": "남는 것",
         "editionNote": "한정 수량, 서울에서 발송.",
         "viewObject": "오브제 보기"
+      }
+    },
+    "gate": {
+      "metaTitle": "접근 — LOSTINSEOUL",
+      "metaDescription": "LOSTINSEOUL 비공개 접근 게이트.",
+      "eyebrow": "비공개",
+      "status": "잠김",
+      "label": "접근",
+      "title": "조용히 들어오세요.",
+      "lede": "릴리즈를 준비하는 동안 LOSTINSEOUL은 비밀번호로 보호됩니다.",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "비밀번호 입력",
+      "invalid": "비밀번호가 일치하지 않습니다.",
+      "submit": "입장",
+      "footer": "LOSTINSEOUL 비공개 프리뷰"
+    },
+    "legal": {
+      "eyebrow": "법적 고지",
+      "contents": "목차",
+      "relatedLabel": "관련 문서",
+      "backToShop": "스토어",
+      "related": {
+        "privacy": "개인정보",
+        "terms": "이용약관",
+        "refund": "반품"
+      },
+      "pages": {
+        "privacy": {
+          "metaTitle": "개인정보 — LOSTINSEOUL",
+          "metaDescription": "LOSTINSEOUL 주문, 문의, 한정 발매 운영을 위한 개인정보 처리 안내.",
+          "eyebrow": "개인정보",
+          "title": "개인정보",
+          "lede": "LOSTINSEOUL은 주문 접수, 배송, 문의 응대, 발매 기록 관리를 위해 필요한 정보만 수집합니다.",
+          "lastUpdatedLabel": "최종 개정",
+          "lastUpdated": "2026-07-07",
+          "sections": {
+            "scope": {
+              "title": "적용 범위",
+              "body": "본 안내는 Restored Projects가 운영하는 LOSTINSEOUL 스토어, 주문 흐름, 고객 응대, 발매 안내에 적용됩니다."
+            },
+            "data": {
+              "title": "수집 정보",
+              "body": "연락처, 배송지, 주문 기록, 결제 상태, 문의 내용, 스토어 보안과 사용성 유지를 위한 기술 로그를 수집할 수 있습니다."
+            },
+            "use": {
+              "title": "이용 목적",
+              "body": "수집한 정보는 주문 처리, 배송 준비, 고객 응대, 부정 이용 방지, 법적 의무 이행, 발매 운영 개선에 사용합니다."
+            },
+            "sharing": {
+              "title": "제공과 위탁",
+              "body": "결제, 배송, 호스팅, 분석, 고객 응대, 법적 준수를 위해 필요한 서비스 제공자에게 필요한 범위에서만 정보를 공유합니다."
+            },
+            "rights": {
+              "title": "권리",
+              "body": "이용자는 관련 법령이 정하는 범위에서 열람, 정정, 삭제, 처리정지, 동의 철회를 요청할 수 있습니다. 법령, 회계, 부정 이용 방지, 분쟁 대응을 위해 일부 기록은 보관될 수 있습니다."
+            },
+            "contact": {
+              "title": "문의",
+              "body": "개인정보 관련 요청은 아래 사업자 정보에 기재된 개인정보 보호책임자에게 보내 주세요."
+            }
+          }
+        },
+        "terms": {
+          "metaTitle": "이용약관 — LOSTINSEOUL",
+          "metaDescription": "LOSTINSEOUL 스토어 이용과 한정 오브제 구매에 관한 약관.",
+          "eyebrow": "이용약관",
+          "title": "이용약관",
+          "lede": "본 약관은 LOSTINSEOUL 스토어 이용, 한정 발매, 구매 의사 표시, 주문, 고객 응대에 적용됩니다.",
+          "lastUpdatedLabel": "최종 개정",
+          "lastUpdated": "2026-07-07",
+          "sections": {
+            "service": {
+              "title": "서비스",
+              "body": "LOSTINSEOUL은 한정 오브제, 에디션, 구매 의사 표시를 소개합니다. 재고, 발매 시점, 이미지, 사양, 가격은 주문 확정 전 변경될 수 있습니다."
+            },
+            "orders": {
+              "title": "주문",
+              "body": "스토어가 확인한 시점에 주문 또는 구매 의사 표시가 접수됩니다. 이행이 어렵거나, 부정확한 정보가 포함되거나, 부정 이용으로 보이는 주문은 취소 또는 거절될 수 있습니다."
+            },
+            "payment": {
+              "title": "결제",
+              "body": "결제 수단, 통화, 세금, 배송비, 확인 절차는 체크아웃에서 표시됩니다. 주문은 결제 또는 수동 확인이 완료된 뒤 이행됩니다."
+            },
+            "limits": {
+              "title": "제한",
+              "body": "한정 발매는 수량 제한, 배송 지역 제한, 수동 배정, 프라이빗 오더 조건이 있을 수 있습니다. 재판매, 자동 구매, 부정 이용은 제한될 수 있습니다."
+            },
+            "changes": {
+              "title": "변경",
+              "body": "스토어 변경에 따라 약관이 업데이트될 수 있습니다. 새 방문, 구매 의사 표시, 주문에는 게시된 최신 약관이 적용됩니다."
+            },
+            "contact": {
+              "title": "문의",
+              "body": "서비스 또는 주문 문의는 아래 사업자 정보에 기재된 연락처로 보내 주세요."
+            }
+          }
+        },
+        "refund": {
+          "metaTitle": "반품 — LOSTINSEOUL",
+          "metaDescription": "LOSTINSEOUL 오브제와 한정 발매의 취소, 반품, 환불 안내.",
+          "eyebrow": "반품",
+          "title": "반품",
+          "lede": "취소와 반품은 오브제의 성격, 제작 상태, 결제 상태, 발송 여부, 특정 주문을 위한 제작 여부에 따라 달라집니다.",
+          "lastUpdatedLabel": "최종 개정",
+          "lastUpdated": "2026-07-07",
+          "sections": {
+            "window": {
+              "title": "발송 전",
+              "body": "발송 전이거나 최종 제작 검토에 들어가기 전인 주문은 고객 응대를 통해 주문 상태를 확인한 뒤 취소할 수 있습니다."
+            },
+            "custom": {
+              "title": "주문 제작",
+              "body": "주문 제작, 프라이빗 오더, 수선, 개인화, 별도 소싱이 필요한 오브제는 제작 또는 소싱이 시작된 뒤 환불이 제한될 수 있습니다."
+            },
+            "shipping": {
+              "title": "수령 후",
+              "body": "오브제가 파손, 오배송, 주문 내용과 중요한 차이가 있는 상태로 도착한 경우 주문번호와 사진을 보내 주세요. 교환, 반품, 환불 가능 여부를 검토합니다."
+            },
+            "process": {
+              "title": "절차",
+              "body": "승인된 환불은 가능한 경우 원 결제수단으로 처리됩니다. 수동 결제 환불은 계좌 정보와 추가 확인이 필요할 수 있습니다."
+            },
+            "exceptions": {
+              "title": "예외",
+              "body": "위생, 착용 흔적, 구성품 누락, 포장 훼손, 완료된 주문 제작, 법적 제한이 있는 경우 반품이 제한될 수 있습니다."
+            },
+            "contact": {
+              "title": "문의",
+              "body": "반품과 취소 요청은 아래 사업자 정보에 기재된 연락처로 보내 주세요."
+            }
+          }
+        }
       }
     }
   },

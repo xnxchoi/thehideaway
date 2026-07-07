@@ -33,10 +33,9 @@ function fragranceTranslator(locale: "en" | "ko"): FragranceTranslator {
 }
 
 function copyFrom(t: FragranceTranslator): LostFragranceCopy {
-  const beat = (id: string) => ({
-    eyebrow: t(`beats.${id}.eyebrow`),
-    display: t(`beats.${id}.display`),
-    reading: t(`beats.${id}.reading`)
+  const phase = (id: string) => ({
+    display: t(`phases.${id}.display`),
+    reading: t(`phases.${id}.reading`)
   });
   return {
     eyebrow: t("eyebrow"),
@@ -45,12 +44,10 @@ function copyFrom(t: FragranceTranslator): LostFragranceCopy {
     enter: t("enter"),
     placeholderName: t("placeholderName"),
     placeholderNote: t("placeholderNote"),
-    beats: {
-      arrival: beat("arrival"),
-      neon: beat("neon"),
-      rain: beat("rain"),
-      sodium: beat("sodium"),
-      dawn: beat("dawn")
+    phases: {
+      open: phase("open"),
+      bloom: phase("bloom"),
+      suspend: phase("suspend")
     },
     reveal: {
       eyebrow: t("reveal.eyebrow"),

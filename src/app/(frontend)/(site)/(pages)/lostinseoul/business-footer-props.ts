@@ -29,18 +29,36 @@ export type LostBusinessFooterProps = {
   footerBusinessLabels: LostBusinessDisclosureLabels;
 };
 
+const lostEnv = (key: string, fallback: string): string => {
+  const value = process.env[key]?.trim();
+
+  return value && value.length > 0 ? value : fallback;
+};
+
 export function getLostBusinessFooterProps(
   t: LostFooterTranslator
 ): LostBusinessFooterProps {
+  const contactEmail = lostEnv(
+    "NEXT_PUBLIC_LOSTINSEOUL_CONTACT_EMAIL",
+    "contact@lostinseoul.com"
+  );
+  const privacyOfficerEmail = lostEnv(
+    "NEXT_PUBLIC_LOSTINSEOUL_PRIVACY_EMAIL",
+    contactEmail
+  );
+
   return {
     footerBusinessIdentifiers: {
       businessRegistrationNumber: BUSINESS.registrationNumber,
       domain: "lostinseoul.com",
-      email: BUSINESS.email,
+      email: contactEmail,
       mailOrderRegistrationNumber: BUSINESS.mailOrderRegistrationNumber,
       phone: BUSINESS.phone,
-      privacyOfficerEmail: BUSINESS.privacyOfficerEmail,
-      privacyOfficerName: BUSINESS.privacyOfficerName
+      privacyOfficerEmail,
+      privacyOfficerName: lostEnv(
+        "NEXT_PUBLIC_LOSTINSEOUL_PRIVACY_OFFICER",
+        "LOSTINSEOUL Privacy Desk"
+      )
     },
     footerBusinessLabels: {
       address: t("footer.business.address"),

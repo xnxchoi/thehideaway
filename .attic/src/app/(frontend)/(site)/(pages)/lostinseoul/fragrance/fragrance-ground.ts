@@ -1,8 +1,8 @@
 /**
- * Wet-asphalt ground shader — the Seoul-night signature surface.
- * Each registered streak source (neon sign, sweep light, the reveal column)
- * smears a stretched reflection toward the camera, broken up by a puddle
- * mask, all scaled by the active beat's `wet` value.
+ * Black mirror stage floor — the chapter's signature surface.
+ * Each registered streak source (followspot beam, the passing sweep, the
+ * reveal column) smears a stretched reflection toward the camera, broken up
+ * by a subtle sheen mask, all scaled by the active beat's `wet` value.
  */
 
 export const LOST_FRAGRANCE_STREAK_COUNT = 8;
@@ -49,20 +49,21 @@ export const LOST_FRAGRANCE_GROUND_FRAGMENT = /* glsl */ `
   void main() {
     vec2 ground = vWorldPosition.xz;
 
-    // asphalt micro-variation so the plane never reads flat
+    // micro-variation so the plane never reads flat
     float grain = valueNoise(ground * 6.0);
     vec3 color = uBase * (0.85 + grain * 0.3);
 
-    // puddle mask — patches of higher gloss
+    // sheen mask — broad patches of higher gloss; the dry floor stays
+    // near-black so reflections read as events, not a floodlit field
     float puddle = smoothstep(0.38, 0.78, valueNoise(ground * 0.55));
-    float gloss = uWet * mix(0.3, 1.0, puddle);
+    float gloss = uWet * mix(0.12, 1.0, puddle);
 
     // key-light pool — a localized wash of the beat's dominant color,
-    // strongest in the puddles, never a floodlit floor
+    // strongest in the sheen, never a floodlit floor
     vec2 keyDelta = ground - uKeyPos.xz;
     float keyDistSq = dot(keyDelta, keyDelta) + uKeyPos.y * uKeyPos.y;
-    color += uKeyColor * (uKeyIntensity * 0.016 / (1.0 + keyDistSq * 0.08))
-      * (0.35 + 0.65 * puddle) * (0.9 + grain * 0.2);
+    color += uKeyColor * (uKeyIntensity * 0.010 / (1.0 + keyDistSq * 0.08))
+      * (0.25 + 0.75 * puddle) * (0.9 + grain * 0.2);
 
     vec3 streaks = vec3(0.0);
     for (int i = 0; i < ${LOST_FRAGRANCE_STREAK_COUNT}; i += 1) {

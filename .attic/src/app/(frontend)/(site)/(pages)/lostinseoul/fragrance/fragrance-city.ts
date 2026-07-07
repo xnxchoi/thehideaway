@@ -121,12 +121,54 @@ const SIGN_DEFS: Array<{
   /** horizontal offset from building centre, in half-width fractions */
   xFraction: number;
 }> = [
-  { buildingIndex: 1, color: "#ff3d7f", height: 2.6, width: 0.5, xFraction: -0.4, yFraction: 0.42 },
-  { buildingIndex: 3, color: "#2de2e6", height: 0.5, width: 2.4, xFraction: 0, yFraction: 0.55 },
-  { buildingIndex: 5, color: "#ffb45e", height: 1.8, width: 0.45, xFraction: 0.45, yFraction: 0.3 },
-  { buildingIndex: 8, color: "#ff5a3c", height: 0.45, width: 1.9, xFraction: -0.2, yFraction: 0.62 },
-  { buildingIndex: 10, color: "#4f8fff", height: 2.2, width: 0.5, xFraction: 0.35, yFraction: 0.38 },
-  { buildingIndex: 13, color: "#e8ded2", height: 0.4, width: 1.6, xFraction: 0, yFraction: 0.5 }
+  {
+    buildingIndex: 1,
+    color: "#ff3d7f",
+    height: 2.6,
+    width: 0.5,
+    xFraction: -0.4,
+    yFraction: 0.42
+  },
+  {
+    buildingIndex: 3,
+    color: "#2de2e6",
+    height: 0.5,
+    width: 2.4,
+    xFraction: 0,
+    yFraction: 0.55
+  },
+  {
+    buildingIndex: 5,
+    color: "#ffb45e",
+    height: 1.8,
+    width: 0.45,
+    xFraction: 0.45,
+    yFraction: 0.3
+  },
+  {
+    buildingIndex: 8,
+    color: "#ff5a3c",
+    height: 0.45,
+    width: 1.9,
+    xFraction: -0.2,
+    yFraction: 0.62
+  },
+  {
+    buildingIndex: 10,
+    color: "#4f8fff",
+    height: 2.2,
+    width: 0.5,
+    xFraction: 0.35,
+    yFraction: 0.38
+  },
+  {
+    buildingIndex: 13,
+    color: "#e8ded2",
+    height: 0.4,
+    width: 1.6,
+    xFraction: 0,
+    yFraction: 0.5
+  }
 ];
 
 export function getLostFragranceSigns(

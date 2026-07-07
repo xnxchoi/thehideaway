@@ -13,20 +13,12 @@ import {
   VignetteEffect
 } from "postprocessing";
 import * as THREE from "three";
-import {
-  getLostFragranceActiveBeat,
-  getLostFragranceBeatProgress,
-  LOST_FRAGRANCE_BEATS
-} from "./fragrance-beats";
 import { evaluateLostFragranceCamera } from "./fragrance-camera";
-import { LOST_FRAGRANCE_LIGHTS } from "./fragrance-light";
+import { evaluateLostFragranceReaction } from "./fragrance-light";
 import {
-  buildLostFragranceCity,
-  buildLostFragranceColumn,
-  buildLostFragranceGround,
-  buildLostFragranceMotes,
-  buildLostFragranceRain,
-  LOST_FRAGRANCE_COLUMN_POSITION
+  buildLostCatalystBottle,
+  buildLostEmberBackdrop,
+  buildLostEmberMotes
 } from "./fragrance-scene-objects";
 import {
   shouldPauseLostFragranceScene,
@@ -36,9 +28,7 @@ import {
 const MAX_PIXEL_RATIO = 1.5;
 const MAX_MOBILE_PIXEL_RATIO = 1.25;
 const MOBILE_MAX_WIDTH = 767;
-const DAMP_RATE = 0.0035;
-const FOG_DENSITY = 0.034;
-const REVEAL_BEAT = LOST_FRAGRANCE_BEATS[LOST_FRAGRANCE_BEATS.length - 1];
+const DAMP_RATE = 0.006;
 
 type Props = {
   bagOpen: boolean;
@@ -46,9 +36,14 @@ type Props = {
   onReady?: () => void;
 };
 
-type SceneRuntime = {
-  render: (time: number, deltaTime: number) => void;
-};
+type SceneRuntime = { render: (time: number, deltaTime: number) => void };
+
+function toColor(
+  target: THREE.Color,
+  rgb: [number, number, number]
+): THREE.Color {
+  return target.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
+}
 
 export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -62,7 +57,6 @@ export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
   useEffect(() => {
     bagOpenRef.current = bagOpen;
   }, [bagOpen]);
-
   useEffect(() => {
     onReadyRef.current = onReady;
   }, [onReady]);
@@ -78,8 +72,6 @@ export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
     const mount = mountRef.current;
     if (!mount) return;
 
-    // A fresh canvas per effect run: forceContextLoss() on cleanup kills the
-    // old context permanently, so remounts (StrictMode) need a new element.
     const canvas = document.createElement("canvas");
     canvas.className = "lost-fragrance-canvas-surface";
     mount.appendChild(canvas);
@@ -103,7 +95,7 @@ export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
 
     const renderer = new THREE.WebGLRenderer({
       alpha: false,
-      antialias: false,
+      antialias: true,
       canvas,
       powerPreference: "high-performance"
     });
@@ -118,101 +110,57 @@ export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
+    const opening = evaluateLostFragranceReaction(0);
     const scene = new THREE.Scene();
-    const fogColor = new THREE.Color(LOST_FRAGRANCE_LIGHTS.arrival.fog);
-    scene.fog = new THREE.FogExp2(fogColor, FOG_DENSITY);
-    scene.background = fogColor;
+    const bgColor = toColor(new THREE.Color(), opening.background);
+    scene.background = bgColor;
 
-    const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 120);
-    camera.position.set(0, 2.6, 15.5);
-    camera.lookAt(0, 2.1, 0);
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 120);
+    camera.position.set(0, 1.7, 8.6);
+    camera.lookAt(0, 1.5, 0);
     scene.add(camera);
 
-    const ground = buildLostFragranceGround(scene);
-    const city = buildLostFragranceCity(scene);
-    const rain = buildLostFragranceRain(scene);
-    const motes = buildLostFragranceMotes(scene);
-    const column = buildLostFragranceColumn(scene);
-
-    const ambient = new THREE.AmbientLight("#ffffff", 0.05);
-    scene.add(ambient);
-    const keyLight = new THREE.PointLight("#aab4c4", 14, 60, 1.6);
-    keyLight.position.set(-4, 6, 2);
-    scene.add(keyLight);
-    const rimLight = new THREE.PointLight("#39424f", 4, 70, 1.8);
-    rimLight.position.set(8, 3, -12);
-    scene.add(rimLight);
-    const sweepLight = new THREE.PointLight("#ffffff", 0, 40, 2);
-    sweepLight.position.set(0, 1.2, 4);
-    scene.add(sweepLight);
-
-    // ground streak registry: [0..5] signage, [6] passing sweep, [7] column
-    const SWEEP_SLOT = 6;
-    const COLUMN_SLOT = 7;
-    city.signMeshes.forEach((entry, index) => {
-      if (index >= SWEEP_SLOT) return;
-      ground.uniforms.uStreakPos.value[index].set(
-        entry.sign.x,
-        entry.sign.y,
-        entry.sign.z
-      );
-      ground.uniforms.uStreakColor.value[index].copy(entry.baseColor);
-    });
-    ground.uniforms.uStreakPos.value[COLUMN_SLOT].set(
-      LOST_FRAGRANCE_COLUMN_POSITION.x,
-      2.2,
-      LOST_FRAGRANCE_COLUMN_POSITION.z
-    );
+    const backdrop = buildLostEmberBackdrop(scene);
+    const bottle = buildLostCatalystBottle(scene);
+    const motes = buildLostEmberMotes(scene);
 
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
     const bloom = new BloomEffect({
-      intensity: 1.05,
-      luminanceSmoothing: 0.3,
-      luminanceThreshold: 0.26
+      intensity: 0.62,
+      luminanceThreshold: 0.5,
+      luminanceSmoothing: 0.32
     });
-    const grain = new NoiseEffect({
-      blendFunction: BlendFunction.OVERLAY,
-      premultiply: false
-    });
-    grain.blendMode.opacity.value = 0.11;
-    const vignette = new VignetteEffect({ darkness: 0.58, offset: 0.26 });
+    const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY });
+    (
+      grain as unknown as { blendMode: { opacity: { value: number } } }
+    ).blendMode.opacity.value = 0.07;
+    const vignette = new VignetteEffect({ darkness: 0.6, offset: 0.3 });
     composer.addPass(new EffectPass(camera, bloom, vignette, grain));
 
     const resize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      camera.aspect = width / height;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height, false);
-      composer.setSize(width, height);
+      renderer.setSize(w, h, false);
+      composer.setSize(w, h);
     };
     resize();
     window.addEventListener("resize", resize);
 
-    // damped live values, lerped toward the active beat's targets each frame
     const live = {
-      accent: new THREE.Color(LOST_FRAGRANCE_LIGHTS.arrival.accent),
-      ambientIntensity: LOST_FRAGRANCE_LIGHTS.arrival.ambientIntensity,
-      column: 0,
-      exposure: LOST_FRAGRANCE_LIGHTS.arrival.exposure,
-      fog: fogColor,
-      haze: LOST_FRAGRANCE_LIGHTS.arrival.haze,
-      key: new THREE.Color(LOST_FRAGRANCE_LIGHTS.arrival.key),
-      keyIntensity: LOST_FRAGRANCE_LIGHTS.arrival.keyIntensity,
-      rain: LOST_FRAGRANCE_LIGHTS.arrival.rain,
-      rim: new THREE.Color(LOST_FRAGRANCE_LIGHTS.arrival.rim),
-      rimIntensity: LOST_FRAGRANCE_LIGHTS.arrival.rimIntensity,
-      signs: LOST_FRAGRANCE_LIGHTS.arrival.signs,
-      wet: LOST_FRAGRANCE_LIGHTS.arrival.wet,
-      windows: LOST_FRAGRANCE_LIGHTS.arrival.windows
+      background: toColor(new THREE.Color(), opening.background),
+      ember: toColor(new THREE.Color(), opening.ember),
+      reaction: opening.reaction,
+      juice: opening.juice,
+      key: opening.key,
+      projection: opening.projection,
+      particulate: opening.particulate,
+      exposure: opening.exposure
     };
-    const target = {
-      accent: new THREE.Color(),
-      fog: new THREE.Color(),
-      key: new THREE.Color(),
-      rim: new THREE.Color()
-    };
+    const targetBg = new THREE.Color();
+    const targetEmber = new THREE.Color();
 
     runtimeRef.current = {
       render: (time, deltaTime) => {
@@ -229,60 +177,46 @@ export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
           return;
         }
 
-        const scrollProgress = Math.min(Math.max(progress.get(), 0), 1);
-        const beat = getLostFragranceActiveBeat(
-          scrollProgress,
-          LOST_FRAGRANCE_BEATS
-        );
-        const state = LOST_FRAGRANCE_LIGHTS[beat];
+        const dt = Math.min(deltaTime, 1000) / 1000;
+        const p = Math.min(Math.max(progress.get(), 0), 1);
+        const s = evaluateLostFragranceReaction(p);
         const damp = 1 - Math.exp(-deltaTime * DAMP_RATE);
 
-        target.fog.set(state.fog);
-        target.key.set(state.key);
-        target.rim.set(state.rim);
-        target.accent.set(state.accent);
-        live.fog.lerp(target.fog, damp);
-        live.key.lerp(target.key, damp);
-        live.rim.lerp(target.rim, damp);
-        live.accent.lerp(target.accent, damp);
-        live.keyIntensity += (state.keyIntensity - live.keyIntensity) * damp;
-        live.rimIntensity += (state.rimIntensity - live.rimIntensity) * damp;
-        live.ambientIntensity +=
-          (state.ambientIntensity - live.ambientIntensity) * damp;
-        live.rain += (state.rain - live.rain) * damp;
-        live.haze += (state.haze - live.haze) * damp;
-        live.exposure += (state.exposure - live.exposure) * damp;
-        live.wet += (state.wet - live.wet) * damp;
-        live.windows += (state.windows - live.windows) * damp;
-        live.signs += (state.signs - live.signs) * damp;
-        const columnTarget =
-          beat === "reveal"
-            ? 0.35 + 0.65 * getLostFragranceBeatProgress(scrollProgress, REVEAL_BEAT)
-            : 0;
-        live.column += (columnTarget - live.column) * damp;
+        toColor(targetBg, s.background);
+        toColor(targetEmber, s.ember);
+        live.background.lerp(targetBg, damp);
+        live.ember.lerp(targetEmber, damp);
+        live.reaction += (s.reaction - live.reaction) * damp;
+        live.juice += (s.juice - live.juice) * damp;
+        live.key += (s.key - live.key) * damp;
+        live.projection += (s.projection - live.projection) * damp;
+        live.particulate += (s.particulate - live.particulate) * damp;
+        live.exposure += (s.exposure - live.exposure) * damp;
 
-        scene.background = live.fog;
-        (scene.fog as THREE.FogExp2).color.copy(live.fog);
-        keyLight.color.copy(live.key);
-        keyLight.intensity = live.keyIntensity;
-        rimLight.color.copy(live.rim);
-        rimLight.intensity = live.rimIntensity;
-        ambient.intensity = live.ambientIntensity;
+        scene.background = live.background;
         renderer.toneMappingExposure = live.exposure;
 
-        // passing light: a slow sweep across the street, brightest mid-night
-        const sweepPhase = (time * 0.00012) % 1;
-        sweepLight.position.x = -18 + sweepPhase * 36;
-        sweepLight.intensity =
-          Math.sin(sweepPhase * Math.PI) * 6 * (0.3 + live.haze * 0.7);
-        sweepLight.color.copy(live.accent);
+        backdrop.uniforms.uReaction.value = live.reaction;
+        backdrop.uniforms.uProjection.value = live.projection;
+        backdrop.uniforms.uTime.value = time;
+        backdrop.uniforms.uEmber.value.copy(live.ember);
+        backdrop.uniforms.uBg.value.copy(live.background);
 
-        // authored camera: the user drives the clock, the author drives
-        // the shot; a slow breathing sway keeps it handheld-alive
-        const shot = evaluateLostFragranceCamera(scrollProgress);
+        bottle.uniforms.uEmber.value.copy(live.ember);
+        bottle.uniforms.uJuice.value = live.juice;
+        bottle.uniforms.uKey.value = live.key;
+        bottle.uniforms.uReaction.value = live.reaction;
+        // slow turntable so the cylinder + tiered cap read
+        bottle.group.rotation.y = time * 0.00016;
+
+        motes.material.color.copy(live.ember);
+        motes.material.opacity = live.particulate * 0.32;
+        motes.update(dt);
+
+        const shot = evaluateLostFragranceCamera(p);
         camera.position.set(
-          shot.position[0] + Math.sin(time * 0.00008) * 0.35,
-          shot.position[1] + Math.sin(time * 0.00013) * 0.08,
+          shot.position[0] + Math.sin(time * 0.00009) * 0.12,
+          shot.position[1] + Math.sin(time * 0.00014) * 0.04,
           shot.position[2]
         );
         camera.lookAt(shot.target[0], shot.target[1], shot.target[2]);
@@ -291,50 +225,7 @@ export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
           camera.updateProjectionMatrix();
         }
 
-        // signage: per-sign flicker, beat-scaled; feeds ground streaks
-        for (let i = 0; i < city.signMeshes.length; i += 1) {
-          const entry = city.signMeshes[i];
-          const flicker = 0.84 + 0.16 * Math.sin(time * 0.0037 + entry.phase);
-          const level = live.signs * flicker;
-          entry.material.color
-            .copy(entry.baseColor)
-            .multiplyScalar(0.35 + level * 1.9);
-          if (i < SWEEP_SLOT) {
-            ground.uniforms.uStreakIntensity.value[i] = level * 2.4;
-          }
-        }
-        city.windowMaterial.color.setScalar(0.2 + live.windows * 1.1);
-
-        // ground: wet level, beat key pool, moving sources
-        ground.uniforms.uWet.value = live.wet;
-        ground.uniforms.uKeyColor.value.copy(live.key);
-        ground.uniforms.uKeyIntensity.value = live.keyIntensity;
-        ground.uniforms.uStreakPos.value[SWEEP_SLOT].set(
-          sweepLight.position.x,
-          1.4,
-          sweepLight.position.z
-        );
-        ground.uniforms.uStreakColor.value[SWEEP_SLOT].copy(live.accent);
-        ground.uniforms.uStreakIntensity.value[SWEEP_SLOT] =
-          sweepLight.intensity * 0.12;
-        ground.uniforms.uStreakColor.value[COLUMN_SLOT].set("#d29a5a");
-        ground.uniforms.uStreakIntensity.value[COLUMN_SLOT] =
-          live.column * 3.2;
-
-        // the reveal object breathes rather than blinks
-        const breath = 0.86 + 0.14 * Math.sin(time * 0.0016);
-        column.group.visible = live.column > 0.004;
-        column.beamUniforms.uIntensity.value = live.column * breath;
-        column.glow.intensity = live.column * 7;
-
-        const dtSeconds = deltaTime / 1000;
-        rain.material.opacity = live.rain * 0.5;
-        if (live.rain > 0.01) rain.update(dtSeconds);
-        motes.material.opacity = live.haze * 0.45;
-        motes.material.color.copy(live.accent);
-        if (live.haze > 0.01) motes.update(dtSeconds);
-
-        composer.render(dtSeconds);
+        composer.render(dt);
 
         if (!readyRef.current) {
           readyRef.current = true;
@@ -343,17 +234,21 @@ export function LostFragranceScene({ bagOpen, progress, onReady }: Props) {
       }
     };
 
+    // Compose one frame + signal readiness immediately, independent of tab
+    // visibility (the loop pauses while hidden; readiness must not).
+    composer.render(0);
+    readyRef.current = true;
+    onReadyRef.current?.();
+
     return () => {
       runtimeRef.current = null;
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", resize);
       visibilityObserver?.disconnect();
       composer.dispose();
-      ground.dispose();
-      city.dispose();
-      rain.dispose();
+      backdrop.dispose();
+      bottle.dispose();
       motes.dispose();
-      column.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       canvas.remove();

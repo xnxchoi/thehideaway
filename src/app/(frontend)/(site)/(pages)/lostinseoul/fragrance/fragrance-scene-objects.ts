@@ -1,377 +1,339 @@
 /**
- * three.js object builders for the fragrance scene. No React in here —
- * the scene component wires these together and drives their per-frame state.
+ * three.js object builders for the Catalyst chapter — the bottle is the hero,
+ * the ember reaction is the backdrop. No React in here; the scene component
+ * wires these together and drives their per-frame state from the reaction
+ * field (fragrance-light.ts, evaluateLostFragranceReaction).
+ *
+ * What exists:
+ *   - the BOTTLE: a lathed clear-glass cylinder with ember juice + chrome cap
+ *   - the BACKDROP: an ember bloom that reacts and throws outward behind/through it
+ *   - MOTES: ember particulate suspended in the reaction
+ *
+ * Geometry proportions match the founder-approved study (~3.4 slenderness,
+ * 0.35 body radius). See readmes/LOSTINSEOUL_FRAGRANCE.md §8.
  */
 
 import * as THREE from "three";
-import {
-  getLostFragranceBuildings,
-  getLostFragranceSigns,
-  getLostFragranceWindows,
-  type LostFragranceSign
-} from "./fragrance-city";
-import {
-  LOST_FRAGRANCE_GROUND_FRAGMENT,
-  LOST_FRAGRANCE_GROUND_VERTEX,
-  LOST_FRAGRANCE_STREAK_COUNT
-} from "./fragrance-ground";
 
-const RAIN_COUNT = 1200;
-const RAIN_BOX = { x: 34, yMin: 0, yMax: 24, z: 30 };
-const MOTE_COUNT = 240;
-const WINDOW_WIDTH = 0.3;
-const WINDOW_HEIGHT = 0.4;
-export const LOST_FRAGRANCE_COLUMN_POSITION = { x: 0, z: -2 };
+/* ---------- bottle profile (bottom -> top), surface of revolution ---------- */
+const GLASS_TOP = 2.64;
+const BOTTLE_PROFILE: Array<[number, number]> = [
+  [0.0, 0.0],
+  [0.18, 0.0],
+  [0.29, 0.006],
+  [0.335, 0.02],
+  [0.35, 0.05],
+  [0.35, 0.09],
+  [0.35, 1.85],
+  [0.35, 2.1],
+  [0.35, 2.2],
+  [0.345, 2.3],
+  [0.335, 2.38],
+  [0.315, 2.45],
+  [0.285, 2.51],
+  [0.245, 2.55],
+  [0.2, 2.585],
+  [0.165, 2.61],
+  [0.15, 2.625],
+  [0.15, 2.64],
+  [0.19, 2.65],
+  [0.19, 2.74],
+  [0.245, 2.75],
+  [0.245, 2.815],
+  [0.205, 2.822],
+  [0.205, 2.85],
+  [0.245, 2.858],
+  [0.245, 2.918],
+  [0.205, 2.925],
+  [0.205, 2.952],
+  [0.232, 2.96],
+  [0.232, 3.03],
+  [0.205, 3.045],
+  [0.12, 3.065],
+  [0.0, 3.072]
+];
+export const LOST_BOTTLE_HEIGHT = 3.072;
 
-/** Deterministic pseudo-random shared with the layout module. */
-function seeded(index: number, salt: number) {
-  const value = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
-  return value - Math.floor(value);
-}
-
-/** Soft round sprite so particles never render as hard squares. */
-function createRoundSpriteTexture() {
-  const size = 64;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const context = canvas.getContext("2d");
-  if (context) {
-    const gradient = context.createRadialGradient(
-      size / 2,
-      size / 2,
-      0,
-      size / 2,
-      size / 2,
-      size / 2
-    );
-    gradient.addColorStop(0, "rgba(255,255,255,1)");
-    gradient.addColorStop(0.4, "rgba(255,255,255,0.5)");
-    gradient.addColorStop(1, "rgba(255,255,255,0)");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, size, size);
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-export function buildLostFragranceCity(scene: THREE.Scene) {
-  const disposables: Array<{ dispose: () => void }> = [];
-  const buildings = getLostFragranceBuildings();
-
-  const buildingMaterial = new THREE.MeshStandardMaterial({
-    color: new THREE.Color("#0a0b0d"),
-    metalness: 0.1,
-    roughness: 0.85
-  });
-  disposables.push(buildingMaterial);
-  const group = new THREE.Group();
-  for (const building of buildings) {
-    const geometry = new THREE.BoxGeometry(
-      building.width,
-      building.height,
-      building.depth
-    );
-    disposables.push(geometry);
-    const mesh = new THREE.Mesh(geometry, buildingMaterial);
-    mesh.position.set(building.x, building.height / 2, building.z);
-    group.add(mesh);
-  }
-
-  // lit windows — instanced, per-instance warm/cool color
-  const windows = getLostFragranceWindows(buildings);
-  const windowGeometry = new THREE.PlaneGeometry(WINDOW_WIDTH, WINDOW_HEIGHT);
-  const windowMaterial = new THREE.MeshBasicMaterial({
-    color: new THREE.Color("#ffffff"),
-    toneMapped: true
-  });
-  disposables.push(windowGeometry, windowMaterial);
-  const windowMesh = new THREE.InstancedMesh(
-    windowGeometry,
-    windowMaterial,
-    windows.length
-  );
-  const matrix = new THREE.Matrix4();
-  const warm = new THREE.Color("#ffb87a");
-  const cool = new THREE.Color("#a9c6e4");
-  const instanceColor = new THREE.Color();
-  windows.forEach((win, index) => {
-    matrix.setPosition(win.x, win.y, win.z);
-    windowMesh.setMatrixAt(index, matrix);
-    const brightness = 0.35 + seeded(index, 31) * 0.65;
-    instanceColor.copy(win.warm ? warm : cool).multiplyScalar(brightness);
-    windowMesh.setColorAt(index, instanceColor);
-  });
-  windowMesh.instanceMatrix.needsUpdate = true;
-  if (windowMesh.instanceColor) windowMesh.instanceColor.needsUpdate = true;
-  group.add(windowMesh);
-
-  // neon signage — the bloom + reflection events
-  const signs = getLostFragranceSigns(buildings);
-  const signMeshes: Array<{
-    mesh: THREE.Mesh;
-    material: THREE.MeshBasicMaterial;
-    baseColor: THREE.Color;
-    sign: LostFragranceSign;
-    phase: number;
-  }> = [];
-  signs.forEach((sign, index) => {
-    const geometry = new THREE.PlaneGeometry(sign.width, sign.height);
-    const material = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(sign.color),
-      toneMapped: false
-    });
-    disposables.push(geometry, material);
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(sign.x, sign.y, sign.z);
-    group.add(mesh);
-    signMeshes.push({
-      baseColor: new THREE.Color(sign.color),
-      material,
-      mesh,
-      phase: seeded(index, 41) * Math.PI * 2,
-      sign
-    });
-  });
-
-  scene.add(group);
-  return {
-    dispose: () => {
-      scene.remove(group);
-      windowMesh.dispose();
-      disposables.forEach((item) => item.dispose());
-    },
-    group,
-    signMeshes,
-    windowMaterial
+export type LostCatalystBottle = {
+  group: THREE.Group;
+  uniforms: {
+    uEmber: { value: THREE.Color };
+    uJuice: { value: number };
+    uKey: { value: number };
+    uReaction: { value: number };
+    uTotalH: { value: number };
   };
-}
+  dispose: () => void;
+};
 
-export function buildLostFragranceGround(scene: THREE.Scene) {
-  const geometry = new THREE.PlaneGeometry(160, 160);
-  const uniforms = {
-    ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),
-    uBase: { value: new THREE.Color("#050506") },
-    uKeyColor: { value: new THREE.Color("#aab4c4") },
-    uKeyIntensity: { value: 0 },
-    uKeyPos: { value: new THREE.Vector3(-4, 6, 2) },
-    uStreakColor: {
-      value: Array.from(
-        { length: LOST_FRAGRANCE_STREAK_COUNT },
-        () => new THREE.Color(0, 0, 0)
-      )
-    },
-    uStreakIntensity: {
-      value: new Array(LOST_FRAGRANCE_STREAK_COUNT).fill(0)
-    },
-    uStreakPos: {
-      value: Array.from(
-        { length: LOST_FRAGRANCE_STREAK_COUNT },
-        () => new THREE.Vector3()
-      )
-    },
-    uWet: { value: 0.5 }
-  };
-  const material = new THREE.ShaderMaterial({
-    fog: true,
-    fragmentShader: LOST_FRAGRANCE_GROUND_FRAGMENT,
-    uniforms,
-    vertexShader: LOST_FRAGRANCE_GROUND_VERTEX
+export function buildLostCatalystBottle(
+  scene: THREE.Scene
+): LostCatalystBottle {
+  const pts = BOTTLE_PROFILE.map(([r, y]) => ({
+    r,
+    y,
+    cap: y >= GLASS_TOP - 1e-4 ? 1 : 0
+  }));
+  const n2 = pts.map((_p, i) => {
+    const a = pts[Math.max(0, i - 1)];
+    const b = pts[Math.min(pts.length - 1, i + 1)];
+    const tx = b.r - a.r;
+    const ty = b.y - a.y;
+    const L = Math.hypot(tx, ty) || 1;
+    return [ty / L, -tx / L];
   });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.rotation.x = -Math.PI / 2;
-  scene.add(mesh);
-  return {
-    dispose: () => {
-      scene.remove(mesh);
-      geometry.dispose();
-      material.dispose();
-    },
-    material,
-    uniforms
-  };
-}
 
-export function buildLostFragranceRain(scene: THREE.Scene) {
-  const positions = new Float32Array(RAIN_COUNT * 6);
-  const speeds = new Float32Array(RAIN_COUNT);
-  for (let i = 0; i < RAIN_COUNT; i += 1) {
-    const x = (seeded(i, 6) - 0.5) * RAIN_BOX.x;
-    const y =
-      RAIN_BOX.yMin + seeded(i, 7) * (RAIN_BOX.yMax - RAIN_BOX.yMin);
-    const z = (seeded(i, 8) - 0.5) * RAIN_BOX.z;
-    const speed = 9 + seeded(i, 9) * 9;
-    const length = speed * 0.028;
-    positions[i * 6] = x;
-    positions[i * 6 + 1] = y;
-    positions[i * 6 + 2] = z;
-    positions[i * 6 + 3] = x;
-    positions[i * 6 + 4] = y + length;
-    positions[i * 6 + 5] = z;
-    speeds[i] = speed;
+  const seg = 150;
+  const position: number[] = [];
+  const normal: number[] = [];
+  const cap: number[] = [];
+  const index: number[] = [];
+  for (let i = 0; i < pts.length; i += 1) {
+    for (let j = 0; j <= seg; j += 1) {
+      const th = (j / seg) * Math.PI * 2;
+      const c = Math.cos(th);
+      const sn = Math.sin(th);
+      position.push(pts[i].r * c, pts[i].y, pts[i].r * sn);
+      const nl = Math.hypot(n2[i][0], n2[i][1]) || 1;
+      normal.push((n2[i][0] / nl) * c, n2[i][1] / nl, (n2[i][0] / nl) * sn);
+      cap.push(pts[i].cap);
+    }
   }
+  const stride = seg + 1;
+  for (let i = 0; i < pts.length - 1; i += 1) {
+    for (let j = 0; j < seg; j += 1) {
+      const a = i * stride + j;
+      const b = a + 1;
+      const d = (i + 1) * stride + j;
+      const e = d + 1;
+      index.push(a, d, b, b, d, e);
+    }
+  }
+
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  const material = new THREE.LineBasicMaterial({
-    color: new THREE.Color("#8fa5c0"),
-    depthWrite: false,
-    opacity: 0,
-    transparent: true
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(position, 3)
+  );
+  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normal, 3));
+  geometry.setAttribute("aCap", new THREE.Float32BufferAttribute(cap, 1));
+  geometry.setIndex(index);
+
+  const uniforms = {
+    uEmber: { value: new THREE.Color(0.81, 0.35, 0.16) },
+    uJuice: { value: 0.05 },
+    uKey: { value: 0.24 },
+    uReaction: { value: 0.04 },
+    uTotalH: { value: LOST_BOTTLE_HEIGHT }
+  };
+
+  const material = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: /* glsl */ `
+      attribute float aCap;
+      uniform float uTotalH;
+      varying vec3 vN, vW;
+      varying float vCap, vYn;
+      void main(){
+        vec4 w = modelMatrix * vec4(position, 1.0);
+        vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal);
+        vCap = aCap; vYn = position.y / uTotalH;
+        gl_Position = projectionMatrix * viewMatrix * w;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      precision highp float;
+      varying vec3 vN, vW; varying float vCap, vYn;
+      uniform vec3 uEmber; uniform float uJuice, uKey, uReaction;
+      const vec3 cool = vec3(0.24, 0.28, 0.36);
+      void main(){
+        vec3 N = normalize(vN);
+        vec3 V = normalize(cameraPosition - vW);
+        vec3 Lk = normalize(vec3(0.55, 0.7, 0.65));
+        vec3 Lf = normalize(vec3(-0.75, 0.15, 0.3));
+        float dk = max(dot(N, Lk), 0.0), df = max(dot(N, Lf), 0.0);
+        float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+        vec3 R = reflect(-V, N);
+        float envY = clamp(R.y * 0.5 + 0.5, 0.0, 1.0);
+        vec3 emberHot = mix(uEmber, vec3(1.0, 0.82, 0.5), 0.5);
+        vec3 env = mix(uEmber * 0.95, cool, envY) + emberHot * pow(1.0 - envY, 3.0) * 0.7;
+        vec3 H = normalize(Lk + V);
+        if (vCap > 0.5) {
+          // polished chrome / silver cap — bright, metallic, reflective
+          float sp = pow(max(dot(N, H), 0.0), 200.0);
+          vec3 col = env * 1.05 + vec3(0.2)
+            + sp * vec3(1.6, 1.42, 1.14)
+            + fres * vec3(0.72, 0.7, 0.66);
+          gl_FragColor = vec4(col, 1.0);
+        } else {
+          // clear glass: dark body (the dark shows through it), a bright thin
+          // rim, a sharp highlight, and ember juice glowing from within the
+          // lower half. Nothing milky.
+          float rim = pow(1.0 - max(dot(N, V), 0.0), 4.5);
+          float sp = pow(max(dot(N, H), 0.0), 90.0);
+          float juice = smoothstep(0.7, 0.6, vYn) * uJuice;
+          vec3 body = vec3(0.02, 0.018, 0.022);
+          vec3 juiceGlow = uEmber * juice * (0.55 + 0.85 * uReaction);
+          vec3 rimCol = mix(uEmber, vec3(1.0, 0.86, 0.6), 0.4);
+          vec3 col = body
+            + juiceGlow
+            + rim * rimCol * (0.5 + uKey)
+            + sp * vec3(1.0, 0.95, 0.85) * 0.8
+            + env * 0.1;
+          gl_FragColor = vec4(col, 1.0);
+        }
+      }
+    `
   });
-  const lines = new THREE.LineSegments(geometry, material);
-  scene.add(lines);
+
+  const mesh = new THREE.Mesh(geometry, material);
+  const group = new THREE.Group();
+  group.add(mesh);
+  scene.add(group);
+
   return {
+    group,
+    uniforms,
     dispose: () => {
-      scene.remove(lines);
       geometry.dispose();
       material.dispose();
-    },
-    geometry,
-    material,
-    positions,
-    speeds,
-    update: (dtSeconds: number) => {
-      for (let i = 0; i < RAIN_COUNT; i += 1) {
-        const fall = speeds[i] * dtSeconds;
-        let y = positions[i * 6 + 1] - fall;
-        if (y < RAIN_BOX.yMin) y = RAIN_BOX.yMax;
-        positions[i * 6 + 1] = y;
-        positions[i * 6 + 4] = y + speeds[i] * 0.028;
-      }
-      geometry.attributes.position.needsUpdate = true;
+      scene.remove(group);
     }
   };
 }
 
-export function buildLostFragranceMotes(scene: THREE.Scene) {
-  const positions = new Float32Array(MOTE_COUNT * 3);
-  const drift = new Float32Array(MOTE_COUNT * 3);
-  for (let i = 0; i < MOTE_COUNT; i += 1) {
-    positions[i * 3] = (seeded(i, 10) - 0.5) * 24;
-    positions[i * 3 + 1] = 0.2 + seeded(i, 11) * 8;
-    // keep motes ahead of the camera path so none balloon at the lens
-    positions[i * 3 + 2] = -16 + seeded(i, 12) * 18;
-    drift[i * 3] = (seeded(i, 13) - 0.5) * 0.3;
-    drift[i * 3 + 1] = (seeded(i, 14) - 0.5) * 0.12;
-    drift[i * 3 + 2] = (seeded(i, 15) - 0.5) * 0.3;
+/* ---------- ember reaction backdrop ---------- */
+export type LostEmberBackdrop = {
+  mesh: THREE.Mesh;
+  uniforms: {
+    uEmber: { value: THREE.Color };
+    uReaction: { value: number };
+    uProjection: { value: number };
+    uTime: { value: number };
+    uBg: { value: THREE.Color };
+  };
+  dispose: () => void;
+};
+
+/** A large plane behind the bottle: a warm-black field with an ember bloom that
+ *  grows and throws outward as the reaction climbs. */
+export function buildLostEmberBackdrop(scene: THREE.Scene): LostEmberBackdrop {
+  const uniforms = {
+    uEmber: { value: new THREE.Color(0.81, 0.35, 0.16) },
+    uReaction: { value: 0.04 },
+    uProjection: { value: 0 },
+    uTime: { value: 0 },
+    uBg: { value: new THREE.Color(0.043, 0.032, 0.036) }
+  };
+  const geometry = new THREE.PlaneGeometry(19, 12);
+  const material = new THREE.ShaderMaterial({
+    uniforms,
+    depthWrite: false,
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: /* glsl */ `
+      precision highp float;
+      varying vec2 vUv;
+      uniform vec3 uEmber, uBg; uniform float uReaction, uProjection, uTime;
+      void main(){
+        vec2 p = vUv - vec2(0.5, 0.5);
+        // bloom ISSUES FROM ONE ORIGIN behind the bottle and grows only with
+        // projection. Deck rule: the frame stays ~95% black; the ember is a
+        // single contained event born from the dark, never a full-frame flood.
+        // Narrow horizontally (a tall pool matching the bottle), tight falloff,
+        // high exponent so black dominates and the edges never warm.
+        float d = length(p * vec2(1.4, 1.02));
+        float rad = 0.012 + uProjection * 0.12;
+        float bloom = smoothstep(rad + 0.13, 0.0, d);
+        float pulse = 0.92 + 0.08 * sin(uTime * 0.0007);
+        float r = clamp(uReaction, 0.0, 1.2);
+        vec3 col = uBg + uEmber * pow(bloom, 3.4) * r * 0.72 * pulse;
+        // a single incandescent core, only near the peak
+        col += mix(uEmber, vec3(1.0, 0.8, 0.5), 0.5) * pow(bloom, 8.0) * uProjection * 0.4;
+        float g = fract(sin(dot(gl_FragCoord.xy, vec2(12.99, 78.23))) * 43758.55);
+        col += (g - 0.5) * 0.014;
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(0, 1.5, -6);
+  scene.add(mesh);
+  return {
+    mesh,
+    uniforms,
+    dispose: () => {
+      geometry.dispose();
+      material.dispose();
+      scene.remove(mesh);
+    }
+  };
+}
+
+/* ---------- ember particulate ---------- */
+export type LostEmberMotes = {
+  points: THREE.Points;
+  material: THREE.PointsMaterial;
+  update: (dtSeconds: number) => void;
+  dispose: () => void;
+};
+
+function seeded(index: number, salt: number): number {
+  const v = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+export function buildLostEmberMotes(
+  scene: THREE.Scene,
+  count = 220
+): LostEmberMotes {
+  const positions = new Float32Array(count * 3);
+  const drift = new Float32Array(count * 3);
+  const spanX = 8;
+  const spanY = 8;
+  const spanZ = 5;
+  for (let i = 0; i < count; i += 1) {
+    positions[i * 3] = (seeded(i, 1) - 0.5) * spanX;
+    positions[i * 3 + 1] = (seeded(i, 2) - 0.5) * spanY + 1.6;
+    positions[i * 3 + 2] = (seeded(i, 3) - 0.5) * spanZ - 3;
+    drift[i * 3] = (seeded(i, 4) - 0.5) * 0.16;
+    drift[i * 3 + 1] = 0.08 + seeded(i, 5) * 0.14;
+    drift[i * 3 + 2] = (seeded(i, 6) - 0.5) * 0.1;
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  const texture = createRoundSpriteTexture();
   const material = new THREE.PointsMaterial({
-    blending: THREE.AdditiveBlending,
-    color: new THREE.Color("#9aa3ad"),
-    depthWrite: false,
-    map: texture,
-    opacity: 0,
-    size: 0.13,
+    color: new THREE.Color(0.95, 0.5, 0.24),
+    size: 0.045,
     sizeAttenuation: true,
-    transparent: true
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    opacity: 0.0
   });
   const points = new THREE.Points(geometry, material);
   scene.add(points);
+  const topY = spanY / 2 + 1.6;
+  const update = (dt: number) => {
+    const arr = geometry.attributes.position.array as Float32Array;
+    for (let i = 0; i < count; i += 1) {
+      arr[i * 3] += drift[i * 3] * dt;
+      arr[i * 3 + 1] += drift[i * 3 + 1] * dt;
+      arr[i * 3 + 2] += drift[i * 3 + 2] * dt;
+      if (arr[i * 3 + 1] > topY + 2) arr[i * 3 + 1] = -topY + 1.6;
+    }
+    geometry.attributes.position.needsUpdate = true;
+  };
   return {
+    points,
+    material,
+    update,
     dispose: () => {
-      scene.remove(points);
       geometry.dispose();
       material.dispose();
-      texture.dispose();
-    },
-    material,
-    update: (dtSeconds: number) => {
-      for (let i = 0; i < MOTE_COUNT; i += 1) {
-        positions[i * 3] += drift[i * 3] * dtSeconds;
-        positions[i * 3 + 1] += drift[i * 3 + 1] * dtSeconds;
-        positions[i * 3 + 2] += drift[i * 3 + 2] * dtSeconds;
-      }
-      geometry.attributes.position.needsUpdate = true;
+      scene.remove(points);
     }
-  };
-}
-
-const COLUMN_VERTEX = /* glsl */ `
-  varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  void main() {
-    vUv = uv;
-    vNormal = normalize(normalMatrix * normal);
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    vViewDir = normalize(-mvPosition.xyz);
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
-
-const COLUMN_FRAGMENT = /* glsl */ `
-  uniform vec3 uColor;
-  uniform float uIntensity;
-  varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  void main() {
-    float vertical = pow(1.0 - vUv.y, 1.35);
-    float facing = pow(max(dot(normalize(vNormal), normalize(vViewDir)), 0.0), 2.6);
-    float alpha = vertical * facing * uIntensity * 0.34;
-    gl_FragColor = vec4(uColor * (1.0 + uIntensity * 0.6), alpha);
-  }
-`;
-
-/**
- * The reveal object: a quiet column of light on a plinth. The bottle slot
- * stays empty until original assets exist — this stands in as pure light.
- */
-export function buildLostFragranceColumn(scene: THREE.Scene) {
-  const group = new THREE.Group();
-  group.position.set(
-    LOST_FRAGRANCE_COLUMN_POSITION.x,
-    0,
-    LOST_FRAGRANCE_COLUMN_POSITION.z
-  );
-
-  const beamGeometry = new THREE.CylinderGeometry(0.16, 0.24, 4.4, 24, 1, true);
-  const beamUniforms = {
-    uColor: { value: new THREE.Color("#d29a5a") },
-    uIntensity: { value: 0 }
-  };
-  const beamMaterial = new THREE.ShaderMaterial({
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    fragmentShader: COLUMN_FRAGMENT,
-    side: THREE.DoubleSide,
-    transparent: true,
-    uniforms: beamUniforms,
-    vertexShader: COLUMN_VERTEX
-  });
-  const beam = new THREE.Mesh(beamGeometry, beamMaterial);
-  beam.position.y = 4.4 / 2 + 0.18;
-  group.add(beam);
-
-  const plinthGeometry = new THREE.BoxGeometry(1.15, 0.18, 1.15);
-  const plinthMaterial = new THREE.MeshStandardMaterial({
-    color: new THREE.Color("#101114"),
-    metalness: 0.6,
-    roughness: 0.35
-  });
-  const plinth = new THREE.Mesh(plinthGeometry, plinthMaterial);
-  plinth.position.y = 0.09;
-  group.add(plinth);
-
-  const glow = new THREE.PointLight("#d29a5a", 0, 26, 1.8);
-  glow.position.set(0, 1.4, 0.6);
-  group.add(glow);
-
-  scene.add(group);
-  return {
-    beamUniforms,
-    dispose: () => {
-      scene.remove(group);
-      beamGeometry.dispose();
-      beamMaterial.dispose();
-      plinthGeometry.dispose();
-      plinthMaterial.dispose();
-    },
-    glow,
-    group
   };
 }

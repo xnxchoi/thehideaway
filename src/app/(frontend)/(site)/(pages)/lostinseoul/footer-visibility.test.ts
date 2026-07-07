@@ -16,4 +16,14 @@ describe("LOST footer visibility CSS", () => {
     expect(components).not.toContain('"Threads"');
     expect(components).not.toContain('"YouTube"');
   });
+
+  it("keeps LOST legal footer links clean instead of leaking the internal route prefix", () => {
+    expect(components).toContain('className="lost-footer-link" href="/"');
+    expect(components).toContain('href="/privacy"');
+    expect(components).toContain('href="/terms"');
+    expect(components).toContain('href="/refund"');
+    expect(components).not.toContain('href="/lostinseoul/privacy"');
+    expect(components).not.toContain('href="/lostinseoul/terms"');
+    expect(components).not.toContain('href="/lostinseoul/refund"');
+  });
 });

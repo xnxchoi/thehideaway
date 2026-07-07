@@ -20,23 +20,18 @@
   color: var(--lost-night);
 }
 
-/* Per-beat accents — identity, not decoration; one accent on screen at a time. */
-[data-lost-fragrance-beat="arrival"] {
-  --lost-beat-accent: #9aa3ad;
+/* Per-phase accents — the light warming through the piece; one on screen at a
+   time. Monochrome cool through the body, warm only at the resolve. */
+[data-lost-fragrance-phase="open"] {
+  --lost-beat-accent: #aeb8c6;
 }
-[data-lost-fragrance-beat="neon"] {
-  --lost-beat-accent: #ff3d7f;
+[data-lost-fragrance-phase="bloom"] {
+  --lost-beat-accent: #cdd4de;
 }
-[data-lost-fragrance-beat="rain"] {
-  --lost-beat-accent: #8fa3bd;
+[data-lost-fragrance-phase="suspend"] {
+  --lost-beat-accent: #d8cbb8;
 }
-[data-lost-fragrance-beat="sodium"] {
-  --lost-beat-accent: #ffb45e;
-}
-[data-lost-fragrance-beat="dawn"] {
-  --lost-beat-accent: #e8ded2;
-}
-[data-lost-fragrance-beat="reveal"] {
+[data-lost-fragrance-phase="resolve"] {
   --lost-beat-accent: var(--lost-juice);
 }
 
@@ -282,73 +277,6 @@ a.lost-fragrance-cta {
 
 .lost-fragrance-enter[data-faded="true"] {
   opacity: 0;
-}
-
-/* Night rail — where you are in the night; ticks are the clock the
-   user drives. Desktop only; the beats themselves carry mobile. */
-.lost-fragrance-rail {
-  position: fixed;
-  top: 50%;
-  right: 2.8rem;
-  z-index: 1003;
-  display: none;
-  flex-direction: column;
-  gap: 1.9rem;
-  translate: 0 -50%;
-  transition: opacity 0.4s cubic-bezier(0.6, 0, 0.3, 1);
-}
-
-@media (min-width: 1024px) {
-  .lost-fragrance-rail {
-    display: flex;
-  }
-}
-
-.lost-fragrance-rail[data-visible="false"] {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.lost-fragrance-rail-stop {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1.2rem;
-  text-decoration: none;
-}
-
-.lost-fragrance-rail-tick {
-  width: 1.4rem;
-  height: 1px;
-  background: oklch(from var(--lost-night-ink) l c h / 0.35);
-  transition:
-    width 0.45s cubic-bezier(0.6, 0, 0.3, 1),
-    background 0.45s cubic-bezier(0.6, 0, 0.3, 1);
-}
-
-.lost-fragrance-rail-stop:hover .lost-fragrance-rail-tick {
-  background: oklch(from var(--lost-night-ink) l c h / 0.7);
-}
-
-.lost-fragrance-rail-stop[data-active="true"] .lost-fragrance-rail-tick {
-  width: 2.8rem;
-  background: var(--lost-night-ink);
-}
-
-.lost-fragrance-rail-label {
-  color: var(--lost-night-muted);
-  font-family: var(--font-mono, monospace);
-  font-size: 1rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.45s cubic-bezier(0.6, 0, 0.3, 1);
-}
-
-.lost-fragrance-rail-stop:hover .lost-fragrance-rail-label,
-.lost-fragrance-rail-stop[data-active="true"] .lost-fragrance-rail-label {
-  opacity: 1;
 }
 
 /* Quiet sticky affordance — the object, always within reach */

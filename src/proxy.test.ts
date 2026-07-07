@@ -1,5 +1,9 @@
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
+import {
+  LOST_GATE_COOKIE_NAME,
+  LOST_GATE_COOKIE_VALUE
+} from "@/lib/lostinseoul/gate";
 import { config, proxy } from "./proxy";
 
 function makeRequest(
@@ -12,11 +16,7 @@ function makeRequest(
   });
 }
 
-function makeForwardedHostRequest(pathname: string, host: string): NextRequest {
-  return new NextRequest(`http://payload:3000${pathname}`, {
-    headers: { host }
-  });
-}
+const lostGateCookie = `${LOST_GATE_COOKIE_NAME}=${LOST_GATE_COOKIE_VALUE}`;
 
 describe("proxy routing", () => {
   it("lets anonymous routes reach the path they requested", async () => {
@@ -59,8 +59,19 @@ describe("proxy routing", () => {
     );
   });
 
-  it("redirects anonymous LOST checkout users back to checkout after sign-in", async () => {
+  it("password-gates anonymous LOST checkout users before sign-in", async () => {
     const res = await proxy(makeRequest("/lostinseoul/checkout"));
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://hideaway.test/lostinseoul/gate?returnTo=%2Flostinseoul%2Fcheckout"
+    );
+  });
+
+  it("redirects gated anonymous LOST checkout users back to checkout after sign-in", async () => {
+    const res = await proxy(
+      makeRequest("/lostinseoul/checkout", lostGateCookie)
+    );
 
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBe(
@@ -77,9 +88,20 @@ describe("proxy routing", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("host-routes lostinseoul.com root into the internal storefront route", async () => {
+  it("redirects ungated lostinseoul.com root requests to the public gate", async () => {
     const res = await proxy(
       makeRequest("/", undefined, "https://lostinseoul.com")
+    );
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://lostinseoul.com/gate?returnTo=%2F"
+    );
+  });
+
+  it("host-routes gated lostinseoul.com root into the internal storefront route", async () => {
+    const res = await proxy(
+      makeRequest("/", lostGateCookie, "https://lostinseoul.com")
     );
 
     expect(res.headers.get("x-middleware-rewrite")).toBe(
@@ -87,25 +109,107 @@ describe("proxy routing", () => {
     );
   });
 
-  it("host-routes forwarded lostinseoul.com root requests behind the production proxy", async () => {
-    const res = await proxy(makeForwardedHostRequest("/", "lostinseoul.com"));
+  it("host-routes gated forwarded lostinseoul.com root requests behind the production proxy", async () => {
+    const res = await proxy(
+      new NextRequest("http://payload:3000/", {
+        headers: {
+          cookie: lostGateCookie,
+          host: "lostinseoul.com"
+        }
+      })
+    );
 
     expect(res.headers.get("x-middleware-rewrite")).toBe(
       "http://payload:3000/lostinseoul"
     );
   });
 
-  it("lets scoped lostinseoul.com product paths pass through", async () => {
+  it.each(["/privacy", "/terms", "/refund"])(
+    "redirects ungated lostinseoul.com %s requests to the public gate",
+    async (publicPath) => {
+      const res = await proxy(
+        makeRequest(publicPath, undefined, "https://lostinseoul.com")
+      );
+
+      expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(res.headers.get("location")).toBe(
+        `https://lostinseoul.com/gate?returnTo=${encodeURIComponent(publicPath)}`
+      );
+    }
+  );
+
+  it.each([
+    ["/privacy", "/lostinseoul/privacy"],
+    ["/terms", "/lostinseoul/terms"],
+    ["/refund", "/lostinseoul/refund"]
+  ])(
+    "host-routes gated lostinseoul.com %s into the LOST legal route",
+    async (publicPath, internalPath) => {
+      const res = await proxy(
+        makeRequest(publicPath, lostGateCookie, "https://lostinseoul.com")
+      );
+
+      expect(res.headers.get("x-middleware-rewrite")).toBe(
+        `https://lostinseoul.com${internalPath}`
+      );
+      expect(res.headers.get("location")).toBeNull();
+    }
+  );
+
+  it("redirects ungated scoped LOST paths to the internal gate", async () => {
+    const res = await proxy(makeRequest("/lostinseoul/products/coat"));
+
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://hideaway.test/lostinseoul/gate?returnTo=%2Flostinseoul%2Fproducts%2Fcoat"
+    );
+  });
+
+  it("lets gated scoped lostinseoul.com product paths pass through", async () => {
     const res = await proxy(
       makeRequest(
         "/lostinseoul/products/coat",
-        undefined,
+        lostGateCookie,
         "https://lostinseoul.com"
       )
     );
 
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("lets the LOST gate page and submit endpoint pass without a gate cookie", async () => {
+    const publicGate = await proxy(
+      makeRequest("/gate", undefined, "https://lostinseoul.com")
+    );
+    const internalGate = await proxy(makeRequest("/lostinseoul/gate"));
+    const gatePost = await proxy(
+      makeRequest("/api/lost/gate", undefined, "https://lostinseoul.com")
+    );
+
+    expect(publicGate.headers.get("x-middleware-rewrite")).toBe(
+      "https://lostinseoul.com/lostinseoul/gate"
+    );
+    expect(internalGate.headers.get("location")).toBeNull();
+    expect(gatePost.headers.get("location")).toBeNull();
+  });
+
+  it("password-gates LOST API routes except the gate submit endpoint", async () => {
+    const ungated = await proxy(
+      makeRequest("/api/lost/products", undefined, "https://lostinseoul.com")
+    );
+    const gated = await proxy(
+      makeRequest(
+        "/api/lost/products",
+        lostGateCookie,
+        "https://lostinseoul.com"
+      )
+    );
+
+    expect(ungated.headers.get("location")).toBe(
+      "https://lostinseoul.com/gate?returnTo=%2Fapi%2Flost%2Fproducts"
+    );
+    expect(gated.headers.get("location")).toBeNull();
   });
 
   it("does not expose root-level product shortcuts on lostinseoul.com", async () => {

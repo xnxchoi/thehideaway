@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { getLostBusinessDisclosure } from "./business-footer";
 
 const labels = {
@@ -21,11 +22,11 @@ const labels = {
 const identifiers = {
   businessRegistrationNumber: "Registration pending",
   domain: "lostinseoul.com",
-  email: "concierge@hideawayseoul.com",
+  email: "contact@lostinseoul.com",
   mailOrderRegistrationNumber: "",
   phone: "Email support",
-  privacyOfficerEmail: "concierge@hideawayseoul.com",
-  privacyOfficerName: "Restored Projects Privacy Desk"
+  privacyOfficerEmail: "privacy@lostinseoul.com",
+  privacyOfficerName: "LOSTINSEOUL Privacy Desk"
 };
 
 describe("getLostBusinessDisclosure", () => {
@@ -47,9 +48,9 @@ describe("getLostBusinessDisclosure", () => {
       },
       { label: "Phone", value: "Email support" },
       {
-        href: "mailto:concierge@hideawayseoul.com",
+        href: "mailto:contact@lostinseoul.com",
         label: "Email",
-        value: "concierge@hideawayseoul.com"
+        value: "contact@lostinseoul.com"
       },
       {
         href: "https://lostinseoul.com",
@@ -57,23 +58,22 @@ describe("getLostBusinessDisclosure", () => {
         value: "lostinseoul.com"
       },
       {
-        href: "mailto:concierge@hideawayseoul.com",
+        href: "mailto:privacy@lostinseoul.com",
         label: "Privacy officer",
-        value: "Restored Projects Privacy Desk - concierge@hideawayseoul.com"
+        value: "LOSTINSEOUL Privacy Desk - privacy@lostinseoul.com"
       }
     ]);
     expect(disclosure.items.every((item) => item.value.length > 0)).toBe(true);
   });
 
-  it("renders an em-dash for phone when no landline is set (never an empty row)", () => {
+  it("renders an em-dash phone when no landline is set", () => {
     const disclosure = getLostBusinessDisclosure(labels, {
       ...identifiers,
       phone: ""
     });
-
     const phoneRow = disclosure.items.find((item) => item.label === "Phone");
+
     expect(phoneRow?.value).toBe("—");
-    // No required-disclosure row may render empty on the live PG-reviewed domain.
     expect(disclosure.items.every((item) => item.value.length > 0)).toBe(true);
   });
 });

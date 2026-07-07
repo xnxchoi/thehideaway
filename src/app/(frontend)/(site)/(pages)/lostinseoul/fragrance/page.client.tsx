@@ -18,10 +18,7 @@ import type {
   LostBusinessDisclosureIdentifiers,
   LostBusinessDisclosureLabels
 } from "../business-footer";
-import {
-  getLostFragranceActiveBeat,
-  type LostFragranceBeatId
-} from "./fragrance-beats";
+import { type LostFragrancePhaseId } from "./fragrance-phases";
 import {
   getLostFragranceRenderTier,
   readLostFragranceTierInput,
@@ -35,8 +32,7 @@ const LostFragranceScene = dynamic(
   { ssr: false }
 );
 
-type LostFragranceBeatCopy = {
-  eyebrow: string;
+type LostFragrancePhaseCopy = {
   display: string;
   reading: string;
 };
@@ -48,7 +44,10 @@ export type LostFragranceCopy = {
   enter: string;
   placeholderName: string;
   placeholderNote: string;
-  beats: Record<Exclude<LostFragranceBeatId, "reveal">, LostFragranceBeatCopy>;
+  phases: Record<
+    Exclude<LostFragrancePhaseId, "resolve">,
+    LostFragrancePhaseCopy
+  >;
   reveal: {
     eyebrow: string;
     editionNote: string;
@@ -86,12 +85,10 @@ type ChromeLabels = {
   requestQuoteLabel: string;
 };
 
-const BEAT_ORDER: Array<Exclude<LostFragranceBeatId, "reveal">> = [
-  "arrival",
-  "neon",
-  "rain",
-  "sodium",
-  "dawn"
+const PHASE_ORDER: Array<Exclude<LostFragrancePhaseId, "resolve">> = [
+  "open",
+  "bloom",
+  "suspend"
 ];
 
 const MODE_LABEL_KEY: Record<
@@ -107,7 +104,6 @@ const REVEAL_ANCHOR_ID = "lost-fragrance-object";
 const AFFORDANCE_ENTER_PROGRESS = 0.18;
 const AFFORDANCE_EXIT_PROGRESS = 0.84;
 const ENTER_HINT_FADE_PROGRESS = 0.06;
-const RAIL_EXIT_PROGRESS = 0.985;
 
 const beatReveal = {
   initial: { opacity: 0, y: 28 },
@@ -142,8 +138,6 @@ export function LostFragranceChapter({
   const [added, setAdded] = useState(false);
   const [hintFaded, setHintFaded] = useState(false);
   const [affordanceVisible, setAffordanceVisible] = useState(false);
-  const [activeBeat, setActiveBeat] = useState<LostFragranceBeatId>("arrival");
-  const [railVisible, setRailVisible] = useState(true);
   const { add } = useLostCart();
   const [mode, setMode] = useState<LostOrderMode>(
     product?.modes[0] ?? "standard_purchase"
@@ -160,8 +154,6 @@ export function LostFragranceChapter({
       progress > AFFORDANCE_ENTER_PROGRESS &&
         progress < AFFORDANCE_EXIT_PROGRESS
     );
-    setActiveBeat(getLostFragranceActiveBeat(progress));
-    setRailVisible(progress < RAIL_EXIT_PROGRESS);
   });
 
   useEffect(() => {
@@ -244,9 +236,9 @@ export function LostFragranceChapter({
             />
           ) : null}
 
-          {BEAT_ORDER.map((beatId, index) => {
-            const isArrival = index === 0;
-            const Heading = isArrival ? "h1" : "h2";
+          {PHASE_ORDER.map((phaseId, index) => {
+            const isOpen = index === 0;
+            const Heading = isOpen ? "h1" : "h2";
             return (
               <section
                 className={
@@ -254,28 +246,26 @@ export function LostFragranceChapter({
                     ? "lost-fragrance-beat lost-fragrance-beat--alt"
                     : "lost-fragrance-beat"
                 }
-                data-lost-fragrance-beat={beatId}
-                id={`lost-fragrance-beat-${beatId}`}
-                key={beatId}
+                data-lost-fragrance-phase={phaseId}
+                id={`lost-fragrance-phase-${phaseId}`}
+                key={phaseId}
               >
                 <m.div {...beatReveal}>
-                  <p className="lost-fragrance-eyebrow">
-                    {isArrival
-                      ? `${reading.eyebrow} — ${reading.beats[beatId].eyebrow}`
-                      : reading.beats[beatId].eyebrow}
-                  </p>
+                  {isOpen ? (
+                    <p className="lost-fragrance-eyebrow">{reading.eyebrow}</p>
+                  ) : null}
                   <Heading className="lost-fragrance-display">
                     <span aria-hidden lang={displayLocale}>
-                      {display.beats[beatId].display}
+                      {display.phases[phaseId].display}
                     </span>
                     <span className="sr-only" lang={locale}>
-                      {reading.beats[beatId].display}
+                      {reading.phases[phaseId].display}
                     </span>
                   </Heading>
                   <p className="lost-fragrance-reading" lang={locale}>
-                    {reading.beats[beatId].reading}
+                    {reading.phases[phaseId].reading}
                   </p>
-                  {isArrival ? (
+                  {isOpen ? (
                     <p
                       className="lost-fragrance-reading lost-fragrance-subline"
                       lang={locale}
@@ -284,7 +274,7 @@ export function LostFragranceChapter({
                     </p>
                   ) : null}
                 </m.div>
-                {isArrival ? (
+                {isOpen ? (
                   <span className="lost-fragrance-enter" data-faded={hintFaded}>
                     {reading.enter}
                   </span>
@@ -295,7 +285,7 @@ export function LostFragranceChapter({
 
           <section
             className="lost-fragrance-beat"
-            data-lost-fragrance-beat="reveal"
+            data-lost-fragrance-phase="resolve"
             id={REVEAL_ANCHOR_ID}
           >
             <m.div {...beatReveal}>
@@ -398,36 +388,6 @@ export function LostFragranceChapter({
             </m.div>
           </section>
         </div>
-
-        <nav
-          aria-label={reading.eyebrow}
-          className="lost-fragrance-rail"
-          data-visible={!bagOpen && railVisible}
-        >
-          {[...BEAT_ORDER, "reveal" as const].map((beatId) => {
-            const isActive = activeBeat === beatId;
-            const label =
-              beatId === "reveal"
-                ? reading.reveal.eyebrow
-                : reading.beats[beatId].eyebrow;
-            return (
-              <a
-                aria-current={isActive ? "true" : undefined}
-                className="lost-fragrance-rail-stop"
-                data-active={isActive}
-                href={
-                  beatId === "reveal"
-                    ? `#${REVEAL_ANCHOR_ID}`
-                    : `#lost-fragrance-beat-${beatId}`
-                }
-                key={beatId}
-              >
-                <span className="lost-fragrance-rail-label">{label}</span>
-                <span aria-hidden className="lost-fragrance-rail-tick" />
-              </a>
-            );
-          })}
-        </nav>
 
         {product ? (
           <m.a

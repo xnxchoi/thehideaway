@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasLostGateCookie } from "@/lib/lostinseoul/gate";
 import { signInRedirectPath } from "@/lib/routes/auth";
 
 /**
@@ -17,6 +18,13 @@ const SESSION_COOKIE_NAMES = [
 ];
 
 const LOST_HOSTS = new Set(["lostinseoul.com", "www.lostinseoul.com"]);
+const LOST_PUBLIC_ROUTE_REWRITES = new Map([
+  ["/", "/lostinseoul"],
+  ["/gate", "/lostinseoul/gate"],
+  ["/privacy", "/lostinseoul/privacy"],
+  ["/terms", "/lostinseoul/terms"],
+  ["/refund", "/lostinseoul/refund"]
+]);
 
 function hostnameFromHostHeader(host: string): string {
   const value = host.trim().toLowerCase();
@@ -53,7 +61,7 @@ function isLostHost(host: string | null | undefined): boolean {
 }
 
 function lostRootRewritePath(pathname: string): string | null {
-  return pathname === "/" ? "/lostinseoul" : null;
+  return LOST_PUBLIC_ROUTE_REWRITES.get(pathname) ?? null;
 }
 
 function isLostScopedPath(pathname: string): boolean {
@@ -77,6 +85,29 @@ function cleanLostExternalPath(pathname: string): string {
 function lostHostSignInRedirectPath(returnTo: string): string {
   const cleanReturnTo = cleanLostExternalPath(returnTo);
   return `/auth/sign-in?redirectTo=${encodeURIComponent(cleanReturnTo)}`;
+}
+
+function isLostGatePath(pathname: string): boolean {
+  return pathname === "/lostinseoul/gate" || pathname === "/api/lost/gate";
+}
+
+function isLostGateProtectedPath(pathname: string): boolean {
+  return (
+    pathname === "/lostinseoul" ||
+    pathname.startsWith("/lostinseoul/") ||
+    pathname === "/api/lost" ||
+    pathname.startsWith("/api/lost/")
+  );
+}
+
+function lostGateRedirectPath(
+  pathname: string,
+  isLostRequest: boolean
+): string {
+  const gatePath = isLostRequest ? "/gate" : "/lostinseoul/gate";
+  const returnTo = isLostRequest ? cleanLostExternalPath(pathname) : pathname;
+
+  return `${gatePath}?returnTo=${encodeURIComponent(returnTo)}`;
 }
 
 function hasSessionCookie(req: NextRequest): boolean {
@@ -179,6 +210,16 @@ export async function proxy(request: NextRequest) {
   // Forward the route pathname seen by app code after host-based rewrites.
   const fwdHeaders = new Headers(request.headers);
   fwdHeaders.set("x-pathname", pathname);
+
+  if (
+    isLostGateProtectedPath(pathname) &&
+    !isLostGatePath(pathname) &&
+    !hasLostGateCookie(request)
+  ) {
+    return NextResponse.redirect(
+      new URL(lostGateRedirectPath(pathname, isLostRequest), request.url)
+    );
+  }
 
   // --- 1. Rate limiting on API routes ---
   if (pathname.startsWith("/api/")) {
