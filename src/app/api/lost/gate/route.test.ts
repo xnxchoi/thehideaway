@@ -8,14 +8,22 @@ const previousPasswordHash = process.env.LOSTINSEOUL_GATE_PASSWORD_SHA256;
 
 function gateRequest(
   body: Record<string, string>,
-  host = "lostinseoul.com"
+  host = "lostinseoul.com",
+  forwardedHost?: string
 ): NextRequest {
-  return new NextRequest("https://lostinseoul.com/api/lost/gate", {
+  const headers: Record<string, string> = {
+    "content-type": "application/x-www-form-urlencoded",
+    host
+  };
+
+  if (forwardedHost) {
+    headers["x-forwarded-host"] = forwardedHost;
+    headers["x-forwarded-proto"] = "https";
+  }
+
+  return new NextRequest("https://[::]:3000/api/lost/gate", {
     body: new URLSearchParams(body),
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      host
-    },
+    headers,
     method: "POST"
   });
 }
@@ -77,6 +85,24 @@ describe("POST /api/lost/gate", () => {
     );
 
     expect(res.headers.get("location")).toBe("https://lostinseoul.com/refund");
+  });
+
+  it("uses forwarded public host for production redirects behind the proxy", async () => {
+    process.env.LOSTINSEOUL_GATE_PASSWORD_SHA256 =
+      await sha256Hex("test-password");
+
+    const res = await POST(
+      gateRequest(
+        {
+          password: "test-password",
+          returnTo: "/privacy"
+        },
+        "[::]:3000",
+        "lostinseoul.com"
+      )
+    );
+
+    expect(res.headers.get("location")).toBe("https://lostinseoul.com/privacy");
   });
 
   it("rejects external return paths", async () => {

@@ -11,8 +11,16 @@ function firstFormString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
 }
 
-function isLostHost(host: string | null): boolean {
-  const hostname = host?.split(":")[0]?.toLowerCase();
+function forwardedHost(request: NextRequest): string {
+  return (
+    request.headers.get("x-forwarded-host") ??
+    request.headers.get("host") ??
+    request.nextUrl.host
+  );
+}
+
+function isLostHost(host: string): boolean {
+  const hostname = host.split(":")[0]?.toLowerCase();
 
   return hostname === "lostinseoul.com" || hostname === "www.lostinseoul.com";
 }
@@ -36,13 +44,22 @@ function gatePath(publicLostHost: boolean): string {
   return publicLostHost ? "/gate" : "/lostinseoul/gate";
 }
 
+function publicOrigin(request: NextRequest): string {
+  const host = forwardedHost(request);
+  const forwardedProto =
+    request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol;
+  const protocol = forwardedProto.replace(/:$/, "") || "https";
+
+  return `${protocol}://${host}`;
+}
+
 function redirectUrl(request: NextRequest, pathname: string): URL {
-  return new URL(pathname, request.url);
+  return new URL(pathname, publicOrigin(request));
 }
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
-  const publicLostHost = isLostHost(request.headers.get("host"));
+  const publicLostHost = isLostHost(forwardedHost(request));
   const returnTo = safeReturnTo(
     firstFormString(formData.get("returnTo")),
     publicLostHost
