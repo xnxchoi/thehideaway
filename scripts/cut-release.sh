@@ -308,7 +308,15 @@ pnpm verify:env "${TMP_ENV}"
 
 step "6/8  build (verifies pnpm install + pnpm build + standalone)"
 pnpm install --frozen-lockfile
-pnpm build
+(
+  # Build with the same production env we just decrypted and validated.
+  # Otherwise local .env files can mask missing prod-only variables.
+  set -a
+  # shellcheck source=/dev/null
+  . "${TMP_ENV}"
+  set +a
+  pnpm build
+)
 if [[ ! -f .next/standalone/server.js || ! -d .next/static ]]; then
   die "standalone preflight failed. Confirm next.config.ts has output: \"standalone\"."
 fi
