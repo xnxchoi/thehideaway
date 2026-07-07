@@ -556,6 +556,14 @@ pierced by one event; the object is not the subject, the reaction is.
   blessed, bake the chosen `P` values back into the shader constants before porting to
   the real scene (the panel + uniforms are dev-only scaffolding, not for production).
   Same URL.
+- **v11 (2026-07-07) — rings + chop combined, deeper break-up** (founder: v10's fine
+  ripple is right, but wants the concentric circular ripple back ON TOP of it, and the
+  reflection break-up is too shallow even at max control). Fix: folded `waterRipples`
+  (concentric `ripRing` wavefronts) back into the water — they now (a) feed the reflection
+  displacement (`disp = ((rip-0.5) + rings*3.0) * uDisp`) and (b) light their own crests
+  (`ember(rheat)*crest` + wet glint), so the circular ripple reads over the fine chop;
+  widened `refl. break-up` range 0.25→0.9 (default 0.16) so it can shatter hard; added a
+  `ring strength` control (0–3). Same URL.
   **Still a disposable candidate** — do NOT wire into `/lostinseoul/fragrance` yet.
   Open for live tuning: exact early-water visibility, an *interactive* cursor/
   scroll contact-ripple (Contact beat), ember depth. Perf note for the real build:
