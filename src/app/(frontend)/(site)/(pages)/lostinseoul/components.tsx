@@ -2150,7 +2150,7 @@ export function LostFooter({
         </section>
         <LostTopBar pale />
       </div>
-      <div className="sticky bottom-0 z-0 grid gap-y-8 px-4 pb-20 md:px-14 md:pb-10">
+      <div className="relative z-0 grid gap-y-8 px-4 pb-20 md:sticky md:bottom-0 md:px-14 md:pb-10">
         <div
           aria-hidden
           className="h-12 w-12 rounded-full border border-[oklch(from_var(--white)_l_c_h_/_0.25)] md:h-24 md:w-24"

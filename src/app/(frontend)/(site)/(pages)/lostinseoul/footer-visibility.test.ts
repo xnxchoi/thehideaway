@@ -51,4 +51,9 @@ describe("LOST footer visibility CSS", () => {
     expect(components).not.toContain('href="/lostinseoul/terms"');
     expect(components).not.toContain('href="/lostinseoul/refund"');
   });
+
+  it("keeps the oversized footer mark out of mobile sticky overlap", () => {
+    expect(components).not.toContain('className="sticky bottom-0 z-0');
+    expect(components).toContain("md:sticky md:bottom-0");
+  });
 });
