@@ -12,30 +12,43 @@ const sourceFiles = [
   "index.css"
 ];
 
-const forbiddenBorrowedAssetMarkers = [
-  "oflyn",
-  "hero-reference.mp4",
-  "unsplash-"
+const requiredHeroSceneAssets = [
+  "scene.glb",
+  "Banc.glb",
+  "Cables.glb",
+  "Wall.glb",
+  "normal.jpg",
+  "shadows.png"
 ];
 
+const forbiddenMediaMarkers = ["hero-reference.mp4", "unsplash-"];
+
 describe("LOSTINSEOUL brand asset boundaries", () => {
-  it("does not hardcode borrowed or random fallback asset markers in the storefront source", () => {
+  it("does not hardcode borrowed reference media or random fallback assets in storefront source", () => {
     const routeSource = sourceFiles
       .map((fileName) => readFileSync(join(lostRouteDir, fileName), "utf8"))
       .join("\n");
 
-    for (const marker of forbiddenBorrowedAssetMarkers) {
+    for (const marker of forbiddenMediaMarkers) {
       expect(routeSource.toLowerCase()).not.toContain(marker);
     }
   });
 
-  it("keeps the procedural hero scene importable by the storefront", () => {
+  it("keeps the GLB-backed hero scene importable by storefront", () => {
+    const source = readFileSync(join(lostRouteDir, "hero-three.tsx"), "utf8");
+
+    expect(source).toContain("GLTFLoader");
+    expect(source).toContain("/assets/lostinseoul/oflyn/scene.glb");
     expect(typeof LostHeroScene).toBe("function");
   });
 
-  it("does not leave borrowed asset packs in the renderable public LOSTINSEOUL tree", () => {
-    expect(
-      existsSync(join(process.cwd(), "public/assets/lostinseoul/oflyn"))
-    ).toBe(false);
+  it("ships only the 3D scene assets, not the old reference video", () => {
+    const sceneAssetDir = join(process.cwd(), "public/assets/lostinseoul/oflyn");
+
+    for (const assetName of requiredHeroSceneAssets) {
+      expect(existsSync(join(sceneAssetDir, assetName))).toBe(true);
+    }
+
+    expect(existsSync(join(sceneAssetDir, "hero-reference.mp4"))).toBe(false);
   });
 });
