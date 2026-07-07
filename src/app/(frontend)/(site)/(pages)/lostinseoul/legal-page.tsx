@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 import { getLostBusinessFooterProps } from "./business-footer-props";
-import { LostFooter, LostTopBar } from "./components";
+import { LostFooter, LostGlobalFooterOverride, LostTopBar } from "./components";
 import "./index.css";
 
 export type LostLegalPageKind = "privacy" | "terms" | "refund";
@@ -41,6 +41,7 @@ export async function LostLegalPage({ kind }: { kind: LostLegalPageKind }) {
 
   return (
     <RPage slug={["lostinseoul", kind]} type="pages">
+      <LostGlobalFooterOverride />
       <div className="lost-legal-root min-h-screen bg-[var(--black)] text-[var(--white)] selection:bg-[var(--white)] selection:text-[var(--black)]">
         <header className="px-4 pt-4 md:px-14 md:pt-8">
           <LostTopBar pale />

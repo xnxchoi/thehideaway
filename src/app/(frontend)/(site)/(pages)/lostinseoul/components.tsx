@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
+import { useFooterVisibility } from "@/components/Shells/Footer/footer-visibility";
 import type { LostProductCard } from "@/lib/lost-commerce/queries";
 import type { LostOrderMode } from "@/lib/lost-commerce/types";
 
@@ -94,6 +95,11 @@ const LOST_ENTRY_FORCE_READY_MS =
 type ChromeLinkProps = ComponentProps<typeof Link> & {
   children: ReactNode;
 };
+
+export function LostGlobalFooterOverride() {
+  useFooterVisibility("hide");
+  return null;
+}
 
 function useLostEntryPhase() {
   const [phase, setPhase] = useState<LostEntryPhase>(() => {

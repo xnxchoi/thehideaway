@@ -52,6 +52,8 @@ export const FOOTER_HIDDEN_PATTERNS: ReadonlyArray<RegExp> = [
   /^\/surf\/[^/]+$/,
   // Checkout — focused transactional flow.
   /^\/checkout(\/|$)/,
+  // LOSTINSEOUL owns its own legal/footer surface.
+  /^\/lostinseoul(\/|$)/,
   /^\/day-n-night(\/|$)/,
   /^\/tickets(\/|$)/
 ];

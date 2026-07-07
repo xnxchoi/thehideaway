@@ -12,6 +12,7 @@ import {
   LostAnnouncementBar,
   LostCursorBridge,
   LostFooter,
+  LostGlobalFooterOverride,
   LostHeader
 } from "../components";
 import type {
@@ -195,6 +196,7 @@ export function LostFragranceChapter({
 
   return (
     <MotionConfig reducedMotion="user">
+      <LostGlobalFooterOverride />
       <LostCursorBridge />
       <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
         <LostAnnouncementBar bagOpen={bagOpen}>

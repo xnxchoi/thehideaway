@@ -30,9 +30,9 @@ type Props = {
   videoUrl?: string | null;
 };
 
-const OFLYN_SCENE = "/assets/lostinseoul/oflyn/scene.glb";
-const OFLYN_SHADOWS = "/assets/lostinseoul/oflyn/shadows.png";
-const OFLYN_NORMAL = "/assets/lostinseoul/oflyn/normal.jpg";
+const LOST_HOME_SCENE = "/assets/lostinseoul/home-scene/scene.glb";
+const LOST_HOME_SCENE_SHADOWS = "/assets/lostinseoul/home-scene/shadows.png";
+const LOST_HOME_SCENE_NORMAL = "/assets/lostinseoul/home-scene/normal.jpg";
 const LOST_RED = 0xff2323ff;
 const LOST_WALL_FALLBACK = "#f7f8f8";
 const LOST_BLACK_FALLBACK = "#000000";
@@ -220,7 +220,7 @@ function sourceDamp(
   return lerp(current, target, 1 - Math.exp(-amount * 0.05 * deltaMs));
 }
 
-function oflynVideoEasing(progress: number) {
+function lostHomeVideoEasing(progress: number) {
   let t = progress;
   for (let index = 0; index < 5; index += 1) {
     const inverse = 1 - t;
@@ -254,7 +254,7 @@ function coverTexture(
   texture.needsUpdate = true;
 }
 
-function fitOflynVideoTexture(texture: THREE.Texture, mediaRatio: number) {
+function fitLostHomeVideoTexture(texture: THREE.Texture, mediaRatio: number) {
   texture.center.set(0, 0);
   if (mediaRatio > TARGET_VIDEO_RATIO) {
     const scale = TARGET_VIDEO_RATIO / mediaRatio;
@@ -916,10 +916,10 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
     scene.add(root);
 
     const textureLoader = new THREE.TextureLoader();
-    const shadowsTexture = textureLoader.load(OFLYN_SHADOWS);
+    const shadowsTexture = textureLoader.load(LOST_HOME_SCENE_SHADOWS);
     shadowsTexture.colorSpace = THREE.SRGBColorSpace;
     shadowsTexture.flipY = true;
-    const normalTexture = textureLoader.load(OFLYN_NORMAL);
+    const normalTexture = textureLoader.load(LOST_HOME_SCENE_NORMAL);
     normalTexture.wrapS = THREE.RepeatWrapping;
     normalTexture.wrapT = THREE.RepeatWrapping;
 
@@ -978,7 +978,7 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
     root.add(modelGroup);
 
     new GLTFLoader()
-      .loadAsync(OFLYN_SCENE)
+      .loadAsync(LOST_HOME_SCENE)
       .then((gltf) => {
         if (disposed || !modelGroup) return;
         const loadedScene = gltf.scene;
@@ -1100,11 +1100,11 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
 
         modelGroup.add(loadedScene);
         syncPostTheme();
-        canvas.dataset.lostOflynModels = "loaded";
+        canvas.dataset.lostHeroModels = "loaded";
         onReady();
       })
       .catch(() => {
-        canvas.dataset.lostOflynModels = "failed";
+        canvas.dataset.lostHeroModels = "failed";
         onReady();
       });
 
@@ -1185,7 +1185,7 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
         video.videoWidth && video.videoHeight
           ? video.videoWidth / video.videoHeight
           : TARGET_VIDEO_RATIO;
-      fitOflynVideoTexture(texture, ratio);
+      fitLostHomeVideoTexture(texture, ratio);
       videoTexture = texture;
       mediaMaterial.map = texture;
       mediaMaterial.needsUpdate = true;
@@ -1345,7 +1345,7 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
         cameraRig.position.lerpVectors(
           zoom.startPosition,
           zoom.targetPosition,
-          oflynVideoEasing(zoom.progress)
+          lostHomeVideoEasing(zoom.progress)
         );
         if (zoom.progress >= 1) {
           zoom.active = false;

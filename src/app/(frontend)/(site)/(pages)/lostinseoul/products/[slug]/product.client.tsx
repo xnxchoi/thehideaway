@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import {
   LostAnnouncementBar,
   LostCursorBridge,
+  LostGlobalFooterOverride,
   LostHeader,
   LostProductSection
 } from "../../components";
@@ -323,6 +324,7 @@ export function LostProductDetailClient({
 
   return (
     <>
+      <LostGlobalFooterOverride />
       <LostCursorBridge />
       <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
         <LostAnnouncementBar bagOpen={bagOpen}>

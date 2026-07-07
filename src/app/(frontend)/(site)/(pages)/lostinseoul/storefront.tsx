@@ -12,6 +12,7 @@ import {
   LostEntrySequence,
   LostFocusProductSection,
   LostFooter,
+  LostGlobalFooterOverride,
   LostHeader,
   LostHero,
   LostProductSection,
@@ -19,6 +20,8 @@ import {
   LostVideoCollections
 } from "./components";
 import "./index.css";
+
+const LOST_HOME_VIDEO_URL = "/assets/lostinseoul/home-video.mov";
 
 type Props = {
   title: string;
@@ -118,7 +121,7 @@ export function LostStorefront({
   const commerceRootRef = useRef<HTMLElement>(null);
   const featureImage = products[0]?.imageUrl ?? null;
   const focusImage = products[0]?.imageUrl ?? null;
-  const featureVideo = products[0]?.heroVideoUrl ?? null;
+  const featureVideo = products[0]?.heroVideoUrl ?? LOST_HOME_VIDEO_URL;
   const [searchQuery, setSearchQuery] = useState("");
   const [bagOpen, setBagOpen] = useState(false);
   const [heroSceneReady, setHeroSceneReady] = useState(false);
@@ -148,6 +151,7 @@ export function LostStorefront({
 
   return (
     <>
+      <LostGlobalFooterOverride />
       <LostCursorBridge />
       <LostEntrySequence sceneReady={heroSceneReady} />
       <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
