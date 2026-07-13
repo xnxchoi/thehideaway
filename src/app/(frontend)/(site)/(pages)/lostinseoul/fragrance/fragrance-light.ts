@@ -35,8 +35,10 @@ export type LostFragranceReactionState = {
   projection: number;
   /** ember particulate density */
   particulate: number;
-  /** tone-mapping exposure */
+  /** tone-mapping exposure — absolute, already carries the founder's stop */
   exposure: number;
+  /** post-processing bloom intensity — swells into the impact, settles after */
+  bloom: number;
 };
 
 type LostReactionKey = LostFragranceReactionState & { at: number };
@@ -51,6 +53,12 @@ const EMBER_HOT: LostFragranceRGB = [0.95, 0.5, 0.24];
 // afterglow. Timing is the locked Stage 3 deck (readme §8): "the opening, and a
 // long one", "a first hairline of ember only, earned by contact, not a flood",
 // "one deep sodium ember, at commitment", "one event, absolute", "ember banks low".
+//
+// `exposure` and `bloom` are the GRADE, and they are choreographed rather than held
+// constant: the dark stages are lifted (a dark opening, never a black hole), the impact
+// swells both, and the settle eases them back without returning all the way. Their
+// dormant values are the founder's dialed at-rest numbers (exposure 1.90 × the old 0.9
+// dormant key ≈ 1.71; bloom 0.86) — everything else is shaped around those anchors.
 export const LOST_FRAGRANCE_REACTION_KEYS: LostReactionKey[] = [
   {
     at: 0, // dormant — cold, near-black, juice unlit. Held long.
@@ -61,7 +69,8 @@ export const LOST_FRAGRANCE_REACTION_KEYS: LostReactionKey[] = [
     key: 0.16,
     projection: 0,
     particulate: 0.05,
-    exposure: 0.9
+    exposure: 1.71,
+    bloom: 0.86
   },
   {
     at: 0.18, // still dormant through contact-start — the long hold before anything
@@ -72,7 +81,8 @@ export const LOST_FRAGRANCE_REACTION_KEYS: LostReactionKey[] = [
     key: 0.34,
     projection: 0.01,
     particulate: 0.09,
-    exposure: 0.94
+    exposure: 1.76,
+    bloom: 0.88
   },
   {
     at: 0.34, // contact resolved — a hairline of ember; the key rakes the glass, juice stirs. Contained.
@@ -83,7 +93,8 @@ export const LOST_FRAGRANCE_REACTION_KEYS: LostReactionKey[] = [
     key: 0.72,
     projection: 0.07,
     particulate: 0.22,
-    exposure: 1.0
+    exposure: 1.88,
+    bloom: 0.96
   },
   {
     at: 0.6, // ignition complete — the bloom at full, born from the dark (late)
@@ -94,7 +105,8 @@ export const LOST_FRAGRANCE_REACTION_KEYS: LostReactionKey[] = [
     key: 1.14,
     projection: 0.52,
     particulate: 0.6,
-    exposure: 1.08
+    exposure: 2.18,
+    bloom: 1.18
   },
   {
     at: 0.82, // peak — the crown, thrown outward, one event absolute
@@ -105,7 +117,9 @@ export const LOST_FRAGRANCE_REACTION_KEYS: LostReactionKey[] = [
     key: 1.3,
     projection: 1.0,
     particulate: 0.72,
-    exposure: 1.1
+    // the impact: the grade opens up with the reaction — one event, absolute
+    exposure: 2.4,
+    bloom: 1.35
   },
   {
     at: 1, // held — afterglow, ember banked low, warm
@@ -116,7 +130,9 @@ export const LOST_FRAGRANCE_REACTION_KEYS: LostReactionKey[] = [
     key: 0.64,
     projection: 0.2,
     particulate: 0.28,
-    exposure: 1.0
+    // the settle — eased back from the crown, but never all the way to dormant
+    exposure: 1.95,
+    bloom: 0.95
   }
 ];
 
@@ -162,6 +178,7 @@ export function evaluateLostFragranceReaction(
     key: mix(a.key, b.key, t),
     projection: mix(a.projection, b.projection, t),
     particulate: mix(a.particulate, b.particulate, t),
-    exposure: mix(a.exposure, b.exposure, t)
+    exposure: mix(a.exposure, b.exposure, t),
+    bloom: mix(a.bloom, b.bloom, t)
   };
 }

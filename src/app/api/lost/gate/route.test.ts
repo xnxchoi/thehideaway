@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { LOST_GATE_COOKIE_NAME, sha256Hex } from "@/lib/lostinseoul/gate";
 import { POST } from "./route";
 
 const previousPasswordHash = process.env.LOSTINSEOUL_GATE_PASSWORD_SHA256;
+const previousBetterAuthSecret = process.env.BETTER_AUTH_SECRET;
+const previousGateSessionSecret = process.env.LOSTINSEOUL_GATE_SESSION_SECRET;
 
 function gateRequest(
   body: Record<string, string>,
@@ -34,9 +36,23 @@ afterEach(() => {
   } else {
     process.env.LOSTINSEOUL_GATE_PASSWORD_SHA256 = previousPasswordHash;
   }
+  if (previousBetterAuthSecret === undefined) {
+    delete process.env.BETTER_AUTH_SECRET;
+  } else {
+    process.env.BETTER_AUTH_SECRET = previousBetterAuthSecret;
+  }
+  if (previousGateSessionSecret === undefined) {
+    delete process.env.LOSTINSEOUL_GATE_SESSION_SECRET;
+  } else {
+    process.env.LOSTINSEOUL_GATE_SESSION_SECRET = previousGateSessionSecret;
+  }
 });
 
 describe("POST /api/lost/gate", () => {
+  beforeEach(() => {
+    process.env.BETTER_AUTH_SECRET = "gate-route-test-secret";
+  });
+
   it("sets the LOST gate cookie and redirects to the requested public path", async () => {
     process.env.LOSTINSEOUL_GATE_PASSWORD_SHA256 =
       await sha256Hex("test-password");
@@ -53,6 +69,23 @@ describe("POST /api/lost/gate", () => {
     expect(res.headers.get("set-cookie")).toContain(LOST_GATE_COOKIE_NAME);
     expect(res.headers.get("set-cookie")).toContain("HttpOnly");
     expect(res.headers.get("set-cookie")).toContain("Path=/");
+    expect(res.headers.get("set-cookie")).not.toContain(
+      "3f9c89c8a38beabc1fc84adc476cfe230f276da8223682ecfbd1e6b500bfd722"
+    );
+  });
+
+  it("fails closed when the server session secret is missing", async () => {
+    process.env.LOSTINSEOUL_GATE_PASSWORD_SHA256 =
+      await sha256Hex("test-password");
+    delete process.env.BETTER_AUTH_SECRET;
+    delete process.env.LOSTINSEOUL_GATE_SESSION_SECRET;
+
+    const res = await POST(
+      gateRequest({ password: "test-password", returnTo: "/privacy" })
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get("set-cookie")).toBeNull();
   });
 
   it("does not set the gate cookie when the password is invalid", async () => {

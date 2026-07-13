@@ -82,4 +82,38 @@ describe("LOSTINSEOUL Catalyst reaction field", () => {
       first.reaction
     );
   });
+
+  // The grade is choreographed, not constant: exposure and bloom swell into the
+  // impact and settle back afterwards, so the peak lands as an event.
+  it("swells exposure into the peak and settles it after", () => {
+    const dormant = evaluateLostFragranceReaction(0.03);
+    const peak = evaluateLostFragranceReaction(0.82);
+    const held = evaluateLostFragranceReaction(1);
+    expect(peak.exposure).toBeGreaterThan(dormant.exposure);
+    expect(held.exposure).toBeLessThan(peak.exposure);
+    // the dark opening is lifted, never crushed to a black hole
+    expect(dormant.exposure).toBeGreaterThan(1.5);
+  });
+
+  it("swells bloom into the peak and settles it after", () => {
+    const dormant = evaluateLostFragranceReaction(0.03);
+    const ignition = evaluateLostFragranceReaction(0.6);
+    const peak = evaluateLostFragranceReaction(0.82);
+    const held = evaluateLostFragranceReaction(1);
+    expect(ignition.bloom).toBeGreaterThan(dormant.bloom);
+    expect(peak.bloom).toBeGreaterThan(ignition.bloom);
+    expect(held.bloom).toBeLessThan(peak.bloom);
+    // bloom never fully leaves — the afterglow still blooms
+    expect(held.bloom).toBeGreaterThan(0.5);
+  });
+
+  it("keeps exposure and bloom continuous across the whole scroll", () => {
+    let prev = evaluateLostFragranceReaction(0);
+    for (let p = 0.01; p <= 1.0001; p += 0.01) {
+      const cur = evaluateLostFragranceReaction(p);
+      expect(Math.abs(cur.exposure - prev.exposure)).toBeLessThan(0.05);
+      expect(Math.abs(cur.bloom - prev.bloom)).toBeLessThan(0.05);
+      prev = cur;
+    }
+  });
 });

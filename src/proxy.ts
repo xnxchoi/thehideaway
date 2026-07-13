@@ -64,13 +64,29 @@ function lostRootRewritePath(pathname: string): string | null {
   return LOST_PUBLIC_ROUTE_REWRITES.get(pathname) ?? null;
 }
 
+function isLostPublicAssetPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/assets/") ||
+    pathname.startsWith("/images/") ||
+    pathname.startsWith("/media/") ||
+    pathname.startsWith("/track_media/") ||
+    pathname.startsWith("/users/") ||
+    /\.[a-z0-9]+$/i.test(pathname)
+  );
+}
+
+function isLostImageOptimizerPath(pathname: string): boolean {
+  return pathname === "/_next/image";
+}
+
 function isLostScopedPath(pathname: string): boolean {
   return (
     pathname === "/api" ||
     pathname.startsWith("/api/") ||
     pathname === "/lostinseoul" ||
     pathname.startsWith("/lostinseoul/") ||
-    pathname.startsWith("/_next/")
+    pathname.startsWith("/_next/") ||
+    isLostPublicAssetPath(pathname)
   );
 }
 
@@ -89,6 +105,10 @@ function lostHostSignInRedirectPath(returnTo: string): string {
 
 function isLostGatePath(pathname: string): boolean {
   return pathname === "/lostinseoul/gate" || pathname === "/api/lost/gate";
+}
+
+function isLostGateExemptPath(pathname: string): boolean {
+  return isLostGatePath(pathname) || pathname === "/api/health";
 }
 
 function isLostGateProtectedPath(pathname: string): boolean {
@@ -212,9 +232,14 @@ export async function proxy(request: NextRequest) {
   fwdHeaders.set("x-pathname", pathname);
 
   if (
-    isLostGateProtectedPath(pathname) &&
-    !isLostGatePath(pathname) &&
-    !hasLostGateCookie(request)
+    (isLostGateProtectedPath(pathname) ||
+      (isLostRequest &&
+        (pathname === "/api" ||
+          pathname.startsWith("/api/") ||
+          isLostPublicAssetPath(pathname) ||
+          isLostImageOptimizerPath(pathname)))) &&
+    !isLostGateExemptPath(pathname) &&
+    !(await hasLostGateCookie(request))
   ) {
     return NextResponse.redirect(
       new URL(lostGateRedirectPath(pathname, isLostRequest), request.url)
@@ -320,7 +345,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
+    "/((?!_next/static|fonts/).*)",
     "/api/:path*",
     "/me/:path*",
     "/prive/:path*",

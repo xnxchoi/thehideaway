@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
-  LOST_GATE_COOKIE_NAME,
-  LOST_GATE_COOKIE_VALUE
+  createLostGateCookieValue,
+  LOST_GATE_COOKIE_NAME
 } from "@/lib/lostinseoul/gate";
 import { config, proxy } from "./proxy";
 
@@ -16,7 +16,23 @@ function makeRequest(
   });
 }
 
-const lostGateCookie = `${LOST_GATE_COOKIE_NAME}=${LOST_GATE_COOKIE_VALUE}`;
+const previousBetterAuthSecret = process.env.BETTER_AUTH_SECRET;
+let lostGateCookie = "";
+
+beforeAll(async () => {
+  process.env.BETTER_AUTH_SECRET = "proxy-test-gate-secret";
+  const value = await createLostGateCookieValue();
+  if (!value) throw new Error("Failed to create the test LOST gate cookie");
+  lostGateCookie = `${LOST_GATE_COOKIE_NAME}=${value}`;
+});
+
+afterAll(() => {
+  if (previousBetterAuthSecret === undefined) {
+    delete process.env.BETTER_AUTH_SECRET;
+  } else {
+    process.env.BETTER_AUTH_SECRET = previousBetterAuthSecret;
+  }
+});
 
 describe("proxy routing", () => {
   it("lets anonymous routes reach the path they requested", async () => {
@@ -165,6 +181,45 @@ describe("proxy routing", () => {
     );
   });
 
+  it.each([
+    "/lostinseoul",
+    "/lostinseoul/auth/sign-in",
+    "/lostinseoul/cart",
+    "/lostinseoul/checkout",
+    "/lostinseoul/collections/archive",
+    "/lostinseoul/fragrance",
+    "/lostinseoul/orders/order-ref",
+    "/lostinseoul/payment/failure",
+    "/lostinseoul/payment/return",
+    "/lostinseoul/payment/success",
+    "/lostinseoul/privacy",
+    "/lostinseoul/products/coat",
+    "/lostinseoul/refund",
+    "/lostinseoul/terms"
+  ])("password-gates concrete LOST page route %s", async (pathname) => {
+    const res = await proxy(makeRequest(pathname));
+
+    expect(res.headers.get("location")).toBe(
+      `https://hideaway.test/lostinseoul/gate?returnTo=${encodeURIComponent(pathname)}`
+    );
+  });
+
+  it.each([
+    "/api/lost/cart",
+    "/api/lost/checkout/cancel",
+    "/api/lost/checkout/intent",
+    "/api/lost/private-quotes",
+    "/api/lost/webhooks/portone"
+  ])("password-gates concrete LOST API route %s", async (pathname) => {
+    const res = await proxy(
+      makeRequest(pathname, undefined, "https://lostinseoul.com")
+    );
+
+    expect(res.headers.get("location")).toBe(
+      `https://lostinseoul.com/gate?returnTo=${encodeURIComponent(pathname)}`
+    );
+  });
+
   it("lets gated scoped lostinseoul.com product paths pass through", async () => {
     const res = await proxy(
       makeRequest(
@@ -242,14 +297,67 @@ describe("proxy routing", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("keeps api routes available on lostinseoul.com", async () => {
+  it("password-gates non-LOST API routes on lostinseoul.com", async () => {
     const res = await proxy(
       makeRequest("/api/auth/session", undefined, "https://lostinseoul.com")
     );
 
-    expect(res.status).toBe(200);
-    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://lostinseoul.com/gate?returnTo=%2Fapi%2Fauth%2Fsession"
+    );
+  });
+
+  it("password-gates the exact API root on lostinseoul.com", async () => {
+    const res = await proxy(
+      makeRequest("/api", undefined, "https://lostinseoul.com")
+    );
+
+    expect(res.headers.get("location")).toBe(
+      "https://lostinseoul.com/gate?returnTo=%2Fapi"
+    );
+  });
+
+  it("keeps deployment health checks public on lostinseoul.com", async () => {
+    const res = await proxy(
+      makeRequest("/api/health", undefined, "https://lostinseoul.com")
+    );
+
     expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("password-gates LOST-host public media while allowing it after unlock", async () => {
+    const ungated = await proxy(
+      makeRequest(
+        "/assets/lostinseoul/campaign.webp",
+        undefined,
+        "https://lostinseoul.com"
+      )
+    );
+    const gated = await proxy(
+      makeRequest(
+        "/assets/lostinseoul/campaign.webp",
+        lostGateCookie,
+        "https://lostinseoul.com"
+      )
+    );
+
+    expect(ungated.headers.get("location")).toBe(
+      "https://lostinseoul.com/gate?returnTo=%2Fassets%2Flostinseoul%2Fcampaign.webp"
+    );
+    expect(gated.headers.get("location")).toBeNull();
+    expect(gated.status).toBe(200);
+  });
+
+  it("password-gates the LOST-host image optimizer alias", async () => {
+    const pathname =
+      "/_next/image?url=%2Fassets%2Flostinseoul%2Fcampaign.webp&w=1920&q=75";
+    const res = await proxy(
+      makeRequest(pathname, undefined, "https://lostinseoul.com")
+    );
+
+    expect(res.headers.get("location")).toBe(
+      `https://lostinseoul.com/gate?returnTo=${encodeURIComponent("/_next/image")}`
+    );
   });
 
   it("does not host-route localhost when the local LOSTINSEOUL URL points at the dev server", async () => {
@@ -277,14 +385,12 @@ describe("proxy routing", () => {
   });
 
   it("runs proxy on public page routes so LOST host routing can fire", () => {
-    expect(config.matcher[0]).toBe(
-      "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)"
-    );
+    expect(config.matcher[0]).toBe("/((?!_next/static|fonts/).*)");
   });
 
   it("keeps the proxy matcher scoped to operational routes", () => {
     expect(config.matcher).toEqual([
-      "/((?!_next/static|_next/image|assets/|fonts/|images/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2|ttf|otf|mp3|mp4|webm|mov|json|txt|xml)).*)",
+      "/((?!_next/static|fonts/).*)",
       "/api/:path*",
       "/me/:path*",
       "/prive/:path*",

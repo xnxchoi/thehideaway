@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   evaluateLostFragranceCamera,
-  LOST_FRAGRANCE_CAMERA_KEYS
+  LOST_FRAGRANCE_CAMERA_KEYS,
+  stageProgress
 } from "./fragrance-camera";
 
 describe("lostinseoul fragrance camera path", () => {
@@ -81,5 +82,51 @@ describe("lostinseoul fragrance camera path", () => {
         LOST_FRAGRANCE_CAMERA_KEYS[i - 1].at
       );
     }
+  });
+});
+
+describe("stageProgress", () => {
+  it("pins every anchor to itself (dwell zones line up with the keys)", () => {
+    for (const key of LOST_FRAGRANCE_CAMERA_KEYS) {
+      expect(stageProgress(key.at)).toBeCloseTo(key.at, 6);
+    }
+  });
+
+  it("clamps out-of-range progress to the first/last anchor", () => {
+    const last =
+      LOST_FRAGRANCE_CAMERA_KEYS[LOST_FRAGRANCE_CAMERA_KEYS.length - 1];
+    expect(stageProgress(-0.4)).toBe(0);
+    expect(stageProgress(0)).toBe(0);
+    expect(stageProgress(1)).toBe(last.at);
+    expect(stageProgress(1.6)).toBe(last.at);
+    expect(stageProgress(Number.NaN)).toBe(0);
+  });
+
+  it("is monotonically non-decreasing across the span", () => {
+    let previous = stageProgress(0);
+    for (let p = 0.01; p <= 1; p += 0.01) {
+      const next = stageProgress(p);
+      expect(next).toBeGreaterThanOrEqual(previous - 1e-9);
+      previous = next;
+    }
+  });
+
+  it("holds the segment midpoint (S-curve is symmetric about the centre)", () => {
+    const a = LOST_FRAGRANCE_CAMERA_KEYS[0].at;
+    const b = LOST_FRAGRANCE_CAMERA_KEYS[1].at;
+    const mid = (a + b) / 2;
+    expect(stageProgress(mid)).toBeCloseTo(mid, 6);
+  });
+
+  it("dwells near an anchor then rushes toward the next", () => {
+    const a = LOST_FRAGRANCE_CAMERA_KEYS[0].at;
+    const b = LOST_FRAGRANCE_CAMERA_KEYS[1].at;
+    const span = b - a;
+    // early in the segment the staged value lags behind a linear pan (dwell)…
+    const early = a + 0.1 * span;
+    expect(stageProgress(early)).toBeLessThan(early);
+    // …and late in the segment it has overtaken linear (the launch)
+    const late = a + 0.9 * span;
+    expect(stageProgress(late)).toBeGreaterThan(late);
   });
 });

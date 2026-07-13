@@ -1,0 +1,49 @@
+/* LOSTINSEOUL product stage — the studio-void flacon that stands in for the PDP's
+   left gallery cell on the WebGL tier. Self-contained: the PDP does not import
+   fragrance.css, so the product-mode canvas rule is (re)declared here alongside the
+   container + fallback styling. Identical to the fragrance.css copy by design. */
+
+.lost-product-stage {
+  --lost-stage-void: oklch(9% 0.008 260);
+  --lost-stage-ink: oklch(96% 0.005 260);
+
+  position: relative;
+  background: var(--lost-stage-void);
+}
+
+/* Product-mode canvas fills its own sized container (this grid cell) and stays
+   interaction-inert. Faded in on first composed frame to avoid a black-flash pop. */
+.lost-product-stage .lost-product-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1s cubic-bezier(0.6, 0, 0.3, 1);
+  pointer-events: none;
+}
+
+.lost-product-stage[data-lost-product-stage-ready="true"] .lost-product-canvas {
+  opacity: 1;
+}
+
+.lost-product-stage-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Initial-letter plate — the no-image, no-WebGL truth. Decorative only (aria-hidden),
+   so it sits below the legibility floor without concern. */
+.lost-product-stage-fallback {
+  display: grid;
+  place-items: end start;
+  width: 100%;
+  height: 100%;
+  padding: 2.4rem;
+  font-family: var(--font-serif, serif);
+  font-size: 16rem;
+  font-weight: 700;
+  line-height: 1;
+  color: oklch(from var(--lost-stage-ink) l c h / 0.12);
+}

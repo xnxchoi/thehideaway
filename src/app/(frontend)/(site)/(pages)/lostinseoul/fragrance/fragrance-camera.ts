@@ -22,24 +22,66 @@ export type LostFragranceCameraState = {
   fov: number;
 };
 
-/** The bottle is the hero and stays framed throughout; the camera only draws
- *  quietly closer as the reaction climbs, then eases back to the afterglow.
- *  A long product lens (low fov) keeps the glass undistorted. */
+/** A single descending crane, authored from three real-GPU reference frames.
+ *  The camera does not merely dolly in — it DROPS. It opens high and pulled back,
+ *  pitched steeply DOWN onto the water (horizon high in frame, flacon small), then
+ *  cranes down and forward as the reaction climbs, the pitch rolling from looking-down
+ *  through eye-level to slightly-UP, so the horizon sinks to the bottom third and the
+ *  plume towers over a low, intimate hero shot with a strong reflection foreground.
+ *  Y high→low, Z far→near, pitch down→up; a subtle x drift settles to centre. */
+// The flacon (base at y=0, scaled) stands ~1.9 units tall, centred near y≈0.95.
+// Pitch is expressed purely through target-Y relative to camera-Y — no explicit roll.
 export const LOST_FRAGRANCE_CAMERA_KEYS: LostFragranceCameraKey[] = [
-  // dormant — full bottle, calm, a touch of distance
-  { at: 0, fov: 30, position: [0, 1.7, 8.6], target: [0, 1.5, 0] },
-  // contact — barely drifts; the reaction registers
-  { at: 0.26, fov: 30, position: [0.3, 1.72, 8.1], target: [0, 1.5, 0] },
-  // ignition — ease in as the bloom takes
-  { at: 0.47, fov: 31, position: [-0.22, 1.76, 7.2], target: [0, 1.55, 0] },
-  // peak — closest; the reaction at its fullest
-  { at: 0.71, fov: 32, position: [0.2, 1.8, 6.6], target: [0, 1.55, 0] },
-  // held — settle back to the afterglow
-  { at: 1, fov: 30, position: [0, 1.64, 7.7], target: [0, 1.44, 0] }
+  // dormant — high eye, pulled back, steep look DOWN; horizon high, flacon small & offset
+  { at: 0, fov: 36, position: [0.45, 4.55, 10.4], target: [0.05, 0.2, 0] },
+  // contact — the crane begins its descent, dollying in
+  { at: 0.3, fov: 34.5, position: [0.3, 3.5, 9.0], target: [0.02, 0.6, 0] },
+  // ignition — near eye-level, slightly above; flacon centres and fills, bloom behind
+  { at: 0.6, fov: 33, position: [0.12, 2.3, 7.2], target: [0, 1.05, 0] },
+  // peak — low and close, pitch rolling up as the plume takes the top (the plunge)
+  { at: 0.82, fov: 31, position: [0, 1.45, 5.9], target: [0, 1.35, 0] },
+  // resolve — the camera lifts and eases back to REVEAL the whole flacon standing on
+  // the water: base-to-cap in frame with its reflection below and the plume behind.
+  { at: 1, fov: 31, position: [0, 1.65, 7.4], target: [0, 0.9, 0] }
 ];
 
 function smoothstep(t: number) {
   return t * t * (3 - 2 * t);
+}
+
+/** Perlin's smootherstep — flatter at both ends than smoothstep, steeper through
+ *  the middle. Used to bend scroll into kinetic beats. */
+function smootherstep(t: number) {
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+/**
+ * Bend honest, linear scroll into staged beats. Raw `useScroll` progress tracks the
+ * camera 1:1, which reads as a literal pan. `stageProgress` remaps it so the value
+ * DWELLS as it approaches each camera anchor and RUSHES between them (per-segment
+ * smootherstep) — crossing an anchor releases the frame toward the next position.
+ *
+ * Anchor boundaries are preserved exactly (a.at → a.at), so it composes cleanly with
+ * `evaluateLostFragranceCamera` and with a temporal spring in the render loop, which
+ * adds the momentum/overshoot that makes each beat feel pushed rather than dragged.
+ */
+export function stageProgress(
+  progress: number,
+  keys: LostFragranceCameraKey[] = LOST_FRAGRANCE_CAMERA_KEYS
+): number {
+  const first = keys[0];
+  const last = keys[keys.length - 1];
+  if (!Number.isFinite(progress) || progress <= first.at) return first.at;
+  if (progress >= last.at) return last.at;
+  let index = 0;
+  while (index < keys.length - 2 && progress >= keys[index + 1].at) {
+    index += 1;
+  }
+  const a = keys[index];
+  const b = keys[index + 1];
+  const span = b.at - a.at;
+  const t = span > 0 ? (progress - a.at) / span : 1;
+  return a.at + smootherstep(t) * span;
 }
 
 function lerpVec3(

@@ -16,8 +16,14 @@ Read this before touching `/lostinseoul/fragrance/*` or the fragrance fields on 
   built and hardened. The missing piece is the *ceremony* surface for the release.
 - **MVP:** one scroll-narrative chapter inside the existing storefront shell, driven
   entirely by CMS content, ending in the existing buy module.
-- **Anti-goals:** no photoreal glass/liquid attempt; no forked second site; no
-  scroll-jacking outside this one chapter; no hard-coded product facts.
+- **Anti-goals:** no forked second site; no scroll-jacking outside this one chapter;
+  no hard-coded product facts.
+  - ~~no photoreal glass/liquid attempt~~ — **REVERSED by founder 2026-07-07.** The
+    material glass bottle (PBR transmission, colored liquid, real reflection in the water)
+    is now a core requirement, ember-lit and mostly in shadow. The original caution
+    ("plasticky glass is worse than none", Bleu de Chanel takeaway) is kept only as a
+    *quality bar*: use real PBR transmission (`MeshPhysicalMaterial`), verify it, never fake
+    it. See §10 for the abstract-reaction + material-bottle build.
 - **Success:** the chapter ships fact-agnostic (works with placeholder content),
   survives mid-tier mobile via fallback tiers, and converts through the existing
   commerce spine.
@@ -451,7 +457,7 @@ stage. On resume, re-check `git status` before editing.
 - Moodboard: https://claude.ai/code/artifact/802fc32a-3fed-46db-bcd6-0a9023661606
 - Bottle study: https://claude.ai/code/artifact/9f8850cc-73f6-4941-a90c-69569e94b1f2
 - Scene deck (5 scenes, the design target): https://claude.ai/code/artifact/63d8e9bf-2b95-4bcc-80a0-fd6762485734
-- **Reaction look-candidate v1 (ember plume, 2026-07-07): https://claude.ai/code/artifact/d927c1de-b40c-42d2-b1ea-225d069bf162** — awaiting founder verdict (see §10).
+- **Reaction look-candidate (ember plume): https://claude.ai/code/artifact/d927c1de-b40c-42d2-b1ea-225d069bf162** — **BLESSED 2026-07-12 ("It looks good")** and ported into the route (see §10.1). The artifact keeps its tune panel for future dialing; its v12 values are the baked production look.
 
 ---
 
@@ -580,3 +586,220 @@ pierced by one event; the object is not the subject, the reaction is.
 
 **Next gate:** founder reacts to look-candidate v1 (yes / no / adjust). Only then
 blueprint the real build. No scene code until a look is pointed at.
+
+### 10.1 BLESSED + PORTED (2026-07-12/13)
+
+The gate cleared: founder blessed v12 ("It looks good. Go ahead to the next
+phase") and the reaction is now the live showcase scene on the route.
+
+- **`fragrance-reaction.ts`** — single source of the look: v12 values +
+  intensity-curve constants baked into generated GLSL (only `uRes`/`uTime`/
+  `uProg` uniforms survive; no tuner, no bottle). TS twin
+  `getLostFragranceReactionIntensity()` for tests/DOM.
+- **`fragrance-reaction-scene.tsx`** — raw WebGL1 (no three.js), same props
+  contract as the old scene (`progress` MotionValue, `onReady`), renders into
+  `.lost-fragrance-canvas`. **Gotcha fixed:** the canvas must be created
+  imperatively per mount — dev StrictMode remounts hand a JSX canvas its
+  already-lost GL context (symptom: `ready:false`, two `error: null` logs).
+- **`page.client.tsx`** — dynamic import swapped to the reaction scene.
+  `LostFragranceScene` (three.js) remains ONLY for `product-stage/` "product"
+  mode (Level 6); its showcase mode is dead — do not resurrect.
+- **The bottle silhouette the founder axed twice must never return** — it was
+  deleted from the artifact's shader outright (no toggle left), and the
+  production shader has a test asserting the source contains no bottle.
+- Verified 2026-07-13 headless against dev server (gate cookie + parked
+  mouse): colourless at 25%, ignition + ring at 50%, peak plume behind the
+  reveal at 75%. 66/66 fragrance tests green, lint clean. Real-GPU signoff
+  still owed per Level 7.
+
+---
+
+## 11. Material bottle pivot (2026-07-07, current)
+
+The plume+water look-candidate (v12) was blessed and its tuned values baked
+(see §10 log). Then: bottle exploration.
+
+- **v13 bottle-as-negative-space (2D SDF overlay) — REJECTED.** Founder: "why is the
+  bottle a fucking overlay? I wanted an actual, material, tangible bottle sitting on
+  water." Ref = D&G Velvet Collection (real 3D glass, coloured liquid, reflection on the
+  surface, "albeit much more brightly lit" than wanted).
+- **§1 anti-goal "no photoreal glass" REVERSED by founder** (see §1). Material glass is now
+  a core requirement. Quality bar retained: real PBR transmission, never faked.
+- **Advisor ruling:** do NOT raymarch glass (plasticky, non-transferable). Use
+  `MeshPhysicalMaterial` / drei `MeshTransmissionMaterial` — that IS the ref, and it ports
+  straight to the R3F production scene. Real risk = INTEGRATION: (1) water must reflect the
+  BOTTLE, (2) bottle lit from the plume's actual position/intensity, (3) coloured liquid with
+  a real fill-line. Keep the reveal concept (mostly-shadow, ember-lit); NOT a bright clone.
+- **Validated:** transmission glass renders under the headless swiftshader loop
+  (`tmp/glass-test.html` + `shot-glass.mjs`, served over http:8731 — file:// blocks ESM/CORS;
+  r181 needs BOTH `three.module.js` and `three.core.js` copied). Tech + direction proven; a
+  *beautiful* render needs real IBL + planar reflection = specialist work, best on the real
+  stack with drei, not hand-rolled in a standalone.
+- **FORK RESOLVED → (A) real stack.** Founder chose building on the real app. Architecture
+  call: the scene (`fragrance-scene.tsx`) is imperative vanilla-Three (NOT R3F Canvas) with
+  valuable infra (progress-driven loop, `postprocessing` composer, device tiers, pause/ready).
+  Decision: keep that architecture, swap its guts — NO risky full R3F rewrite. leva's
+  `useControls` is a plain React hook, works in this component; `MeshPhysicalMaterial`
+  transmission is validated; drei's `MeshReflectorMaterial` has a vanilla class for the water.
+- **Build increments (verify each via headless capture of `pnpm dev`):**
+  1. ✅ **DONE — plume+water background.** Replaced `buildLostEmberBackdrop` with
+     `buildLostReactionField` (fullscreen clip-space triangle, blessed v12 plume+water shader,
+     constants baked, driven by `uProg`=scroll progress + `uTime` + `uRes`). Live in the real
+     route, verified. The composer bloom flatters it.
+  2. **NEXT — replace the fake lathe bottle** (`buildLostCatalystBottle`, a ShaderMaterial
+     faking glass) with a real `MeshPhysicalMaterial` transmission bottle + coloured liquid
+     (fill line) + env for refraction, ember-lit, mostly-shadow.
+  3. water reflects the BOTTLE (planar reflection). 4. leva panel. 5. embers / reactive temp-colour.
+- **Headless capture recipe for the GATED route** (`/lostinseoul/fragrance` redirects to
+  `/lostinseoul/gate`): set the preview cookie in the Playwright context before `goto` —
+  `ctx.addCookies([{name:"lostinseoul.gate", value:<LOST_GATE_COOKIE_VALUE from src/lib/lostinseoul/gate.ts>, domain:"localhost", path:"/"}])`.
+  Script: `tmp/shot-fragrance.mjs <outdir>`; dev server via `pnpm dev`. Still park the mouse
+  (custom-cursor black dot). Frames scroll 0→1 = colourless→afterglow.
+
+## 12. D&G Velvet reference mining (2026-07-07)
+
+Founder supplied a partial rip of the D&G Velvet WebGL (`~/Downloads/dg/`, Vue/Three) +
+the fire-trails bundle (`~/Downloads/dg/(fire-trail)/index.js`, 743KB minified). Directive:
+benchmark/reuse foundations (esp. water + lighting) but the scene must be **distinctly ours**,
+NOT a replication.
+
+**Reuse verdicts:**
+- `webgl/meshes/extendedMeshes/CustomWater.js` — **PORTED** → our `fragrance-water.ts`
+  (mirror-camera planar reflector; three.js `Reflector` lineage). Parameterized by
+  renderer/scene/camera instead of Vue singletons. ✅ live in the scene.
+- `webgl/utils/fbo/fluidTrail.js` + `Fluid` — **PORT LATER.** `Fluid` class not in the rip;
+  comment names the source = **alien.js** (`alienkitty/alien.js`, MIT, fluid-distortion example).
+  Use for cursor/touch → **flame-colour (blackbody temperature) shift**, NOT water trails.
+- `webgl/materials/customWaterMaterial.js` — **BLUEPRINT ONLY** (GLSL `vo`/`ho` bundled/absent).
+  Its uniform design is the reference; we wrote our own ember water shader. `Water.js` PARAMS
+  are good starting values (black base, white specular, reflStrength 0.6, distortion 0.8).
+- `GradientMaker.js` — port trivially if we want scroll-scrubbed colour grading.
+- `LightGroup`/`ScreenLightRays` (god-rays) — **BENCHMARK** the RTT-composite pattern; shader
+  obfuscated; rebuild ours in ember (theirs is cool mint `#e2ffec`).
+- `Background` (three.js `Sky`, rayleigh/mie/turbidity) — daytime, wrong mood. **Open A/B:**
+  a dark ember-tuned Sky OR a `GradientMaker` gradient behind the plume as reflectable depth,
+  chosen by what the water reflects best without lifting the near-black.
+- Textures: `water-normal.jpg`, `water-drop-normal.png`, `bluenoise.png` = generic technical,
+  **safe to use**. `landing-albedo/normal.webp` + any D&G logos/branding = **DO NOT SHIP**
+  (brand/legal liability — same lesson as the oflyn GLB, §3). Code patterns fair game; brand not.
+- **fire-trails fusion (later):** its "fire-on-water" = a subdivided plane whose vertices are
+  displaced by a 128³ perlin noise volume (rising flames) + a burn/fire colour ramp
+  (`uFireColor` rgb 1,0.44,0.19) + a reflection pass onto the surface + rising ember particles
+  + Kawase/mipmap bloom. Fully-tuned params live in the `fe` object (`fe.burn`/`fe.fire`/
+  `fe.particles`) near line 7014; GLSL in vars `Pd`(fire vtx)/`Jb`(fire frag)/`ew`(burn)/`Zb`.
+  Plan: fuse its real 3D surface-flame with our full-scale plume where plume meets water.
+  We do NOT want its cursor fire-trail.
+
+**Reflector increment (✅ done):** `fragrance-water.ts` — 80×80 water plane at y=0, 512² reflection
+RT, our ember water shader (projective reflection + procedural ripple + Fresnel tint). Wired in
+`fragrance-scene.tsx`: `water.onTick(time)` before `composer.render`; plume field + motes in
+`ignoreObjects` (hidden from reflection for now). Bottle (still the fake lathe) reflects in it.
+Verified in the real route. **Next:** swap fake lathe → real transmission-glass bottle (it'll
+reflect correctly in this water); trim the plume's faked-water half so no horizon seam; then
+fluid-trail colour-shift + fire-trails fusion.
+
+## 13. MASTER WORKPLAN (2026-07-09) — layered, dependency-ordered
+
+Supersedes the ad-hoc ordering of §9 and §11. The §11 build increments were **five**, not
+three; #1–#3 are done, and the two that were forgotten (#4 leva, #5 embers/temp-colour) are
+folded in below. Levels are dependency-ordered: each unblocks the next.
+
+### What today's failure taught us (2026-07-09)
+
+Two findings drive the ordering. Both are load-bearing:
+
+1. **We were tuning blind.** Glass/water/light were being iterated via screenshot
+   round-trips against the founder's GPU, at very high cost per round. §11 increment #4
+   (**leva panel**) is the cure and was never built. It now comes FIRST.
+2. **The flacon is a box blockout, not a model.** `fragrance-bottle.ts` composes three
+   `BoxGeometry` primitives (body / neck / cap). The showcase's darkness, fire and
+   reflections *hide* that. A clean, bright product shot *removes* the very atmosphere
+   doing the hiding, so the primitives are exposed and it reads as unfinished. No env,
+   light or framing tweak fixes this — only better geometry.
+   **Corollary:** the mesh PDP is BLOCKED on Level 2. Until then the PDP ships the
+   photographic gallery (`enableProductStage` stays false; `LostProductStage` is dormant).
+
+Also confirmed still-open from §9's founder flags: **copy was never recast** —
+`page.client.tsx` still carries `PHASE_ORDER = ["open","bloom","suspend"]`.
+
+### Level 0 — Tooling (do first; unblocks every visual level)
+
+- **leva panel** (§11 increment #4). Dev-only, query-flag gated. Live controls for:
+  water (ripple amplitude/speed, reflection strength, distortion), glass (IOR, thickness,
+  roughness, attenuation colour/distance, envMapIntensity, clearcoat), lights (ember back,
+  cap rim, studio key/fill), grade (exposure, bloom intensity/threshold).
+  Founder tunes on the real GPU → we bake the results as constants.
+- **Headless capture harness** restored (`shot-fragrance.mjs` + gate cookie, §628) for
+  regressions that don't need a human eye. Remember: transmission glass reads as opaque
+  "cardboard" under swiftshader — capture verifies *framing/silhouette*, never material.
+
+### Level 1 — Environment (water, plume, backdrop)
+
+- **Water stillness** — founder 2026-07-09: "water should look much, much more still on the
+  surface." Current ripple is far too active. Target a near-mirror with only the faintest
+  breathing; the reflection, not the chop, carries the surface.
+- Trim the plume's faked-water half so there is no horizon seam against the real water (§673).
+- Backdrop depth A/B: ember-tuned `Sky` vs a `GradientMaker` gradient — chosen by what the
+  water reflects best *without lifting the near-black* (§654).
+- Later: fire-trails fusion where the plume meets the water (§660).
+
+### Level 2 — The flacon (GATES the product hero shot)
+
+- **Geometry first**, in order of increasing cost:
+  1. Bevel the edges (`RoundedBoxGeometry`) — beveled glass edges catch light and are the
+     single largest cheap win.
+  2. Refine proportions / shoulder / neck reveal (golden-ratio intent is already there).
+  3. Decide whether a real modeled GLTF (cap detail, etching/label) is warranted. Only a
+     real model makes a clean studio hero shot viable.
+- **Material second** (tune via leva, bake): transmission, IOR, thickness, attenuation,
+  coloured liquid + fill line + meniscus, cap metal.
+- **Exit gate:** the flacon must hold up under *bright, clear* light before any product/PDP
+  hero shot is attempted. If it only survives in the dark, it is not done.
+
+### Level 3 — Light & grade
+
+- **Two environments, kept explicitly separate** — conflating them was today's first bug:
+  - *Showcase IBL*: the deliberately dark ember PMREM (`buildEmberEnvironment`).
+  - *Studio IBL*: `public/assets/env_hdr1.webp` (equirect; gainmap base loads fine as a plain
+    LDR texture — no `@monogrid/gainmap-js` dependency needed).
+  Transmission glass with nothing behind it renders as a slab; a dark, blurred, dimmed copy
+  of the env as `scene.background` gives it something to refract.
+- Ember key/back-light balance, cap rim, exposure, bloom / vignette / grain.
+- **Embers + reactive blackbody temperature shift** (§11 increment #5; alien.js fluid → flame
+  colour, §645). NOT a cursor water-trail.
+
+### Level 4 — Choreography (camera + reaction)
+
+- ✅ Camera crane, `stageProgress` staged remap, velocity spring (2026-07-08).
+- The real reaction choreography across the five scenes — the founder's "Animation" flag
+  (§421). Currently still little more than colour fades and word swaps.
+
+### Level 5 — Composition & copy (the founder's two remaining flags)
+
+- **Copy recast** (§429) — `messages/{en,ko}.json` + `page.tsx` `copyFrom` +
+  `page.client.tsx` `PHASE_ORDER` → `dormant / contact / ignition / peak / held`.
+  STRUCTURAL ONLY. Narrative copy stays parked; writing Catalyst captions is banned until
+  visuals are final. The single real block is the forensic Held text — use the deck §S5
+  draft verbatim, never invent.
+- **Layout rebuild** (§419) — `page.client` + `fragrance.css` to the deck's cinematic dark
+  composition; retire the generic template.
+
+### Level 6 — Product surface (BLOCKED on Level 2)
+
+- **Now:** image PDP everywhere. `shouldEnableLostProductStage` returns false (no fragrance
+  product is even seeded); `LostProductStage` + `product-stage.css` sit dormant.
+- **After Level 2:** re-enable the mesh PDP, then task #2 (returning-visitor cookie gate +
+  flush "replay" control) and task #3 (seamless single-canvas handoff, `productBlend` 0→1).
+
+### Level 7 — Quality gates (continuous, every level)
+
+- `pnpm vitest run "…/lostinseoul/fragrance"` green (45 tests as of 2026-07-09).
+- Render tiers (`webgl | video | editorial`) + reduced-motion fallbacks intact.
+- Perf budget; no new type errors in touched files.
+- **Real-GPU signoff before anything is called done.** Headless never validates material.
+
+### Standing constraints
+
+- No D&G / CdG brand assets ever ship — code patterns and generic technical textures only.
+- Copy is the founder's register: propose, never overwrite.
+- Shared `main`: stage by explicit path, re-check `git status`, commit only when asked.

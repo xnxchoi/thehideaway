@@ -64,6 +64,17 @@ const schema = z.object({
       "openssl rand -hex 32"
     )
   ),
+  LOSTINSEOUL_GATE_PASSWORD_SHA256: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/i, "must be a SHA-256 hex digest")
+    .describe(
+      d(
+        "required",
+        "secrets",
+        "SHA-256 digest of the temporary LOSTINSEOUL preview password.",
+        "printf %s 'strong-password' | shasum -a 256"
+      )
+    ),
   PREVIEW_SECRET: secret.describe(
     d(
       "required",

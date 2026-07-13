@@ -202,72 +202,127 @@ export function buildLostCatalystBottle(
   };
 }
 
-/* ---------- ember reaction backdrop ---------- */
-export type LostEmberBackdrop = {
-  mesh: THREE.Mesh;
+/* ---------- reaction field: the ember plume as a WORLD-SPACE fire curtain ----------
+ * The plume is no longer a screen-space quad — it is now real geometry standing in the
+ * scene: a stack of layered vertical planes behind the flacon, rising from the waterline.
+ * Each layer carries the blessed plume shader (mapped to mesh UV instead of screen coords)
+ * at a different depth, phase and brightness, so the fire has parallax volume and the real
+ * water reflector can mirror it. Additive glow, edge-faded so there is no hard plane edge.
+ * Driven by uProg (scroll: dormant→ignition→afterglow) and uTime. */
+export type LostReactionField = {
+  group: THREE.Group;
   uniforms: {
-    uEmber: { value: THREE.Color };
-    uReaction: { value: number };
-    uProjection: { value: number };
     uTime: { value: number };
-    uBg: { value: THREE.Color };
+    uProg: { value: number };
   };
   dispose: () => void;
 };
 
-/** A large plane behind the bottle: a warm-black field with an ember bloom that
- *  grows and throws outward as the reaction climbs. */
-export function buildLostEmberBackdrop(scene: THREE.Scene): LostEmberBackdrop {
-  const uniforms = {
-    uEmber: { value: new THREE.Color(0.81, 0.35, 0.16) },
-    uReaction: { value: 0.04 },
-    uProjection: { value: 0 },
-    uTime: { value: 0 },
-    uBg: { value: new THREE.Color(0.043, 0.032, 0.036) }
-  };
-  const geometry = new THREE.PlaneGeometry(19, 12);
-  const material = new THREE.ShaderMaterial({
-    uniforms,
-    depthWrite: false,
-    vertexShader: /* glsl */ `
-      varying vec2 vUv;
-      void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-    `,
-    fragmentShader: /* glsl */ `
-      precision highp float;
-      varying vec2 vUv;
-      uniform vec3 uEmber, uBg; uniform float uReaction, uProjection, uTime;
-      void main(){
-        vec2 p = vUv - vec2(0.5, 0.5);
-        // bloom ISSUES FROM ONE ORIGIN behind the bottle and grows only with
-        // projection. Deck rule: the frame stays ~95% black; the ember is a
-        // single contained event born from the dark, never a full-frame flood.
-        // Narrow horizontally (a tall pool matching the bottle), tight falloff,
-        // high exponent so black dominates and the edges never warm.
-        float d = length(p * vec2(1.4, 1.02));
-        float rad = 0.012 + uProjection * 0.12;
-        float bloom = smoothstep(rad + 0.13, 0.0, d);
-        float pulse = 0.92 + 0.08 * sin(uTime * 0.0007);
-        float r = clamp(uReaction, 0.0, 1.2);
-        vec3 col = uBg + uEmber * pow(bloom, 3.4) * r * 0.72 * pulse;
-        // a single incandescent core, only near the peak
-        col += mix(uEmber, vec3(1.0, 0.8, 0.5), 0.5) * pow(bloom, 8.0) * uProjection * 0.4;
-        float g = fract(sin(dot(gl_FragCoord.xy, vec2(12.99, 78.23))) * 43758.55);
-        col += (g - 0.5) * 0.014;
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(0, 1.5, -6);
-  scene.add(mesh);
+const REACTION_FIELD_VERT = /* glsl */ `
+  varying vec2 vUv;
+  void main(){
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const REACTION_FIELD_FRAG = /* glsl */ `
+  precision highp float;
+  varying vec2 vUv;
+  uniform float uTime; uniform float uProg; uniform float uDepth;
+  float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+  float noise(vec2 p){ vec2 i=floor(p), f=fract(p);
+    float a=hash(i), b=hash(i+vec2(1,0)), c=hash(i+vec2(0,1)), d=hash(i+vec2(1,1));
+    vec2 u=f*f*(3.-2.*f); return mix(mix(a,b,u.x),mix(c,d,u.x),u.y); }
+  float fbm(vec2 p){ float v=0.0,a=0.55; mat2 m=mat2(1.6,1.2,-1.2,1.6);
+    for(int i=0;i<6;i++){ v+=a*noise(p); p=m*p+0.03; a*=0.5; } return v; }
+  float turb(vec2 p, float t){
+    vec2 q = vec2(fbm(p + vec2(0.0, t*0.10)), fbm(p + vec2(5.2,1.3) - t*0.06));
+    vec2 r = vec2(fbm(p + 3.4*q + vec2(1.7,9.2) + t*0.04), fbm(p + 3.4*q + vec2(8.3,2.8)));
+    return fbm(p + 3.6*r); }
+  vec3 ember(float h){ h = clamp(h,0.0,1.0); vec3 c = vec3(0.0);
+    c += vec3(0.40,0.085,0.012) * smoothstep(0.05,0.32,h);
+    c += vec3(0.46,0.18,0.035)  * smoothstep(0.30,0.62,h);
+    c += vec3(0.42,0.28,0.10)   * smoothstep(0.62,0.98,h); return c; }
+  // baked founder-blessed constants (v12)
+  const float PLUME_GAIN=1.33, PLUME_LIFT=-0.14, GLOW=0.47, EXPOSURE=1.83;
+  float plumeHeat(vec2 uv, float t, float intensity){
+    vec2 o = vec2(0.0, PLUME_LIFT); vec2 d = uv - o;
+    vec2 sp = vec2(d.x*2.6, d.y*1.6) + vec2(0.0, -t*0.15);
+    float f = turb(sp*1.2, t);
+    float height = clamp(d.y*0.9 + 0.40, 0.0, 1.4);
+    float widthMask = exp(-pow(abs(d.x) / (0.065 + height*0.26), 2.0));
+    float vertMask  = smoothstep(-0.34, -0.02, d.y) * (1.0 - smoothstep(0.35, 0.95, d.y));
+    float coreGlow  = exp(-dot(d*vec2(1.7,1.0), d*vec2(1.7,1.0)) * 5.0);
+    float density = pow(max(f * widthMask * vertMask,0.0), 1.7);
+    return (density*1.25 + coreGlow*0.28) * intensity; }
+  void main(){
+    // per-layer phase + scale so the stack parallaxes rather than aligning
+    float t = uTime * 0.001 + uDepth * 3.7;
+    float ignite = smoothstep(0.30, 0.72, uProg);
+    float after  = smoothstep(0.84, 1.0, uProg) * 0.5;
+    float intensity = ignite - after;
+    // map mesh uv (0..1) into the plume's shader space: x centred, y from waterline up
+    float scale = 1.0 + uDepth * 0.14;
+    vec2 puv = vec2((vUv.x - 0.5) * 1.7 * scale, vUv.y * 1.33 - 0.48);
+    float heat = plumeHeat(puv, t, intensity);
+    vec3 air = ember(heat);
+    vec3 emHot = vec3(0.52,0.27,0.08);
+    float glow = 0.0;
+    glow += plumeHeat(puv+vec2( 0.035, 0.0  ), t, intensity);
+    glow += plumeHeat(puv+vec2(-0.035, 0.0  ), t, intensity);
+    glow += plumeHeat(puv+vec2( 0.0,   0.055), t, intensity);
+    glow += plumeHeat(puv+vec2( 0.0,  -0.045), t, intensity);
+    glow /= 4.0;
+    air += emHot * pow(glow, 1.25) * 0.55 * GLOW;
+    air += emHot * pow(max(heat-0.42, 0.0), 1.5) * 1.0 * GLOW;
+    air *= PLUME_GAIN;
+    air = air / (air + vec3(1.15)) * EXPOSURE;
+    // back layers dimmer; edge-fade sides + top so the plane has no hard rectangle
+    air *= mix(1.0, 0.5, uDepth);
+    float edge = smoothstep(0.0, 0.16, vUv.x) * smoothstep(1.0, 0.84, vUv.x)
+               * smoothstep(1.0, 0.62, vUv.y) * smoothstep(0.0, 0.05, vUv.y);
+    gl_FragColor = vec4(air * edge, 1.0);
+  }
+`;
+
+export function buildLostReactionField(scene: THREE.Scene): LostReactionField {
+  const uTime = { value: 0 };
+  const uProg = { value: 0 };
+  const group = new THREE.Group();
+
+  // three layered planes rising from the waterline (y=0) behind the flacon (z<0),
+  // farther layers larger + dimmer for depth
+  const layers: Array<{ z: number; w: number; h: number; depth: number }> = [
+    { z: -3.6, w: 15, h: 10.5, depth: 0.0 },
+    { z: -5.0, w: 17, h: 12.0, depth: 0.5 },
+    { z: -6.4, w: 19, h: 13.5, depth: 1.0 }
+  ];
+  const disposables: Array<{ dispose: () => void }> = [];
+  for (const layer of layers) {
+    const geometry = new THREE.PlaneGeometry(layer.w, layer.h);
+    const material = new THREE.ShaderMaterial({
+      uniforms: { uTime, uProg, uDepth: { value: layer.depth } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: REACTION_FIELD_VERT,
+      fragmentShader: REACTION_FIELD_FRAG
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, layer.h * 0.5, layer.z); // bottom edge at the waterline
+    mesh.renderOrder = -1;
+    group.add(mesh);
+    disposables.push(geometry, material);
+  }
+  scene.add(group);
+
   return {
-    mesh,
-    uniforms,
+    group,
+    uniforms: { uTime, uProg },
     dispose: () => {
-      geometry.dispose();
-      material.dispose();
-      scene.remove(mesh);
+      for (const d of disposables) d.dispose();
+      scene.remove(group);
     }
   };
 }

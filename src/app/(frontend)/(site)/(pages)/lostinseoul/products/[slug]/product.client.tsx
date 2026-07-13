@@ -25,6 +25,7 @@ import {
   getLostProductPanelState,
   lostProductPanelTransition
 } from "../../product-panel-motion";
+import { LostProductStage } from "../../fragrance/product-stage/LostProductStage";
 import {
   getLostProductDesktopSlideClassName,
   getLostProductDesktopThumbStyle,
@@ -108,13 +109,16 @@ export function LostProductDetailClient({
   product,
   relatedProducts,
   commerce,
-  labels
+  labels,
+  enableProductStage = false
 }: {
   drops: Array<{ title: string; slug: string }>;
   product: LostProductDetail;
   relatedProducts: LostProductCard[];
   commerce: CommerceInfo;
   labels: Labels;
+  /** Fragrance product only — swaps the left image gallery for the WebGL flacon stage. */
+  enableProductStage?: boolean;
 }) {
   const { add } = useLostCart();
   const [mode, setMode] = useState<LostOrderMode>(
@@ -358,155 +362,162 @@ export function LostProductDetailClient({
           className="grid bg-[var(--n-s-bg)] pt-[12.3rem] lg:min-h-screen lg:grid-cols-2 lg:pt-0"
           data-section-product-id={product.id}
         >
-          <section
-            aria-label="Product Slider"
-            className="lost-product-media relative aspect-[375/500] w-full lg:aspect-auto lg:min-h-screen"
-            data-slider-product
-          >
-            <div className="hidden lg:grid" data-slider-desktop>
-              {images.length > 0 ? (
-                images.map((image, index) => (
-                  <figure
-                    className={getLostProductDesktopSlideClassName({
-                      activeImage,
-                      index
-                    })}
-                    data-slider-image-desktop={index}
-                    key={`${image.url}-${index}`}
-                    ref={(node) => {
-                      desktopSlideRefs.current[index] = node;
-                    }}
-                  >
-                    <img
-                      alt={image.alt ?? product.name}
-                      className="aspect-[980/1080] h-full w-full object-cover"
-                      loading={index === 0 ? "eager" : "lazy"}
-                      src={image.url}
-                    />
-                  </figure>
-                ))
-              ) : (
-                <div className="lost-product-media-fallback sticky top-0 col-start-1 row-start-1 grid h-screen place-items-end p-10 font-serif text-[16rem] leading-none font-bold">
-                  {product.name.slice(0, 1)}
-                </div>
-              )}
-              <div className="pointer-events-none z-[9] col-start-1 row-start-1 hidden lg:sticky lg:top-0 lg:grid lg:h-full lg:w-full">
-                <div className="grid h-fit w-fit gap-5 self-end justify-self-start pb-12 pl-12 xl:pb-16 xl:pl-16">
-                  {images.map((image, index) => (
-                    <div
-                      aria-label={`${product.name} ${index + 1}`}
-                      className={cn(
-                        getLostProductThumbClassName({ activeImage, index }),
-                        "pointer-events-auto"
-                      )}
-                      data-slider-desktop-thumb
-                      key={`${image.url}-desktop-thumb-${index}`}
-                      role="presentation"
-                      style={getLostProductDesktopThumbStyle({
-                        activeImage,
-                        index
-                      })}
-                    >
-                      <img
-                        alt=""
-                        aria-hidden
-                        className="aspect-[60/80] w-full object-cover"
-                        src={image.url}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="z-[9] col-start-1 row-start-1 hidden lg:sticky lg:top-0 lg:grid lg:h-full lg:w-full">
-                <div className="flex h-fit w-fit gap-x-3 self-end justify-self-end pr-12 pb-12 xl:pr-16 xl:pb-16">
-                  {selectedStockLabel ? (
-                    <span className="lost-product-tag self-end">
-                      <span>{selectedStockLabel}</span>
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="scroll-bar flex w-full snap-x snap-mandatory overflow-x-auto lg:hidden"
-              data-slider-product-mobile
-              onScroll={(event) => {
-                const width = event.currentTarget.clientWidth || 1;
-                setActiveImage(
-                  Math.min(
-                    images.length - 1,
-                    Math.max(
-                      0,
-                      Math.round(event.currentTarget.scrollLeft / width)
-                    )
-                  )
-                );
-              }}
-              ref={mobileScrollerRef}
+          {enableProductStage ? (
+            <LostProductStage
+              media={images[0] ?? null}
+              productName={product.name}
+            />
+          ) : (
+            <section
+              aria-label="Product Slider"
+              className="lost-product-media relative aspect-[375/500] w-full lg:aspect-auto lg:min-h-screen"
+              data-slider-product
             >
-              <div className="relative flex w-max">
+              <div className="hidden lg:grid" data-slider-desktop>
                 {images.length > 0 ? (
                   images.map((image, index) => (
                     <figure
-                      className="relative w-screen snap-start"
-                      data-load-img
-                      key={`${image.url}-mobile-${index}`}
+                      className={getLostProductDesktopSlideClassName({
+                        activeImage,
+                        index
+                      })}
+                      data-slider-image-desktop={index}
+                      key={`${image.url}-${index}`}
+                      ref={(node) => {
+                        desktopSlideRefs.current[index] = node;
+                      }}
                     >
                       <img
                         alt={image.alt ?? product.name}
-                        className="aspect-[375/500] h-full w-full object-cover"
+                        className="aspect-[980/1080] h-full w-full object-cover"
                         loading={index === 0 ? "eager" : "lazy"}
                         src={image.url}
                       />
                     </figure>
                   ))
                 ) : (
-                  <div className="grid aspect-[375/500] w-screen place-items-end p-6 font-serif text-[9rem] leading-none font-bold text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.18)]">
+                  <div className="lost-product-media-fallback sticky top-0 col-start-1 row-start-1 grid h-screen place-items-end p-10 font-serif text-[16rem] leading-none font-bold">
                     {product.name.slice(0, 1)}
                   </div>
                 )}
+                <div className="pointer-events-none z-[9] col-start-1 row-start-1 hidden lg:sticky lg:top-0 lg:grid lg:h-full lg:w-full">
+                  <div className="grid h-fit w-fit gap-5 self-end justify-self-start pb-12 pl-12 xl:pb-16 xl:pl-16">
+                    {images.map((image, index) => (
+                      <div
+                        aria-label={`${product.name} ${index + 1}`}
+                        className={cn(
+                          getLostProductThumbClassName({ activeImage, index }),
+                          "pointer-events-auto"
+                        )}
+                        data-slider-desktop-thumb
+                        key={`${image.url}-desktop-thumb-${index}`}
+                        role="presentation"
+                        style={getLostProductDesktopThumbStyle({
+                          activeImage,
+                          index
+                        })}
+                      >
+                        <img
+                          alt=""
+                          aria-hidden
+                          className="aspect-[60/80] w-full object-cover"
+                          src={image.url}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="z-[9] col-start-1 row-start-1 hidden lg:sticky lg:top-0 lg:grid lg:h-full lg:w-full">
+                  <div className="flex h-fit w-fit gap-x-3 self-end justify-self-end pr-12 pb-12 xl:pr-16 xl:pb-16">
+                    {selectedStockLabel ? (
+                      <span className="lost-product-tag self-end">
+                        <span>{selectedStockLabel}</span>
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="absolute bottom-4 left-4 flex items-end gap-x-2 lg:hidden">
-              {images.map((image, index) => (
-                <Button
-                  aria-label={`${product.name} ${index + 1}`}
-                  className={getLostProductThumbClassName({
-                    activeImage,
-                    index,
-                    mobile: true
-                  })}
-                  data-slider-mobile-thumb
-                  key={`${image.url}-mobile-thumb-${index}`}
-                  onClick={() => {
-                    setActiveImage(index);
-                    mobileScrollerRef.current?.scrollTo({
-                      behavior: "smooth",
-                      left: index * mobileScrollerRef.current.clientWidth
-                    });
-                  }}
-                  type="button"
-                >
-                  <img
-                    alt=""
-                    aria-hidden
-                    className="aspect-[60/80] w-full object-cover"
-                    src={image.url}
-                  />
-                </Button>
-              ))}
-            </div>
-            <div className="absolute top-4 left-4 grid gap-2 lg:hidden">
-              <div className="flex gap-x-2 self-start justify-self-start">
-                {selectedStockLabel ? (
-                  <span className="lost-product-tag z-10 self-start">
-                    <span>{selectedStockLabel}</span>
-                  </span>
-                ) : null}
+
+              <div
+                className="scroll-bar flex w-full snap-x snap-mandatory overflow-x-auto lg:hidden"
+                data-slider-product-mobile
+                onScroll={(event) => {
+                  const width = event.currentTarget.clientWidth || 1;
+                  setActiveImage(
+                    Math.min(
+                      images.length - 1,
+                      Math.max(
+                        0,
+                        Math.round(event.currentTarget.scrollLeft / width)
+                      )
+                    )
+                  );
+                }}
+                ref={mobileScrollerRef}
+              >
+                <div className="relative flex w-max">
+                  {images.length > 0 ? (
+                    images.map((image, index) => (
+                      <figure
+                        className="relative w-screen snap-start"
+                        data-load-img
+                        key={`${image.url}-mobile-${index}`}
+                      >
+                        <img
+                          alt={image.alt ?? product.name}
+                          className="aspect-[375/500] h-full w-full object-cover"
+                          loading={index === 0 ? "eager" : "lazy"}
+                          src={image.url}
+                        />
+                      </figure>
+                    ))
+                  ) : (
+                    <div className="grid aspect-[375/500] w-screen place-items-end p-6 font-serif text-[9rem] leading-none font-bold text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.18)]">
+                      {product.name.slice(0, 1)}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </section>
+              <div className="absolute bottom-4 left-4 flex items-end gap-x-2 lg:hidden">
+                {images.map((image, index) => (
+                  <Button
+                    aria-label={`${product.name} ${index + 1}`}
+                    className={getLostProductThumbClassName({
+                      activeImage,
+                      index,
+                      mobile: true
+                    })}
+                    data-slider-mobile-thumb
+                    key={`${image.url}-mobile-thumb-${index}`}
+                    onClick={() => {
+                      setActiveImage(index);
+                      mobileScrollerRef.current?.scrollTo({
+                        behavior: "smooth",
+                        left: index * mobileScrollerRef.current.clientWidth
+                      });
+                    }}
+                    type="button"
+                  >
+                    <img
+                      alt=""
+                      aria-hidden
+                      className="aspect-[60/80] w-full object-cover"
+                      src={image.url}
+                    />
+                  </Button>
+                ))}
+              </div>
+              <div className="absolute top-4 left-4 grid gap-2 lg:hidden">
+                <div className="flex gap-x-2 self-start justify-self-start">
+                  {selectedStockLabel ? (
+                    <span className="lost-product-tag z-10 self-start">
+                      <span>{selectedStockLabel}</span>
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          )}
 
           <section
             aria-label={product.name}

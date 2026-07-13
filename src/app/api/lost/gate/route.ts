@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  createLostGateCookieValue,
   isLostGatePassword,
   LOST_GATE_COOKIE_MAX_AGE_SECONDS,
-  LOST_GATE_COOKIE_NAME,
-  LOST_GATE_COOKIE_VALUE
+  LOST_GATE_COOKIE_NAME
 } from "@/lib/lostinseoul/gate";
 
 function firstFormString(value: FormDataEntryValue | null): string {
@@ -74,10 +74,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(url, { status: 303 });
   }
 
+  const gateCookieValue = await createLostGateCookieValue();
+  if (!gateCookieValue) {
+    return NextResponse.json(
+      { error: "Gate session is unavailable" },
+      { status: 503 }
+    );
+  }
+
   const response = NextResponse.redirect(redirectUrl(request, returnTo), {
     status: 303
   });
-  response.cookies.set(LOST_GATE_COOKIE_NAME, LOST_GATE_COOKIE_VALUE, {
+  response.cookies.set(LOST_GATE_COOKIE_NAME, gateCookieValue, {
     httpOnly: true,
     maxAge: LOST_GATE_COOKIE_MAX_AGE_SECONDS,
     path: "/",

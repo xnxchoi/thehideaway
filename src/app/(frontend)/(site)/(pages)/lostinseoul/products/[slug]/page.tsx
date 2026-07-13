@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
 import {
+  getLostFragranceData,
   getLostHomeData,
   getLostProductBySlug
 } from "@/lib/lost-commerce/queries";
+import { shouldEnableLostProductStage } from "../../fragrance/product-stage/product-stage-gate";
 import { LostProductDetailClient } from "./product.client";
 
 type PageProps = {
@@ -27,13 +29,19 @@ export default async function LostProductPage({ params }: PageProps) {
   const { slug } = await params;
   const product = await getLostProductBySlug(slug).catch(() => null);
   if (!product) notFound();
-  const data = await getLostHomeData().catch(() => ({
-    drops: [],
-    products: []
-  }));
+  const [data, fragrance] = await Promise.all([
+    getLostHomeData().catch(() => ({ drops: [], products: [] })),
+    getLostFragranceData().catch(() => null)
+  ]);
   const relatedProducts = data.products
     .filter((item) => item.id !== product.id)
     .slice(0, 3);
+  // The WebGL flacon stage stays dormant until the bottle is a real model (workplan
+  // Level 2) — until then every PDP, fragrance included, uses the photographic gallery.
+  const enableProductStage = shouldEnableLostProductStage({
+    productSlug: slug,
+    fragranceSlug: fragrance?.slug
+  });
 
   const [t, tCommerce] = await Promise.all([
     getTranslations("LOSTINSEOUL"),
@@ -44,6 +52,7 @@ export default async function LostProductPage({ params }: PageProps) {
     <RPage slug={["lostinseoul", "products", slug]} type="pages">
       <LostProductDetailClient
         drops={data.drops}
+        enableProductStage={enableProductStage}
         product={product}
         relatedProducts={relatedProducts}
         commerce={{
