@@ -34,7 +34,7 @@
   "LOSTINSEOUL": {
     "meta": {
       "title": "LOSTINSEOUL",
-      "description": "서울에서 제작하고 기록하는 한정 오브제와 에디션."
+      "description": "Limited Seoul objects, editions, and commitments from RESTORED PROJECT."
     },
     "nav": {
       "cart": "카트",
@@ -42,29 +42,29 @@
       "shop": "스토어",
       "archive": "아카이브",
       "search": "검색",
-      "searchPlaceholder": "오브제 검색",
-      "clearSearch": "검색 지우기",
+      "searchPlaceholder": "Find objects",
+      "clearSearch": "Clear search",
       "searchResults": "결과",
-      "searchNoResults": "일치하는 오브제가 없습니다."
+      "searchNoResults": "일치하는 결과가 없습니다."
     },
     "home": {
-      "announcement": "한정 수량, 서울 발송",
-      "eyebrow": "스토어프론트",
+      "announcement": "Limited runs, Seoul dispatch",
+      "eyebrow": "Storefront",
       "title": "LOSTINSEOUL",
-      "lede": "서울의 밤, 소재, 제작 기록에서 나온 오브제와 에디션. 바로 구매할 수 있는 것도, 충분한 약속이 모여야 제작되는 것도 있습니다.",
+      "lede": "Objects, editions, and commitments from Seoul. Some are ready now. Some exist only when enough people commit.",
       "products": "구매 가능",
-      "empty": "현재 열려 있는 오브제가 없습니다.",
+      "empty": "No products are open right now.",
       "collection": "컬렉션",
       "year": "2026",
-      "objects": "오브제",
+      "objects": "Objects",
       "incoming": "입고 예정",
-      "focusTitle": "선택된 오브제",
+      "focusTitle": "Selected objects",
       "collectionsEyebrow": "에디션",
       "collectionsTitle": "한정 발행, 진행 중인 약속"
     },
     "actions": {
       "view": "상품 보기",
-      "watchVideo": "영상 시청하기",
+      "watchVideo": "Watch video",
       "add": "카트에 담기",
       "added": "카트에 담았습니다.",
       "requestQuote": "견적 요청"
@@ -89,7 +89,7 @@
       "care": "관리",
       "shipping": "배송 및 반품",
       "directPurchase": "바로 결제",
-      "privateQuote": "프라이빗 오더 요청 사항",
+      "privateQuote": "Notes for a private order",
       "related": "같은 컬렉션",
       "collectionPush": "Collection Memory",
       "variants": "옵션",
@@ -125,10 +125,8 @@
         "representativeLabel": "대표자",
         "representativeName": "최성윤",
         "businessRegistrationLabel": "사업자등록번호",
-        "mailOrderRegistrationLabel": "통신판매업 신고번호",
-        "mailOrderPending": "통신판매업 신고 준비 중",
         "addressLabel": "주소",
-        "address": "서울특별시 송파구 올림픽로4길 15, 7동 705호(잠실동, 아시아선수촌아파트)",
+        "address": "서울특별시 송파구 올림픽로4길 15",
         "phoneLabel": "전화",
         "emailLabel": "이메일",
         "domainLabel": "서비스 URL",
@@ -146,7 +144,7 @@
       "submit": "주문하기",
       "pending": "주문 접수 중",
       "failed": "주문 접수에 실패했습니다.",
-      "portoneUnavailable": "카드 결제는 아직 열리지 않았습니다.",
+      "portoneUnavailable": "카드 결제 추후 지원 예정",
       "name": "이름",
       "email": "이메일",
       "phone": "전화번호",
@@ -198,18 +196,17 @@
       }
     },
     "gate": {
-      "metaTitle": "접근 — LOSTINSEOUL",
-      "metaDescription": "LOSTINSEOUL 비공개 접근 게이트.",
-      "eyebrow": "비공개",
-      "status": "잠김",
-      "label": "접근",
-      "title": "조용히 들어오세요.",
-      "lede": "릴리즈를 준비하는 동안 LOSTINSEOUL은 비밀번호로 보호됩니다.",
-      "passwordLabel": "비밀번호",
-      "passwordPlaceholder": "비밀번호 입력",
-      "invalid": "비밀번호가 일치하지 않습니다.",
-      "submit": "입장",
-      "footer": "LOSTINSEOUL 비공개 프리뷰"
+      "metaTitle": "Access — LOSTINSEOUL",
+      "metaDescription": "LOSTINSEOUL - Early Access",
+      "eyebrow": "Private",
+      "status": "Locked",
+      "label": "Access",
+      "lede": "Opening Soon...",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter password",
+      "invalid": "Wrong passcode.",
+      "submit": "Enter",
+      "footer": ""
     },
     "legal": {
       "eyebrow": "법적 고지",
@@ -404,10 +401,8 @@
       "tradeName": "상호",
       "representative": "대표자",
       "registration": "사업자등록번호",
-      "mailOrder": "통신판매업신고",
       "address": "주소",
       "phone": "전화",
-      "mailOrderPending": "신고 예정",
       "pending": "—"
     },
     "product": {
@@ -452,63 +447,63 @@
       "patience": "인내"
     },
     "dispatches": {
-      "default": "편집자 책상 어딘가, 커피 자국 아래. 꺼낼 때가 되면 꺼냅니다.",
-      "backstage": "손님 맞을 준비가 덜 됐습니다. 가구가 아직 도착 중이에요.",
-      "composing": "당신이 없는 방에서 쓰이고 있습니다. 때가 되면 문을 열어드립니다.",
-      "argued": "어른들끼리 논쟁 중입니다. 주소를 남겨주시면 누가 이겼는지 알려드리겠습니다.",
-      "honest": "시작할 때가 아니었는데 시작해버렸습니다. 마치고 나면 다시 오세요."
+      "default": "Coming soon.",
+      "backstage": "Not ready for company. The furniture is still arriving.",
+      "composing": "Currently being written in a room you aren't in. We'll open the door in due course.",
+      "argued": "Being argued about by adults. Leave an address and we'll tell you who won.",
+      "honest": "We started this before we should have. Come back after we finish."
     },
     "tooltips": {
       "composition": {
-        "line1": "집필 중.",
-        "line2": "방해 금지."
+        "line1": "Under composition.",
+        "line2": "Do not disturb."
       },
       "wetInk": {
-        "line1": "잉크가 마르지 않았습니다.",
-        "line2": "만지지 마세요."
+        "line1": "Wet ink.",
+        "line2": "Hands off."
       },
       "editor": {
-        "line1": "편집자 책상 위에 있습니다.",
-        "line2": "기다려 주시기 바랍니다."
+        "line1": "In the editor's stack.",
+        "line2": "Kindly wait."
       }
     },
     "toasts": {
-      "notYet": "아직입니다. — 편집자 드림",
-      "nearly": "거의. 거의로는 부족합니다.",
-      "tryLater": "다음 주에 다시 두드려 주세요.",
-      "locked": "문은 잠겨 있습니다. 일부러요."
+      "notYet": "Not yet. — Ed.",
+      "nearly": "Nearly. Not nearly enough.",
+      "tryLater": "Try the door again next week.",
+      "locked": "The door is locked. On purpose."
     },
     "notify": {
-      "cta": "알려주세요",
-      "placeholder": "주소",
-      "ack": "접수했습니다. 서신 드리겠습니다."
+      "cta": "TELL ME WHEN",
+      "placeholder": "your address",
+      "ack": "Logged. We'll write."
     },
-    "sectionCopy": "논평 — 출간 예정. 여백을 그리는 중입니다.",
-    "cardCopy": "무언가, 언젠가."
+    "sectionCopy": "Commentary — forthcoming. The margins are still being ruled.",
+    "cardCopy": "Something here, eventually."
   },
   "Gate": {
-    "eyebrow": "더 하이드어웨이 — 서울",
+    "eyebrow": "The Hideaway",
     "wordmark": "The Hideaway",
     "title": "곧 다시 문을 엽니다.",
-    "lede": "여백을 다듬는 중입니다. 방은 단계적으로 열립니다.",
-    "footnote": "지금 읽을 수 있는 것은 홈에 있습니다.",
-    "ctaPrimary": "홈",
+    "lede": "We are still ruling the margins. The room opens in stages.",
+    "footnote": "What is ready to read, you can find at home.",
+    "ctaPrimary": "Home",
     "ctaPrimaryHref": "/home",
-    "ctaSecondary": "로그인",
+    "ctaSecondary": "Sign in",
     "ctaSecondaryHref": "/sign-in",
-    "colophon": "사적인 리허설 중인 편집의 집."
+    "colophon": "An editorial house, in private rehearsal."
   },
   "Settings": {
-    "navAria": "설정 섹션",
+    "navAria": "설정",
     "back": "설정",
     "sections": {
       "general": {
         "label": "일반",
-        "blurb": "언어, 테마, 기타 인터페이스 환경설정."
+        "blurb": "Language, theme, and other interface preferences."
       },
       "profile": {
         "label": "프로필",
-        "blurb": "공개되는 이름, 소개, 위치, 링크."
+        "blurb": "Your public face — name, bio, location, link."
       },
       "account": {
         "label": "계정",
@@ -520,7 +515,7 @@
       },
       "notifications": {
         "label": "알림",
-        "blurb": "어떤 알림을 — 얼마나 자주 보낼지."
+        "blurb": "What you hear from us — and how often."
       }
     },
     "providers": {
@@ -568,9 +563,9 @@
       "reduceMotionLabel": "모션 줄이기",
       "reduceMotionDescription": "OS 접근성 설정에서 가져옵니다.",
       "reduceMotionDetected": {
-        "loading": "",
-        "on": "",
-        "off": ""
+        "loading": "Detecting…",
+        "on": "On — animations minimised",
+        "off": "Off — full motion"
       }
     }
   },
@@ -587,22 +582,20 @@
       "tradeName": "상호",
       "representative": "대표자",
       "registration": "사업자등록번호",
-      "mailOrder": "통신판매업신고",
       "address": "주소",
       "phone": "전화",
       "privacyOfficer": "개인정보보호책임자"
     },
     "businessName": "리스토어드프로젝트",
     "representativeName": "최성윤",
-    "address": "서울특별시 송파구 올림픽로4길 15, 7동 705호(잠실동, 아시아선수촌아파트)",
-    "serviceHours": "주말, 공휴일 12:00–24:00 \n (주중 휴무)",
-    "mailOrderPending": "신고 진행 중"
+    "address": "서울특별시 송파구 올림픽로4길 15",
+    "serviceHours": "주말, 공휴일 12:00–24:00 \n (주중 휴무)"
   },
   "Invoice": {
     "subWordmark": "SEOUL · PARIS",
     "tagline": "a restored project",
     "purchasedBy": "구매자",
-    "memberSince": "{year}년 부터 함께해온 회원",
+    "memberSince": "{year}년 부터 함께한 회원",
     "fields": {
       "invoiceNumber": "청구서 번호",
       "orderNo": "주문 번호"
@@ -653,20 +646,20 @@
     "actions": {
       "print": {
         "idle": "인쇄",
-        "loading": "준비 중…",
-        "error": "다시 시도"
+        "loading": "로딩 중…",
+        "error": "다시 시도해주세요"
       },
       "save": {
         "idle": "PDF로 저장",
         "saving": "저장 중…",
         "done": "저장됨",
-        "error": "다시 시도"
+        "error": "다시 시도해주세요"
       },
       "share": {
         "idle": "공유",
         "shared": "공유됨",
         "copied": "복사됨",
-        "error": "다시 시도"
+        "error": "다시 시도해주세요"
       }
     }
   },
@@ -884,7 +877,6 @@
       },
       "loader": {
         "enter": "입장하기",
-        "enterSilent": "조용히 입장하기",
         "summary": "필수 정보"
       },
       "footer": {

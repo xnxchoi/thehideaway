@@ -266,14 +266,6 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
 
           <Button
             type="button"
-            onClick={() => handleEnter(false)}
-            className="font-mono text-[10px] tracking-[0.24em] text-[var(--dn-fg-mute)] uppercase opacity-50 transition-opacity duration-200 hover:opacity-90"
-          >
-            {t("loader.enterSilent")}
-          </Button>
-
-          <Button
-            type="button"
             onClick={handleSummary}
             className="mt-1 font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-mute)] uppercase opacity-30 transition-opacity duration-200 hover:opacity-70"
           >

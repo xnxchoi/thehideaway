@@ -125,8 +125,6 @@
         "representativeLabel": "Representative",
         "representativeName": "Sungyoon Choi",
         "businessRegistrationLabel": "Business registration",
-        "mailOrderRegistrationLabel": "Mail-order registration",
-        "mailOrderPending": "Mail-order registration pending",
         "addressLabel": "Address",
         "address": "Olympic-ro 4-gil 15, Bldg 7 Unit 705, Songpa-gu, Seoul, Republic of Korea",
         "phoneLabel": "Phone",
@@ -199,17 +197,16 @@
     },
     "gate": {
       "metaTitle": "Access — LOSTINSEOUL",
-      "metaDescription": "Private access gate for LOSTINSEOUL.",
+      "metaDescription": "LOSTINSEOUL - Early Access",
       "eyebrow": "Private",
       "status": "Locked",
       "label": "Access",
-      "title": "Enter quietly.",
-      "lede": "LOSTINSEOUL is temporarily password protected while the release is prepared.",
-      "passwordLabel": "Password",
-      "passwordPlaceholder": "Enter password",
-      "invalid": "Password not recognized.",
+      "lede": "Opening Soon...",
+      "passwordLabel": "Passcode",
+      "passwordPlaceholder": "Enter...",
+      "invalid": "Wrong passcode.",
       "submit": "Enter",
-      "footer": "LOSTINSEOUL private preview"
+      "footer": ""
     },
     "legal": {
       "eyebrow": "Legal",
@@ -366,10 +363,8 @@
       "tradeName": "Trade name",
       "representative": "Representative",
       "registration": "Business Reg. No.",
-      "mailOrder": "Mail-Order Reg.",
       "address": "Address",
       "phone": "Phone",
-      "mailOrderPending": "Pending application",
       "pending": "—"
     },
     "product": {
@@ -587,16 +582,14 @@
       "tradeName": "Trade name",
       "representative": "Representative",
       "registration": "Business Reg. No.",
-      "mailOrder": "Mail-Order Reg.",
       "address": "Address",
       "phone": "Phone",
       "privacyOfficer": "Privacy Officer"
     },
     "businessName": "Restored Projects",
     "representativeName": "Sungyoon Choi",
-    "address": "Olympic-ro 4-gil 15, Bldg 7 Unit 705, Songpa-gu, Seoul, Republic of Korea",
-    "serviceHours": "Sat–Sun 12:00–24:00 KST \n(closed on weekdays)",
-    "mailOrderPending": "Pending application"
+    "address": "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea",
+    "serviceHours": "Sat–Sun 12:00–24:00 KST \n(closed on weekdays)"
   },
   "Invoice": {
     "subWordmark": "SEOUL · PARIS",
@@ -884,7 +877,6 @@
       },
       "loader": {
         "enter": "Enter",
-        "enterSilent": "Enter quietly",
         "summary": "Essentials"
       },
       "footer": {

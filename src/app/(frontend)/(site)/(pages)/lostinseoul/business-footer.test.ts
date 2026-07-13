@@ -11,8 +11,6 @@ const labels = {
   domainLabel: "Service URL",
   emailLabel: "Email",
   legalName: "Restored Projects",
-  mailOrderPending: "Mail-order registration pending",
-  mailOrderRegistrationLabel: "Mail-order registration",
   phoneLabel: "Phone",
   privacyOfficerLabel: "Privacy officer",
   representativeLabel: "Representative",
@@ -23,7 +21,6 @@ const identifiers = {
   businessRegistrationNumber: "Registration pending",
   domain: "lostinseoul.com",
   email: "contact@lostinseoul.com",
-  mailOrderRegistrationNumber: "",
   phone: "Email support",
   privacyOfficerEmail: "privacy@lostinseoul.com",
   privacyOfficerName: "LOSTINSEOUL Privacy Desk"
@@ -38,10 +35,6 @@ describe("getLostBusinessDisclosure", () => {
       { label: "Business name", value: "Restored Projects" },
       { label: "Representative", value: "Sungyoon Choi" },
       { label: "Business registration", value: "Registration pending" },
-      {
-        label: "Mail-order registration",
-        value: "Mail-order registration pending"
-      },
       {
         label: "Address",
         value: "Olympic-ro 4-gil 15, Songpa-gu, Seoul, Republic of Korea"

@@ -7,8 +7,6 @@ export type LostBusinessDisclosureLabels = {
   domainLabel: string;
   emailLabel: string;
   legalName: string;
-  mailOrderPending: string;
-  mailOrderRegistrationLabel: string;
   phoneLabel: string;
   privacyOfficerLabel: string;
   representativeLabel: string;
@@ -19,7 +17,6 @@ export type LostBusinessDisclosureIdentifiers = {
   businessRegistrationNumber: string;
   domain: string;
   email: string;
-  mailOrderRegistrationNumber: string;
   phone: string;
   privacyOfficerEmail: string;
   privacyOfficerName: string;
@@ -59,17 +56,7 @@ export function getLostBusinessDisclosure(
       },
       {
         label: labels.businessRegistrationLabel,
-        value: withFallback(
-          identifiers.businessRegistrationNumber,
-          labels.mailOrderPending
-        )
-      },
-      {
-        label: labels.mailOrderRegistrationLabel,
-        value: withFallback(
-          identifiers.mailOrderRegistrationNumber,
-          labels.mailOrderPending
-        )
+        value: withFallback(identifiers.businessRegistrationNumber, "—")
       },
       {
         label: labels.addressLabel,

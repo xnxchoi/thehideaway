@@ -60,10 +60,7 @@ export default async function LostGatePage(props: {
               <p className="font-mono text-[0.8rem] font-bold tracking-[0.24em] text-[oklch(from_var(--white)_l_c_h_/_0.54)] uppercase">
                 {t("label")}
               </p>
-              <h1 className="mt-6 max-w-[12ch] text-[clamp(4.4rem,12vw,13rem)] leading-[0.82] font-medium tracking-tight">
-                {t("title")}
-              </h1>
-              <p className="mt-8 max-w-2xl text-[1.25rem] leading-snug text-[oklch(from_var(--white)_l_c_h_/_0.72)] md:text-[1.8rem]">
+              <p className="mt-6 max-w-2xl text-[1.25rem] leading-snug text-[oklch(from_var(--white)_l_c_h_/_0.72)] md:text-[1.8rem]">
                 {t("lede")}
               </p>
             </div>

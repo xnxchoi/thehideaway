@@ -15,8 +15,6 @@ type LostFooterTranslationKey =
   | "footer.business.emailLabel"
   | "footer.business.heading"
   | "footer.business.legalName"
-  | "footer.business.mailOrderPending"
-  | "footer.business.mailOrderRegistrationLabel"
   | "footer.business.phoneLabel"
   | "footer.business.privacyOfficerLabel"
   | "footer.business.representativeLabel"
@@ -52,7 +50,6 @@ export function getLostBusinessFooterProps(
       businessRegistrationNumber: BUSINESS.registrationNumber,
       domain: "lostinseoul.com",
       email: contactEmail,
-      mailOrderRegistrationNumber: BUSINESS.mailOrderRegistrationNumber,
       phone: BUSINESS.phone,
       privacyOfficerEmail,
       privacyOfficerName: lostEnv(
@@ -69,10 +66,6 @@ export function getLostBusinessFooterProps(
       domainLabel: t("footer.business.domainLabel"),
       emailLabel: t("footer.business.emailLabel"),
       legalName: t("footer.business.legalName"),
-      mailOrderPending: t("footer.business.mailOrderPending"),
-      mailOrderRegistrationLabel: t(
-        "footer.business.mailOrderRegistrationLabel"
-      ),
       phoneLabel: t("footer.business.phoneLabel"),
       privacyOfficerLabel: t("footer.business.privacyOfficerLabel"),
       representativeLabel: t("footer.business.representativeLabel"),

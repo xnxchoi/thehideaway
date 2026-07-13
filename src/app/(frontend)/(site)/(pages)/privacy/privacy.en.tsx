@@ -285,9 +285,6 @@ export function PrivacyEn({ business }: Props) {
           <br />
           Business Registration Number: {business.registrationNumber}
           <br />
-          Mail-Order Business Registration:{" "}
-          {business.mailOrderRegistrationNumber}
-          <br />
           Address: {business.addressEn}
           <br />
           Email: {business.email}

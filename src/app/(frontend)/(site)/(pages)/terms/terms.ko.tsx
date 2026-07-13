@@ -213,8 +213,6 @@ export function TermsKo({ business }: Props) {
           <br />
           사업자등록번호: {business.registrationNumber}
           <br />
-          통신판매업신고: {business.mailOrderRegistrationNumber}
-          <br />
           주소: {business.addressKo}
           <br />
           이메일: {business.email}

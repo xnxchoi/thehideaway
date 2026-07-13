@@ -46,10 +46,6 @@ export async function CheckoutColophon({
       label: tLabels("registration"),
       value: BUSINESS.registrationNumber || pending
     },
-    {
-      label: tLabels("mailOrder"),
-      value: BUSINESS.mailOrderRegistrationNumber || tLabels("mailOrderPending")
-    },
     { label: tLabels("address"), value: tFooter("address") },
     { label: tLabels("phone"), value: BUSINESS.phone || pending }
   ];

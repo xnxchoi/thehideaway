@@ -20,7 +20,7 @@
 export interface BusinessInfo {
   // ─── Single-locale identifiers (language-agnostic) ─────────────────
   readonly registrationNumber: string;
-  readonly mailOrderRegistrationNumber: string;
+  // readonly mailOrderRegistrationNumber: string;
   readonly phone: string;
   readonly email: string;
   readonly privacyOfficerName: string;
@@ -56,7 +56,7 @@ const env = (key: string, fallback: string): string =>
 
 export const BUSINESS: BusinessInfo = {
   registrationNumber: env("NEXT_PUBLIC_BIZ_REG_NO", "753-32-01007"),
-  mailOrderRegistrationNumber: env("NEXT_PUBLIC_BIZ_MAIL_ORDER_NO", ""),
+  // mailOrderRegistrationNumber: env("NEXT_PUBLIC_BIZ_MAIL_ORDER_NO", ""),
   // Empty until a real landline is set — PortOne requires a landline and a
   // truthy placeholder would render as a fake number. Empty lets the footer /
   // colophon fall through to their pending / em-dash state.

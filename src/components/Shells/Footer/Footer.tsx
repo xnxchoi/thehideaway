@@ -72,10 +72,6 @@ export async function Footer() {
       label: t("fields.registration"),
       value: BUSINESS.registrationNumber || "—"
     },
-    {
-      label: t("fields.mailOrder"),
-      value: BUSINESS.mailOrderRegistrationNumber || t("mailOrderPending")
-    },
     { label: t("fields.address"), value: t("address") },
     { label: t("fields.phone"), value: BUSINESS.phone || "—" },
     {
