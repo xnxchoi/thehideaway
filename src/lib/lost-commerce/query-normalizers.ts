@@ -26,6 +26,54 @@ function nullableString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
+export function normalizeLostProductSkus(
+  product: AnyDoc,
+  skus: unknown
+): LostProductVariant[] {
+  if (!Array.isArray(skus)) return [];
+
+  return skus
+    .filter(
+      (sku): sku is AnyDoc =>
+        Boolean(sku) && typeof sku === "object" && sku.active === true
+    )
+    .map((sku) => {
+      const options = Array.isArray(sku.options)
+        ? sku.options.filter(
+            (option): option is AnyDoc =>
+              Boolean(option) && typeof option === "object"
+          )
+        : [];
+      const optionValue = (key: string) =>
+        nullableString(
+          options.find(
+            (option) =>
+              nullableString(option.key)?.trim().toLowerCase() === key
+          )?.value
+        );
+      const skuCode = nullableString(sku.sku);
+      const id = stringValue(sku.id);
+      const amount =
+        typeof sku.price_override_amount === "number"
+          ? sku.price_override_amount
+          : typeof product.unit_amount === "number"
+            ? product.unit_amount
+            : null;
+
+      return {
+        id,
+        sku: skuCode,
+        label: stringValue(sku.label) || skuCode || id,
+        size: optionValue("size"),
+        color: optionValue("color"),
+        amount,
+        inventory: typeof sku.inventory === "number" ? sku.inventory : null,
+        stockState: nullableString(sku.stock_state)
+      };
+    })
+    .filter((sku) => sku.id && sku.label);
+}
+
 export function normalizeLostProductVariants(
   product: AnyDoc
 ): LostProductVariant[] {

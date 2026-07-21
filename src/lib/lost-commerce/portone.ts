@@ -72,6 +72,7 @@ export function getPortOneConfig() {
   return {
     key: process.env.PORTONE_CLIENT_KEY ?? "",
     secret: process.env.PORTONE_SECRET_KEY ?? "",
+    apiSecret: process.env.PORTONE_API_SECRET ?? "",
     apiJwt: process.env.PORTONE_API_JWT ?? "",
     storeId: process.env.PORTONE_STORE_ID,
     channelKey: process.env.PORTONE_CHANNEL_KEY,
@@ -103,13 +104,23 @@ export function isPortOneCheckoutEnabled(
 ): boolean {
   const hasV2Config =
     hasPortOneValue(cfg.storeId) &&
-    (hasPortOneValue(cfg.channelKey) || hasPortOneValue(cfg.defaultChannel));
+    (hasPortOneValue(cfg.channelKey) || hasPortOneValue(cfg.defaultChannel)) &&
+    (hasPortOneValue(cfg.apiSecret) || hasPortOneValue(cfg.secret));
   const hasGlobalConfig =
     hasPortOneValue(cfg.key) && hasPortOneValue(cfg.secret);
   // Config presence is necessary but not sufficient: the master gate
   // (PORTONE_CARD_CHECKOUT_LIVE) must be explicitly on. This keeps card dark
   // by default so setting sandbox keys alone never exposes it to users.
   return (hasV2Config || hasGlobalConfig) && cfg.cardCheckoutLive;
+}
+
+export function getPortOneSdkVersion(
+  cfg: ReturnType<typeof getPortOneConfig> = getPortOneConfig()
+): "v2" | "global" {
+  const hasV2Config =
+    hasPortOneValue(cfg.storeId) &&
+    (hasPortOneValue(cfg.channelKey) || hasPortOneValue(cfg.defaultChannel));
+  return hasV2Config ? "v2" : "global";
 }
 
 export async function createPortOneRefund(input: {

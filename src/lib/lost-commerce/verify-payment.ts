@@ -141,7 +141,7 @@ export async function getPortOnePayment(
   paymentId: string,
   cfg: ReturnType<typeof getPortOneConfig> = getPortOneConfig()
 ): Promise<PortOnePaymentRecord> {
-  const secret = cfg.secret?.trim();
+  const secret = (cfg.apiSecret || cfg.secret)?.trim();
   if (!secret || secret.startsWith("CHANGE_ME")) {
     throw new Error("portone-verify-not-configured");
   }

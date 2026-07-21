@@ -18,7 +18,7 @@ export type LostCartLineClient = LostCartLineInput & {
 function keyFor(line: LostCartLineInput): string {
   return [
     line.productId,
-    line.variantId ?? "",
+    line.skuId ?? line.variantId ?? "",
     line.mode,
     line.campaignId ?? ""
   ].join(":");
@@ -44,6 +44,7 @@ export function serializeLostCartLines(
 ): LostCartLineInput[] {
   return lines.map((line) => ({
     productId: line.productId,
+    skuId: line.skuId,
     variantId: line.variantId,
     mode: line.mode,
     quantity: line.quantity,

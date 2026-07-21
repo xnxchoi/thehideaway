@@ -1,4 +1,5 @@
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
+import { protectPaymentLifecycle } from "@/lib/lost-commerce/lifecycle-authorization";
 import type { CollectionConfig } from "payload";
 
 const ownsPayment = ({ req }: { req: { user?: { id?: string } | null } }) => {
@@ -19,9 +20,12 @@ export const ProductPayments: CollectionConfig = {
   },
   access: {
     read: ownsPayment,
-    create: isAdmin,
+    create: () => false,
     update: isAdmin,
     delete: isAdmin
+  },
+  hooks: {
+    beforeChange: [protectPaymentLifecycle]
   },
   fields: [
     {
@@ -107,7 +111,14 @@ export const ProductPayments: CollectionConfig = {
     {
       name: "events",
       type: "json",
-      defaultValue: []
+      defaultValue: [],
+      access: {
+        create: () => false,
+        update: () => false
+      },
+      admin: {
+        readOnly: true
+      }
     },
     {
       name: "paid_at",

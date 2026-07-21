@@ -3,9 +3,9 @@ import { getPayload } from "payload";
 import { formatLostMoney } from "./format";
 import {
   normalizeLostDropCard,
-  normalizeLostProductVariants,
+  normalizeLostProductSkus,
   type LostDropCard,
-  type LostProductVariant
+  type LostProductVariant as NormalizedLostProductVariant
 } from "./query-normalizers";
 import type { LostCurrency, LostOrderMode } from "./types";
 
@@ -19,6 +19,7 @@ export type LostProductCard = {
   currency: LostCurrency;
   unitAmount: number;
   price: string;
+  displayPrice: string | null;
   imageUrl?: string | null;
   imageAlt?: string | null;
   galleryPreview: Array<{ url: string; alt?: string | null }>;
@@ -28,7 +29,11 @@ export type LostProductCard = {
   campaign?: LostCampaignView | null;
 };
 
-export type { LostDropCard, LostProductVariant };
+export type { LostDropCard };
+
+export type LostProductVariant = NormalizedLostProductVariant & {
+  actionableModes: LostOrderMode[];
+};
 
 export type LostCampaignView = {
   id: string;
@@ -37,6 +42,7 @@ export type LostCampaignView = {
   paidCommitments: number;
   deadline: string;
   progressVisibility: "hidden" | "percentage" | "count";
+  eligibleSkuIds: string[];
 };
 
 export type LostProductDetail = LostProductCard & {
@@ -99,15 +105,153 @@ function isVideo(media: ReturnType<typeof mediaView>) {
   return /\.(m4v|mov|mp4|webm)$/i.test(media.url ?? "");
 }
 
-function modes(product: AnyDoc): LostOrderMode[] {
-  return [
-    product.standard_enabled ? "standard_purchase" : null,
-    product.request_to_order_enabled ? "request_to_order" : null,
-    product.private_order_enabled ? "private_order" : null
-  ].filter(Boolean) as LostOrderMode[];
+const LOST_ORDER_MODES: readonly LostOrderMode[] = [
+  "standard_purchase",
+  "request_to_order",
+  "private_order"
+];
+
+function isPositiveAmount(value: unknown): value is number {
+  return Number.isSafeInteger(value) && Number(value) >= 1;
 }
 
-function card(product: AnyDoc, campaign?: AnyDoc | null): LostProductCard {
+function hasActiveSkuIdentity(variant: NormalizedLostProductVariant): boolean {
+  return Boolean(variant.id.trim() && variant.sku?.trim());
+}
+
+function isStandardSkuActionable(variant: NormalizedLostProductVariant) {
+  return (
+    isPositiveAmount(variant.amount) &&
+    Number.isSafeInteger(variant.inventory) &&
+    Number(variant.inventory) >= 1 &&
+    (variant.stockState === "in_stock" || variant.stockState === "pre_order")
+  );
+}
+
+function campaignEligibleSkuIds(campaign?: AnyDoc | null): string[] {
+  if (!Array.isArray(campaign?.eligible_skus)) return [];
+
+  return campaign.eligible_skus.flatMap((value) => {
+    const id =
+      typeof value === "string"
+        ? value
+        : stringValue((value as AnyDoc | null)?.id);
+    return id ? [id] : [];
+  });
+}
+
+function isCampaignCheckoutActionable(campaign?: AnyDoc | null): boolean {
+  if (!campaign) return false;
+  const maximum = campaign.maximum_commitments;
+  return maximum == null;
+}
+
+function annotateActionableModes(
+  product: AnyDoc,
+  campaign: AnyDoc | null,
+  variants: NormalizedLostProductVariant[]
+): LostProductVariant[] {
+  const eligibleRequestSkuIds = new Set(
+    isCampaignCheckoutActionable(campaign)
+      ? campaignEligibleSkuIds(campaign)
+      : []
+  );
+  const hasPrivatePreset =
+    product.private_preset_price_enabled === true &&
+    isPositiveAmount(product.private_unit_amount);
+  const isQuoteOnly = product.private_preset_price_enabled !== true;
+
+  return variants.map((variant) => {
+    if (!hasActiveSkuIdentity(variant)) {
+      return { ...variant, actionableModes: [] };
+    }
+    const actionableModes = [
+      product.standard_enabled && isStandardSkuActionable(variant)
+        ? "standard_purchase"
+        : null,
+      product.request_to_order_enabled &&
+      eligibleRequestSkuIds.has(variant.id) &&
+      isPositiveAmount(variant.amount)
+        ? "request_to_order"
+        : null,
+      product.private_order_enabled && (isQuoteOnly || hasPrivatePreset)
+        ? "private_order"
+        : null
+    ].filter(Boolean) as LostOrderMode[];
+
+    return { ...variant, actionableModes };
+  });
+}
+
+function modes(variants: LostProductVariant[]): LostOrderMode[] {
+  return LOST_ORDER_MODES.filter((mode) =>
+    variants.some((variant) => variant.actionableModes.includes(mode))
+  );
+}
+
+function cardPrice(
+  product: AnyDoc,
+  variants: LostProductVariant[],
+  currency: LostCurrency
+): { unitAmount: number; price: string } {
+  const amounts = variants.flatMap((variant) =>
+    typeof variant.amount === "number" && Number.isFinite(variant.amount)
+      ? [variant.amount]
+      : []
+  );
+  const unitAmount =
+    amounts[0] ??
+    (isPositiveAmount(product.unit_amount) ? product.unit_amount : 0);
+  const distinctAmounts = [...new Set(amounts)].sort((a, b) => a - b);
+  const price =
+    distinctAmounts.length > 1
+      ? `${formatLostMoney(distinctAmounts[0], currency)}–${formatLostMoney(
+          distinctAmounts[distinctAmounts.length - 1],
+          currency
+        )}`
+      : formatLostMoney(unitAmount, currency);
+
+  return { unitAmount, price };
+}
+
+function cardDisplayPrice(
+  product: AnyDoc,
+  productModes: LostOrderMode[],
+  variants: LostProductVariant[],
+  currency: LostCurrency
+): string | null {
+  const pricedMode = productModes.find(
+    (mode) => mode === "standard_purchase" || mode === "request_to_order"
+  );
+  if (pricedMode) {
+    const amounts = variants
+      .filter((variant) => variant.actionableModes.includes(pricedMode))
+      .flatMap((variant) =>
+        isPositiveAmount(variant.amount) ? [variant.amount] : []
+      );
+    const distinctAmounts = [...new Set(amounts)].sort((a, b) => a - b);
+    if (distinctAmounts.length === 0) return null;
+    if (distinctAmounts.length === 1) {
+      return formatLostMoney(distinctAmounts[0], currency);
+    }
+    return `${formatLostMoney(distinctAmounts[0], currency)}–${formatLostMoney(
+      distinctAmounts[distinctAmounts.length - 1],
+      currency
+    )}`;
+  }
+
+  return productModes.includes("private_order") &&
+    product.private_preset_price_enabled === true &&
+    isPositiveAmount(product.private_unit_amount)
+    ? formatLostMoney(product.private_unit_amount, currency)
+    : null;
+}
+
+function card(
+  product: AnyDoc,
+  campaign?: AnyDoc | null,
+  variants: LostProductVariant[] = []
+): LostProductCard {
   const productId = stringValue(product.id);
   const productName = stringValue(product.name);
   const hero = mediaView(product.hero_media);
@@ -121,7 +265,8 @@ function card(product: AnyDoc, campaign?: AnyDoc | null): LostProductCard {
     : [];
   const galleryImage = galleryImages[0];
   const currency = stringValue(product.currency, "KRW") as LostCurrency;
-  const unitAmount = numberValue(product.unit_amount);
+  const { unitAmount, price } = cardPrice(product, variants, currency);
+  const productModes = modes(variants);
   const primaryImage = isImage(hero) && hero.url ? hero : galleryImage;
   const galleryPreview = [
     ...(primaryImage?.url
@@ -140,13 +285,14 @@ function card(product: AnyDoc, campaign?: AnyDoc | null): LostProductCard {
     summary: nullableString(product.summary),
     currency,
     unitAmount,
-    price: formatLostMoney(unitAmount, currency),
+    price,
+    displayPrice: cardDisplayPrice(product, productModes, variants, currency),
     imageUrl: primaryImage?.url,
     imageAlt: primaryImage?.alt ?? productName,
     galleryPreview: galleryPreview.slice(0, 5),
     heroVideoUrl: isVideo(hero) ? hero.url : null,
-    modes: modes(product),
-    stockState: nullableString(product.stock_state),
+    modes: productModes,
+    stockState: variants[0]?.stockState ?? null,
     campaign: campaign
       ? {
           id: stringValue(campaign.id),
@@ -156,10 +302,60 @@ function card(product: AnyDoc, campaign?: AnyDoc | null): LostProductCard {
           deadline: stringValue(campaign.deadline),
           progressVisibility: progressVisibilityValue(
             campaign.progress_visibility
-          )
+          ),
+          eligibleSkuIds: campaignEligibleSkuIds(campaign)
         }
       : null
   };
+}
+
+async function activeSkusByProduct(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  products: AnyDoc[]
+): Promise<Map<string, NormalizedLostProductVariant[]>> {
+  const ids = products
+    .map((product) => stringValue(product.id))
+    .filter(Boolean);
+  if (ids.length === 0) return new Map();
+  const documents: AnyDoc[] = [];
+  const limit = Math.max(100, ids.length * 20);
+  let page = 1;
+
+  while (true) {
+    const result = await payload.find({
+      collection: "product-variants",
+      depth: 0,
+      limit,
+      overrideAccess: true,
+      page,
+      sort: "sort",
+      where: {
+        and: [{ active: { equals: true } }, { product: { in: ids } }]
+      }
+    });
+    documents.push(...(result.docs as unknown as AnyDoc[]));
+
+    if (!result.hasNextPage) break;
+    if (typeof result.nextPage !== "number" || result.nextPage <= page) {
+      throw new Error("Invalid product SKU pagination state");
+    }
+    page = result.nextPage;
+  }
+
+  return new Map(
+    products.map((product) => {
+      const productId = stringValue(product.id);
+      const related = documents.filter((sku) => {
+        const relation = sku.product;
+        return (
+          (typeof relation === "string"
+            ? relation
+            : stringValue((relation as AnyDoc | undefined)?.id)) === productId
+        );
+      });
+      return [productId, normalizeLostProductSkus(product, related)];
+    })
+  );
 }
 
 async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
@@ -167,7 +363,7 @@ async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
   const result = await payload.find({
     collection: "product-order-campaigns" as never,
     depth: 0,
-    limit: 1,
+    pagination: false,
     overrideAccess: true,
     sort: "deadline",
     where: {
@@ -178,7 +374,7 @@ async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
       ]
     } as never
   });
-  return (result.docs[0] as AnyDoc | undefined) ?? null;
+  return (result.docs as AnyDoc[]).find(isCampaignCheckoutActionable) ?? null;
 }
 
 export async function getLostHomeData(): Promise<{
@@ -210,10 +406,18 @@ export async function getLostHomeData(): Promise<{
     })
   ]);
 
+  const productDocs = productsResult.docs as AnyDoc[];
+  const skuMap = await activeSkusByProduct(payload, productDocs);
   const products = await Promise.all(
-    (productsResult.docs as AnyDoc[]).map(async (product) =>
-      card(product, await activeCampaignFor(stringValue(product.id)))
-    )
+    productDocs.map(async (product) => {
+      const campaign = await activeCampaignFor(stringValue(product.id));
+      const variants = annotateActionableModes(
+        product,
+        campaign,
+        skuMap.get(stringValue(product.id)) ?? []
+      );
+      return card(product, campaign, variants);
+    })
   );
 
   return {
@@ -241,6 +445,13 @@ export async function getLostProductBySlug(
   });
   const product = result.docs[0] as AnyDoc | undefined;
   if (!product) return null;
+  const skuMap = await activeSkusByProduct(payload, [product]);
+  const campaign = await activeCampaignFor(stringValue(product.id));
+  const variants = annotateActionableModes(
+    product,
+    campaign,
+    skuMap.get(stringValue(product.id)) ?? []
+  );
 
   const gallery = Array.isArray(product.gallery)
     ? product.gallery
@@ -250,7 +461,7 @@ export async function getLostProductBySlug(
     : [];
 
   return {
-    ...card(product, await activeCampaignFor(stringValue(product.id))),
+    ...card(product, campaign, variants),
     details: nullableString(product.details),
     care: nullableString(product.care),
     shippingReturns: nullableString(product.shipping_returns),
@@ -260,7 +471,7 @@ export async function getLostProductBySlug(
       typeof product.private_unit_amount === "number"
         ? product.private_unit_amount
         : null,
-    variants: normalizeLostProductVariants(product)
+    variants
   };
 }
 
@@ -342,10 +553,18 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
     } as never
   });
 
+  const productDocs = productResult.docs as AnyDoc[];
+  const skuMap = await activeSkusByProduct(payload, productDocs);
   const products = await Promise.all(
-    (productResult.docs as AnyDoc[]).map(async (product) =>
-      card(product, await activeCampaignFor(stringValue(product.id)))
-    )
+    productDocs.map(async (product) => {
+      const campaign = await activeCampaignFor(stringValue(product.id));
+      const variants = annotateActionableModes(
+        product,
+        campaign,
+        skuMap.get(stringValue(product.id)) ?? []
+      );
+      return card(product, campaign, variants);
+    })
   );
 
   return {

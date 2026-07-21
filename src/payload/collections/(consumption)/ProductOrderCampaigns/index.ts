@@ -1,5 +1,7 @@
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
+import { protectCampaignLifecycle } from "@/lib/lost-commerce/lifecycle-authorization";
 import type { CollectionConfig } from "payload";
+import { validateCampaignSkuOwnership } from "./validateSkuOwnership";
 
 export const ProductOrderCampaigns: CollectionConfig = {
   slug: "product-order-campaigns",
@@ -25,6 +27,9 @@ export const ProductOrderCampaigns: CollectionConfig = {
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin
+  },
+  hooks: {
+    beforeChange: [protectCampaignLifecycle, validateCampaignSkuOwnership]
   },
   fields: [
     {
@@ -86,11 +91,18 @@ export const ProductOrderCampaigns: CollectionConfig = {
       }
     },
     {
+      name: "eligible_skus",
+      type: "relationship",
+      relationTo: "product-variants",
+      hasMany: true,
+      admin: { description: "SKUs allowed for this campaign." }
+    },
+    {
       name: "eligible_variants",
       type: "json",
       admin: {
-        description:
-          "Optional array of product variant ids eligible for this campaign."
+        readOnly: true,
+        description: "Legacy campaign data retained during the SKU transition."
       }
     },
     {

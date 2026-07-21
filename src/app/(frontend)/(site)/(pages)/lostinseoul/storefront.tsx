@@ -2,13 +2,13 @@
 
 import type { LostProductCard } from "@/lib/lost-commerce/queries";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { getLostProductListingPrice } from "./product-price-display";
 import type {
   LostBusinessDisclosureIdentifiers,
   LostBusinessDisclosureLabels
 } from "./business-footer";
 import {
   LostAnnouncementBar,
-  LostCursorBridge,
   LostEntrySequence,
   LostFocusProductSection,
   LostFooter,
@@ -59,6 +59,7 @@ type Props = {
   standardModeLabel: string;
   requestModeLabel: string;
   privateModeLabel: string;
+  requestQuoteLabel: string;
   footerBusinessIdentifiers: LostBusinessDisclosureIdentifiers;
   footerBusinessLabels: LostBusinessDisclosureLabels;
   footerInfoLabel: string;
@@ -116,7 +117,8 @@ export function LostStorefront({
   yearLabel,
   standardModeLabel,
   requestModeLabel,
-  privateModeLabel
+  privateModeLabel,
+  requestQuoteLabel
 }: Props) {
   const commerceRootRef = useRef<HTMLElement>(null);
   const featureImage = products[0]?.imageUrl ?? null;
@@ -136,7 +138,12 @@ export function LostStorefront({
       const searchable = [
         product.name,
         product.summary,
-        product.price,
+        product.displayPrice,
+        getLostProductListingPrice(
+          product.displayPrice,
+          requestQuoteLabel,
+          product.modes
+        ),
         product.stockState,
         product.campaign?.title,
         ...product.modes
@@ -147,12 +154,11 @@ export function LostStorefront({
 
       return searchable.includes(needle);
     });
-  }, [products, searchQuery]);
+  }, [products, requestQuoteLabel, searchQuery]);
 
   return (
     <>
       <LostGlobalFooterOverride />
-      <LostCursorBridge />
       <LostEntrySequence sceneReady={heroSceneReady} />
       <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
         <LostAnnouncementBar bagOpen={bagOpen}>
@@ -212,6 +218,7 @@ export function LostStorefront({
             products={filteredProducts}
             productsLabel={productsLabel}
             privateModeLabel={privateModeLabel}
+            requestQuoteLabel={requestQuoteLabel}
             requestModeLabel={requestModeLabel}
             searchLabel={searchLabel}
             searchNoResultsLabel={searchNoResultsLabel}
@@ -225,6 +232,7 @@ export function LostStorefront({
             imageUrl={focusImage}
             products={products}
             productsLabel={productsLabel}
+            requestQuoteLabel={requestQuoteLabel}
             viewProductLabel={viewProductLabel}
           />
           <LostVideoCollections

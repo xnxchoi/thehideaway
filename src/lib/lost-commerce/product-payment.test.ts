@@ -1,0 +1,489 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const getPortOnePayment = vi.fn();
+const cancelUnpaidProductOrder = vi.fn();
+const recordCommerceProviderEventStandalone = vi.fn();
+
+vi.mock("./verify-payment", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./verify-payment")>();
+  return { ...actual, getPortOnePayment };
+});
+
+vi.mock("@/lib/db/sequences", () => ({
+  paymentWebhookLock: vi.fn(async () => undefined)
+}));
+
+vi.mock("./campaigns", () => ({
+  markRequestOrderPaid: vi.fn(async () => undefined)
+}));
+
+vi.mock("./orders", () => ({ cancelUnpaidProductOrder }));
+vi.mock("./provider-events", () => ({ recordCommerceProviderEventStandalone }));
+
+describe("syncProductPayment", () => {
+  beforeEach(() => {
+    getPortOnePayment.mockReset().mockResolvedValue({
+      status: "PAID",
+      amount: { total: 1000, paid: 1000 },
+      currency: "KRW",
+      channel: { type: "TEST" },
+      transactionId: "txn-1"
+    });
+    cancelUnpaidProductOrder.mockReset();
+    recordCommerceProviderEventStandalone.mockReset().mockResolvedValue({
+      recorded: true,
+      duplicate: false
+    });
+  });
+
+  it("verifies and commits a V2 payment by paymentId", async () => {
+    const find = vi.fn(async ({ collection }) => {
+      if (collection === "product-orders") {
+        return {
+          docs: [
+            {
+              id: "order-1",
+              order_ref: "lis_1",
+              user: "user-1",
+              order_mode: "standard_purchase",
+              payment_status: "paid",
+              status: "confirmed",
+              total_amount: 1000,
+              currency: "KRW"
+            }
+          ]
+        };
+      }
+      return {
+        docs: [
+          {
+            id: "payment-1",
+            provider: "portone",
+            order: "order-1",
+            user: "user-1",
+            status: "pending",
+            amount: 1000,
+            currency: "KRW",
+            portone_order_ref: "lis_1",
+            events: []
+          }
+        ]
+      };
+    });
+    const payload = {
+      find,
+      update: vi.fn(async () => ({ id: "updated" })),
+      db: {
+        beginTransaction: vi.fn(async () => "tx-1"),
+        commitTransaction: vi.fn(async () => undefined),
+        rollbackTransaction: vi.fn(async () => undefined),
+        sessions: { "tx-1": { db: { execute: vi.fn() } } }
+      },
+      logger: { error: vi.fn() }
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({
+      payload,
+      paymentId: "lis_1",
+      event: { type: "Transaction.Paid", data: { paymentId: "lis_1" } }
+    });
+
+    expect(result).toMatchObject({ ok: true, orderId: "order-1" });
+    expect(getPortOnePayment).toHaveBeenCalledWith("lis_1");
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "product-orders",
+        id: "order-1",
+        data: expect.objectContaining({
+          payment_status: "paid",
+          status: "confirmed"
+        })
+      })
+    );
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "product-payments",
+        id: "payment-1",
+        data: expect.objectContaining({
+          status: "paid",
+          portone_transaction_ref: "txn-1"
+        })
+      })
+    );
+  });
+
+  it("does not reconcile an event without durable provider evidence", async () => {
+    recordCommerceProviderEventStandalone.mockResolvedValue({
+      recorded: false,
+      duplicate: false
+    });
+    const payload = { find: vi.fn() } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({
+      payload,
+      paymentId: "lis_1",
+      event: { type: "Transaction.Paid" }
+    });
+
+    expect(result).toEqual({ ok: false, status: 400, reason: "malformed" });
+    expect(payload.find).not.toHaveBeenCalled();
+    expect(getPortOnePayment).not.toHaveBeenCalled();
+  });
+
+  it("rejects a mismatched amount without mutating local payment state", async () => {
+    getPortOnePayment.mockResolvedValue({
+      status: "PAID",
+      amount: { total: 999, paid: 999 },
+      currency: "KRW",
+      channel: { type: "TEST" }
+    });
+    const payload = {
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [
+                {
+                  id: "order-1",
+                  order_ref: "lis_1",
+                  user: "user-1",
+                  payment_status: "pending",
+                  total_amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+            : [
+                {
+                  id: "payment-1",
+                  provider: "portone",
+                  order: "order-1",
+                  user: "user-1",
+                  amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+      })),
+      update: vi.fn(),
+      db: { beginTransaction: vi.fn() }
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({ payload, paymentId: "lis_1" });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 409,
+      reason: "amount-mismatch"
+    });
+    expect(payload.update).not.toHaveBeenCalled();
+  });
+
+  it("checks browser ownership before calling PortOne", async () => {
+    const payload = {
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [
+                {
+                  id: "order-1",
+                  order_ref: "lis_1",
+                  user: "user-2",
+                  payment_status: "pending",
+                  total_amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+            : []
+      }))
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({
+      payload,
+      paymentId: "lis_1",
+      expectedUserId: "user-1"
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 404,
+      reason: "order-not-found"
+    });
+    expect(getPortOnePayment).not.toHaveBeenCalled();
+  });
+
+  it("rejects a payment row linked to a different order", async () => {
+    const payload = {
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [
+                {
+                  id: "order-1",
+                  order_ref: "lis_1",
+                  user: "user-1",
+                  payment_status: "pending",
+                  total_amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+            : [
+                {
+                  id: "payment-1",
+                  provider: "portone",
+                  order: "order-other",
+                  user: "user-1",
+                  amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+      }))
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({ payload, paymentId: "lis_1" });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 404,
+      reason: "payment-not-found"
+    });
+    expect(getPortOnePayment).not.toHaveBeenCalled();
+  });
+
+  it("returns a retryable error when a preflight database read fails", async () => {
+    const payload = {
+      find: vi.fn(async () => {
+        throw new Error("database unavailable");
+      })
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({ payload, paymentId: "lis_1" });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 503,
+      reason: "verify-unavailable"
+    });
+    expect(getPortOnePayment).not.toHaveBeenCalled();
+  });
+
+  it("releases a reservation only after PortOne reports a terminal failure", async () => {
+    getPortOnePayment.mockResolvedValue({
+      status: "FAILED",
+      amount: { total: 1000, paid: 0 },
+      currency: "KRW",
+      channel: { type: "TEST" }
+    });
+    cancelUnpaidProductOrder.mockResolvedValue({ ok: true, canceled: true });
+    const order = {
+      id: "order-1",
+      order_ref: "lis_1",
+      user: "user-1",
+      payment_status: "pending",
+      status: "pending_payment",
+      total_amount: 1000,
+      currency: "KRW"
+    };
+    const payload = {
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [order]
+            : [
+                {
+                  id: "payment-1",
+                  provider: "portone",
+                  order: "order-1",
+                  user: "user-1",
+                  amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+      }))
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({ payload, paymentId: "lis_1" });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 402,
+      reason: "payment-failed"
+    });
+    expect(cancelUnpaidProductOrder).toHaveBeenCalledWith({ payload, order });
+  });
+
+  it("rejects an inconsistent refunded payment instead of restoring it to paid", async () => {
+    const payload = {
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [
+                {
+                  id: "order-1",
+                  order_ref: "lis_1",
+                  user: "user-1",
+                  order_mode: "standard_purchase",
+                  payment_status: "pending",
+                  status: "pending_payment",
+                  total_amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+            : [
+                {
+                  id: "payment-1",
+                  provider: "portone",
+                  order: "order-1",
+                  user: "user-1",
+                  status: "refunded",
+                  amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+      })),
+      update: vi.fn(),
+      db: {
+        beginTransaction: vi.fn(async () => "tx-1"),
+        commitTransaction: vi.fn(),
+        rollbackTransaction: vi.fn(async () => undefined)
+      },
+      logger: { error: vi.fn() }
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({ payload, paymentId: "lis_1" });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 409,
+      reason: "order-final"
+    });
+    expect(payload.update).not.toHaveBeenCalled();
+    expect(payload.db.rollbackTransaction).toHaveBeenCalledWith("tx-1");
+  });
+
+  it("revalidates locked money values before committing payment", async () => {
+    let orderReads = 0;
+    let paymentReads = 0;
+    const payload = {
+      find: vi.fn(async ({ collection }) => {
+        if (collection === "product-orders") {
+          orderReads += 1;
+          return {
+            docs: [
+              {
+                id: "order-1",
+                order_ref: "lis_1",
+                user: "user-1",
+                order_mode: "standard_purchase",
+                payment_status: "pending",
+                status: "pending_payment",
+                total_amount: orderReads === 1 ? 1000 : 2000,
+                currency: "KRW"
+              }
+            ]
+          };
+        }
+        paymentReads += 1;
+        return {
+          docs: [
+            {
+              id: "payment-1",
+              provider: "portone",
+              order: "order-1",
+              user: "user-1",
+              status: "pending",
+              amount: paymentReads === 1 ? 1000 : 2000,
+              currency: "KRW"
+            }
+          ]
+        };
+      }),
+      update: vi.fn(),
+      db: {
+        beginTransaction: vi.fn(async () => "tx-1"),
+        commitTransaction: vi.fn(),
+        rollbackTransaction: vi.fn(async () => undefined)
+      },
+      logger: { error: vi.fn() }
+    } as any;
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({
+      payload,
+      paymentId: "lis_1",
+      expectedUserId: "user-1"
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 409,
+      reason: "amount-mismatch"
+    });
+    expect(payload.update).not.toHaveBeenCalled();
+    expect(payload.db.rollbackTransaction).toHaveBeenCalledWith("tx-1");
+  });
+
+  it("records a signed provider event when payment state is already applied", async () => {
+    const payload = {
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [
+                {
+                  id: "order-1",
+                  order_ref: "lis_1",
+                  user: "user-1",
+                  order_mode: "standard_purchase",
+                  payment_status: "paid",
+                  status: "confirmed",
+                  total_amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+            : [
+                {
+                  id: "payment-1",
+                  provider: "portone",
+                  order: "order-1",
+                  user: "user-1",
+                  status: "paid",
+                  amount: 1000,
+                  currency: "KRW"
+                }
+              ]
+      })),
+      update: vi.fn(),
+      db: {
+        beginTransaction: vi.fn(async () => "tx-1"),
+        commitTransaction: vi.fn(async () => undefined),
+        rollbackTransaction: vi.fn(async () => undefined)
+      },
+      logger: { error: vi.fn() }
+    } as any;
+    const event = {
+      provider_event_id: "evt-1",
+      type: "Transaction.Paid"
+    };
+
+    const { syncProductPayment } = await import("./product-payment");
+    const result = await syncProductPayment({
+      payload,
+      paymentId: "lis_1",
+      event
+    });
+
+    expect(result).toMatchObject({ ok: true, alreadyProcessed: true });
+    expect(recordCommerceProviderEventStandalone).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentId: "lis_1",
+        event
+      })
+    );
+    expect(payload.db.commitTransaction).toHaveBeenCalledWith("tx-1");
+  });
+});

@@ -480,6 +480,16 @@ const schema = z.object({
         'When "true", the PortOne webhook rejects requests without Standard-Webhooks signature headers (disables the legacy shared-secret header fallback).'
       )
     ),
+  PORTONE_WEBHOOK_ALLOW_LEGACY: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        'Sandbox-only compatibility switch. Unsigned shared-secret webhooks are rejected unless exactly "true"; production always requires Standard-Webhooks signatures.'
+      )
+    ),
   PORTONE_CARD_CHECKOUT_LIVE: z
     .string()
     .optional()

@@ -4,21 +4,36 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { z } from "zod";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
-import { beginIdempotent } from "@/lib/api/idempotency";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
-import { productInventoryLock } from "@/lib/db/sequences";
+import {
+  productInventoryLock,
+  productSkuMutationLock
+} from "@/lib/db/sequences";
 import { makeLostOrderRef } from "@/lib/lost-commerce/format";
 import {
   buildPortOnePaymentPayload,
   isPortOneCheckoutEnabled
 } from "@/lib/lost-commerce/portone";
 import { resolveLostCheckout } from "@/lib/lost-commerce/cart";
+import { claimRequestOrderCapacity } from "@/lib/lost-commerce/campaigns";
+import {
+  createCommerceMoney,
+  createCommerceTotalsSnapshot
+} from "@/lib/lost-commerce/contracts";
+import {
+  claimCommerceCommand,
+  completeCommerceCommand,
+  hashCommerceCommandInput,
+  validateCommerceCommandKey
+} from "@/lib/lost-commerce/commerce-commands";
 import type { LostCartLineSnapshot } from "@/lib/lost-commerce/types";
+import { isManualPaymentEnabled } from "@/lib/lost-commerce/payment-methods";
 
 export const runtime = "nodejs";
 
 const LineSchema = z.object({
   productId: z.string().min(1),
+  skuId: z.string().min(1).optional(),
   variantId: z.string().min(1).optional(),
   mode: z.enum(["standard_purchase", "request_to_order", "private_order"]),
   quantity: z.number().int().min(1).max(99),
@@ -50,13 +65,13 @@ function lostStorefrontBase(origin: string): string {
 }
 
 function reservationKey(line: LostCartLineSnapshot): string {
-  return `${line.productId}:${line.variantId ?? ""}`;
+  return `${line.productId}:${line.skuId}`;
 }
 
 function aggregateStandardLines(lines: LostCartLineSnapshot[]) {
   const reservations = new Map<
     string,
-    { productId: string; quantity: number; variantId?: string }
+    { productId: string; quantity: number; skuId: string }
   >();
   for (const line of lines) {
     if (line.mode !== "standard_purchase") continue;
@@ -69,7 +84,7 @@ function aggregateStandardLines(lines: LostCartLineSnapshot[]) {
     reservations.set(key, {
       productId: line.productId,
       quantity: line.quantity,
-      ...(line.variantId ? { variantId: line.variantId } : {})
+      skuId: line.skuId
     });
   }
   return [...reservations.values()];
@@ -79,8 +94,8 @@ function numericInventory(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-function stockStateOf(product: AnyDoc, variant?: AnyDoc | null): string {
-  return String(variant?.stock_state ?? product.stock_state ?? "in_stock");
+function stockStateOf(sku: AnyDoc): string {
+  return String(sku.stock_state ?? "out_of_stock");
 }
 
 function assertReservable(stockState: string) {
@@ -93,21 +108,27 @@ function decrement(value: number, quantity: number): number {
   return value - quantity;
 }
 
-async function lockStandardProducts(input: {
+async function lockCheckoutProducts(input: {
   lines: z.infer<typeof LineSchema>[];
   payload: Awaited<ReturnType<typeof getPayload>>;
   transactionID: string | number;
 }) {
   const productIds = [
-    ...new Set(
-      input.lines
-        .filter((line) => line.mode === "standard_purchase")
-        .map((line) => line.productId)
-    )
+    ...new Set(input.lines.map((line) => line.productId))
   ].sort();
 
   for (const productId of productIds) {
     await productInventoryLock(input.payload, input.transactionID, productId);
+  }
+}
+
+async function lockCheckoutSkus(input: {
+  payload: Awaited<ReturnType<typeof getPayload>>;
+  skuIds: string[];
+  transactionID: string | number;
+}) {
+  for (const skuId of [...new Set(input.skuIds)].sort()) {
+    await productSkuMutationLock(input.payload, input.transactionID, skuId);
   }
 }
 
@@ -118,98 +139,78 @@ async function reserveStandardInventory(input: {
 }) {
   const reservations = aggregateStandardLines(input.lines);
   for (const reservation of reservations) {
-    const product = (await input.payload.findByID({
-      collection: "products" as never,
-      id: reservation.productId,
+    const sku = (await input.payload.findByID({
+      collection: "product-variants",
+      id: reservation.skuId,
       depth: 0,
       req: input.req as never,
       overrideAccess: true
     })) as AnyDoc;
-
-    if (!product?.active) throw new Error("product-unavailable");
-
-    const variants = Array.isArray(product.variants) ? product.variants : [];
-    const variantIndex = reservation.variantId
-      ? variants.findIndex(
-          (variant: AnyDoc) => variant?.id === reservation.variantId
-        )
-      : -1;
-    const variant =
-      reservation.variantId && variantIndex >= 0
-        ? (variants[variantIndex] as AnyDoc)
-        : null;
-    if (reservation.variantId && !variant) throw new Error("variant-not-found");
-
-    assertReservable(stockStateOf(product, variant));
-
-    const variantInventory = numericInventory(variant?.inventory);
-    if (variant && variantInventory !== null) {
-      const nextInventory = decrement(variantInventory, reservation.quantity);
-      const nextVariants = variants.map((candidate: AnyDoc, index: number) => {
-        if (index !== variantIndex) return candidate;
-        return {
-          ...candidate,
-          inventory: nextInventory,
-          ...(nextInventory === 0 ? { stock_state: "out_of_stock" } : {})
-        };
-      });
-      await input.payload.update({
-        collection: "products" as never,
-        id: reservation.productId,
-        req: input.req as never,
-        overrideAccess: true,
-        data: { variants: nextVariants } as never
-      });
-      continue;
+    const skuProductId =
+      typeof sku.product === "string" ? sku.product : sku.product?.id;
+    if (!sku?.active || skuProductId !== reservation.productId) {
+      throw new Error("sku-unavailable");
     }
-
-    const productInventory = numericInventory(product.inventory);
-    if (productInventory === null) continue;
-
-    const nextInventory = decrement(productInventory, reservation.quantity);
+    assertReservable(stockStateOf(sku));
+    const skuInventory = numericInventory(sku.inventory);
+    if (skuInventory === null) throw new Error("standard-unavailable");
+    const nextInventory = decrement(skuInventory, reservation.quantity);
     await input.payload.update({
-      collection: "products" as never,
-      id: reservation.productId,
+      collection: "product-variants",
+      id: reservation.skuId,
       req: input.req as never,
       overrideAccess: true,
       data: {
         inventory: nextInventory,
         ...(nextInventory === 0 ? { stock_state: "out_of_stock" } : {})
-      } as never
+      }
     });
   }
 }
 
-function checkoutErrorStatus(error: string): number {
-  if (error === "portone-not-configured") return 503;
-  if (
-    error === "insufficient-inventory" ||
-    error === "out-of-stock" ||
-    error === "campaign-full"
-  ) {
-    return 409;
-  }
-  if (
-    error === "variant-not-found" ||
-    error === "standard-unavailable" ||
-    error === "product-unavailable" ||
-    error.endsWith("-disabled") ||
-    error.endsWith("-forbidden") ||
-    error.endsWith("-required") ||
-    error.endsWith("-ended") ||
-    error.endsWith("-not-open") ||
-    error.endsWith("-ineligible") ||
-    error === "mixed-order-modes" ||
-    error === "mixed-campaigns" ||
-    error === "mixed-currency" ||
-    error === "quantity-out-of-range" ||
-    error === "bad-quantity" ||
-    error === "invalid-amount" ||
-    error === "empty-cart"
-  ) {
-    return 400;
-  }
-  return 500;
+const CHECKOUT_ERROR_STATUS = new Map<string, number>([
+  ["portone-not-configured", 503],
+  ["insufficient-inventory", 409],
+  ["out-of-stock", 409],
+  ["campaign-full", 409],
+  ["campaign-capacity-reservations-unavailable", 503],
+  ["campaign-not-allowed", 400],
+  ["sku-not-found", 400],
+  ["sku-inactive", 400],
+  ["sku-product-mismatch", 400],
+  ["sku-unavailable", 400],
+  ["sku-required", 400],
+  ["standard-unavailable", 400],
+  ["product-unavailable", 400],
+  ["standard-disabled", 400],
+  ["request-disabled", 400],
+  ["private-disabled", 400],
+  ["private-order-forbidden", 400],
+  ["campaign-required", 400],
+  ["campaign-ended", 400],
+  ["campaign-not-open", 400],
+  ["campaign-sku-ineligible", 400],
+  ["mixed-order-modes", 400],
+  ["mixed-campaigns", 400],
+  ["mixed-currency", 400],
+  ["quantity-out-of-range", 400],
+  ["bad-quantity", 400],
+  ["invalid-sku-options", 400],
+  ["invalid-sku-option", 400],
+  ["duplicate-sku-option", 400],
+  ["sku-product-required", 400],
+  ["invalid-sku-number", 400],
+  ["active-sku-required", 400],
+  ["invalid-sku-price", 400],
+  ["invalid-amount", 400],
+  ["invalid-commerce-amount", 400],
+  ["invalid-commerce-currency", 400],
+  ["commerce-totals-mismatch", 400],
+  ["empty-cart", 400]
+]);
+
+function checkoutErrorStatus(error: string): number | undefined {
+  return CHECKOUT_ERROR_STATUS.get(error);
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -233,10 +234,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const rl = await rateLimitOr429(req, "mutation", userId);
   if (rl) return rl;
 
-  const idem = beginIdempotent(req, "lost/checkout/intent", userId);
-  const replay = idem.get();
-  if (replay) return replay as NextResponse;
-
   const parsed = BodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json(
@@ -245,13 +242,85 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const orderRef = makeLostOrderRef(
-    parsed.data.lines[0]?.mode === "request_to_order"
-      ? "lis_rto"
-      : parsed.data.lines[0]?.mode === "private_order"
-        ? "lis_private"
-        : "lis"
-  );
+  if (parsed.data.paymentProvider === "manual" && !isManualPaymentEnabled()) {
+    return NextResponse.json(
+      { ok: false, error: "payment-method-unavailable" },
+      { status: 409 }
+    );
+  }
+  if (
+    parsed.data.paymentProvider === "portone" &&
+    !isPortOneCheckoutEnabled()
+  ) {
+    return NextResponse.json(
+      { ok: false, error: "portone-not-configured" },
+      { status: 503 }
+    );
+  }
+
+  let clientCommandKey: string;
+  try {
+    clientCommandKey = validateCommerceCommandKey(
+      req.headers.get("idempotency-key")
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, error: (error as Error).message },
+      { status: 400 }
+    );
+  }
+  const commandKey = hashCommerceCommandInput({
+    endpoint: "lost/checkout/intent",
+    userId,
+    key: clientCommandKey
+  });
+  let commandClaim;
+  try {
+    commandClaim = await claimCommerceCommand({
+      payload,
+      commandKey,
+      validatedInput: parsed.data,
+      createBusinessKey: () =>
+        makeLostOrderRef(
+          parsed.data.lines[0]?.mode === "request_to_order"
+            ? "lis_rto"
+            : parsed.data.lines[0]?.mode === "private_order"
+              ? "lis_private"
+              : "lis"
+        )
+    });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "commerce-command-unavailable" },
+      { status: 503 }
+    );
+  }
+  if (commandClaim.kind === "conflict") {
+    return NextResponse.json(
+      { ok: false, error: "idempotency-key-conflict" },
+      { status: 409 }
+    );
+  }
+  if (commandClaim.kind === "in_progress") {
+    return NextResponse.json(
+      { ok: false, error: "idempotency-in-progress" },
+      {
+        status: 409,
+        headers: {
+          "Retry-After": String(
+            Math.max(1, Math.ceil(commandClaim.retryAfterMs / 1000))
+          )
+        }
+      }
+    );
+  }
+  if (commandClaim.kind === "replay") {
+    return NextResponse.json(commandClaim.response, {
+      headers: { "Idempotent-Replay": "true" }
+    });
+  }
+
+  const orderRef = commandClaim.businessKey;
 
   const transactionID = await payload.db.beginTransaction();
   if (!transactionID) {
@@ -270,11 +339,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   let portonePayload: unknown = null;
   let paymentStatus = "manual_pending";
   try {
-    await lockStandardProducts({
+    await lockCheckoutProducts({
       lines: parsed.data.lines,
       payload,
       transactionID
     });
+
+    let skuIds = parsed.data.lines.flatMap((line) =>
+      line.skuId ? [line.skuId] : []
+    );
+    if (parsed.data.lines.some((line) => !line.skuId)) {
+      const discovery = await resolveLostCheckout({
+        payload,
+        user: auth.user,
+        lines: parsed.data.lines,
+        req: txReq as never
+      });
+      skuIds = discovery.lines.map((line) => line.skuId);
+    }
+    await lockCheckoutSkus({ payload, skuIds, transactionID });
 
     const resolved = await resolveLostCheckout({
       payload,
@@ -282,6 +365,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       lines: parsed.data.lines,
       req: txReq as never
     });
+    if (resolved.mode === "request_to_order") {
+      if (!resolved.campaignId) throw new Error("campaign-required");
+      await claimRequestOrderCapacity({
+        payload,
+        campaignId: resolved.campaignId,
+        productId: resolved.lines[0]?.productId ?? "",
+        skuIds: [...new Set(resolved.lines.map((line) => line.skuId))].sort(),
+        req: txReq as never
+      });
+    }
 
     // Fixed-price discipline (PG review): no ₩0 / negative-total orders may
     // enter the payment path. `resolved.totalAmount` is server-computed from
@@ -290,6 +383,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (!(resolved.totalAmount > 0)) {
       throw new Error("invalid-amount");
     }
+
+    const totals = createCommerceTotalsSnapshot({
+      currency: resolved.currency,
+      subtotalAmount: resolved.subtotalAmount,
+      discountAmount: 0,
+      shippingAmount: 0,
+      taxAmount: 0,
+      totalAmount: resolved.totalAmount
+    });
+    const paymentMoney = createCommerceMoney(
+      totals.totalAmount,
+      totals.currency
+    );
 
     if (parsed.data.paymentProvider === "portone") {
       // Master gate: reject the card path server-side when card checkout is
@@ -304,17 +410,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       portonePayload = buildPortOnePaymentPayload({
         orderRef,
-        amount: resolved.totalAmount,
-        currency: resolved.currency,
+        amount: paymentMoney.amount,
+        currency: paymentMoney.currency,
         origin,
         paymentChannel: parsed.data.paymentChannel,
         paymentMethod: parsed.data.paymentMethod,
         products: resolved.lines.map((line) => ({
-          id: line.variantId
-            ? `${line.productId}:${line.variantId}`
-            : line.productId,
-          name: line.variantLabel
-            ? `${line.productName} / ${line.variantLabel}`
+          id: `${line.productId}:${line.skuId}`,
+          name: line.skuLabel
+            ? `${line.productName} / ${line.skuLabel}`
             : line.productName,
           amount: line.unitAmount,
           quantity: line.quantity,
@@ -346,10 +450,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             : "pending",
         fulfillment_status:
           resolved.mode === "request_to_order" ? "reserved" : "unfulfilled",
-        currency: resolved.currency,
-        subtotal_amount: resolved.subtotalAmount,
-        total_amount: resolved.totalAmount,
+        currency: totals.currency,
+        subtotal_amount: totals.subtotalAmount,
+        total_amount: totals.totalAmount,
         campaign: resolved.campaignId,
+        line_snapshot_version: 2,
         lines: resolved.lines,
         shipping: parsed.data.shipping,
         contact: parsed.data.contact
@@ -367,8 +472,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         user: userId,
         provider: parsed.data.paymentProvider,
         status: paymentStatus,
-        amount: resolved.totalAmount,
-        currency: resolved.currency,
+        amount: paymentMoney.amount,
+        currency: paymentMoney.currency,
         portone_order_ref:
           parsed.data.paymentProvider === "portone" ? orderRef : undefined,
         payment_channel: parsed.data.paymentChannel,
@@ -377,28 +482,40 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       } as never
     });
 
+    await completeCommerceCommand({
+      payload,
+      req: txReq as NonNullable<Parameters<typeof payload.create>[0]["req"]>,
+      commandKey,
+      requestHash: commandClaim.requestHash,
+      leaseToken: commandClaim.leaseToken,
+      response: {
+        ok: true,
+        order: { id: String(order.id), order_ref: order.order_ref },
+        paymentProvider: parsed.data.paymentProvider,
+        portone: portonePayload as never
+      },
+      resource: { type: "product-order", id: String(order.id) }
+    });
+
     await payload.db.commitTransaction(transactionID);
   } catch (err) {
     await payload.db.rollbackTransaction(transactionID).catch(() => undefined);
     const error = (err as Error).message;
     const status = checkoutErrorStatus(error);
-    if (status >= 500) {
-      payload.logger.error?.(
-        `[lost/checkout/intent] transaction failed: ${error}`
+    if (status === undefined) {
+      payload.logger.error?.("[lost/checkout/intent] transaction failed");
+      return NextResponse.json(
+        { ok: false, error: "checkout-failed" },
+        { status: 500 }
       );
-    }
-    if (status === 503) {
-      return NextResponse.json({ ok: false, error }, { status: 503 });
     }
     return NextResponse.json({ ok: false, error }, { status });
   }
 
-  const response = NextResponse.json({
+  return NextResponse.json({
     ok: true,
     order: { id: order.id, order_ref: order.order_ref },
     paymentProvider: parsed.data.paymentProvider,
     portone: portonePayload
   });
-  await idem.put(response);
-  return response;
 }

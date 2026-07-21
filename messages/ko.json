@@ -143,6 +143,8 @@
       "manual": "수동",
       "submit": "주문하기",
       "pending": "주문 접수 중",
+      "recovering": "결제 확인 중",
+      "recovery": "결제 확인",
       "failed": "주문 접수에 실패했습니다.",
       "portoneUnavailable": "카드 결제 추후 지원 예정",
       "name": "이름",
@@ -152,12 +154,15 @@
       "note": "배송 메모"
     },
     "payment": {
+      "pendingLabel": "결제 확인 중",
+      "pendingTitle": "결제 확인 중입니다.",
       "successEyebrow": "주문 완료",
       "successTitle": "주문이 접수되었습니다.",
       "failureEyebrow": "결제 실패",
       "failureTitle": "결제에 실패했습니다.",
       "continue": "계속",
-      "retry": "카트로 돌아가기"
+      "retry": "카트로 돌아가기",
+      "viewOrder": "주문 보기"
     },
     "order": {
       "title": "주문",

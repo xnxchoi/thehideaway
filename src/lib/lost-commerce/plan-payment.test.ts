@@ -18,7 +18,7 @@ vi.mock("@/lib/db/sequences", () => ({
   paymentWebhookLock: vi.fn(async () => undefined)
 }));
 
-import { syncPlanPayment } from "./plan-payment";
+import { cancelPendingPlanPayment, syncPlanPayment } from "./plan-payment";
 
 type FakeSub = {
   id: string;
@@ -318,5 +318,59 @@ describe("syncPlanPayment", () => {
       reason: "verify-unavailable"
     });
     expect(update).not.toHaveBeenCalled();
+  });
+});
+
+describe("cancelPendingPlanPayment", () => {
+  it("cancels a pending unpaid subscription under the payment lock", async () => {
+    const { payload, update, commitTransaction } = makePayload({
+      id: "sub-1",
+      amount: 120000,
+      currency: "KRW",
+      paid: false,
+      subscription_status: "pending",
+      payment_ref: "hda_plan_1"
+    });
+
+    const result = await cancelPendingPlanPayment({
+      payload,
+      paymentId: "hda_plan_1"
+    });
+
+    expect(result).toEqual({ ok: true, canceled: true });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "subscriptions",
+        id: "sub-1",
+        data: { subscription_status: "canceled" }
+      })
+    );
+    expect(commitTransaction).toHaveBeenCalledWith("txn-1");
+  });
+
+  it("does not cancel a subscription that became paid before the lock", async () => {
+    const pending: FakeSub = {
+      id: "sub-1",
+      amount: 120000,
+      currency: "KRW",
+      paid: false,
+      subscription_status: "pending",
+      payment_ref: "hda_plan_1"
+    };
+    const { payload, update, rollbackTransaction } = makePayload(pending);
+    (payload as unknown as { find: ReturnType<typeof vi.fn> }).find
+      .mockResolvedValueOnce({ docs: [pending] })
+      .mockResolvedValueOnce({
+        docs: [{ ...pending, paid: true, subscription_status: "active" }]
+      });
+
+    const result = await cancelPendingPlanPayment({
+      payload,
+      paymentId: "hda_plan_1"
+    });
+
+    expect(result).toEqual({ ok: true, canceled: false });
+    expect(update).not.toHaveBeenCalled();
+    expect(rollbackTransaction).toHaveBeenCalledWith("txn-1");
   });
 });

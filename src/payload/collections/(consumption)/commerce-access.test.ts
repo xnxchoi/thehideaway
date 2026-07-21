@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { Events } from "./Events";
+import { ProductCarts } from "./ProductCarts";
+import { ProductOrders } from "./ProductOrders";
+import { ProductPayments } from "./ProductPayments";
 import { TicketOrders } from "./TicketOrders";
 import { Tickets } from "./Tickets";
 
@@ -33,12 +36,82 @@ function namedField(collection: { fields: unknown[] }, name: string) {
   if (!field) throw new Error(`Missing field ${name}`);
   return field as {
     access?: {
+      create?: (args: AccessArgs) => boolean;
       read?: (args: AccessArgs) => boolean;
+      update?: (args: AccessArgs) => boolean;
     };
   };
 }
 
 describe("commerce collection access contracts", () => {
+  it("keeps order and payment creation behind controlled commerce services", async () => {
+    for (const collection of [ProductOrders, ProductPayments]) {
+      expect(
+        await collection.access?.read?.(accessArgs("admin") as never)
+      ).toBe(true);
+      expect(
+        await collection.access?.read?.(
+          accessArgs("user", "buyer-1") as never
+        )
+      ).toEqual({ user: { equals: "buyer-1" } });
+
+      expect(
+        await collection.access?.create?.(accessArgs("admin") as never)
+      ).toBe(false);
+      expect(
+        await collection.access?.create?.(accessArgs("user") as never)
+      ).toBe(false);
+      expect(
+        await collection.access?.create?.(accessArgs(null) as never)
+      ).toBe(false);
+
+      expect(
+        await collection.access?.update?.(accessArgs("admin") as never)
+      ).toBe(true);
+      expect(
+        await collection.access?.delete?.(accessArgs("admin") as never)
+      ).toBe(true);
+    }
+
+    const paymentEventsAccess = namedField(
+      ProductPayments,
+      "events"
+    ).access;
+    expect(paymentEventsAccess?.create?.(accessArgs("admin"))).toBe(false);
+    expect(paymentEventsAccess?.update?.(accessArgs("admin"))).toBe(false);
+  });
+
+  it("keeps cart writes exclusively behind the validated cart API", async () => {
+    expect(
+      await ProductCarts.access?.read?.(accessArgs("admin") as never)
+    ).toBe(true);
+    expect(
+      await ProductCarts.access?.read?.(accessArgs("user", "buyer-1") as never)
+    ).toEqual({ user: { equals: "buyer-1" } });
+    expect(await ProductCarts.access?.read?.(accessArgs(null) as never)).toBe(
+      false
+    );
+
+    for (const role of [
+      "admin",
+      "cofounder",
+      "editor",
+      "author",
+      "patron",
+      "resident",
+      "user",
+      "guest",
+      null
+    ]) {
+      expect(
+        await ProductCarts.access?.create?.(accessArgs(role) as never)
+      ).toBe(false);
+      expect(
+        await ProductCarts.access?.update?.(accessArgs(role) as never)
+      ).toBe(false);
+    }
+  });
+
   it("keeps ticket writes behind admin/custom API paths", async () => {
     expect(await Tickets.access?.create?.(accessArgs("admin") as never)).toBe(
       true

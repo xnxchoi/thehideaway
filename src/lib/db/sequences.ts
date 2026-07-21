@@ -135,6 +135,39 @@ export async function productInventoryLock(
 }
 
 /**
+ * Serializes every mutation of one relational product SKU. Product-level
+ * inventory locks, when also needed, must be acquired before this lock.
+ */
+export async function productSkuMutationLock(
+  payload: Payload,
+  transactionID: string | number,
+  skuId: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`product-sku:${skuId}`)
+  );
+}
+
+/**
+ * Serializes replacement of one user's active cart for one storefront.
+ * Held across authoritative line resolution, lookup, and persistence.
+ */
+export async function productCartLock(
+  payload: Payload,
+  transactionID: string | number,
+  userId: string,
+  storefront: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`product-cart:${userId}:${storefront}`)
+  );
+}
+
+/**
  * Serializes paid commitment transitions for a single request-to-order
  * campaign. Held until transaction commit/rollback.
  */
@@ -164,5 +197,23 @@ export async function paymentWebhookLock(
     payload,
     transactionID,
     advisoryLockKey(`payment-webhook:${orderRef}`)
+  );
+}
+
+/**
+ * Serializes durable commerce-command work for one command or business
+ * identity. Callers take the command identity first, then the business identity,
+ * so different idempotency keys cannot race the same permanent operation. The
+ * lock is transaction-scoped and never spans work after a claim commits.
+ */
+export async function commerceCommandLock(
+  payload: Payload,
+  transactionID: string | number,
+  commandKey: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`commerce-command:${commandKey}`)
   );
 }

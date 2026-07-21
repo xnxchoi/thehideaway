@@ -497,6 +497,7 @@ export const enum_redirects_to_type = pgEnum("enum_redirects_to_type", [
   "custom"
 ]);
 export const enum_plans_payment_methods = pgEnum("enum_plans_payment_methods", [
+  "card",
   "bank_transfer",
   "cash"
 ]);
@@ -536,7 +537,11 @@ export const enum_subscriptions_subscription_status = pgEnum(
 );
 export const enum_subscriptions_request_method = pgEnum(
   "enum_subscriptions_request_method",
-  ["bank_transfer", "cash"]
+  ["bank_transfer", "cash", "card"]
+);
+export const enum_subscriptions_provider = pgEnum(
+  "enum_subscriptions_provider",
+  ["manual", "portone"]
 );
 export const enum_products_currency = pgEnum("enum_products_currency", [
   "KRW",
@@ -550,9 +555,17 @@ export const enum_products_stock_state = pgEnum("enum_products_stock_state", [
   "pre_order",
   "on_request"
 ]);
+export const enum_products_variant_source = pgEnum(
+  "enum_products_variant_source",
+  ["legacy", "relational"]
+);
 export const enum_products_private_tier_gate = pgEnum(
   "enum_products_private_tier_gate",
   ["anyone", "resident", "patron", "cofounder", "staff"]
+);
+export const enum_product_variants_stock_state = pgEnum(
+  "enum_product_variants_stock_state",
+  ["in_stock", "out_of_stock", "pre_order", "on_request"]
 );
 export const enum_product_order_campaigns_state = pgEnum(
   "enum_product_order_campaigns_state",
@@ -627,6 +640,18 @@ export const enum_product_payments_status = pgEnum(
 export const enum_product_payments_currency = pgEnum(
   "enum_product_payments_currency",
   ["KRW", "USD", "JPY", "EUR"]
+);
+export const enum_commerce_commands_status = pgEnum(
+  "enum_commerce_commands_status",
+  ["in_progress", "succeeded"]
+);
+export const enum_commerce_provider_events_provider = pgEnum(
+  "enum_commerce_provider_events_provider",
+  ["portone"]
+);
+export const enum_commerce_provider_events_processing_status = pgEnum(
+  "enum_commerce_provider_events_processing_status",
+  ["received", "processing", "retryable", "processed", "rejected"]
 );
 export const enum_events_exclusive_links_type = pgEnum(
   "enum_events_exclusive_links_type",
@@ -6205,6 +6230,11 @@ export const subscriptions = pgTable(
     request_method: enum_subscriptions_request_method("request_method")
       .notNull()
       .default("bank_transfer"),
+    provider: enum_subscriptions_provider("provider")
+      .notNull()
+      .default("manual"),
+    payment_ref: varchar("payment_ref"),
+    portone_transaction_ref: varchar("portone_transaction_ref"),
     request_note: varchar("request_note"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -6229,6 +6259,11 @@ export const subscriptions = pgTable(
     index("subscriptions_expires_at_idx").on(columns.expires_at),
     index("subscriptions_subscription_status_idx").on(
       columns.subscription_status
+    ),
+    index("subscriptions_provider_idx").on(columns.provider),
+    uniqueIndex("subscriptions_payment_ref_idx").on(columns.payment_ref),
+    index("subscriptions_portone_transaction_ref_idx").on(
+      columns.portone_transaction_ref
     ),
     index("subscriptions_updated_at_idx").on(columns.updatedAt),
     index("subscriptions_created_at_idx").on(columns.createdAt)
@@ -6515,6 +6550,9 @@ export const products = pgTable(
     min_order_quantity: numeric("min_order_quantity", { mode: "number" })
       .notNull()
       .default(1),
+    variant_source: enum_products_variant_source("variant_source")
+      .notNull()
+      .default("legacy"),
     variants: jsonb("variants"),
     standard_enabled: boolean("standard_enabled").notNull().default(true),
     request_to_order_enabled: boolean("request_to_order_enabled")
@@ -6560,6 +6598,7 @@ export const products = pgTable(
     index("products_inventory_idx").on(columns.inventory),
     index("products_max_order_quantity_idx").on(columns.max_order_quantity),
     index("products_min_order_quantity_idx").on(columns.min_order_quantity),
+    index("products_variant_source_idx").on(columns.variant_source),
     index("products_standard_enabled_idx").on(columns.standard_enabled),
     index("products_request_to_order_enabled_idx").on(
       columns.request_to_order_enabled
@@ -6598,6 +6637,85 @@ export const products_rels = pgTable(
       foreignColumns: [media.id],
       name: "products_rels_media_fk"
     }).onDelete("cascade")
+  ]
+);
+
+export const product_variants_options = pgTable(
+  "product_variants_options",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    key: varchar("key").notNull(),
+    value: varchar("value").notNull()
+  },
+  (columns) => [
+    index("product_variants_options_order_idx").on(columns._order),
+    index("product_variants_options_parent_id_idx").on(columns._parentID),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [product_variants.id],
+      name: "product_variants_options_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const product_variants = pgTable(
+  "product_variants",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    product: uuid("product_id")
+      .notNull()
+      .references(() => products.id, {
+        onDelete: "set null"
+      }),
+    active: boolean("active").notNull().default(false),
+    identity_locked: boolean("identity_locked").notNull().default(false),
+    sku: varchar("sku"),
+    label: varchar("label"),
+    option_key: varchar("option_key").notNull(),
+    price_override_amount: numeric("price_override_amount", { mode: "number" }),
+    barcode: varchar("barcode"),
+    weight_grams: numeric("weight_grams", { mode: "number" }),
+    length_mm: numeric("length_mm", { mode: "number" }),
+    width_mm: numeric("width_mm", { mode: "number" }),
+    height_mm: numeric("height_mm", { mode: "number" }),
+    tax_category: varchar("tax_category"),
+    legacy_variant_ref: varchar("legacy_variant_ref"),
+    legacy_key: varchar("legacy_key"),
+    inventory: numeric("inventory", { mode: "number" }),
+    stock_state: enum_product_variants_stock_state("stock_state"),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("product_variants_product_idx").on(columns.product),
+    index("product_variants_active_idx").on(columns.active),
+    uniqueIndex("product_variants_sku_idx").on(columns.sku),
+    uniqueIndex("product_variants_option_key_idx").on(columns.option_key),
+    uniqueIndex("product_variants_barcode_idx").on(columns.barcode),
+    index("product_variants_legacy_variant_ref_idx").on(
+      columns.legacy_variant_ref
+    ),
+    uniqueIndex("product_variants_legacy_key_idx").on(columns.legacy_key),
+    index("product_variants_inventory_idx").on(columns.inventory),
+    index("product_variants_stock_state_idx").on(columns.stock_state),
+    index("product_variants_sort_idx").on(columns.sort),
+    index("product_variants_updated_at_idx").on(columns.updatedAt),
+    index("product_variants_created_at_idx").on(columns.createdAt)
   ]
 );
 
@@ -6657,6 +6775,35 @@ export const product_order_campaigns = pgTable(
   ]
 );
 
+export const product_order_campaigns_rels = pgTable(
+  "product_order_campaigns_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    "product-variantsID": uuid("product_variants_id")
+  },
+  (columns) => [
+    index("product_order_campaigns_rels_order_idx").on(columns.order),
+    index("product_order_campaigns_rels_parent_idx").on(columns.parent),
+    index("product_order_campaigns_rels_path_idx").on(columns.path),
+    index("product_order_campaigns_rels_product_variants_id_idx").on(
+      columns["product-variantsID"]
+    ),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [product_order_campaigns.id],
+      name: "product_order_campaigns_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-variantsID"]],
+      foreignColumns: [product_variants.id],
+      name: "product_order_campaigns_rels_product_variants_fk"
+    }).onDelete("cascade")
+  ]
+);
+
 export const product_carts = pgTable(
   "product_carts",
   {
@@ -6669,6 +6816,9 @@ export const product_carts = pgTable(
     storefront: varchar("storefront").notNull().default("lostinseoul"),
     status: enum_product_carts_status("status").notNull().default("active"),
     currency: enum_product_carts_currency("currency").notNull().default("KRW"),
+    line_schema_version: numeric("line_schema_version", { mode: "number" })
+      .notNull()
+      .default(1),
     lines: jsonb("lines")
       .notNull()
       .default(sql`'[]'::jsonb`),
@@ -6727,6 +6877,9 @@ export const product_orders = pgTable(
     campaign: uuid("campaign_id").references(() => product_order_campaigns.id, {
       onDelete: "set null"
     }),
+    line_snapshot_version: numeric("line_snapshot_version", { mode: "number" })
+      .notNull()
+      .default(1),
     lines: jsonb("lines")
       .notNull()
       .default(sql`'[]'::jsonb`),
@@ -6843,6 +6996,171 @@ export const product_payments = pgTable(
     index("product_payments_paid_at_idx").on(columns.paid_at),
     index("product_payments_updated_at_idx").on(columns.updatedAt),
     index("product_payments_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const commerce_commands = pgTable(
+  "commerce_commands",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    command_key: varchar("command_key").notNull(),
+    business_key: varchar("business_key").notNull(),
+    request_hash: varchar("request_hash").notNull(),
+    status: enum_commerce_commands_status("status")
+      .notNull()
+      .default("in_progress"),
+    attempt_count: numeric("attempt_count", { mode: "number" })
+      .notNull()
+      .default(1),
+    lease_token_hash: varchar("lease_token_hash"),
+    lease_expires_at: timestamp("lease_expires_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    safe_response: jsonb("safe_response"),
+    resource_type: varchar("resource_type"),
+    resource_id: varchar("resource_id"),
+    completed_at: timestamp("completed_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("commerce_commands_command_key_idx").on(columns.command_key),
+    uniqueIndex("commerce_commands_business_key_idx").on(columns.business_key),
+    index("commerce_commands_status_idx").on(columns.status),
+    index("commerce_commands_lease_expires_at_idx").on(
+      columns.lease_expires_at
+    ),
+    index("commerce_commands_resource_type_idx").on(columns.resource_type),
+    index("commerce_commands_resource_id_idx").on(columns.resource_id),
+    index("commerce_commands_completed_at_idx").on(columns.completed_at),
+    index("commerce_commands_updated_at_idx").on(columns.updatedAt),
+    index("commerce_commands_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const commerce_provider_events = pgTable(
+  "commerce_provider_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    dedupe_key: varchar("dedupe_key").notNull(),
+    provider: enum_commerce_provider_events_provider("provider").notNull(),
+    event_key: varchar("event_key").notNull(),
+    event_type: varchar("event_type"),
+    payment_ref: varchar("payment_ref"),
+    payload_hash: varchar("payload_hash"),
+    provider_status: varchar("provider_status"),
+    transaction_ref: varchar("transaction_ref"),
+    product_payment: uuid("product_payment_id").references(
+      () => product_payments.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    occurred_at: timestamp("occurred_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    received_at: timestamp("received_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    processing_status: enum_commerce_provider_events_processing_status(
+      "processing_status"
+    )
+      .notNull()
+      .default("received"),
+    attempt_count: numeric("attempt_count", { mode: "number" })
+      .notNull()
+      .default(0),
+    lease_token_hash: varchar("lease_token_hash"),
+    lease_expires_at: timestamp("lease_expires_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    last_attempt_at: timestamp("last_attempt_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    processed_at: timestamp("processed_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    outcome_code: varchar("outcome_code"),
+    last_error_code: varchar("last_error_code"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("commerce_provider_events_dedupe_key_idx").on(
+      columns.dedupe_key
+    ),
+    index("commerce_provider_events_provider_idx").on(columns.provider),
+    index("commerce_provider_events_event_key_idx").on(columns.event_key),
+    index("commerce_provider_events_event_type_idx").on(columns.event_type),
+    index("commerce_provider_events_payment_ref_idx").on(columns.payment_ref),
+    index("commerce_provider_events_payload_hash_idx").on(columns.payload_hash),
+    index("commerce_provider_events_provider_status_idx").on(
+      columns.provider_status
+    ),
+    index("commerce_provider_events_transaction_ref_idx").on(
+      columns.transaction_ref
+    ),
+    index("commerce_provider_events_product_payment_idx").on(
+      columns.product_payment
+    ),
+    index("commerce_provider_events_occurred_at_idx").on(columns.occurred_at),
+    index("commerce_provider_events_received_at_idx").on(columns.received_at),
+    index("commerce_provider_events_processing_status_idx").on(
+      columns.processing_status
+    ),
+    index("commerce_provider_events_lease_expires_at_idx").on(
+      columns.lease_expires_at
+    ),
+    index("commerce_provider_events_last_attempt_at_idx").on(
+      columns.last_attempt_at
+    ),
+    index("commerce_provider_events_processed_at_idx").on(columns.processed_at),
+    index("commerce_provider_events_outcome_code_idx").on(columns.outcome_code),
+    index("commerce_provider_events_last_error_code_idx").on(
+      columns.last_error_code
+    ),
+    index("commerce_provider_events_updated_at_idx").on(columns.updatedAt),
+    index("commerce_provider_events_created_at_idx").on(columns.createdAt)
   ]
 );
 
@@ -7312,10 +7630,13 @@ export const payload_locked_documents_rels = pgTable(
     "product-subID": uuid("product_sub_id"),
     "product-dropsID": uuid("product_drops_id"),
     productsID: uuid("products_id"),
+    "product-variantsID": uuid("product_variants_id"),
     "product-order-campaignsID": uuid("product_order_campaigns_id"),
     "product-cartsID": uuid("product_carts_id"),
     "product-ordersID": uuid("product_orders_id"),
     "product-paymentsID": uuid("product_payments_id"),
+    "commerce-commandsID": uuid("commerce_commands_id"),
+    "commerce-provider-eventsID": uuid("commerce_provider_events_id"),
     eventsID: uuid("events_id"),
     "ticket-ordersID": uuid("ticket_orders_id"),
     ticketsID: uuid("tickets_id"),
@@ -7421,6 +7742,9 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_products_id_idx").on(
       columns.productsID
     ),
+    index("payload_locked_documents_rels_product_variants_id_idx").on(
+      columns["product-variantsID"]
+    ),
     index("payload_locked_documents_rels_product_order_campaigns_id_idx").on(
       columns["product-order-campaignsID"]
     ),
@@ -7432,6 +7756,12 @@ export const payload_locked_documents_rels = pgTable(
     ),
     index("payload_locked_documents_rels_product_payments_id_idx").on(
       columns["product-paymentsID"]
+    ),
+    index("payload_locked_documents_rels_commerce_commands_id_idx").on(
+      columns["commerce-commandsID"]
+    ),
+    index("payload_locked_documents_rels_commerce_provider_events_i_idx").on(
+      columns["commerce-provider-eventsID"]
     ),
     index("payload_locked_documents_rels_events_id_idx").on(columns.eventsID),
     index("payload_locked_documents_rels_ticket_orders_id_idx").on(
@@ -7647,6 +7977,11 @@ export const payload_locked_documents_rels = pgTable(
       name: "payload_locked_documents_rels_products_fk"
     }).onDelete("cascade"),
     foreignKey({
+      columns: [columns["product-variantsID"]],
+      foreignColumns: [product_variants.id],
+      name: "payload_locked_documents_rels_product_variants_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["product-order-campaignsID"]],
       foreignColumns: [product_order_campaigns.id],
       name: "payload_locked_documents_rels_product_order_campaigns_fk"
@@ -7665,6 +8000,16 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["product-paymentsID"]],
       foreignColumns: [product_payments.id],
       name: "payload_locked_documents_rels_product_payments_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["commerce-commandsID"]],
+      foreignColumns: [commerce_commands.id],
+      name: "payload_locked_documents_rels_commerce_commands_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["commerce-provider-eventsID"]],
+      foreignColumns: [commerce_provider_events.id],
+      name: "payload_locked_documents_rels_commerce_provider_events_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["eventsID"]],
@@ -10241,13 +10586,54 @@ export const relations_products = relations(products, ({ one, many }) => ({
     relationName: "_rels"
   })
 }));
+export const relations_product_variants_options = relations(
+  product_variants_options,
+  ({ one }) => ({
+    _parentID: one(product_variants, {
+      fields: [product_variants_options._parentID],
+      references: [product_variants.id],
+      relationName: "options"
+    })
+  })
+);
+export const relations_product_variants = relations(
+  product_variants,
+  ({ one, many }) => ({
+    product: one(products, {
+      fields: [product_variants.product],
+      references: [products.id],
+      relationName: "product"
+    }),
+    options: many(product_variants_options, {
+      relationName: "options"
+    })
+  })
+);
+export const relations_product_order_campaigns_rels = relations(
+  product_order_campaigns_rels,
+  ({ one }) => ({
+    parent: one(product_order_campaigns, {
+      fields: [product_order_campaigns_rels.parent],
+      references: [product_order_campaigns.id],
+      relationName: "_rels"
+    }),
+    "product-variantsID": one(product_variants, {
+      fields: [product_order_campaigns_rels["product-variantsID"]],
+      references: [product_variants.id],
+      relationName: "product-variants"
+    })
+  })
+);
 export const relations_product_order_campaigns = relations(
   product_order_campaigns,
-  ({ one }) => ({
+  ({ one, many }) => ({
     product: one(products, {
       fields: [product_order_campaigns.product],
       references: [products.id],
       relationName: "product"
+    }),
+    _rels: many(product_order_campaigns_rels, {
+      relationName: "_rels"
     })
   })
 );
@@ -10285,6 +10671,20 @@ export const relations_product_payments = relations(
       fields: [product_payments.user],
       references: [users.id],
       relationName: "user"
+    })
+  })
+);
+export const relations_commerce_commands = relations(
+  commerce_commands,
+  () => ({})
+);
+export const relations_commerce_provider_events = relations(
+  commerce_provider_events,
+  ({ one }) => ({
+    product_payment: one(product_payments, {
+      fields: [commerce_provider_events.product_payment],
+      references: [product_payments.id],
+      relationName: "product_payment"
     })
   })
 );
@@ -10594,6 +10994,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [products.id],
       relationName: "products"
     }),
+    "product-variantsID": one(product_variants, {
+      fields: [payload_locked_documents_rels["product-variantsID"]],
+      references: [product_variants.id],
+      relationName: "product-variants"
+    }),
     "product-order-campaignsID": one(product_order_campaigns, {
       fields: [payload_locked_documents_rels["product-order-campaignsID"]],
       references: [product_order_campaigns.id],
@@ -10613,6 +11018,16 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels["product-paymentsID"]],
       references: [product_payments.id],
       relationName: "product-payments"
+    }),
+    "commerce-commandsID": one(commerce_commands, {
+      fields: [payload_locked_documents_rels["commerce-commandsID"]],
+      references: [commerce_commands.id],
+      relationName: "commerce-commands"
+    }),
+    "commerce-provider-eventsID": one(commerce_provider_events, {
+      fields: [payload_locked_documents_rels["commerce-provider-eventsID"]],
+      references: [commerce_provider_events.id],
+      relationName: "commerce-provider-events"
     }),
     eventsID: one(events, {
       fields: [payload_locked_documents_rels.eventsID],
@@ -11002,9 +11417,12 @@ type DatabaseSchema = {
   enum_prices_recurring_interval: typeof enum_prices_recurring_interval;
   enum_subscriptions_subscription_status: typeof enum_subscriptions_subscription_status;
   enum_subscriptions_request_method: typeof enum_subscriptions_request_method;
+  enum_subscriptions_provider: typeof enum_subscriptions_provider;
   enum_products_currency: typeof enum_products_currency;
   enum_products_stock_state: typeof enum_products_stock_state;
+  enum_products_variant_source: typeof enum_products_variant_source;
   enum_products_private_tier_gate: typeof enum_products_private_tier_gate;
+  enum_product_variants_stock_state: typeof enum_product_variants_stock_state;
   enum_product_order_campaigns_state: typeof enum_product_order_campaigns_state;
   enum_product_order_campaigns_progress_visibility: typeof enum_product_order_campaigns_progress_visibility;
   enum_product_carts_status: typeof enum_product_carts_status;
@@ -11017,6 +11435,9 @@ type DatabaseSchema = {
   enum_product_payments_provider: typeof enum_product_payments_provider;
   enum_product_payments_status: typeof enum_product_payments_status;
   enum_product_payments_currency: typeof enum_product_payments_currency;
+  enum_commerce_commands_status: typeof enum_commerce_commands_status;
+  enum_commerce_provider_events_provider: typeof enum_commerce_provider_events_provider;
+  enum_commerce_provider_events_processing_status: typeof enum_commerce_provider_events_processing_status;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
   enum_events_state: typeof enum_events_state;
   enum_ticket_orders_currency: typeof enum_ticket_orders_currency;
@@ -11163,10 +11584,15 @@ type DatabaseSchema = {
   product_drops: typeof product_drops;
   products: typeof products;
   products_rels: typeof products_rels;
+  product_variants_options: typeof product_variants_options;
+  product_variants: typeof product_variants;
   product_order_campaigns: typeof product_order_campaigns;
+  product_order_campaigns_rels: typeof product_order_campaigns_rels;
   product_carts: typeof product_carts;
   product_orders: typeof product_orders;
   product_payments: typeof product_payments;
+  commerce_commands: typeof commerce_commands;
+  commerce_provider_events: typeof commerce_provider_events;
   events_exclusive_links: typeof events_exclusive_links;
   events: typeof events;
   ticket_orders: typeof ticket_orders;
@@ -11320,10 +11746,15 @@ type DatabaseSchema = {
   relations_product_drops: typeof relations_product_drops;
   relations_products_rels: typeof relations_products_rels;
   relations_products: typeof relations_products;
+  relations_product_variants_options: typeof relations_product_variants_options;
+  relations_product_variants: typeof relations_product_variants;
+  relations_product_order_campaigns_rels: typeof relations_product_order_campaigns_rels;
   relations_product_order_campaigns: typeof relations_product_order_campaigns;
   relations_product_carts: typeof relations_product_carts;
   relations_product_orders: typeof relations_product_orders;
   relations_product_payments: typeof relations_product_payments;
+  relations_commerce_commands: typeof relations_commerce_commands;
+  relations_commerce_provider_events: typeof relations_commerce_provider_events;
   relations_events_exclusive_links: typeof relations_events_exclusive_links;
   relations_events: typeof relations_events;
   relations_ticket_orders: typeof relations_ticket_orders;

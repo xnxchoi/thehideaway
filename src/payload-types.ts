@@ -117,10 +117,13 @@ export interface Config {
     'product-sub': ProductSub;
     'product-drops': ProductDrop;
     products: Product;
+    'product-variants': ProductVariant;
     'product-order-campaigns': ProductOrderCampaign;
     'product-carts': ProductCart;
     'product-orders': ProductOrder;
     'product-payments': ProductPayment;
+    'commerce-commands': CommerceCommand;
+    'commerce-provider-events': CommerceProviderEvent;
     events: Event;
     'ticket-orders': TicketOrder;
     tickets: Ticket;
@@ -172,6 +175,9 @@ export interface Config {
     };
     surf: {
       bookmarks: 'bookmarks';
+    };
+    products: {
+      skus: 'product-variants';
     };
     'payload-folders': {
       documentsAndFolders: 'payload-folders' | 'userMedia';
@@ -227,10 +233,13 @@ export interface Config {
     'product-sub': ProductSubSelect<false> | ProductSubSelect<true>;
     'product-drops': ProductDropsSelect<false> | ProductDropsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-variants': ProductVariantsSelect<false> | ProductVariantsSelect<true>;
     'product-order-campaigns': ProductOrderCampaignsSelect<false> | ProductOrderCampaignsSelect<true>;
     'product-carts': ProductCartsSelect<false> | ProductCartsSelect<true>;
     'product-orders': ProductOrdersSelect<false> | ProductOrdersSelect<true>;
     'product-payments': ProductPaymentsSelect<false> | ProductPaymentsSelect<true>;
+    'commerce-commands': CommerceCommandsSelect<false> | CommerceCommandsSelect<true>;
+    'commerce-provider-events': CommerceProviderEventsSelect<false> | CommerceProviderEventsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'ticket-orders': TicketOrdersSelect<false> | TicketOrdersSelect<true>;
     tickets: TicketsSelect<false> | TicketsSelect<true>;
@@ -2931,12 +2940,19 @@ export interface Product {
   currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
   unit_amount: number;
   compare_at_amount?: number | null;
+  /**
+   * Legacy catalog value.
+   */
   stock_state: 'in_stock' | 'out_of_stock' | 'pre_order' | 'on_request';
+  /**
+   * Legacy catalog value.
+   */
   inventory?: number | null;
   max_order_quantity: number;
   min_order_quantity: number;
+  variant_source: 'legacy' | 'relational';
   /**
-   * Array of { id, sku, label, size, color, amount?, inventory?, stock_state? }.
+   * Legacy catalog data retained during the SKU transition.
    */
   variants?:
     | {
@@ -2947,6 +2963,11 @@ export interface Product {
     | number
     | boolean
     | null;
+  skus?: {
+    docs?: (string | ProductVariant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   standard_enabled: boolean;
   request_to_order_enabled: boolean;
   private_order_enabled: boolean;
@@ -2956,6 +2977,48 @@ export interface Product {
    */
   private_unit_amount?: number | null;
   private_tier_gate: 'anyone' | 'resident' | 'patron' | 'cofounder' | 'staff';
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Stable product SKUs used by checkout.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants".
+ */
+export interface ProductVariant {
+  id: string;
+  product: string | Product;
+  active: boolean;
+  identity_locked: boolean;
+  sku?: string | null;
+  label?: string | null;
+  options?:
+    | {
+        key: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  option_key: string;
+  price_override_amount?: number | null;
+  barcode?: string | null;
+  weight_grams?: number | null;
+  length_mm?: number | null;
+  width_mm?: number | null;
+  height_mm?: number | null;
+  tax_category?: string | null;
+  /**
+   * Temporary legacy cart identifier.
+   */
+  legacy_variant_ref?: string | null;
+  legacy_key?: string | null;
+  /**
+   * Temporary value until the inventory ledger is active.
+   */
+  inventory?: number | null;
+  stock_state?: ('in_stock' | 'out_of_stock' | 'pre_order' | 'on_request') | null;
   sort?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -2983,7 +3046,11 @@ export interface ProductOrderCampaign {
    */
   progress_visibility: 'hidden' | 'percentage' | 'count';
   /**
-   * Optional array of product variant ids eligible for this campaign.
+   * SKUs allowed for this campaign.
+   */
+  eligible_skus?: (string | ProductVariant)[] | null;
+  /**
+   * Legacy campaign data retained during the SKU transition.
    */
   eligible_variants?:
     | {
@@ -3013,6 +3080,7 @@ export interface ProductCart {
   storefront: string;
   status: 'active' | 'converted' | 'abandoned';
   currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
+  line_schema_version: number;
   lines:
     | {
         [k: string]: unknown;
@@ -3055,6 +3123,7 @@ export interface ProductOrder {
   subtotal_amount: number;
   total_amount: number;
   campaign?: (string | null) | ProductOrderCampaign;
+  line_snapshot_version: number;
   lines:
     | {
         [k: string]: unknown;
@@ -3137,6 +3206,64 @@ export interface ProductPayment {
     | boolean
     | null;
   paid_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Durable idempotency records for LOSTINSEOUL commerce.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-commands".
+ */
+export interface CommerceCommand {
+  id: string;
+  command_key: string;
+  business_key: string;
+  request_hash: string;
+  status: 'in_progress' | 'succeeded';
+  attempt_count: number;
+  lease_token_hash?: string | null;
+  lease_expires_at?: string | null;
+  safe_response?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  resource_type?: string | null;
+  resource_id?: string | null;
+  completed_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-provider-events".
+ */
+export interface CommerceProviderEvent {
+  id: string;
+  dedupe_key: string;
+  provider: 'portone';
+  event_key: string;
+  event_type?: string | null;
+  payment_ref?: string | null;
+  payload_hash?: string | null;
+  provider_status?: string | null;
+  transaction_ref?: string | null;
+  product_payment?: (string | null) | ProductPayment;
+  occurred_at?: string | null;
+  received_at: string;
+  processing_status: 'received' | 'processing' | 'retryable' | 'processed' | 'rejected';
+  attempt_count: number;
+  lease_token_hash?: string | null;
+  lease_expires_at?: string | null;
+  last_attempt_at?: string | null;
+  processed_at?: string | null;
+  outcome_code?: string | null;
+  last_error_code?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3675,6 +3802,10 @@ export interface PayloadLockedDocument {
         value: string | Product;
       } | null)
     | ({
+        relationTo: 'product-variants';
+        value: string | ProductVariant;
+      } | null)
+    | ({
         relationTo: 'product-order-campaigns';
         value: string | ProductOrderCampaign;
       } | null)
@@ -3689,6 +3820,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'product-payments';
         value: string | ProductPayment;
+      } | null)
+    | ({
+        relationTo: 'commerce-commands';
+        value: string | CommerceCommand;
+      } | null)
+    | ({
+        relationTo: 'commerce-provider-events';
+        value: string | CommerceProviderEvent;
       } | null)
     | ({
         relationTo: 'events';
@@ -5160,13 +5299,48 @@ export interface ProductsSelect<T extends boolean = true> {
   inventory?: T;
   max_order_quantity?: T;
   min_order_quantity?: T;
+  variant_source?: T;
   variants?: T;
+  skus?: T;
   standard_enabled?: T;
   request_to_order_enabled?: T;
   private_order_enabled?: T;
   private_preset_price_enabled?: T;
   private_unit_amount?: T;
   private_tier_gate?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants_select".
+ */
+export interface ProductVariantsSelect<T extends boolean = true> {
+  product?: T;
+  active?: T;
+  identity_locked?: T;
+  sku?: T;
+  label?: T;
+  options?:
+    | T
+    | {
+        key?: T;
+        value?: T;
+        id?: T;
+      };
+  option_key?: T;
+  price_override_amount?: T;
+  barcode?: T;
+  weight_grams?: T;
+  length_mm?: T;
+  width_mm?: T;
+  height_mm?: T;
+  tax_category?: T;
+  legacy_variant_ref?: T;
+  legacy_key?: T;
+  inventory?: T;
+  stock_state?: T;
   sort?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -5184,6 +5358,7 @@ export interface ProductOrderCampaignsSelect<T extends boolean = true> {
   paid_commitments?: T;
   deadline?: T;
   progress_visibility?: T;
+  eligible_skus?: T;
   eligible_variants?: T;
   refund_policy?: T;
   updatedAt?: T;
@@ -5198,6 +5373,7 @@ export interface ProductCartsSelect<T extends boolean = true> {
   storefront?: T;
   status?: T;
   currency?: T;
+  line_schema_version?: T;
   lines?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -5218,6 +5394,7 @@ export interface ProductOrdersSelect<T extends boolean = true> {
   subtotal_amount?: T;
   total_amount?: T;
   campaign?: T;
+  line_snapshot_version?: T;
   lines?: T;
   shipping?: T;
   contact?: T;
@@ -5246,6 +5423,52 @@ export interface ProductPaymentsSelect<T extends boolean = true> {
   request_payload?: T;
   events?: T;
   paid_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-commands_select".
+ */
+export interface CommerceCommandsSelect<T extends boolean = true> {
+  command_key?: T;
+  business_key?: T;
+  request_hash?: T;
+  status?: T;
+  attempt_count?: T;
+  lease_token_hash?: T;
+  lease_expires_at?: T;
+  safe_response?: T;
+  resource_type?: T;
+  resource_id?: T;
+  completed_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-provider-events_select".
+ */
+export interface CommerceProviderEventsSelect<T extends boolean = true> {
+  dedupe_key?: T;
+  provider?: T;
+  event_key?: T;
+  event_type?: T;
+  payment_ref?: T;
+  payload_hash?: T;
+  provider_status?: T;
+  transaction_ref?: T;
+  product_payment?: T;
+  occurred_at?: T;
+  received_at?: T;
+  processing_status?: T;
+  attempt_count?: T;
+  lease_token_hash?: T;
+  lease_expires_at?: T;
+  last_attempt_at?: T;
+  processed_at?: T;
+  outcome_code?: T;
+  last_error_code?: T;
   updatedAt?: T;
   createdAt?: T;
 }

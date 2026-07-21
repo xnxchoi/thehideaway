@@ -4,37 +4,30 @@ import config from "@payload-config";
 import { headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import { cancelUnpaidProductOrder } from "./orders";
+import { syncProductPayment } from "./product-payment";
 
-export async function cancelReturnedProductOrder(
-  orderRef?: string
-): Promise<void> {
-  if (!orderRef) return;
+export async function verifyReturnedProductPayment(input: {
+  orderRef?: string;
+  paymentId?: string;
+}) {
+  if (input.orderRef && input.paymentId && input.orderRef !== input.paymentId) {
+    return { ok: false, status: 400, reason: "order-not-found" } as const;
+  }
+  const paymentId = input.paymentId || input.orderRef;
+  if (!paymentId) {
+    return { ok: false, status: 400, reason: "order-not-found" } as const;
+  }
 
   const headers = await nextHeaders();
   const session = await getServerSession(headers);
-  if (!session?.user?.id) return;
+  if (!session?.user?.id) {
+    return { ok: false, status: 401, reason: "order-not-found" } as const;
+  }
 
   const payload = await getPayload({ config });
-  const result = await payload.find({
-    collection: "product-orders" as never,
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-    where: {
-      and: [
-        { order_ref: { equals: orderRef } },
-        { user: { equals: String(session.user.id) } }
-      ]
-    } as never
-  });
-
-  const order = result.docs[0] as Record<string, unknown> | undefined;
-  if (!order) return;
-
-  await cancelUnpaidProductOrder({ payload, order }).catch((err) => {
-    payload.logger.error?.(
-      `[lost/payment/return] failed to cancel ${orderRef}: ${(err as Error).message}`
-    );
+  return syncProductPayment({
+    payload,
+    paymentId,
+    expectedUserId: String(session.user.id)
   });
 }

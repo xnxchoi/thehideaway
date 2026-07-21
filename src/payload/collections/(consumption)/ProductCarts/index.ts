@@ -3,8 +3,11 @@ import type { CollectionConfig } from "payload";
 
 const ownsCart = ({ req }: { req: { user?: { id?: string } | null } }) => {
   if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
-  return { user: { equals: req.user?.id } };
+  const userId = req.user?.id;
+  return userId ? { user: { equals: userId } } : false;
 };
+
+const denyGenericCartWrite = () => false;
 
 export const ProductCarts: CollectionConfig = {
   slug: "product-carts",
@@ -19,8 +22,8 @@ export const ProductCarts: CollectionConfig = {
   },
   access: {
     read: ownsCart,
-    create: ({ req }) => Boolean(req.user),
-    update: ownsCart,
+    create: denyGenericCartWrite,
+    update: denyGenericCartWrite,
     delete: isAdmin
   },
   fields: [
@@ -52,6 +55,14 @@ export const ProductCarts: CollectionConfig = {
       required: true,
       defaultValue: "KRW",
       options: ["KRW", "USD", "JPY", "EUR"]
+    },
+    {
+      name: "line_schema_version",
+      type: "number",
+      required: true,
+      defaultValue: 1,
+      min: 1,
+      admin: { readOnly: true }
     },
     {
       name: "lines",

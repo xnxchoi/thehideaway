@@ -6,6 +6,10 @@ vi.mock("./inventory", () => ({
   releaseStandardInventory: vi.fn(async () => undefined)
 }));
 
+vi.mock("@/lib/db/sequences", () => ({
+  paymentWebhookLock: vi.fn(async () => undefined)
+}));
+
 describe("cancelUnpaidProductOrder", () => {
   it("releases inventory and marks order/payment failed in one transaction", async () => {
     const { releaseStandardInventory } = await import("./inventory");
@@ -15,7 +19,21 @@ describe("cancelUnpaidProductOrder", () => {
         commitTransaction: vi.fn(async () => undefined),
         rollbackTransaction: vi.fn(async () => undefined)
       },
-      find: vi.fn(async () => ({ docs: [{ id: "payment-1" }] })),
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [
+                {
+                  id: "order-1",
+                  order_ref: "lis_1",
+                  order_mode: "standard_purchase",
+                  payment_status: "pending",
+                  status: "pending_payment",
+                  lines: []
+                }
+              ]
+            : [{ id: "payment-1", status: "pending" }]
+      })),
       update: vi.fn(async () => ({ id: "updated" }))
     } as any;
 
@@ -23,6 +41,7 @@ describe("cancelUnpaidProductOrder", () => {
       payload,
       order: {
         id: "order-1",
+        order_ref: "lis_1",
         order_mode: "standard_purchase",
         payment_status: "pending",
         status: "pending_payment",
@@ -31,6 +50,14 @@ describe("cancelUnpaidProductOrder", () => {
     });
 
     expect(result).toEqual({ ok: true, canceled: true });
+    const { paymentWebhookLock } = await import("@/lib/db/sequences");
+    expect(paymentWebhookLock).toHaveBeenCalledWith(payload, "tx-1", "lis_1");
+    expect(payload.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "product-payments",
+        pagination: false
+      })
+    );
     expect(releaseStandardInventory).toHaveBeenCalledWith(
       expect.objectContaining({
         req: expect.objectContaining({ transactionID: "tx-1" })
@@ -85,5 +112,49 @@ describe("cancelUnpaidProductOrder", () => {
     });
     expect(payload.db.beginTransaction).not.toHaveBeenCalled();
     expect(releaseStandardInventory).not.toHaveBeenCalled();
+  });
+
+  it("rejects an inconsistent paid payment before releasing inventory", async () => {
+    const { releaseStandardInventory } = await import("./inventory");
+    vi.mocked(releaseStandardInventory).mockClear();
+    const payload = {
+      db: {
+        beginTransaction: vi.fn(async () => "tx-1"),
+        commitTransaction: vi.fn(async () => undefined),
+        rollbackTransaction: vi.fn(async () => undefined)
+      },
+      find: vi.fn(async ({ collection }) => ({
+        docs:
+          collection === "product-orders"
+            ? [
+                {
+                  id: "order-1",
+                  order_ref: "lis_1",
+                  order_mode: "standard_purchase",
+                  payment_status: "pending",
+                  status: "pending_payment",
+                  lines: []
+                }
+              ]
+            : [{ id: "payment-1", status: "paid" }]
+      })),
+      update: vi.fn()
+    } as any;
+
+    await expect(
+      cancelUnpaidProductOrder({
+        payload,
+        order: {
+          id: "order-1",
+          order_ref: "lis_1",
+          payment_status: "pending",
+          status: "pending_payment"
+        }
+      })
+    ).rejects.toThrow("invalid-commerce-transition");
+
+    expect(releaseStandardInventory).not.toHaveBeenCalled();
+    expect(payload.update).not.toHaveBeenCalled();
+    expect(payload.db.rollbackTransaction).toHaveBeenCalledWith("tx-1");
   });
 });

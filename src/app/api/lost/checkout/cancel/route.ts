@@ -7,6 +7,7 @@ import { z } from "zod";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { cancelUnpaidProductOrder } from "@/lib/lost-commerce/orders";
+import { syncProductPayment } from "@/lib/lost-commerce/product-payment";
 
 export const runtime = "nodejs";
 
@@ -64,6 +65,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    const payments = await payload.find({
+      collection: "product-payments" as never,
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      where: {
+        and: [
+          { order: { equals: String(order.id) } },
+          { provider: { equals: "portone" } }
+        ]
+      }
+    });
+    const payment = payments.docs[0] as
+      | { provider?: string; portone_order_ref?: string }
+      | undefined;
+    if (payment?.provider === "portone") {
+      const paymentId = payment.portone_order_ref || parsed.data.order_ref;
+      const syncResult = await syncProductPayment({
+        payload,
+        paymentId,
+        expectedUserId: String(auth.user.id)
+      });
+      return NextResponse.json(syncResult, { status: syncResult.ok ? 200 : syncResult.status });
+    }
     const cancelResult = await cancelUnpaidProductOrder({ payload, order });
     return NextResponse.json(cancelResult);
   } catch (err) {

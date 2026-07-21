@@ -54,9 +54,9 @@ export default async function LostCollectionPage({ params }: PageProps) {
         standardModeLabel={t("modes.standard")}
         requestModeLabel={t("modes.request")}
         privateModeLabel={t("modes.private")}
+        requestQuoteLabel={t("actions.requestQuote")}
         {...businessFooterProps}
         footerInfoLabel={t("footer.info")}
-        footerMediaLabel={t("footer.media")}
         footerContactLabel={t("footer.contact")}
         footerPrivacyLabel={t("footer.privacy")}
         footerTermsLabel={t("footer.terms")}

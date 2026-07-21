@@ -143,6 +143,8 @@
       "manual": "Manual",
       "submit": "Place order",
       "pending": "Creating order",
+      "recovering": "Verifying payment",
+      "recovery": "Verify payment",
       "failed": "Could not create the order.",
       "portoneUnavailable": "Card payments are not open yet.",
       "name": "Name",
@@ -152,12 +154,15 @@
       "note": "Delivery note"
     },
     "payment": {
+      "pendingLabel": "Payment pending",
+      "pendingTitle": "Payment confirmation pending.",
       "successEyebrow": "Order received",
-      "successTitle": "We have it.",
+      "successTitle": "Order received.",
       "failureEyebrow": "Payment failed",
-      "failureTitle": "Try once more.",
+      "failureTitle": "Payment failed.",
       "continue": "Continue",
-      "retry": "Return to cart"
+      "retry": "Return to cart",
+      "viewOrder": "View order"
     },
     "order": {
       "title": "Order",

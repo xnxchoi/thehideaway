@@ -1,4 +1,5 @@
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
+import { protectOrderLifecycle } from "@/lib/lost-commerce/lifecycle-authorization";
 import type { CollectionConfig } from "payload";
 
 const ownsOrder = ({ req }: { req: { user?: { id?: string } | null } }) => {
@@ -26,9 +27,12 @@ export const ProductOrders: CollectionConfig = {
   },
   access: {
     read: ownsOrder,
-    create: isAdmin,
+    create: () => false,
     update: isAdmin,
     delete: isAdmin
+  },
+  hooks: {
+    beforeChange: [protectOrderLifecycle]
   },
   fields: [
     {
@@ -100,7 +104,13 @@ export const ProductOrders: CollectionConfig = {
       type: "select",
       required: true,
       defaultValue: "unfulfilled",
-      options: ["unfulfilled", "reserved", "in_production", "fulfilled", "canceled"],
+      options: [
+        "unfulfilled",
+        "reserved",
+        "in_production",
+        "fulfilled",
+        "canceled"
+      ],
       index: true
     },
     {
@@ -130,6 +140,14 @@ export const ProductOrders: CollectionConfig = {
       type: "relationship",
       relationTo: "product-order-campaigns",
       index: true
+    },
+    {
+      name: "line_snapshot_version",
+      type: "number",
+      required: true,
+      defaultValue: 1,
+      min: 1,
+      admin: { readOnly: true }
     },
     {
       name: "lines",

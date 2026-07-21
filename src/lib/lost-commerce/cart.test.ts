@@ -3,15 +3,361 @@ import { resolveLostCheckout } from "./cart";
 
 function payloadWith(docs: Record<string, any>) {
   return {
-    async findByID({ id }: { id: string }) {
+    async findByID({
+      collection,
+      id,
+      disableErrors
+    }: {
+      collection: string;
+      id: string;
+      disableErrors?: boolean;
+    }) {
       const doc = docs[id];
-      if (!doc) throw new Error("not-found");
-      return doc;
+      if (!doc) {
+        if (disableErrors) return null;
+        throw new Error("not-found");
+      }
+      return collection === "products"
+        ? { storefront: "lostinseoul", ...doc }
+        : doc;
+    },
+    async find() {
+      return {
+        docs: Object.values(docs).filter(
+          (doc) => doc?.legacy_variant_ref === "legacy_variant_1"
+        )
+      };
     }
   } as any;
 }
 
+function activeSku(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "sku_1",
+    product: "product_1",
+    active: true,
+    sku: "LIS-SKU-1",
+    options: [],
+    stock_state: "in_stock",
+    inventory: 5,
+    ...overrides
+  };
+}
+
 describe("resolveLostCheckout", () => {
+  it("normalizes a missing product to product-unavailable", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({}),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "missing-product",
+            skuId: "missing-sku",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toThrow("product-unavailable");
+  });
+
+  it("requires every checkout line to identify a stable SKU", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            name: "Jacket",
+            slug: "jacket",
+            currency: "KRW",
+            unit_amount: 120000,
+            min_order_quantity: 1,
+            max_order_quantity: 2,
+            standard_enabled: true
+          }
+        }),
+        user: { role: "user" },
+        lines: [
+          { productId: "product_1", mode: "standard_purchase", quantity: 1 }
+        ]
+      })
+    ).rejects.toThrow("sku-required");
+  });
+
+  it("rejects a stale SKU id", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            name: "Jacket",
+            slug: "jacket",
+            currency: "KRW",
+            unit_amount: 120000,
+            min_order_quantity: 1,
+            max_order_quantity: 2,
+            standard_enabled: true
+          }
+        }),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "missing_sku",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toThrow("sku-not-found");
+  });
+
+  it("propagates a direct SKU lookup infrastructure error unchanged", async () => {
+    const infrastructureError = new Error("database connection lost");
+    const payload = payloadWith({
+      product_1: {
+        id: "product_1",
+        active: true,
+        name: "Jacket",
+        slug: "jacket",
+        currency: "KRW",
+        unit_amount: 120000,
+        min_order_quantity: 1,
+        max_order_quantity: 2,
+        standard_enabled: true
+      }
+    });
+    const findByID = payload.findByID.bind(payload);
+    payload.findByID = async (args: { collection: string; id: string }) => {
+      if (args.collection === "product-variants") throw infrastructureError;
+      return findByID(args);
+    };
+
+    await expect(
+      resolveLostCheckout({
+        payload,
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toBe(infrastructureError);
+  });
+
+  it("rejects an inactive SKU", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            name: "Jacket",
+            slug: "jacket",
+            currency: "KRW",
+            unit_amount: 120000,
+            min_order_quantity: 1,
+            max_order_quantity: 2,
+            standard_enabled: true
+          },
+          sku_1: {
+            id: "sku_1",
+            product: "product_1",
+            active: false,
+            sku: "LIS-JACKET-01",
+            options: []
+          }
+        }),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toThrow("sku-inactive");
+  });
+
+  it("rejects a SKU that belongs to another product", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            name: "Jacket",
+            slug: "jacket",
+            currency: "KRW",
+            unit_amount: 120000,
+            min_order_quantity: 1,
+            max_order_quantity: 2,
+            standard_enabled: true
+          },
+          sku_2: {
+            id: "sku_2",
+            product: "product_2",
+            active: true,
+            sku: "LIS-OTHER-01",
+            options: []
+          }
+        }),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "sku_2",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toThrow("sku-product-mismatch");
+  });
+
+  it("rejects a direct SKU checkout for a product outside LOSTINSEOUL", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            storefront: "hideaway",
+            name: "Jacket",
+            slug: "jacket",
+            currency: "KRW",
+            unit_amount: 120000,
+            min_order_quantity: 1,
+            max_order_quantity: 2,
+            standard_enabled: true
+          },
+          sku_1: activeSku()
+        }),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toThrow("product-unavailable");
+  });
+
+  it("rejects a legacy SKU reference for a product outside LOSTINSEOUL", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            storefront: "hideaway",
+            name: "Jacket",
+            slug: "jacket",
+            currency: "KRW",
+            unit_amount: 120000,
+            min_order_quantity: 1,
+            max_order_quantity: 2,
+            standard_enabled: true
+          },
+          sku_1: activeSku({ legacy_variant_ref: "legacy_variant_1" })
+        }),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            variantId: "legacy_variant_1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toThrow("product-unavailable");
+  });
+
+  it("uses the active SKU price override in an immutable line snapshot", async () => {
+    const skuOptions = [
+      { key: "size", value: "02" },
+      { key: "color", value: "black" }
+    ];
+    const sku = {
+      id: "sku_1",
+      product: "product_1",
+      active: true,
+      sku: "LIS-JACKET-BLACK-02",
+      label: "Black / 02",
+      options: skuOptions,
+      price_override_amount: 135000,
+      weight_grams: null,
+      dimensions: null,
+      tax_category: null,
+      stock_state: "in_stock",
+      inventory: 2
+    };
+    const result = await resolveLostCheckout({
+      payload: payloadWith({
+        product_1: {
+          id: "product_1",
+          active: true,
+          name: "Jacket",
+          slug: "jacket",
+          currency: "KRW",
+          unit_amount: 120000,
+          min_order_quantity: 1,
+          max_order_quantity: 2,
+          standard_enabled: true
+        },
+        sku_1: sku
+      }),
+      user: { role: "user" },
+      lines: [
+        {
+          productId: "product_1",
+          skuId: "sku_1",
+          mode: "standard_purchase",
+          quantity: 2
+        }
+      ]
+    });
+
+    skuOptions[0]!.value = "changed";
+    sku.label = "Changed";
+
+    expect(result.totalAmount).toBe(270000);
+    expect(result.lines[0]).toMatchObject({
+      schemaVersion: 2,
+      productId: "product_1",
+      productName: "Jacket",
+      productSlug: "jacket",
+      skuId: "sku_1",
+      sku: "LIS-JACKET-BLACK-02",
+      skuLabel: "Black / 02",
+      options: [
+        { key: "color", value: "black" },
+        { key: "size", value: "02" }
+      ],
+      currency: "KRW",
+      unitAmount: 135000,
+      quantity: 2,
+      lineAmount: 270000,
+      weightGrams: null,
+      dimensions: null,
+      taxCategory: null,
+      mode: "standard_purchase"
+    });
+  });
+
   it("snapshots a conventional purchase", async () => {
     const result = await resolveLostCheckout({
       payload: payloadWith({
@@ -25,11 +371,17 @@ describe("resolveLostCheckout", () => {
           min_order_quantity: 1,
           max_order_quantity: 2,
           standard_enabled: true
-        }
+        },
+        sku_1: activeSku({ inventory: 2 })
       }),
       user: { role: "user" },
       lines: [
-        { productId: "product_1", mode: "standard_purchase", quantity: 2 }
+        {
+          productId: "product_1",
+          skuId: "sku_1",
+          mode: "standard_purchase",
+          quantity: 2
+        }
       ]
     });
 
@@ -56,17 +408,23 @@ describe("resolveLostCheckout", () => {
             standard_enabled: true,
             stock_state: "out_of_stock",
             inventory: 8
-          }
+          },
+          sku_1: activeSku({ stock_state: "out_of_stock", inventory: 8 })
         }),
         user: { role: "user" },
         lines: [
-          { productId: "product_1", mode: "standard_purchase", quantity: 1 }
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
         ]
       })
     ).rejects.toThrow("out-of-stock");
   });
 
-  it("rejects standard purchases above product inventory", async () => {
+  it("rejects standard purchases above SKU inventory", async () => {
     await expect(
       resolveLostCheckout({
         payload: payloadWith({
@@ -82,11 +440,17 @@ describe("resolveLostCheckout", () => {
             standard_enabled: true,
             stock_state: "in_stock",
             inventory: 1
-          }
+          },
+          sku_1: activeSku({ inventory: 1 })
         }),
         user: { role: "user" },
         lines: [
-          { productId: "product_1", mode: "standard_purchase", quantity: 2 }
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 2
+          }
         ]
       })
     ).rejects.toThrow("insufficient-inventory");
@@ -108,16 +472,107 @@ describe("resolveLostCheckout", () => {
             standard_enabled: true,
             stock_state: "in_stock",
             inventory: 5
-          }
+          },
+          sku_1: activeSku({ inventory: 5 })
         }),
         user: { role: "user" },
         lines: [
-          { productId: "product_1", mode: "standard_purchase", quantity: 2 },
-          { productId: "product_1", mode: "standard_purchase", quantity: 1 }
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 2
+          },
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
         ]
       })
     ).rejects.toThrow("quantity-out-of-range");
   });
+
+  it.each([
+    {
+      mode: "standard_purchase" as const,
+      product: { standard_enabled: true }
+    },
+    {
+      mode: "private_order" as const,
+      product: {
+        private_order_enabled: true,
+        private_preset_price_enabled: true,
+        private_unit_amount: 120000
+      }
+    }
+  ])(
+    "rejects a campaign-bearing $mode line before it can split duplicate quantities",
+    async ({ mode, product }) => {
+      await expect(
+        resolveLostCheckout({
+          payload: payloadWith({
+            product_1: {
+              id: "product_1",
+              active: true,
+              name: "Limited jacket",
+              slug: "limited-jacket",
+              currency: "KRW",
+              unit_amount: 120000,
+              min_order_quantity: 1,
+              max_order_quantity: 2,
+              ...product
+            },
+            sku_1: activeSku({ inventory: 5 })
+          }),
+          user: { role: "patron" },
+          lines: [
+            {
+              productId: "product_1",
+              skuId: "sku_1",
+              mode,
+              quantity: 2
+            },
+            {
+              productId: "product_1",
+              skuId: "sku_1",
+              mode,
+              quantity: 1,
+              campaignId: "campaign_1"
+            }
+          ]
+        })
+      ).rejects.toThrow("campaign-not-allowed");
+    }
+  );
+
+  it.each(["standard_purchase", "private_order"] as const)(
+    "rejects campaignId on %s before catalog resolution",
+    async (mode) => {
+      const payload = {
+        async findByID() {
+          throw new Error("catalog-called");
+        }
+      };
+
+      await expect(
+        resolveLostCheckout({
+          payload: payload as never,
+          user: { role: "patron" },
+          lines: [
+            {
+              productId: "product_1",
+              skuId: "sku_1",
+              mode,
+              quantity: 1,
+              campaignId: "campaign_1"
+            }
+          ]
+        })
+      ).rejects.toThrow("campaign-not-allowed");
+    }
+  );
 
   it("rejects on-request products in standard purchase mode", async () => {
     await expect(
@@ -135,17 +590,23 @@ describe("resolveLostCheckout", () => {
             standard_enabled: true,
             stock_state: "on_request",
             inventory: 2
-          }
+          },
+          sku_1: activeSku({ stock_state: "on_request", inventory: 2 })
         }),
         user: { role: "user" },
         lines: [
-          { productId: "product_1", mode: "standard_purchase", quantity: 1 }
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
         ]
       })
     ).rejects.toThrow("standard-unavailable");
   });
 
-  it("rejects unknown variant ids instead of falling back to product pricing", async () => {
+  it("rejects unknown SKU ids instead of falling back to product pricing", async () => {
     await expect(
       resolveLostCheckout({
         payload: payloadWith({
@@ -160,21 +621,20 @@ describe("resolveLostCheckout", () => {
             max_order_quantity: 2,
             standard_enabled: true,
             stock_state: "in_stock",
-            inventory: 2,
-            variants: [{ id: "small", amount: 120000, inventory: 1 }]
+            inventory: 2
           }
         }),
         user: { role: "user" },
         lines: [
           {
             productId: "product_1",
-            variantId: "large",
+            skuId: "sku_missing",
             mode: "standard_purchase",
             quantity: 1
           }
         ]
       })
-    ).rejects.toThrow("variant-not-found");
+    ).rejects.toThrow("sku-not-found");
   });
 
   it("rejects standard purchases above variant inventory", async () => {
@@ -192,23 +652,15 @@ describe("resolveLostCheckout", () => {
             max_order_quantity: 5,
             standard_enabled: true,
             stock_state: "in_stock",
-            inventory: 5,
-            variants: [
-              {
-                id: "small",
-                label: "Small",
-                amount: 120000,
-                inventory: 1,
-                stock_state: "in_stock"
-              }
-            ]
-          }
+            inventory: 5
+          },
+          sku_1: activeSku({ label: "Small", inventory: 1 })
         }),
         user: { role: "user" },
         lines: [
           {
             productId: "product_1",
-            variantId: "small",
+            skuId: "sku_1",
             mode: "standard_purchase",
             quantity: 2
           }
@@ -217,7 +669,7 @@ describe("resolveLostCheckout", () => {
     ).rejects.toThrow("insufficient-inventory");
   });
 
-  it("treats variant inventory as the standard-purchase cap when present", async () => {
+  it("treats SKU inventory as the standard-purchase cap", async () => {
     const result = await resolveLostCheckout({
       payload: payloadWith({
         product_1: {
@@ -231,23 +683,15 @@ describe("resolveLostCheckout", () => {
           max_order_quantity: 5,
           standard_enabled: true,
           stock_state: "in_stock",
-          inventory: 1,
-          variants: [
-            {
-              id: "small",
-              label: "Small",
-              amount: 120000,
-              inventory: 2,
-              stock_state: "in_stock"
-            }
-          ]
-        }
+          inventory: 1
+        },
+        sku_1: activeSku({ label: "Small", inventory: 2 })
       }),
       user: { role: "user" },
       lines: [
         {
           productId: "product_1",
-          variantId: "small",
+          skuId: "sku_1",
           mode: "standard_purchase",
           quantity: 2
         }
@@ -277,12 +721,14 @@ describe("resolveLostCheckout", () => {
             product: "product_1",
             state: "draft",
             deadline: new Date(Date.now() + 86_400_000).toISOString()
-          }
+          },
+          sku_1: activeSku({ stock_state: "pre_order", inventory: null })
         }),
         user: { role: "user" },
         lines: [
           {
             productId: "product_1",
+            skuId: "sku_1",
             mode: "request_to_order",
             quantity: 1,
             campaignId: "campaign_1"
@@ -290,6 +736,77 @@ describe("resolveLostCheckout", () => {
         ]
       })
     ).rejects.toThrow("campaign-not-open");
+  });
+
+  it("normalizes a missing request campaign to campaign-not-open", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            name: "Coat",
+            slug: "coat",
+            currency: "KRW",
+            unit_amount: 220000,
+            min_order_quantity: 1,
+            max_order_quantity: 1,
+            request_to_order_enabled: true
+          },
+          sku_1: activeSku({ stock_state: "pre_order", inventory: null })
+        }),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "request_to_order",
+            quantity: 1,
+            campaignId: "missing-campaign"
+          }
+        ]
+      })
+    ).rejects.toThrow("campaign-not-open");
+  });
+
+  it("rejects a finite campaign until capacity reservations exist", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            name: "Coat",
+            slug: "coat",
+            currency: "KRW",
+            unit_amount: 220000,
+            min_order_quantity: 1,
+            max_order_quantity: 1,
+            request_to_order_enabled: true
+          },
+          campaign_1: {
+            id: "campaign_1",
+            product: "product_1",
+            state: "open",
+            deadline: new Date(Date.now() + 86_400_000).toISOString(),
+            maximum_commitments: 100,
+            paid_commitments: 0,
+            eligible_skus: ["sku_1"]
+          },
+          sku_1: activeSku({ stock_state: "pre_order", inventory: null })
+        }),
+        user: { role: "user" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "request_to_order",
+            quantity: 1,
+            campaignId: "campaign_1"
+          }
+        ]
+      })
+    ).rejects.toThrow("campaign-capacity-reservations-unavailable");
   });
 
   it("enforces private-order tier gates", async () => {
@@ -310,10 +827,39 @@ describe("resolveLostCheckout", () => {
           }
         }),
         user: { role: "resident" },
-        lines: [
-          { productId: "product_1", mode: "private_order", quantity: 1 }
-        ]
+        lines: [{ productId: "product_1", mode: "private_order", quantity: 1 }]
       })
     ).rejects.toThrow("private-order-forbidden");
+  });
+
+  it("rejects direct private checkout without a complete positive preset", async () => {
+    await expect(
+      resolveLostCheckout({
+        payload: payloadWith({
+          product_1: {
+            id: "product_1",
+            active: true,
+            name: "Archive",
+            slug: "archive",
+            currency: "KRW",
+            unit_amount: 330000,
+            min_order_quantity: 1,
+            max_order_quantity: 1,
+            private_order_enabled: true,
+            private_preset_price_enabled: false
+          },
+          sku_1: activeSku({ price_override_amount: 350000 })
+        }),
+        user: { role: "patron" },
+        lines: [
+          {
+            productId: "product_1",
+            skuId: "sku_1",
+            mode: "private_order",
+            quantity: 1
+          }
+        ]
+      })
+    ).rejects.toThrow("invalid-sku-price");
   });
 });

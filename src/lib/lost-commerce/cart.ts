@@ -6,6 +6,11 @@ import type {
   LostOrderMode,
   LostResolvedCheckout
 } from "./types";
+import {
+  buildCommerceSkuSnapshot,
+  productIdOfSku,
+  type ProductSkuForSnapshot
+} from "./product-skus";
 
 type AnyDoc = Record<string, any>;
 
@@ -29,19 +34,6 @@ function normalizeQuantity(quantity: number): number {
   return quantity;
 }
 
-function readVariants(product: AnyDoc): AnyDoc[] {
-  return Array.isArray(product.variants) ? product.variants : [];
-}
-
-function resolveVariant(product: AnyDoc, variantId?: string): AnyDoc | null {
-  if (!variantId) return null;
-  const variant =
-    readVariants(product).find((candidate) => candidate?.id === variantId) ??
-    null;
-  if (!variant) throw new Error("variant-not-found");
-  return variant;
-}
-
 function assertModeAllowed(product: AnyDoc, mode: LostOrderMode, user: AnyDoc) {
   if (mode === "standard_purchase" && !product.standard_enabled) {
     throw new Error("standard-disabled");
@@ -55,45 +47,73 @@ function assertModeAllowed(product: AnyDoc, mode: LostOrderMode, user: AnyDoc) {
   }
 }
 
-function resolveUnitAmount(product: AnyDoc, variant: AnyDoc | null, mode: LostOrderMode) {
-  if (
-    mode === "private_order" &&
-    product.private_preset_price_enabled &&
-    typeof product.private_unit_amount === "number"
-  ) {
-    return product.private_unit_amount;
-  }
-
-  if (variant && typeof variant.amount === "number") return variant.amount;
-  return Number(product.unit_amount ?? 0);
-}
-
 function numericInventory(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-function assertStandardAvailability(
-  product: AnyDoc,
-  variant: AnyDoc | null,
-  quantity: number
-) {
-  const stockState = String(variant?.stock_state ?? product.stock_state ?? "in_stock");
+function assertStandardAvailability(sku: AnyDoc, quantity: number) {
+  const stockState = String(sku.stock_state ?? "out_of_stock");
   if (stockState === "out_of_stock") throw new Error("out-of-stock");
   if (stockState === "on_request") throw new Error("standard-unavailable");
 
-  const inventory =
-    numericInventory(variant?.inventory) ?? numericInventory(product.inventory);
-  if (inventory !== null && quantity > inventory) {
+  const inventory = numericInventory(sku.inventory);
+  if (inventory === null) throw new Error("standard-unavailable");
+  if (quantity > inventory) {
     throw new Error("insufficient-inventory");
   }
 }
 
-function aggregateCheckoutLines(lines: LostCartLineInput[]): LostCartLineInput[] {
+async function resolveSku(
+  payload: Payload,
+  line: LostCartLineInput,
+  req?: Record<string, unknown>
+): Promise<ProductSkuForSnapshot & AnyDoc> {
+  if (!line.skuId && !line.variantId) throw new Error("sku-required");
+
+  let sku: AnyDoc | null | undefined;
+  if (line.skuId) {
+    sku = (await payload.findByID({
+      collection: "product-variants",
+      id: line.skuId,
+      depth: 0,
+      disableErrors: true,
+      req: req as never,
+      overrideAccess: true
+    })) as AnyDoc | null;
+    if (!sku) throw new Error("sku-not-found");
+  } else {
+    const result = await payload.find({
+      collection: "product-variants",
+      depth: 0,
+      limit: 2,
+      req: req as never,
+      overrideAccess: true,
+      where: {
+        and: [
+          { product: { equals: line.productId } },
+          { legacy_variant_ref: { equals: line.variantId } }
+        ]
+      }
+    });
+    if (result.docs.length !== 1) throw new Error("sku-not-found");
+    sku = result.docs[0] as AnyDoc;
+  }
+
+  if (!sku?.active) throw new Error("sku-inactive");
+  if (productIdOfSku(sku.product) !== line.productId) {
+    throw new Error("sku-product-mismatch");
+  }
+  return sku as ProductSkuForSnapshot & AnyDoc;
+}
+
+function aggregateCheckoutLines(
+  lines: LostCartLineInput[]
+): LostCartLineInput[] {
   const merged = new Map<string, LostCartLineInput>();
   for (const line of lines) {
     const key = [
       line.productId,
-      line.variantId ?? "",
+      line.skuId ?? line.variantId ?? "",
       line.mode,
       line.campaignId ?? ""
     ].join(":");
@@ -107,10 +127,19 @@ function aggregateCheckoutLines(lines: LostCartLineInput[]): LostCartLineInput[]
   return [...merged.values()];
 }
 
+function assertCampaignUsage(lines: LostCartLineInput[]): void {
+  for (const line of lines) {
+    if (line.mode !== "request_to_order" && line.campaignId !== undefined) {
+      throw new Error("campaign-not-allowed");
+    }
+  }
+}
+
 async function assertCampaign(
   payload: Payload,
   line: LostCartLineInput,
   product: AnyDoc,
+  skuId: string,
   req?: Record<string, unknown>
 ): Promise<AnyDoc | null> {
   if (line.mode !== "request_to_order") return null;
@@ -120,33 +149,35 @@ async function assertCampaign(
     collection: "product-order-campaigns" as never,
     id: line.campaignId,
     depth: 0,
+    disableErrors: true,
     req: req as never,
     overrideAccess: true
-  })) as AnyDoc;
+  })) as AnyDoc | null;
+
+  if (!campaign) throw new Error("campaign-not-open");
 
   const campaignProductId =
-    typeof campaign.product === "string" ? campaign.product : campaign.product?.id;
+    typeof campaign.product === "string"
+      ? campaign.product
+      : campaign.product?.id;
   if (campaignProductId !== product.id || campaign.state !== "open") {
     throw new Error("campaign-not-open");
   }
   if (new Date(campaign.deadline).getTime() < Date.now()) {
     throw new Error("campaign-ended");
   }
-  if (
-    typeof campaign.maximum_commitments === "number" &&
-    typeof campaign.paid_commitments === "number" &&
-    campaign.paid_commitments >= campaign.maximum_commitments
-  ) {
-    throw new Error("campaign-full");
+  if (typeof campaign.maximum_commitments === "number") {
+    throw new Error("campaign-capacity-reservations-unavailable");
   }
-  const eligible = campaign.eligible_variants;
-  if (
-    Array.isArray(eligible) &&
-    eligible.length > 0 &&
-    line.variantId &&
-    !eligible.includes(line.variantId)
-  ) {
-    throw new Error("campaign-variant-ineligible");
+  const eligible = Array.isArray(campaign.eligible_skus)
+    ? campaign.eligible_skus.map((value: unknown) =>
+        typeof value === "string"
+          ? value
+          : String((value as { id?: unknown })?.id ?? "")
+      )
+    : [];
+  if (!eligible.includes(skuId)) {
+    throw new Error("campaign-sku-ineligible");
   }
 
   return campaign;
@@ -157,10 +188,12 @@ export async function resolveLostCheckout(input: {
   lines: LostCartLineInput[];
   req?: Record<string, unknown>;
   user: AnyDoc;
+  allowUnpricedPrivateOrder?: boolean;
 }): Promise<LostResolvedCheckout> {
   if (!Array.isArray(input.lines) || input.lines.length === 0) {
     throw new Error("empty-cart");
   }
+  assertCampaignUsage(input.lines);
 
   const snapshots: LostCartLineSnapshot[] = [];
   let mode: LostOrderMode | null = null;
@@ -171,49 +204,72 @@ export async function resolveLostCheckout(input: {
     const quantity = normalizeQuantity(line.quantity);
     if (mode && mode !== line.mode) throw new Error("mixed-order-modes");
     mode = line.mode;
-    if (campaignId && campaignId !== line.campaignId) {
-      throw new Error("mixed-campaigns");
-    }
-    campaignId = line.campaignId;
 
     const product = (await input.payload.findByID({
       collection: "products" as never,
       id: line.productId,
       depth: 0,
+      disableErrors: true,
       req: input.req as never,
       overrideAccess: true
-    })) as AnyDoc;
+    })) as AnyDoc | null;
 
-    if (!product?.active) throw new Error("product-unavailable");
+    if (!product?.active || product.storefront !== "lostinseoul") {
+      throw new Error("product-unavailable");
+    }
     assertModeAllowed(product, line.mode, input.user);
-    await assertCampaign(input.payload, line, product, input.req);
+
+    const sku = await resolveSku(input.payload, line, input.req);
+    const campaign = await assertCampaign(
+      input.payload,
+      line,
+      product,
+      sku.id,
+      input.req
+    );
+    const validatedCampaignId = campaign ? line.campaignId : undefined;
+    if (campaignId && campaignId !== validatedCampaignId) {
+      throw new Error("mixed-campaigns");
+    }
+    if (validatedCampaignId) campaignId = validatedCampaignId;
 
     const min = Number(product.min_order_quantity ?? 1);
     const max = Number(product.max_order_quantity ?? 1);
-    if (quantity < min || quantity > max) throw new Error("quantity-out-of-range");
+    if (quantity < min || quantity > max)
+      throw new Error("quantity-out-of-range");
 
-    const variant = resolveVariant(product, line.variantId);
     if (line.mode === "standard_purchase") {
-      assertStandardAvailability(product, variant, quantity);
+      assertStandardAvailability(sku, quantity);
     }
-    const unitAmount = resolveUnitAmount(product, variant, line.mode);
     const lineCurrency = (product.currency ?? "KRW") as LostCurrency;
-    if (currency && currency !== lineCurrency) throw new Error("mixed-currency");
+    if (currency && currency !== lineCurrency)
+      throw new Error("mixed-currency");
     currency = lineCurrency;
 
-    snapshots.push({
-      ...line,
-      quantity,
-      productName: product.name,
-      productSlug: product.slug,
-      variantLabel: variant?.label ?? variant?.size ?? variant?.color,
-      currency: lineCurrency,
-      unitAmount,
-      lineAmount: unitAmount * quantity
-    });
+    snapshots.push(
+      buildCommerceSkuSnapshot({
+        product: {
+          id: String(product.id),
+          name: String(product.name ?? ""),
+          slug: String(product.slug ?? ""),
+          currency: lineCurrency,
+          unit_amount: Number(product.unit_amount ?? 0),
+          private_preset_price_enabled: product.private_preset_price_enabled,
+          private_unit_amount: product.private_unit_amount
+        },
+        sku,
+        quantity,
+        mode: line.mode,
+        campaignId: validatedCampaignId,
+        allowUnpricedPrivateOrder: input.allowUnpricedPrivateOrder
+      })
+    );
   }
 
-  const subtotalAmount = snapshots.reduce((sum, line) => sum + line.lineAmount, 0);
+  const subtotalAmount = snapshots.reduce(
+    (sum, line) => sum + line.lineAmount,
+    0
+  );
   return {
     mode: mode ?? "standard_purchase",
     campaignId,

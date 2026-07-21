@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { cancelReturnedProductOrder } from "@/lib/lost-commerce/paymentReturn";
+import { verifyReturnedProductPayment } from "@/lib/lost-commerce/paymentReturn";
 
 type Props = {
   searchParams: Promise<{
@@ -26,12 +26,17 @@ function paymentPath(
 }
 
 export default async function LostPaymentReturnPage({ searchParams }: Props) {
-  const { code, order, paymentId } = await searchParams;
+  const { order, paymentId } = await searchParams;
 
-  if (code) {
-    await cancelReturnedProductOrder(order);
-    redirect(paymentPath("failure", { order, paymentId }));
+  const result = await verifyReturnedProductPayment({ orderRef: order, paymentId });
+  if (!result.ok && result.reason !== "payment-failed") {
+    redirect("/lostinseoul/checkout");
   }
-
-  redirect(paymentPath("success", { order, paymentId }));
+  const verifiedOrder = result.ok ? paymentId || order : order;
+  redirect(
+    paymentPath(result.ok ? "success" : "failure", {
+      order: verifiedOrder,
+      paymentId: result.ok ? paymentId : undefined
+    })
+  );
 }

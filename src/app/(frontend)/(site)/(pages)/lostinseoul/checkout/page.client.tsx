@@ -1,13 +1,27 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
 import {
+  LOST_PENDING_PAYMENT_STORAGE_KEY,
+  productPaymentRecoveryAction,
+  type PendingProductPayment,
+  type ProductPaymentRecoveryResult
+} from "@/lib/lost-commerce/payment-recovery";
+import {
   serializeLostCartLines,
   useLostCart
 } from "@/lib/lost-commerce/useLostCart";
+import {
+  checkoutCommandFailureAction,
+  checkoutCompletionAction,
+  checkoutIdempotencyKey,
+  clearCheckoutIdempotencyKey,
+  parseCheckoutIntentSuccess,
+  replaceCheckoutCommandWithPendingPayment
+} from "./checkout-idempotency";
 import "../index.css";
 
 declare global {
@@ -15,6 +29,32 @@ declare global {
     PortOne?: {
       requestPayment?: (payload: unknown) => Promise<unknown>;
     };
+  }
+}
+
+function rememberPendingPayment(payment: PendingProductPayment | null): void {
+  if (payment) {
+    sessionStorage.setItem(
+      LOST_PENDING_PAYMENT_STORAGE_KEY,
+      JSON.stringify(payment)
+    );
+  } else {
+    sessionStorage.removeItem(LOST_PENDING_PAYMENT_STORAGE_KEY);
+  }
+}
+
+function readPendingPayment(): PendingProductPayment | null {
+  try {
+    const parsed = JSON.parse(
+      sessionStorage.getItem(LOST_PENDING_PAYMENT_STORAGE_KEY) ?? "null"
+    );
+    return parsed &&
+      typeof parsed.orderRef === "string" &&
+      typeof parsed.paymentId === "string"
+      ? parsed
+      : null;
+  } catch {
+    return null;
   }
 }
 
@@ -28,6 +68,8 @@ type Labels = {
   manual: string;
   submit: string;
   pending: string;
+  recovering: string;
+  recovery: string;
   failed: string;
   portoneUnavailable: string;
   name: string;
@@ -39,12 +81,16 @@ type Labels = {
   total: string;
 };
 
-function isPortOneV2Payload(payload: unknown): payload is { storeId: string } {
+function isPortOneV2Payload(
+  payload: unknown
+): payload is { storeId: string; paymentId: string } {
   return (
     typeof payload === "object" &&
     payload !== null &&
     "storeId" in payload &&
-    typeof (payload as { storeId?: unknown }).storeId === "string"
+    typeof (payload as { storeId?: unknown }).storeId === "string" &&
+    "paymentId" in payload &&
+    typeof (payload as { paymentId?: unknown }).paymentId === "string"
   );
 }
 
@@ -57,10 +103,9 @@ function isPortOneFailure(response: unknown): response is { code: string } {
   );
 }
 
-function loadPortOneSdk(payload: unknown): Promise<void> {
+function loadPortOneSdk(sdkVersion: "v2" | "global"): Promise<void> {
   if (window.PortOne?.requestPayment) return Promise.resolve();
 
-  const sdkVersion = isPortOneV2Payload(payload) ? "v2" : "global";
   const sdkUrl =
     sdkVersion === "v2"
       ? "https://cdn.portone.io/v2/browser-sdk.js"
@@ -85,93 +130,210 @@ function loadPortOneSdk(payload: unknown): Promise<void> {
   });
 }
 
-function createIdempotencyKey(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
+async function reconcileFailedOrder(
+  orderRef: string
+): Promise<ProductPaymentRecoveryResult> {
+  try {
+    const response = await fetch("/api/lost/checkout/cancel", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ order_ref: orderRef })
+    });
+    return (await response
+      .json()
+      .catch(() => null)) as ProductPaymentRecoveryResult;
+  } catch {
+    return null;
   }
-  return `lis_${Date.now().toString(36)}_${Math.random()
-    .toString(36)
-    .slice(2, 18)}`;
 }
 
-async function cancelUnpaidOrder(orderRef: string): Promise<void> {
-  await fetch("/api/lost/checkout/cancel", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ order_ref: orderRef })
-  }).catch(() => undefined);
+async function verifyPendingPayment(
+  paymentId: string
+): Promise<ProductPaymentRecoveryResult> {
+  try {
+    const response = await fetch("/api/lost/checkout/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ payment_id: paymentId })
+    });
+    return (await response
+      .json()
+      .catch(() => null)) as ProductPaymentRecoveryResult;
+  } catch {
+    return null;
+  }
 }
 
 export function LostCheckoutPageClient({
   colophon,
   labels,
-  portOneEnabled
+  manualPaymentEnabled,
+  portOneEnabled,
+  portOneSdkVersion
 }: {
   colophon?: ReactNode;
   labels: Labels;
+  manualPaymentEnabled: boolean;
   portOneEnabled: boolean;
+  portOneSdkVersion: "v2" | "global";
 }) {
   const { lines, total, clear } = useLostCart();
   const [provider, setProvider] = useState<"portone" | "manual">(
     portOneEnabled ? "portone" : "manual"
   );
-  const [state, setState] = useState<"idle" | "pending" | "failed">("idle");
+  const [state, setState] = useState<
+    "idle" | "pending" | "reconciling" | "failed"
+  >("idle");
+  const [pendingPayment, setPendingPayment] =
+    useState<PendingProductPayment | null>(null);
   const currency = lines[0]?.currency ?? "KRW";
+
+  useEffect(() => {
+    const pending = readPendingPayment();
+    if (pending) {
+      setPendingPayment(pending);
+      setState("idle");
+    }
+  }, []);
+
+  function finishReconciliation(
+    result: ProductPaymentRecoveryResult,
+    payment: PendingProductPayment
+  ): boolean {
+    const recovery = productPaymentRecoveryAction(result);
+    if (recovery === "success") {
+      rememberPendingPayment(null);
+      setPendingPayment(null);
+      clear();
+      window.location.href = `/lostinseoul/payment/success?order=${encodeURIComponent(
+        payment.orderRef
+      )}`;
+      return true;
+    }
+    if (recovery === "failure") {
+      rememberPendingPayment(null);
+      setPendingPayment(null);
+      window.location.href = `/lostinseoul/payment/failure?order=${encodeURIComponent(
+        payment.orderRef
+      )}`;
+      return true;
+    }
+    setState("failed");
+    return false;
+  }
+
+  async function recoverPendingPayment() {
+    if (!pendingPayment) return;
+    setState("reconciling");
+    const result = await verifyPendingPayment(pendingPayment.paymentId);
+    finishReconciliation(result, pendingPayment);
+  }
 
   async function submit(form: HTMLFormElement) {
     setState("pending");
     const formData = new FormData(form);
-    const paymentProvider = portOneEnabled ? provider : "manual";
-    const response = await fetch("/api/lost/checkout/intent", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "idempotency-key": createIdempotencyKey()
-      },
-      body: JSON.stringify({
-        paymentProvider,
-        contact: {
-          name: formData.get("name"),
-          email: formData.get("email"),
-          phone: formData.get("phone")
-        },
-        shipping: {
-          address: formData.get("address"),
-          note: formData.get("note")
-        },
-        lines: serializeLostCartLines(lines)
-      })
-    });
-    const data = await response.json().catch(() => null);
-    if (!response.ok || !data?.ok) {
+    const paymentProvider = provider;
+    const paymentMethodEnabled =
+      (paymentProvider === "portone" && portOneEnabled) ||
+      (paymentProvider === "manual" && manualPaymentEnabled);
+    if (!paymentMethodEnabled) {
       setState("failed");
       return;
     }
-
-    if (paymentProvider === "portone" && data.portone) {
+    if (paymentProvider === "portone") {
       try {
-        await loadPortOneSdk(data.portone);
-        const portOneResponse = await window.PortOne?.requestPayment?.(
+        await loadPortOneSdk(portOneSdkVersion);
+      } catch {
+        setState("failed");
+        return;
+      }
+      if (!window.PortOne?.requestPayment) {
+        setState("failed");
+        return;
+      }
+    }
+    const requestBody = JSON.stringify({
+      paymentProvider,
+      contact: {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone")
+      },
+      shipping: {
+        address: formData.get("address"),
+        note: formData.get("note")
+      },
+      lines: serializeLostCartLines(lines)
+    });
+    let response: Response;
+    try {
+      const commandKey = await checkoutIdempotencyKey(requestBody);
+      response = await fetch("/api/lost/checkout/intent", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": commandKey
+        },
+        body: requestBody
+      });
+    } catch {
+      setState("failed");
+      return;
+    }
+    const responseBody = await response.json().catch(() => null);
+    const data = response.ok
+      ? parseCheckoutIntentSuccess(responseBody, paymentProvider)
+      : null;
+    if (!data) {
+      if (
+        checkoutCommandFailureAction(response.status, responseBody) === "clear"
+      ) {
+        clearCheckoutIdempotencyKey();
+      }
+      setState("failed");
+      return;
+    }
+    if (
+      checkoutCompletionAction(paymentProvider) === "reconcile" &&
+      data.portone
+    ) {
+      const payment = {
+        orderRef: data.order.order_ref as string,
+        paymentId: isPortOneV2Payload(data.portone)
+          ? data.portone.paymentId
+          : (data.order.order_ref as string)
+      };
+      try {
+        replaceCheckoutCommandWithPendingPayment(payment);
+      } catch {
+        setState("failed");
+        return;
+      }
+      setPendingPayment(payment);
+      try {
+        const portOneResponse = await window.PortOne.requestPayment(
           data.portone
         );
         if (isPortOneFailure(portOneResponse)) {
-          await cancelUnpaidOrder(data.order.order_ref);
-          window.location.href = `/lostinseoul/payment/failure?order=${encodeURIComponent(
-            data.order.order_ref
-          )}`;
+          const reconciled = await reconcileFailedOrder(data.order.order_ref);
+          finishReconciliation(reconciled, payment);
           return;
         }
+        const verified = await verifyPendingPayment(payment.paymentId);
+        finishReconciliation(verified, payment);
+        return;
       } catch {
-        await cancelUnpaidOrder(data.order.order_ref);
-        window.location.href = `/lostinseoul/payment/failure?order=${encodeURIComponent(
-          data.order.order_ref
-        )}`;
+        const reconciled = await reconcileFailedOrder(data.order.order_ref);
+        finishReconciliation(reconciled, payment);
         return;
       }
     }
 
+    clearCheckoutIdempotencyKey();
+    rememberPendingPayment(null);
+    setPendingPayment(null);
     clear();
-    window.location.href = `/lostinseoul/payment/success?order=${encodeURIComponent(
+    window.location.href = `/lostinseoul/payment/pending?order=${encodeURIComponent(
       data.order.order_ref
     )}`;
   }
@@ -217,7 +379,25 @@ export function LostCheckoutPageClient({
           </h1>
         </div>
 
-        {lines.length === 0 ? (
+        {pendingPayment ? (
+          <section className="mx-auto max-w-md border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] p-5">
+            <Button
+              className="min-h-[48px] w-full bg-[var(--n-s-fg)] px-4 text-sm font-medium text-[var(--n-s-bg)] disabled:cursor-wait disabled:opacity-70"
+              disabled={state === "reconciling"}
+              onClick={() => void recoverPendingPayment()}
+              type="button"
+            >
+              {state === "reconciling" ? labels.recovering : labels.recovery}
+            </Button>
+            <p aria-live="polite" className="mt-3 text-sm" role="status">
+              {state === "reconciling"
+                ? labels.recovering
+                : state === "failed"
+                  ? labels.failed
+                  : ""}
+            </p>
+          </section>
+        ) : lines.length === 0 ? (
           <p className="py-24 text-center text-sm text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)]">
             {labels.empty}
           </p>
@@ -280,7 +460,11 @@ export function LostCheckoutPageClient({
 
             <aside className="border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.15)] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.035)] p-4 md:p-5 lg:sticky lg:top-8 lg:h-fit">
               <h2 className="text-lg font-medium">{labels.payment}</h2>
-              <div className="mt-4 grid grid-cols-2 border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)]">
+              <div
+                className={`mt-4 grid border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] ${
+                  manualPaymentEnabled ? "grid-cols-2" : "grid-cols-1"
+                }`}
+              >
                 <Button
                   className={`min-h-[44px] border-r border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.15)] px-2 text-sm ${
                     provider === "portone"
@@ -297,17 +481,19 @@ export function LostCheckoutPageClient({
                 >
                   {labels.portone}
                 </Button>
-                <Button
-                  className={`min-h-[44px] px-2 text-sm ${
-                    provider === "manual"
-                      ? "bg-[var(--n-s-fg)] text-[var(--n-s-bg)]"
-                      : ""
-                  }`}
-                  onClick={() => setProvider("manual")}
-                  type="button"
-                >
-                  {labels.manual}
-                </Button>
+                {manualPaymentEnabled ? (
+                  <Button
+                    className={`min-h-[44px] px-2 text-sm ${
+                      provider === "manual"
+                        ? "bg-[var(--n-s-fg)] text-[var(--n-s-bg)]"
+                        : ""
+                    }`}
+                    onClick={() => setProvider("manual")}
+                    type="button"
+                  >
+                    {labels.manual}
+                  </Button>
+                ) : null}
               </div>
               {!portOneEnabled ? (
                 <p className="mt-3 text-sm leading-relaxed text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)]">
@@ -318,7 +504,7 @@ export function LostCheckoutPageClient({
                 {lines.map((line) => (
                   <div
                     className="grid gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-4"
-                    key={`${line.productId}:${line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
+                    key={`${line.productId}:${line.skuId ?? line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
                   >
                     <span className="min-w-0 text-sm leading-snug text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)]">
                       {line.productName}
@@ -343,7 +529,10 @@ export function LostCheckoutPageClient({
               </p>
               <Button
                 className="mt-5 min-h-[48px] w-full bg-[var(--n-s-fg)] px-4 text-sm font-medium text-[var(--n-s-bg)] disabled:cursor-wait disabled:opacity-70"
-                disabled={state === "pending"}
+                disabled={
+                  state === "pending" ||
+                  (!portOneEnabled && !manualPaymentEnabled)
+                }
                 type="submit"
               >
                 {state === "pending" ? labels.pending : labels.submit}

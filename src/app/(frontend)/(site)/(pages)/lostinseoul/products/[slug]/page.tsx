@@ -49,7 +49,7 @@ export default async function LostProductPage({ params }: PageProps) {
   ]);
 
   return (
-    <RPage slug={["lostinseoul", "products", slug]} type="pages">
+    <RPage slug={["lostinseoul", "products", slug]} theme="dark" type="pages">
       <LostProductDetailClient
         drops={data.drops}
         enableProductStage={enableProductStage}
@@ -77,6 +77,7 @@ export default async function LostProductPage({ params }: PageProps) {
           private: t("modes.private"),
           add: t("actions.add"),
           requestQuote: t("actions.requestQuote"),
+          quoteFailed: t("checkout.failed"),
           added: t("actions.added"),
           campaign: t("product.campaign"),
           progress: t("product.progress"),

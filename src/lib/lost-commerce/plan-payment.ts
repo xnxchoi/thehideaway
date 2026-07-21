@@ -34,6 +34,10 @@ import {
 
 type PayloadInstance = Awaited<ReturnType<typeof getPayload>>;
 
+export type CancelPendingPlanPaymentResult =
+  | { ok: true; canceled: boolean }
+  | { ok: false; status: 503; reason: "cancel-unavailable" };
+
 export type SyncPlanPaymentResult =
   | {
       ok: true;
@@ -67,6 +71,77 @@ const idOf = (rel: unknown): string | null => {
   }
   return null;
 };
+
+export async function cancelPendingPlanPayment(input: {
+  payload: PayloadInstance;
+  paymentId: string;
+}): Promise<CancelPendingPlanPaymentResult> {
+  const { payload, paymentId } = input;
+  let preSub: Subscription | undefined;
+  try {
+    const found = await payload.find({
+      collection: "subscriptions",
+      overrideAccess: true,
+      depth: 0,
+      limit: 1,
+      where: { payment_ref: { equals: paymentId } }
+    });
+    preSub = found.docs?.[0] as Subscription | undefined;
+  } catch {
+    return { ok: false, status: 503, reason: "cancel-unavailable" };
+  }
+
+  if (
+    !preSub ||
+    preSub.paid === true ||
+    preSub.subscription_status !== "pending"
+  ) {
+    return { ok: true, canceled: false };
+  }
+
+  const transactionID = await payload.db.beginTransaction();
+  if (!transactionID) {
+    return { ok: false, status: 503, reason: "cancel-unavailable" };
+  }
+  const txReq = {
+    payload,
+    transactionID,
+    context: {}
+  } as Parameters<typeof payload.update>[0]["req"];
+
+  try {
+    await paymentWebhookLock(payload, transactionID, `plan:${paymentId}`);
+    const locked = await payload.find({
+      collection: "subscriptions",
+      overrideAccess: true,
+      req: txReq as never,
+      depth: 0,
+      limit: 1,
+      where: { payment_ref: { equals: paymentId } }
+    });
+    const sub = locked.docs?.[0] as Subscription | undefined;
+    if (!sub || sub.paid === true || sub.subscription_status !== "pending") {
+      await payload.db.rollbackTransaction(transactionID);
+      return { ok: true, canceled: false };
+    }
+
+    await payload.update({
+      collection: "subscriptions",
+      id: sub.id,
+      overrideAccess: true,
+      req: txReq,
+      data: { subscription_status: "canceled" }
+    });
+    await payload.db.commitTransaction(transactionID);
+    return { ok: true, canceled: true };
+  } catch (error) {
+    await payload.db.rollbackTransaction(transactionID).catch(() => undefined);
+    payload.logger?.error?.(
+      `[plan-payment] cancel failed for ${paymentId}: ${(error as Error).message}`
+    );
+    return { ok: false, status: 503, reason: "cancel-unavailable" };
+  }
+}
 
 /**
  * Reconcile a PortOne plan payment against its pending subscription.

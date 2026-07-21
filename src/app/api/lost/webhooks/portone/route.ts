@@ -6,9 +6,34 @@ import config from "@payload-config";
 import { paymentWebhookLock } from "@/lib/db/sequences";
 import { markRequestOrderPaid } from "@/lib/lost-commerce/campaigns";
 import { releaseStandardInventory } from "@/lib/lost-commerce/inventory";
-import { syncPlanPayment } from "@/lib/lost-commerce/plan-payment";
+import { authorizeCommerceLifecycleRequest } from "@/lib/lost-commerce/lifecycle-authorization";
+import {
+  cancelPendingPlanPayment,
+  syncPlanPayment
+} from "@/lib/lost-commerce/plan-payment";
+import { syncProductPayment } from "@/lib/lost-commerce/product-payment";
+import {
+  getPortOnePayment,
+  requiresLiveChannel,
+  verifyPortOnePayment,
+  type PortOnePaymentRecord
+} from "@/lib/lost-commerce/verify-payment";
+import {
+  claimCommerceProviderEvent,
+  completeCommerceProviderEvent,
+  recordCommerceProviderEventStandalone
+} from "@/lib/lost-commerce/provider-events";
+import {
+  assertOrderTransition,
+  assertPaymentTransition,
+  CommerceTransitionError,
+  isCommerceOrderState,
+  isCommercePaymentState
+} from "@/lib/lost-commerce/transitions";
 
 export const runtime = "nodejs";
+
+const legacyPortOneActor = { kind: "system", id: "portone-legacy" } as const;
 
 /**
  * Extract the paymentId a PortOne webhook carries, from every shape we might
@@ -33,6 +58,15 @@ function webhookPaymentIdOf(event: Record<string, unknown>): string | null {
     event.portone_order_ref ??
     event.order_ref;
   return typeof ref === "string" && ref.length > 0 ? ref : null;
+}
+
+function isV2PaymentWebhook(event: Record<string, unknown>): boolean {
+  const data = event.data;
+  return Boolean(
+    data &&
+    typeof data === "object" &&
+    typeof (data as Record<string, unknown>).paymentId === "string"
+  );
 }
 
 function normalizePaymentStatus(status: unknown) {
@@ -71,20 +105,17 @@ function safeEqual(a: string, b: string): boolean {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-function eventIdOf(event: Record<string, unknown>): string {
-  return String(
-    event.webhook_id ??
-      event.event_id ??
-      event.transaction_id ??
-      event.payment_txn_ref ??
-      ""
+function isConfiguredWebhookSecret(value: string | undefined): value is string {
+  const secret = value?.trim();
+  return Boolean(
+    secret &&
+      secret.length >= 32 &&
+      !/change[_-]?me|placeholder|example/i.test(secret)
   );
 }
 
-function storedEventIdOf(event: unknown): string {
-  if (typeof event !== "object" || event === null) return "";
-  const stored = event as Record<string, unknown>;
-  return eventIdOf(stored);
+function eventIdOf(event: Record<string, unknown>): string {
+  return String(event.webhook_id ?? event.event_id ?? "");
 }
 
 function orderStatusForPaymentStatus(
@@ -112,9 +143,34 @@ function eventCurrencyOf(event: Record<string, unknown>): string {
   return String(event.currency ?? event.payment_currency ?? "");
 }
 
+async function finishProviderEvent(
+  context: {
+    payload: Awaited<ReturnType<typeof getPayload>>;
+    eventId: string;
+    leaseToken: string;
+  },
+  response: NextResponse,
+  status: "processed" | "rejected" | "retryable",
+  outcomeCode: string
+): Promise<NextResponse> {
+  try {
+    await completeCommerceProviderEvent({
+      ...context,
+      status,
+      outcomeCode
+    });
+    return response;
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "provider-event-outcome-failed" },
+      { status: 503 }
+    );
+  }
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const secret = process.env.PORTONE_WEBHOOK_SECRET;
-  if (!secret) {
+  if (!isConfiguredWebhookSecret(secret)) {
     return NextResponse.json(
       { ok: false, error: "webhook-secret-not-configured" },
       { status: 500 }
@@ -145,6 +201,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     req.headers.get("webhook-id") !== null ||
     req.headers.get("webhook-signature") !== null ||
     req.headers.get("webhook-timestamp") !== null;
+  const liveMode =
+    process.env.PORTONE_ENVIRONMENT === "production" ||
+    process.env.PORTONE_ENVIRONMENT === "live";
+  const legacyAllowed =
+    !liveMode && process.env.PORTONE_WEBHOOK_ALLOW_LEGACY === "true";
+  const signatureRequired =
+    liveMode ||
+    process.env.PORTONE_WEBHOOK_REQUIRE_SIGNATURE === "true" ||
+    !legacyAllowed;
 
   if (hasStandardWebhookHeaders) {
     try {
@@ -167,7 +232,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 500 }
       );
     }
-  } else if (process.env.PORTONE_WEBHOOK_REQUIRE_SIGNATURE === "true") {
+  } else if (signatureRequired) {
     return NextResponse.json(
       { ok: false, error: "signature-required" },
       { status: 401 }
@@ -198,23 +263,102 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  const webhookPaymentId = webhookPaymentIdOf(event);
+  const payload = await getPayload({ config });
+  const providerEventId = req.headers.get("webhook-id") ?? eventIdOf(event);
+  let providerEvent;
+  try {
+    providerEvent = await recordCommerceProviderEventStandalone({
+      payload,
+      paymentId: webhookPaymentId ?? undefined,
+      event: { ...event, provider_event_id: providerEventId },
+      rawBody
+    });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "provider-event-persistence-failed" },
+      { status: 503 }
+    );
+  }
+  if (providerEvent.conflict) {
+    return NextResponse.json(
+      { ok: false, error: "provider-event-conflict" },
+      { status: 409 }
+    );
+  }
+  if (
+    (!providerEvent.recorded && !providerEvent.duplicate) ||
+    !providerEvent.eventId
+  ) {
+    return NextResponse.json(
+      { ok: false, error: "missing-provider-event-id" },
+      { status: 400 }
+    );
+  }
+
+  let claim;
+  try {
+    claim = await claimCommerceProviderEvent({
+      payload,
+      eventId: providerEvent.eventId
+    });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "provider-event-claim-failed" },
+      { status: 503 }
+    );
+  }
+  if (claim.kind === "terminal") {
+    return NextResponse.json({ ok: true, alreadyProcessed: true });
+  }
+  if (claim.kind === "busy") {
+    return NextResponse.json(
+      { ok: false, error: "provider-event-processing" },
+      { status: 503 }
+    );
+  }
+  const processingContext = {
+    payload,
+    eventId: providerEvent.eventId,
+    leaseToken: claim.leaseToken
+  };
+  if (!webhookPaymentId) {
+    return finishProviderEvent(
+      processingContext,
+      NextResponse.json(
+        { ok: false, error: "missing-order-ref" },
+        { status: 400 }
+      ),
+      "rejected",
+      "missing-order-ref"
+    );
+  }
+
   // Plans (membership) branch — decided by data, not by customData: if a
   // subscription carries this paymentId as its `payment_ref`, reconcile the
   // subscription rather than a product order. Idempotent and shared with the
-  // browser-return verify route: whichever runs first drives the pending→
-  // paid edge; the second is a no-op (advisory lock + re-read).
-  const webhookPaymentId = webhookPaymentIdOf(event);
-  if (webhookPaymentId) {
-    const payload = await getPayload({ config });
-    const planSub = await payload
-      .find({
+  // browser-return verify route.
+  {
+    let planSub;
+    try {
+      planSub = await payload.find({
         collection: "subscriptions" as never,
         overrideAccess: true,
         depth: 0,
         limit: 1,
         where: { payment_ref: { equals: webhookPaymentId } }
-      })
-      .catch(() => null);
+      });
+    } catch {
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json(
+          { ok: false, error: "webhook-classification-unavailable" },
+          { status: 503 }
+        ),
+        "retryable",
+        "webhook-classification-unavailable"
+      );
+    }
     const sub = planSub?.docs?.[0] as
       { id: string; subscription_status?: string; paid?: boolean } | undefined;
     if (sub) {
@@ -227,24 +371,37 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       // unpaid; a reordered / duplicate FAILED must never cancel an
       // already-active (paid) membership.
       if (status === "failed") {
-        if (sub.subscription_status === "pending" && sub.paid !== true) {
-          await payload
-            .update({
-              collection: "subscriptions" as never,
-              id: sub.id,
-              overrideAccess: true,
-              data: {
-                subscription_status: "canceled"
-              } as never
-            })
-            .catch(() => undefined);
+        const cancellation = await cancelPendingPlanPayment({
+          payload,
+          paymentId: webhookPaymentId
+        });
+        if (!cancellation.ok) {
+          return finishProviderEvent(
+            processingContext,
+            NextResponse.json(
+              { ok: false, error: cancellation.reason },
+              { status: cancellation.status }
+            ),
+            cancellation.status >= 500 ? "retryable" : "rejected",
+            cancellation.reason
+          );
         }
-        return NextResponse.json({ ok: true, terminal: "failed" });
+        return finishProviderEvent(
+          processingContext,
+          NextResponse.json({ ok: true, terminal: "failed" }),
+          "processed",
+          "plan-payment-failed"
+        );
       }
       // Refunds are reconciled out-of-band (admin) at launch; ACK so PortOne
       // stops retrying.
       if (status === "refunded") {
-        return NextResponse.json({ ok: true, terminal: "refunded" });
+        return finishProviderEvent(
+          processingContext,
+          NextResponse.json({ ok: true, terminal: "refunded" }),
+          "processed",
+          "plan-payment-refunded"
+        );
       }
 
       const result = await syncPlanPayment({
@@ -252,53 +409,136 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         paymentId: webhookPaymentId
       });
       if (result.ok) {
-        return NextResponse.json({
-          ok: true,
-          subscriptionId: result.subscriptionId,
-          alreadyProcessed: result.alreadyProcessed
-        });
+        return finishProviderEvent(
+          processingContext,
+          NextResponse.json({
+            ok: true,
+            subscriptionId: result.subscriptionId,
+            alreadyProcessed: result.alreadyProcessed
+          }),
+          "processed",
+          "plan-payment-paid"
+        );
       }
       // Only a genuinely transient failure should provoke a retry. A verified
       // rejection (amount/currency mismatch, TEST channel, not-paid) is
       // terminal — ACK 2xx after logging so PortOne stops hammering us; the
       // row stays pending for admin inspection.
       if (result.reason === "verify-unavailable") {
-        return NextResponse.json(
-          { ok: false, error: result.reason },
-          { status: 503 }
+        return finishProviderEvent(
+          processingContext,
+          NextResponse.json(
+            { ok: false, error: result.reason },
+            { status: 503 }
+          ),
+          "retryable",
+          result.reason
         );
       }
       payload.logger?.warn?.(
         `[lost/portone/webhook] plan payment ${webhookPaymentId} rejected: ${result.reason}`
       );
-      return NextResponse.json({ ok: true, rejected: result.reason });
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json({ ok: true, rejected: result.reason }),
+        "rejected",
+        result.reason
+      );
     }
-    // No subscription for this id → fall through to the product-order path.
+    if (isV2PaymentWebhook(event)) {
+      const result = await syncProductPayment({
+        payload,
+        paymentId: webhookPaymentId
+      });
+      if (result.ok) {
+        return finishProviderEvent(
+          processingContext,
+          NextResponse.json({
+            ok: true,
+            orderId: result.orderId,
+            alreadyProcessed: result.alreadyProcessed
+          }),
+          "processed",
+          "product-payment-paid"
+        );
+      }
+      if (result.reason === "verify-unavailable") {
+        return finishProviderEvent(
+          processingContext,
+          NextResponse.json(
+            { ok: false, error: result.reason },
+            { status: 503 }
+          ),
+          "retryable",
+          result.reason
+        );
+      }
+      payload.logger?.warn?.(
+        `[lost/portone/webhook] product payment ${webhookPaymentId} rejected: ${result.reason}`
+      );
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json({ ok: true, rejected: result.reason }),
+        "rejected",
+        result.reason
+      );
+    }
+    // No subscription and no V2 data.paymentId → legacy product path.
   }
 
   const orderRef = String(
     event.merchant_order_id ?? event.portone_order_ref ?? event.order_ref ?? ""
   );
   if (!orderRef) {
-    return NextResponse.json(
-      { ok: false, error: "missing-order-ref" },
-      { status: 400 }
+    return finishProviderEvent(
+      processingContext,
+      NextResponse.json(
+        { ok: false, error: "missing-order-ref" },
+        { status: 400 }
+      ),
+      "rejected",
+      "missing-order-ref"
     );
   }
 
-  const payload = await getPayload({ config });
+  const legacyPaymentStatus = normalizePaymentStatus(
+    event.payment_status ?? event.status ?? event.transaction_status
+  );
+  let authoritativePayment: PortOnePaymentRecord | null = null;
+  if (legacyPaymentStatus === "paid") {
+    try {
+      authoritativePayment = await getPortOnePayment(orderRef);
+    } catch {
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json(
+          { ok: false, error: "verify-unavailable" },
+          { status: 503 }
+        ),
+        "retryable",
+        "verify-unavailable"
+      );
+    }
+  }
+
   const transactionID = await payload.db.beginTransaction();
   if (!transactionID) {
-    return NextResponse.json(
-      { ok: false, error: "transaction-failed" },
-      { status: 500 }
+    return finishProviderEvent(
+      processingContext,
+      NextResponse.json(
+        { ok: false, error: "transaction-failed" },
+        { status: 500 }
+      ),
+      "retryable",
+      "transaction-failed"
     );
   }
   const txReq = {
     payload,
     transactionID,
     context: {}
-  } as Parameters<typeof payload.update>[0]["req"];
+  } as NonNullable<Parameters<typeof payload.update>[0]["req"]>;
+  authorizeCommerceLifecycleRequest(txReq);
 
   try {
     await paymentWebhookLock(payload, transactionID, orderRef);
@@ -326,22 +566,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       | undefined;
     if (!order) {
       await payload.db.rollbackTransaction(transactionID);
-      return NextResponse.json(
-        { ok: false, error: "order-not-found" },
-        { status: 404 }
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json(
+          { ok: false, error: "order-not-found" },
+          { status: 404 }
+        ),
+        "retryable",
+        "order-not-found"
       );
     }
 
-    const paymentStatus = normalizePaymentStatus(
-      event.payment_status ?? event.status ?? event.transaction_status
-    );
+    const paymentStatus = legacyPaymentStatus;
     const payments = await payload.find({
       collection: "product-payments" as never,
       overrideAccess: true,
       req: txReq as never,
       depth: 0,
       limit: 1,
-      where: { portone_order_ref: { equals: orderRef } }
+      where: {
+        and: [
+          { portone_order_ref: { equals: orderRef } },
+          { provider: { equals: "portone" } }
+        ]
+      }
     });
     const payment = payments.docs?.[0] as
       | {
@@ -349,14 +597,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           amount?: number;
           currency?: string;
           provider?: string;
+          status?: string;
           events?: unknown[];
         }
       | undefined;
     if (!payment || payment.provider !== "portone") {
       await payload.db.rollbackTransaction(transactionID);
-      return NextResponse.json(
-        { ok: false, error: "payment-not-found" },
-        { status: 404 }
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json(
+          { ok: false, error: "payment-not-found" },
+          { status: 404 }
+        ),
+        "retryable",
+        "payment-not-found"
       );
     }
     const expectedAmount = Number(payment.amount ?? order.total_amount ?? NaN);
@@ -369,20 +623,89 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       eventCurrency !== expectedCurrency
     ) {
       await payload.db.rollbackTransaction(transactionID);
-      return NextResponse.json(
-        { ok: false, error: "payment-mismatch" },
-        { status: 409 }
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json(
+          { ok: false, error: "payment-mismatch" },
+          { status: 409 }
+        ),
+        "rejected",
+        "payment-mismatch"
       );
     }
 
-    const eventId = eventIdOf(event);
-    const events = Array.isArray(payment.events) ? payment.events : [];
-    const duplicate =
-      eventId.length > 0 &&
-      events.some((stored) => storedEventIdOf(stored) === eventId);
-    if (duplicate) {
+    if (paymentStatus === "paid") {
+      const verification = verifyPortOnePayment(authoritativePayment, {
+        amount: expectedAmount,
+        currency: expectedCurrency,
+        requireLiveChannel: requiresLiveChannel()
+      });
+      if (!verification.ok) {
+        await payload.db.rollbackTransaction(transactionID);
+        return finishProviderEvent(
+          processingContext,
+          NextResponse.json({ ok: true, rejected: verification.reason }),
+          "rejected",
+          verification.reason
+        );
+      }
+    }
+
+    const nextOrderStatus = orderStatusForPaymentStatus(
+      paymentStatus,
+      order.order_mode
+    );
+    if (
+      !isCommerceOrderState(order.status) ||
+      !isCommerceOrderState(nextOrderStatus) ||
+      !isCommercePaymentState(payment.status) ||
+      !isCommercePaymentState(paymentStatus)
+    ) {
       await payload.db.rollbackTransaction(transactionID);
-      return NextResponse.json({ ok: true, duplicate: true });
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json({
+          ok: true,
+          rejected: "invalid-commerce-transition"
+        }),
+        "rejected",
+        "invalid-commerce-transition"
+      );
+    }
+    try {
+      assertOrderTransition({
+        from: order.status,
+        to: nextOrderStatus,
+        actor: legacyPortOneActor
+      });
+      assertPaymentTransition({
+        from: payment.status,
+        to: paymentStatus,
+        actor: legacyPortOneActor
+      });
+    } catch (error) {
+      if (!(error instanceof CommerceTransitionError)) throw error;
+      await payload.db.rollbackTransaction(transactionID);
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json({ ok: true, rejected: error.code }),
+        "rejected",
+        error.code
+      );
+    }
+
+    const alreadyApplied =
+      order.status === nextOrderStatus &&
+      order.payment_status === paymentStatus &&
+      payment.status === paymentStatus;
+    if (alreadyApplied) {
+      await payload.db.commitTransaction(transactionID);
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json({ ok: true }),
+        "processed",
+        "already-processed"
+      );
     }
 
     const wasAlreadyPaid = order.payment_status === "paid";
@@ -405,7 +728,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       overrideAccess: true,
       data: {
         payment_status: paymentStatus,
-        status: orderStatusForPaymentStatus(paymentStatus, order.order_mode),
+        status: nextOrderStatus,
         paid_at: paymentStatus === "paid" ? new Date().toISOString() : undefined
       } as never
     });
@@ -418,13 +741,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       data: {
         status: paymentStatus,
         portone_transaction_ref: event.payment_txn_ref ?? event.transaction_ref,
-        events: [...events, event],
         paid_at: paymentStatus === "paid" ? new Date().toISOString() : undefined
       } as never
     });
 
     if (paymentStatus === "paid" && !wasAlreadyPaid) {
-      await markRequestOrderPaid({ payload, order, req: txReq as never });
+      await markRequestOrderPaid({
+        payload,
+        order: { ...order, status: nextOrderStatus },
+        req: txReq as never
+      });
     }
 
     await payload.db.commitTransaction(transactionID);
@@ -433,11 +759,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     payload.logger.error?.(
       `[lost/portone/webhook] transaction failed for ${orderRef}: ${(err as Error).message}`
     );
-    return NextResponse.json(
-      { ok: false, error: "webhook-transaction-failed" },
-      { status: 500 }
+    return finishProviderEvent(
+      processingContext,
+      NextResponse.json(
+        { ok: false, error: "webhook-transaction-failed" },
+        { status: 500 }
+      ),
+      "retryable",
+      "webhook-transaction-failed"
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return finishProviderEvent(
+    processingContext,
+    NextResponse.json({ ok: true }),
+    "processed",
+    `legacy-${normalizePaymentStatus(
+      event.payment_status ?? event.status ?? event.transaction_status
+    )}`
+  );
 }

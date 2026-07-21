@@ -2,6 +2,8 @@ import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import type { CollectionConfig } from "payload";
 
+import { lockProductUpdate } from "./lockProductUpdate";
+
 export const Products: CollectionConfig = {
   slug: "products",
   labels: {
@@ -43,6 +45,9 @@ export const Products: CollectionConfig = {
     update: ({ req: { user } }) =>
       ["admin", "editor"].some((role) => user?.role === role),
     delete: isAdmin
+  },
+  hooks: {
+    beforeOperation: [lockProductUpdate]
   },
   fields: [
     {
@@ -165,14 +170,16 @@ export const Products: CollectionConfig = {
       options: ["in_stock", "out_of_stock", "pre_order", "on_request"],
       required: true,
       index: true,
-      defaultValue: "on_request"
+      defaultValue: "on_request",
+      admin: { readOnly: true, description: "Legacy catalog value." }
     },
     {
       name: "inventory",
       type: "number",
       index: true,
       min: 0,
-      defaultValue: 0
+      defaultValue: 0,
+      admin: { readOnly: true, description: "Legacy catalog value." }
     },
     {
       name: "max_order_quantity",
@@ -191,12 +198,27 @@ export const Products: CollectionConfig = {
       defaultValue: 1
     },
     {
+      name: "variant_source",
+      type: "select",
+      required: true,
+      defaultValue: "legacy",
+      options: ["legacy", "relational"],
+      index: true,
+      admin: { readOnly: true }
+    },
+    {
       name: "variants",
       type: "json",
       admin: {
-        description:
-          "Array of { id, sku, label, size, color, amount?, inventory?, stock_state? }."
+        readOnly: true,
+        description: "Legacy catalog data retained during the SKU transition."
       }
+    },
+    {
+      name: "skus",
+      type: "join",
+      collection: "product-variants",
+      on: "product"
     },
     {
       name: "standard_enabled",

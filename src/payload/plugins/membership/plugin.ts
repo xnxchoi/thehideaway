@@ -10,11 +10,14 @@ import {
   ProductSubCategory
 } from "@/payload/collections/(consumption)/ProductCategory";
 import { Products } from "@/payload/collections/(consumption)/Products";
+import { ProductVariants } from "@/payload/collections/(consumption)/ProductVariants";
 import { ProductDrops } from "@/payload/collections/(consumption)/ProductDrops";
 import { ProductCarts } from "@/payload/collections/(consumption)/ProductCarts";
 import { ProductOrders } from "@/payload/collections/(consumption)/ProductOrders";
 import { ProductPayments } from "@/payload/collections/(consumption)/ProductPayments";
 import { ProductOrderCampaigns } from "@/payload/collections/(consumption)/ProductOrderCampaigns";
+import { CommerceProviderEvents } from "@/payload/collections/(consumption)/CommerceProviderEvents";
+import { CommerceCommands } from "@/payload/collections/(consumption)/CommerceCommands";
 
 export interface MembershipPluginConfig {
   enabled: boolean;
@@ -40,10 +43,13 @@ export const MembershipPlugin =
       ProductSubCategory,
       ProductDrops,
       Products,
+      ProductVariants,
       ProductOrderCampaigns,
       ProductCarts,
       ProductOrders,
-      ProductPayments
+      ProductPayments,
+      CommerceCommands,
+      CommerceProviderEvents
     );
 
     return config;

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function LostCartPage() {
   const t = await getTranslations("LOSTINSEOUL");
   return (
-    <RPage slug={["lostinseoul", "cart"]} type="pages">
+    <RPage slug={["lostinseoul", "cart"]} theme="dark" type="pages">
       <LostCartPageClient
         labels={{
           title: t("cart.title"),

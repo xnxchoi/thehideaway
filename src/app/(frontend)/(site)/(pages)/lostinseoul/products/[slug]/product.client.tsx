@@ -15,7 +15,6 @@ import { useLostCart } from "@/lib/lost-commerce/useLostCart";
 import { cn } from "@/lib/utils";
 import {
   LostAnnouncementBar,
-  LostCursorBridge,
   LostGlobalFooterOverride,
   LostHeader,
   LostProductSection
@@ -32,6 +31,13 @@ import {
   getLostProductThumbClassName
 } from "./product-gallery-state";
 import { getLostProductMobileBuybarClassName } from "./product-mobile-buybar-state";
+import {
+  canUseLostProductActions,
+  didLostPrivateQuoteSucceed,
+  getLostProductDetailPrice,
+  getLostProductVariantsForMode,
+  hasLostPrivatePresetPrice
+} from "../../product-price-display";
 import "../../index.css";
 
 type Labels = {
@@ -48,6 +54,7 @@ type Labels = {
   private: string;
   add: string;
   requestQuote: string;
+  quoteFailed: string;
   added: string;
   campaign: string;
   progress: string;
@@ -121,17 +128,22 @@ export function LostProductDetailClient({
   enableProductStage?: boolean;
 }) {
   const { add } = useLostCart();
-  const [mode, setMode] = useState<LostOrderMode>(
-    product.modes[0] ?? "standard_purchase"
+  const [mode, setMode] = useState<LostOrderMode | null>(
+    product.modes[0] ?? null
   );
   const [added, setAdded] = useState(false);
+  const [quoteFailed, setQuoteFailed] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [bagOpen, setBagOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const commerceRootRef = useRef<HTMLElement>(null);
   const [selectedVariantId, setSelectedVariantId] = useState(
-    product.variants[0]?.id ?? ""
+    () =>
+      getLostProductVariantsForMode(
+        product.variants,
+        product.modes[0] ?? null
+      )[0]?.id ?? ""
   );
   const desktopSlideRefs = useRef<Array<HTMLElement | null>>([]);
   const mobileScrollerRef = useRef<HTMLDivElement | null>(null);
@@ -157,24 +169,42 @@ export function LostProductDetailClient({
         )
       : 0;
 
+  const variantsForMode = useMemo(
+    () => getLostProductVariantsForMode(product.variants, mode),
+    [mode, product.variants]
+  );
   const selectedVariant =
-    product.variants.find((variant) => variant.id === selectedVariantId) ??
-    product.variants[0] ??
-    null;
+    variantsForMode.find((variant) => variant.id === selectedVariantId) ?? null;
+  const canUseActions = canUseLostProductActions({
+    mode,
+    modes: product.modes,
+    privatePresetPriceEnabled: product.privatePresetPriceEnabled,
+    privateUnitAmount: product.privateUnitAmount,
+    selectedSku: selectedVariant
+  });
   const selectedStockLabel = stockLabel(
     selectedVariant?.stockState ?? product.stockState,
     labels
   );
-  const selectedUnitAmount =
-    mode === "private_order" &&
-    product.privatePresetPriceEnabled &&
+  const privatePresetUnitAmount = hasLostPrivatePresetPrice(
+    product.privatePresetPriceEnabled,
     product.privateUnitAmount
-      ? product.privateUnitAmount
+  )
+    ? product.privateUnitAmount
+    : null;
+  const selectedUnitAmount =
+    mode === "private_order" && privatePresetUnitAmount !== null
+      ? privatePresetUnitAmount
       : (selectedVariant?.amount ?? product.unitAmount);
   const selectedPrice = formatLostMoney(selectedUnitAmount, product.currency);
 
   const isQuoteOnly =
-    mode === "private_order" && !product.privatePresetPriceEnabled;
+    mode === "private_order" && product.privatePresetPriceEnabled !== true;
+  const displayedPrice = getLostProductDetailPrice({
+    quoteOnly: isQuoteOnly,
+    requestQuoteLabel: labels.requestQuote,
+    selectedPrice: canUseActions && !isQuoteOnly ? selectedPrice : null
+  });
   const details: DetailItem[] = [
     { label: labels.details, body: product.details, image: images[0] },
     {
@@ -189,28 +219,37 @@ export function LostProductDetailClient({
     }
   ].flatMap((item) => (item.body ? [{ ...item, body: item.body }] : []));
 
-  const buildCartLine = () => ({
-    productId: product.id,
-    productName: product.name,
-    productSlug: product.slug,
-    mode,
-    variantId: selectedVariant?.id,
-    variantLabel: selectedVariant?.label,
-    campaignId: mode === "request_to_order" ? product.campaign?.id : undefined,
-    quantity: 1,
-    price: selectedPrice,
-    unitAmount: selectedUnitAmount,
-    currency: product.currency,
-    imageUrl: product.imageUrl
-  });
+  const buildCartLine = () => {
+    if (!canUseActions || !mode || !selectedVariant) return null;
+
+    return {
+      productId: product.id,
+      productName: product.name,
+      productSlug: product.slug,
+      mode,
+      skuId: selectedVariant.id,
+      variantLabel: selectedVariant.label,
+      campaignId:
+        mode === "request_to_order" ? product.campaign?.id : undefined,
+      quantity: 1,
+      price: selectedPrice,
+      unitAmount: selectedUnitAmount,
+      currency: product.currency,
+      imageUrl: product.imageUrl
+    };
+  };
 
   const addToCart = () => {
-    add(buildCartLine());
+    const line = buildCartLine();
+    if (!line) return;
+    add(line);
     setAdded(true);
   };
 
   const buyNow = () => {
-    add(buildCartLine());
+    const line = buildCartLine();
+    if (!line) return;
+    add(line);
     setAdded(true);
   };
 
@@ -218,6 +257,15 @@ export function LostProductDetailClient({
     if (activeImage <= images.length - 1) return;
     setActiveImage(Math.max(0, images.length - 1));
   }, [activeImage, images.length]);
+
+  useEffect(() => {
+    if (variantsForMode.some((variant) => variant.id === selectedVariantId)) {
+      return;
+    }
+    setSelectedVariantId(variantsForMode[0]?.id ?? "");
+    setAdded(false);
+    setQuoteFailed(false);
+  }, [selectedVariantId, variantsForMode]);
 
   useEffect(() => {
     const nodes = desktopSlideRefs.current.filter(
@@ -329,7 +377,6 @@ export function LostProductDetailClient({
   return (
     <>
       <LostGlobalFooterOverride />
-      <LostCursorBridge />
       <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
         <LostAnnouncementBar bagOpen={bagOpen}>
           {labels.announcement}
@@ -538,7 +585,7 @@ export function LostProductDetailClient({
                   data-product-price
                 >
                   <span className="col-span-full row-span-full min-w-24 text-right lg:min-w-32">
-                    {isQuoteOnly ? product.price : selectedPrice}
+                    {displayedPrice}
                   </span>
                 </span>
               </div>
@@ -556,14 +603,16 @@ export function LostProductDetailClient({
                     >
                       {product.modes.map((item) => (
                         <li aria-label={labels[MODE_LABEL[item]]} key={item}>
-                          <Button
-                            className={cn(
-                              "lost-product-mode-button",
-                              mode === item && "is-active"
+                        <Button
+                          aria-pressed={mode === item}
+                          className={cn(
+                            "lost-product-mode-button",
+                            mode === item && "is-active"
                             )}
                             onClick={() => {
                               setMode(item);
                               setAdded(false);
+                              setQuoteFailed(false);
                             }}
                             type="button"
                           >
@@ -610,7 +659,7 @@ export function LostProductDetailClient({
                   </div>
                 ) : null}
 
-                {product.variants.length > 1 ? (
+                {variantsForMode.length > 1 ? (
                   <div className="grid gap-y-4">
                     <p className="font-mono text-[1.1rem] leading-none tracking-[0.12em] text-[var(--n-s-fg)] uppercase lg:text-[1.3rem]">
                       {labels.variants}
@@ -619,9 +668,7 @@ export function LostProductDetailClient({
                       aria-label={labels.variants}
                       className="flex w-full flex-wrap gap-x-4 gap-y-8"
                     >
-                      {product.variants.map((variant) => {
-                        const disabled = variant.stockState === "out_of_stock";
-
+                      {variantsForMode.map((variant) => {
                         return (
                           <li key={variant.id}>
                             <Button
@@ -631,10 +678,10 @@ export function LostProductDetailClient({
                                 selectedVariant?.id === variant.id &&
                                   "is-active"
                               )}
-                              disabled={disabled}
                               onClick={() => {
                                 setSelectedVariantId(variant.id);
                                 setAdded(false);
+                                setQuoteFailed(false);
                               }}
                               type="button"
                             >
@@ -659,33 +706,59 @@ export function LostProductDetailClient({
                 ) : null}
               </div>
 
-              {isQuoteOnly ? (
+              {canUseActions && isQuoteOnly ? (
                 <form
                   className="grid gap-3 pb-8 lg:pb-10"
                   onSubmit={async (event) => {
                     event.preventDefault();
-                    await fetch("/api/lost/private-quotes", {
-                      method: "POST",
-                      headers: { "content-type": "application/json" },
-                      body: JSON.stringify({
-                        productId: product.id,
-                        quantity: 1,
-                        note: new FormData(event.currentTarget).get("note")
-                      })
-                    });
-                    setAdded(true);
+                    if (!canUseActions || !selectedVariant) return;
+                    setQuoteFailed(false);
+                    try {
+                      const response = await fetch("/api/lost/private-quotes", {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                          productId: product.id,
+                          skuId: selectedVariant.id,
+                          quantity: 1,
+                          note: new FormData(event.currentTarget).get("note")
+                        })
+                      });
+                      if (!didLostPrivateQuoteSucceed(response)) {
+                        setAdded(false);
+                        setQuoteFailed(true);
+                        return;
+                      }
+                      setAdded(true);
+                    } catch {
+                      setAdded(false);
+                      setQuoteFailed(true);
+                    }
                   }}
-                >
-                  <textarea
-                    className="lost-product-note"
-                    name="note"
-                    placeholder={labels.privateQuote}
+                  >
+                    <textarea
+                      aria-label={labels.privateQuote}
+                      className="lost-product-note"
+                      name="note"
+                      placeholder={labels.privateQuote}
                   />
-                  <Button className="lost-source-button lost-source-button--white justify-center">
+                  <Button
+                    className="lost-source-button lost-source-button--white justify-center"
+                    type="submit"
+                  >
                     <span>{added ? labels.added : labels.requestQuote}</span>
                   </Button>
+                  {quoteFailed ? (
+                    <p
+                      aria-live="polite"
+                      className="font-mono text-[1.1rem] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)]"
+                      role="status"
+                    >
+                      {labels.quoteFailed}
+                    </p>
+                  ) : null}
                 </form>
-              ) : (
+              ) : canUseActions ? (
                 <div className="grid grid-cols-2 gap-x-2 pb-7 lg:gap-x-4 lg:pb-8">
                   <Link
                     className="lost-source-button lost-source-button--white justify-center"
@@ -702,7 +775,7 @@ export function LostProductDetailClient({
                     <span>{added ? labels.added : labels.add}</span>
                   </Button>
                 </div>
-              )}
+              ) : null}
 
               {details.length > 0 ? (
                 <article
@@ -790,6 +863,7 @@ export function LostProductDetailClient({
             privateModeLabel={labels.private}
             products={relatedProducts}
             productsLabel={labels.related}
+            requestQuoteLabel={labels.requestQuote}
             requestModeLabel={labels.request}
             searchLabel={labels.related}
             searchNoResultsLabel=""
@@ -813,9 +887,9 @@ export function LostProductDetailClient({
 
         <div className={getLostProductMobileBuybarClassName()}>
           <p className="font-sans text-[1.8rem] leading-none font-light tabular-nums">
-            {isQuoteOnly ? product.price : selectedPrice}
+            {displayedPrice}
           </p>
-          {isQuoteOnly ? (
+          {canUseActions && isQuoteOnly ? (
             <Button
               className="lost-source-button lost-source-button--white justify-center"
               onClick={() => {
@@ -827,7 +901,7 @@ export function LostProductDetailClient({
             >
               <span>{added ? labels.added : labels.requestQuote}</span>
             </Button>
-          ) : (
+          ) : canUseActions ? (
             <div className="grid grid-cols-2 gap-2">
               <Link
                 className="lost-source-button lost-source-button--white justify-center"
@@ -844,7 +918,7 @@ export function LostProductDetailClient({
                 <span>{added ? labels.added : labels.add}</span>
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       </main>
     </>

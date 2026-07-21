@@ -1,11 +1,16 @@
 import type { Payload } from "payload";
-import { productInventoryLock } from "@/lib/db/sequences";
+import {
+  productInventoryLock,
+  productSkuMutationLock
+} from "@/lib/db/sequences";
 
 type AnyDoc = Record<string, any>;
 
 type ProductLine = {
+  schemaVersion?: number | null;
   mode?: string | null;
   productId?: string | null;
+  skuId?: string | null;
   variantId?: string | null;
   quantity?: number | null;
 };
@@ -17,14 +22,14 @@ function numericInventory(value: unknown): number | null {
 function aggregateStandardLines(lines: ProductLine[]) {
   const reservations = new Map<
     string,
-    { productId: string; quantity: number; variantId?: string }
+    { productId: string; quantity: number; skuId?: string; variantId?: string }
   >();
   for (const line of lines) {
     if (line.mode !== "standard_purchase") continue;
     if (!line.productId) continue;
     const quantity = Number(line.quantity ?? 0);
     if (!Number.isFinite(quantity) || quantity <= 0) continue;
-    const key = `${line.productId}:${line.variantId ?? ""}`;
+    const key = `${line.productId}:${line.skuId ?? line.variantId ?? ""}`;
     const existing = reservations.get(key);
     if (existing) {
       existing.quantity += quantity;
@@ -33,6 +38,7 @@ function aggregateStandardLines(lines: ProductLine[]) {
     reservations.set(key, {
       productId: line.productId,
       quantity,
+      ...(line.skuId ? { skuId: line.skuId } : {}),
       ...(line.variantId ? { variantId: line.variantId } : {})
     });
   }
@@ -59,9 +65,46 @@ export async function releaseStandardInventory(input: {
     for (const productId of productIds) {
       await productInventoryLock(input.payload, transactionID, productId);
     }
+
+    const skuIds = [
+      ...new Set(
+        reservations.flatMap((reservation) =>
+          reservation.skuId ? [reservation.skuId] : []
+        )
+      )
+    ].sort();
+    for (const skuId of skuIds) {
+      await productSkuMutationLock(input.payload, transactionID, skuId);
+    }
   }
 
   for (const reservation of reservations) {
+    if (reservation.skuId) {
+      const sku = (await input.payload.findByID({
+        collection: "product-variants",
+        id: reservation.skuId,
+        depth: 0,
+        req: input.req as never,
+        overrideAccess: true
+      })) as AnyDoc;
+      const skuInventory = numericInventory(sku.inventory);
+      if (skuInventory === null) continue;
+      const nextInventory = skuInventory + reservation.quantity;
+      await input.payload.update({
+        collection: "product-variants",
+        id: reservation.skuId,
+        req: input.req as never,
+        overrideAccess: true,
+        data: {
+          inventory: nextInventory,
+          ...(sku.stock_state === "out_of_stock"
+            ? { stock_state: "in_stock" }
+            : {})
+        }
+      });
+      continue;
+    }
+
     const product = (await input.payload.findByID({
       collection: "products" as never,
       id: reservation.productId,

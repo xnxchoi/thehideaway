@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   buildPortOnePaymentPayload,
   generatePortOneSignature,
+  getPortOneSdkVersion,
   isPortOneCheckoutEnabled
 } from "./portone";
 
@@ -20,6 +21,7 @@ describe("PortOne payment payloads", () => {
     delete process.env.PORTONE_STORE_ID;
     delete process.env.PORTONE_CHANNEL_KEY;
     delete process.env.PORTONE_DEFAULT_CHANNEL;
+    delete process.env.PORTONE_API_SECRET;
 
     expect(isPortOneCheckoutEnabled()).toBe(false);
 
@@ -27,6 +29,9 @@ describe("PortOne payment payloads", () => {
     expect(isPortOneCheckoutEnabled()).toBe(false);
 
     process.env.PORTONE_CHANNEL_KEY = "channel-test";
+    expect(isPortOneCheckoutEnabled()).toBe(false);
+
+    process.env.PORTONE_API_SECRET = "api-secret";
     expect(isPortOneCheckoutEnabled()).toBe(true);
 
     delete process.env.PORTONE_CHANNEL_KEY;
@@ -45,12 +50,14 @@ describe("PortOne payment payloads", () => {
 
     process.env.PORTONE_SECRET_KEY = "secret";
     expect(isPortOneCheckoutEnabled()).toBe(true);
+    expect(getPortOneSdkVersion()).toBe("global");
   });
 
   it("keeps card checkout dark unless the master gate is explicitly on", () => {
     // Full, valid config present…
     process.env.PORTONE_STORE_ID = "store-test";
     process.env.PORTONE_CHANNEL_KEY = "channel-test";
+    process.env.PORTONE_API_SECRET = "api-secret";
 
     // …but the master gate is unset → still dark (default-off).
     delete process.env.PORTONE_CARD_CHECKOUT_LIVE;
@@ -125,6 +132,9 @@ describe("PortOne payment payloads", () => {
       origin: "https://lostinseoul.com"
     });
 
+    expect("success_url" in payload).toBe(true);
+    if (!("success_url" in payload)) throw new Error("expected global payload");
+
     expect(payload.success_url).toBe(
       "https://lostinseoul.com/payment/success?order=lis_1"
     );
@@ -136,6 +146,7 @@ describe("PortOne payment payloads", () => {
   it("builds a PortOne V2 redirect payload when Store ID is configured", () => {
     process.env.PORTONE_STORE_ID = "store-test";
     process.env.PORTONE_CHANNEL_KEY = "channel-test";
+    expect(getPortOneSdkVersion()).toBe("v2");
 
     const payload = buildPortOnePaymentPayload({
       orderRef: "lis_2",
