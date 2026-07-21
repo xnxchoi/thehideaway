@@ -192,8 +192,7 @@ const options: BetterAuthOptionsType = {
   },
   account: {
     accountLinking: {
-      enabled: true,
-      trustedProviders: ["google", "email-password", "naver", "kakao"]
+      enabled: false
     }
   },
 

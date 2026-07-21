@@ -50,10 +50,11 @@ describe("auth options", () => {
     expect(source).toContain("Kakao did not return an email address");
   });
 
-  it("trusts Kakao for account linking", () => {
-    expect(source).toContain(
-      'trustedProviders: ["google", "email-password", "naver", "kakao"]'
-    );
+  it("disables account linking on the vulnerable Better Auth version", () => {
+    expect(source).toContain("accountLinking: {");
+    expect(source).toContain("enabled: false");
+    expect(source).not.toContain("disableImplicitLinking");
+    expect(source).not.toContain("trustedProviders:");
   });
 
   it("trusts LOSTINSEOUL auth origins by default", () => {
