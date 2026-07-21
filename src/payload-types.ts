@@ -124,6 +124,9 @@ export interface Config {
     'product-payments': ProductPayment;
     'commerce-commands': CommerceCommand;
     'commerce-provider-events': CommerceProviderEvent;
+    'stock-locations': StockLocation;
+    'inventory-levels': InventoryLevel;
+    'inventory-movements': InventoryMovement;
     events: Event;
     'ticket-orders': TicketOrder;
     tickets: Ticket;
@@ -240,6 +243,9 @@ export interface Config {
     'product-payments': ProductPaymentsSelect<false> | ProductPaymentsSelect<true>;
     'commerce-commands': CommerceCommandsSelect<false> | CommerceCommandsSelect<true>;
     'commerce-provider-events': CommerceProviderEventsSelect<false> | CommerceProviderEventsSelect<true>;
+    'stock-locations': StockLocationsSelect<false> | StockLocationsSelect<true>;
+    'inventory-levels': InventoryLevelsSelect<false> | InventoryLevelsSelect<true>;
+    'inventory-movements': InventoryMovementsSelect<false> | InventoryMovementsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'ticket-orders': TicketOrdersSelect<false> | TicketOrdersSelect<true>;
     tickets: TicketsSelect<false> | TicketsSelect<true>;
@@ -3269,6 +3275,58 @@ export interface CommerceProviderEvent {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-locations".
+ */
+export interface StockLocation {
+  id: string;
+  code: string;
+  name: string;
+  active: boolean;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-levels".
+ */
+export interface InventoryLevel {
+  id: string;
+  aggregate_key: string;
+  sku: string | ProductVariant;
+  location: string | StockLocation;
+  disposition: 'available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded';
+  quantity: number;
+  movement_count: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-movements".
+ */
+export interface InventoryMovement {
+  id: string;
+  idempotency_key: string;
+  request_hash: string;
+  sku: string | ProductVariant;
+  kind: 'inbound' | 'outbound' | 'transfer';
+  quantity: number;
+  from_location?: (string | null) | StockLocation;
+  from_disposition?:
+    ('available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded') | null;
+  to_location?: (string | null) | StockLocation;
+  to_disposition?:
+    ('available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded') | null;
+  reason_code: string;
+  source_type: 'inventory_command';
+  source_ref?: string | null;
+  actor?: string | null;
+  effective_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events".
  */
 export interface Event {
@@ -3828,6 +3886,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'commerce-provider-events';
         value: string | CommerceProviderEvent;
+      } | null)
+    | ({
+        relationTo: 'stock-locations';
+        value: string | StockLocation;
+      } | null)
+    | ({
+        relationTo: 'inventory-levels';
+        value: string | InventoryLevel;
       } | null)
     | ({
         relationTo: 'events';
@@ -5469,6 +5535,53 @@ export interface CommerceProviderEventsSelect<T extends boolean = true> {
   processed_at?: T;
   outcome_code?: T;
   last_error_code?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-locations_select".
+ */
+export interface StockLocationsSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-levels_select".
+ */
+export interface InventoryLevelsSelect<T extends boolean = true> {
+  aggregate_key?: T;
+  sku?: T;
+  location?: T;
+  disposition?: T;
+  quantity?: T;
+  movement_count?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-movements_select".
+ */
+export interface InventoryMovementsSelect<T extends boolean = true> {
+  idempotency_key?: T;
+  request_hash?: T;
+  sku?: T;
+  kind?: T;
+  quantity?: T;
+  from_location?: T;
+  from_disposition?: T;
+  to_location?: T;
+  to_disposition?: T;
+  reason_code?: T;
+  source_type?: T;
+  source_ref?: T;
+  actor?: T;
+  effective_at?: T;
   updatedAt?: T;
   createdAt?: T;
 }

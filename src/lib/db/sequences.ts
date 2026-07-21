@@ -217,3 +217,42 @@ export async function commerceCommandLock(
     advisoryLockKey(`commerce-command:${commandKey}`)
   );
 }
+
+/** Serializes permanent inventory movement idempotency for one command key. */
+export async function inventoryMovementIdempotencyLock(
+  payload: Payload,
+  transactionID: string | number,
+  idempotencyKey: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`inventory-movement:${idempotencyKey}`)
+  );
+}
+
+/** Serializes validation of an explicit stock location during a movement. */
+export async function inventoryLocationLock(
+  payload: Payload,
+  transactionID: string | number,
+  locationId: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`inventory-location:${locationId}`)
+  );
+}
+
+/** Serializes one SKU/location/disposition projection aggregate. */
+export async function inventoryAggregateLock(
+  payload: Payload,
+  transactionID: string | number,
+  aggregateKey: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`inventory-aggregate:${aggregateKey}`)
+  );
+}

@@ -18,6 +18,9 @@ import { ProductPayments } from "@/payload/collections/(consumption)/ProductPaym
 import { ProductOrderCampaigns } from "@/payload/collections/(consumption)/ProductOrderCampaigns";
 import { CommerceProviderEvents } from "@/payload/collections/(consumption)/CommerceProviderEvents";
 import { CommerceCommands } from "@/payload/collections/(consumption)/CommerceCommands";
+import { StockLocations } from "@/payload/collections/(consumption)/StockLocations";
+import { InventoryLevels } from "@/payload/collections/(consumption)/InventoryLevels";
+import { InventoryMovements } from "@/payload/collections/(consumption)/InventoryMovements";
 
 export interface MembershipPluginConfig {
   enabled: boolean;
@@ -49,7 +52,10 @@ export const MembershipPlugin =
       ProductOrders,
       ProductPayments,
       CommerceCommands,
-      CommerceProviderEvents
+      CommerceProviderEvents,
+      StockLocations,
+      InventoryLevels,
+      InventoryMovements
     );
 
     return config;

@@ -1,6 +1,6 @@
 # LOSTINSEOUL Complete Shopping System Blueprint
 
-Status: Adversarial review approved on 2026-07-20. Implementation started on 2026-07-21. PRs 1, 2, and 3 are implemented locally and reviewed with 0 critical and 0 high findings. PR 2 includes PostgreSQL-backed command idempotency, the provider-event inbox and admin replay, browser retry recovery, and default-off manual payment. PR 3 adds relational SKUs, immutable line snapshots, authoritative cart, checkout, campaign, and private-quote resolution, catalog locking, and controlled order and payment creation. PR 4 and later work packages have not started.
+Status: Adversarial review approved on 2026-07-20. PRs 1–4 were implemented locally on 2026-07-21 and reviewed with no critical or high findings. PR 4 adds Payload-managed stock locations, an append-only physical inventory ledger, cached balance projections, and read-only reconciliation. It does not add opening balances, reservations, fulfillment workflows, or customer inventory UI. PR 5 and later work packages have not started.
 
 ## Objective
 

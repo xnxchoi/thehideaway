@@ -653,6 +653,47 @@ export const enum_commerce_provider_events_processing_status = pgEnum(
   "enum_commerce_provider_events_processing_status",
   ["received", "processing", "retryable", "processed", "rejected"]
 );
+export const enum_inventory_levels_disposition = pgEnum(
+  "enum_inventory_levels_disposition",
+  [
+    "available",
+    "quarantine",
+    "damaged",
+    "inspection_pending",
+    "returned_pending_release",
+    "discarded"
+  ]
+);
+export const enum_inventory_movements_kind = pgEnum(
+  "enum_inventory_movements_kind",
+  ["inbound", "outbound", "transfer"]
+);
+export const enum_inventory_movements_from_disposition = pgEnum(
+  "enum_inventory_movements_from_disposition",
+  [
+    "available",
+    "quarantine",
+    "damaged",
+    "inspection_pending",
+    "returned_pending_release",
+    "discarded"
+  ]
+);
+export const enum_inventory_movements_to_disposition = pgEnum(
+  "enum_inventory_movements_to_disposition",
+  [
+    "available",
+    "quarantine",
+    "damaged",
+    "inspection_pending",
+    "returned_pending_release",
+    "discarded"
+  ]
+);
+export const enum_inventory_movements_source_type = pgEnum(
+  "enum_inventory_movements_source_type",
+  ["inventory_command"]
+);
 export const enum_events_exclusive_links_type = pgEnum(
   "enum_events_exclusive_links_type",
   ["link", "form"]
@@ -7164,6 +7205,152 @@ export const commerce_provider_events = pgTable(
   ]
 );
 
+export const stock_locations = pgTable(
+  "stock_locations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    code: varchar("code").notNull(),
+    name: varchar("name").notNull(),
+    active: boolean("active").notNull().default(false),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("stock_locations_code_idx").on(columns.code),
+    index("stock_locations_active_idx").on(columns.active),
+    index("stock_locations_updated_at_idx").on(columns.updatedAt),
+    index("stock_locations_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const inventory_levels = pgTable(
+  "inventory_levels",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    aggregate_key: varchar("aggregate_key").notNull(),
+    sku: uuid("sku_id")
+      .notNull()
+      .references(() => product_variants.id, {
+        onDelete: "set null"
+      }),
+    location: uuid("location_id")
+      .notNull()
+      .references(() => stock_locations.id, {
+        onDelete: "set null"
+      }),
+    disposition: enum_inventory_levels_disposition("disposition").notNull(),
+    quantity: numeric("quantity", { mode: "number" }).notNull().default(0),
+    movement_count: numeric("movement_count", { mode: "number" })
+      .notNull()
+      .default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_levels_aggregate_key_idx").on(columns.aggregate_key),
+    index("inventory_levels_sku_idx").on(columns.sku),
+    index("inventory_levels_location_idx").on(columns.location),
+    index("inventory_levels_disposition_idx").on(columns.disposition),
+    index("inventory_levels_updated_at_idx").on(columns.updatedAt),
+    index("inventory_levels_created_at_idx").on(columns.createdAt),
+    uniqueIndex("sku_location_disposition_idx").on(
+      columns.sku,
+      columns.location,
+      columns.disposition
+    )
+  ]
+);
+
+export const inventory_movements = pgTable(
+  "inventory_movements",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    idempotency_key: varchar("idempotency_key").notNull(),
+    request_hash: varchar("request_hash").notNull(),
+    sku: uuid("sku_id")
+      .notNull()
+      .references(() => product_variants.id, {
+        onDelete: "set null"
+      }),
+    kind: enum_inventory_movements_kind("kind").notNull(),
+    quantity: numeric("quantity", { mode: "number" }).notNull(),
+    from_location: uuid("from_location_id").references(
+      () => stock_locations.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    from_disposition:
+      enum_inventory_movements_from_disposition("from_disposition"),
+    to_location: uuid("to_location_id").references(() => stock_locations.id, {
+      onDelete: "set null"
+    }),
+    to_disposition: enum_inventory_movements_to_disposition("to_disposition"),
+    reason_code: varchar("reason_code").notNull(),
+    source_type: enum_inventory_movements_source_type("source_type").notNull(),
+    source_ref: varchar("source_ref"),
+    actor: varchar("actor"),
+    effective_at: timestamp("effective_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_movements_idempotency_key_idx").on(
+      columns.idempotency_key
+    ),
+    index("inventory_movements_sku_idx").on(columns.sku),
+    index("inventory_movements_kind_idx").on(columns.kind),
+    index("inventory_movements_from_location_idx").on(columns.from_location),
+    index("inventory_movements_from_disposition_idx").on(
+      columns.from_disposition
+    ),
+    index("inventory_movements_to_location_idx").on(columns.to_location),
+    index("inventory_movements_to_disposition_idx").on(columns.to_disposition),
+    index("inventory_movements_updated_at_idx").on(columns.updatedAt),
+    index("inventory_movements_created_at_idx").on(columns.createdAt)
+  ]
+);
+
 export const events_exclusive_links = pgTable(
   "events_exclusive_links",
   {
@@ -7637,6 +7824,8 @@ export const payload_locked_documents_rels = pgTable(
     "product-paymentsID": uuid("product_payments_id"),
     "commerce-commandsID": uuid("commerce_commands_id"),
     "commerce-provider-eventsID": uuid("commerce_provider_events_id"),
+    "stock-locationsID": uuid("stock_locations_id"),
+    "inventory-levelsID": uuid("inventory_levels_id"),
     eventsID: uuid("events_id"),
     "ticket-ordersID": uuid("ticket_orders_id"),
     ticketsID: uuid("tickets_id"),
@@ -7762,6 +7951,12 @@ export const payload_locked_documents_rels = pgTable(
     ),
     index("payload_locked_documents_rels_commerce_provider_events_i_idx").on(
       columns["commerce-provider-eventsID"]
+    ),
+    index("payload_locked_documents_rels_stock_locations_id_idx").on(
+      columns["stock-locationsID"]
+    ),
+    index("payload_locked_documents_rels_inventory_levels_id_idx").on(
+      columns["inventory-levelsID"]
     ),
     index("payload_locked_documents_rels_events_id_idx").on(columns.eventsID),
     index("payload_locked_documents_rels_ticket_orders_id_idx").on(
@@ -8010,6 +8205,16 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["commerce-provider-eventsID"]],
       foreignColumns: [commerce_provider_events.id],
       name: "payload_locked_documents_rels_commerce_provider_events_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["stock-locationsID"]],
+      foreignColumns: [stock_locations.id],
+      name: "payload_locked_documents_rels_stock_locations_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["inventory-levelsID"]],
+      foreignColumns: [inventory_levels.id],
+      name: "payload_locked_documents_rels_inventory_levels_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["eventsID"]],
@@ -10688,6 +10893,42 @@ export const relations_commerce_provider_events = relations(
     })
   })
 );
+export const relations_stock_locations = relations(stock_locations, () => ({}));
+export const relations_inventory_levels = relations(
+  inventory_levels,
+  ({ one }) => ({
+    sku: one(product_variants, {
+      fields: [inventory_levels.sku],
+      references: [product_variants.id],
+      relationName: "sku"
+    }),
+    location: one(stock_locations, {
+      fields: [inventory_levels.location],
+      references: [stock_locations.id],
+      relationName: "location"
+    })
+  })
+);
+export const relations_inventory_movements = relations(
+  inventory_movements,
+  ({ one }) => ({
+    sku: one(product_variants, {
+      fields: [inventory_movements.sku],
+      references: [product_variants.id],
+      relationName: "sku"
+    }),
+    from_location: one(stock_locations, {
+      fields: [inventory_movements.from_location],
+      references: [stock_locations.id],
+      relationName: "from_location"
+    }),
+    to_location: one(stock_locations, {
+      fields: [inventory_movements.to_location],
+      references: [stock_locations.id],
+      relationName: "to_location"
+    })
+  })
+);
 export const relations_events_exclusive_links = relations(
   events_exclusive_links,
   ({ one }) => ({
@@ -11028,6 +11269,16 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels["commerce-provider-eventsID"]],
       references: [commerce_provider_events.id],
       relationName: "commerce-provider-events"
+    }),
+    "stock-locationsID": one(stock_locations, {
+      fields: [payload_locked_documents_rels["stock-locationsID"]],
+      references: [stock_locations.id],
+      relationName: "stock-locations"
+    }),
+    "inventory-levelsID": one(inventory_levels, {
+      fields: [payload_locked_documents_rels["inventory-levelsID"]],
+      references: [inventory_levels.id],
+      relationName: "inventory-levels"
     }),
     eventsID: one(events, {
       fields: [payload_locked_documents_rels.eventsID],
@@ -11438,6 +11689,11 @@ type DatabaseSchema = {
   enum_commerce_commands_status: typeof enum_commerce_commands_status;
   enum_commerce_provider_events_provider: typeof enum_commerce_provider_events_provider;
   enum_commerce_provider_events_processing_status: typeof enum_commerce_provider_events_processing_status;
+  enum_inventory_levels_disposition: typeof enum_inventory_levels_disposition;
+  enum_inventory_movements_kind: typeof enum_inventory_movements_kind;
+  enum_inventory_movements_from_disposition: typeof enum_inventory_movements_from_disposition;
+  enum_inventory_movements_to_disposition: typeof enum_inventory_movements_to_disposition;
+  enum_inventory_movements_source_type: typeof enum_inventory_movements_source_type;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
   enum_events_state: typeof enum_events_state;
   enum_ticket_orders_currency: typeof enum_ticket_orders_currency;
@@ -11593,6 +11849,9 @@ type DatabaseSchema = {
   product_payments: typeof product_payments;
   commerce_commands: typeof commerce_commands;
   commerce_provider_events: typeof commerce_provider_events;
+  stock_locations: typeof stock_locations;
+  inventory_levels: typeof inventory_levels;
+  inventory_movements: typeof inventory_movements;
   events_exclusive_links: typeof events_exclusive_links;
   events: typeof events;
   ticket_orders: typeof ticket_orders;
@@ -11755,6 +12014,9 @@ type DatabaseSchema = {
   relations_product_payments: typeof relations_product_payments;
   relations_commerce_commands: typeof relations_commerce_commands;
   relations_commerce_provider_events: typeof relations_commerce_provider_events;
+  relations_stock_locations: typeof relations_stock_locations;
+  relations_inventory_levels: typeof relations_inventory_levels;
+  relations_inventory_movements: typeof relations_inventory_movements;
   relations_events_exclusive_links: typeof relations_events_exclusive_links;
   relations_events: typeof relations_events;
   relations_ticket_orders: typeof relations_ticket_orders;

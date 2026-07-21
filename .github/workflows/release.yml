@@ -176,6 +176,11 @@ jobs:
           echo "tags table present: ${schema_ready}"
           test "${schema_ready}" = "t"
 
+      - name: Verify inventory ledger against CI postgres
+        run: pnpm exec vitest run src/lib/lost-commerce/inventory-ledger.postgres.test.ts
+        env:
+          COMMERCE_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
+
       - name: Build Next.js (standalone)
         run: pnpm build
         env:
