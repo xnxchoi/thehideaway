@@ -324,7 +324,10 @@ describe("commerce provider events", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           processing_status: "processing",
-          attempt_count: 3
+          attempt_count: 3,
+          outcome_code: null,
+          last_error_code: null,
+          processed_at: null
         })
       })
     );
@@ -332,6 +335,7 @@ describe("commerce provider events", () => {
 
   it.each([
     ["processed", "paid", "2026-07-21T08:00:00.000Z"],
+    ["rejected", "amount-mismatch", "2026-07-21T08:00:00.000Z"],
     ["retryable", "database-unavailable", undefined]
   ] as const)(
     "stores a %s processing outcome and clears the lease",
@@ -363,9 +367,9 @@ describe("commerce provider events", () => {
         expect.objectContaining({
           data: expect.objectContaining({
             processing_status: status,
-            outcome_code: status === "retryable" ? undefined : outcomeCode,
-            last_error_code: status === "retryable" ? outcomeCode : undefined,
-            processed_at: processedAt,
+            outcome_code: status === "retryable" ? null : outcomeCode,
+            last_error_code: status === "retryable" ? outcomeCode : null,
+            processed_at: processedAt ?? null,
             lease_token_hash: null,
             lease_expires_at: null
           })

@@ -272,7 +272,10 @@ export async function claimCommerceProviderEvent(input: {
         lease_expires_at: new Date(
           now.getTime() + (input.leaseMs ?? PROVIDER_EVENT_LEASE_MS)
         ).toISOString(),
-        last_attempt_at: now.toISOString()
+        last_attempt_at: now.toISOString(),
+        outcome_code: null,
+        last_error_code: null,
+        processed_at: null
       }
     });
     await input.payload.db.commitTransaction(transactionID);
@@ -329,12 +332,10 @@ export async function completeCommerceProviderEvent(input: {
       req,
       data: {
         processing_status: input.status,
-        outcome_code:
-          input.status === "retryable" ? undefined : input.outcomeCode,
+        outcome_code: input.status === "retryable" ? null : input.outcomeCode,
         last_error_code:
-          input.status === "retryable" ? input.outcomeCode : undefined,
-        processed_at:
-          input.status === "retryable" ? undefined : now.toISOString(),
+          input.status === "retryable" ? input.outcomeCode : null,
+        processed_at: input.status === "retryable" ? null : now.toISOString(),
         lease_token_hash: null,
         lease_expires_at: null
       }

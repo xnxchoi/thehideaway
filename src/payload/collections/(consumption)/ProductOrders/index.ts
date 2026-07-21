@@ -4,7 +4,8 @@ import type { CollectionConfig } from "payload";
 
 const ownsOrder = ({ req }: { req: { user?: { id?: string } | null } }) => {
   if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
-  return { user: { equals: req.user?.id } };
+  const userId = req.user?.id;
+  return userId ? { user: { equals: userId } } : false;
 };
 
 export const ProductOrders: CollectionConfig = {
@@ -29,7 +30,7 @@ export const ProductOrders: CollectionConfig = {
     read: ownsOrder,
     create: () => false,
     update: isAdmin,
-    delete: isAdmin
+    delete: () => false
   },
   hooks: {
     beforeChange: [protectOrderLifecycle]

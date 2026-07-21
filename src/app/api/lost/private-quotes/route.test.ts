@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   beginTransaction: vi.fn(),
+  claimCommerceCommand: vi.fn(),
   commitTransaction: vi.fn(),
+  completeCommerceCommand: vi.fn(),
   create: vi.fn(),
   findByID: vi.fn(),
   isSameOrigin: vi.fn(),
@@ -58,9 +60,27 @@ vi.mock("@/lib/lost-commerce/cart", () => ({
   resolveLostCheckout: mocks.resolveLostCheckout
 }));
 
-function request(body: unknown) {
+vi.mock("@/lib/lost-commerce/commerce-commands", async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import("@/lib/lost-commerce/commerce-commands")
+    >();
+  return {
+    ...actual,
+    claimCommerceCommand: mocks.claimCommerceCommand,
+    completeCommerceCommand: mocks.completeCommerceCommand
+  };
+});
+
+function request(
+  body: unknown,
+  idempotencyKey: string | null = "private-quote-key-0001"
+) {
+  const headers = new Headers({ "content-type": "application/json" });
+  if (idempotencyKey) headers.set("idempotency-key", idempotencyKey);
   return new NextRequest("https://hideaway.test/api/lost/private-quotes", {
     method: "POST",
+    headers,
     body: JSON.stringify(body)
   });
 }
@@ -92,7 +112,21 @@ describe("POST /api/lost/private-quotes", () => {
       user: { id: "user-1", role: "patron" }
     });
     mocks.beginTransaction.mockReset().mockResolvedValue("tx-1");
+    mocks.claimCommerceCommand.mockReset().mockResolvedValue({
+      kind: "claimed",
+      businessKey: "lis_quote_test",
+      requestHash: "a".repeat(64),
+      leaseToken: "quote-lease-token",
+      leaseExpiresAt: "2026-07-22T04:00:00.000Z"
+    });
     mocks.commitTransaction.mockReset().mockResolvedValue(undefined);
+    mocks.completeCommerceCommand.mockReset().mockResolvedValue({
+      businessKey: "lis_quote_test",
+      response: {
+        ok: true,
+        order: { id: "order-1", order_ref: "lis_quote_test" }
+      }
+    });
     mocks.rollbackTransaction.mockReset().mockResolvedValue(undefined);
     mocks.lockEvents.length = 0;
     mocks.productInventoryLock
@@ -195,6 +229,99 @@ describe("POST /api/lost/private-quotes", () => {
     });
     expect(mocks.findByID).not.toHaveBeenCalled();
     expect(mocks.resolveLostCheckout).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("requires a valid idempotency key before claiming or writing", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      request({ productId: "product-1", skuId: "sku-1", quantity: 1 }, null)
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      ok: false,
+      error: "commerce-command-key-required"
+    });
+    expect(mocks.claimCommerceCommand).not.toHaveBeenCalled();
+    expect(mocks.beginTransaction).not.toHaveBeenCalled();
+  });
+
+  it("replays a completed quote without creating another order", async () => {
+    mocks.claimCommerceCommand.mockResolvedValue({
+      kind: "replay",
+      businessKey: "lis_quote_test",
+      response: {
+        ok: true,
+        order: { id: "order-1", order_ref: "lis_quote_test" }
+      }
+    });
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      request({ productId: "product-1", skuId: "sku-1", quantity: 1 })
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Idempotent-Replay")).toBe("true");
+    expect(await response.json()).toEqual({
+      ok: true,
+      order: { id: "order-1", order_ref: "lis_quote_test" }
+    });
+    expect(mocks.beginTransaction).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("survives a lost success response without duplicating the quote", async () => {
+    const replay = {
+      ok: true,
+      order: { id: "order-1", order_ref: "lis_quote_test" }
+    };
+    mocks.claimCommerceCommand
+      .mockResolvedValueOnce({
+        kind: "claimed",
+        businessKey: "lis_quote_test",
+        requestHash: "a".repeat(64),
+        leaseToken: "quote-lease-token",
+        leaseExpiresAt: "2026-07-22T04:00:00.000Z"
+      })
+      .mockResolvedValueOnce({
+        kind: "replay",
+        businessKey: "lis_quote_test",
+        response: replay
+      });
+    const { POST } = await import("./route");
+    const body = { productId: "product-1", skuId: "sku-1", quantity: 1 };
+
+    await POST(request(body));
+    const retry = await POST(request(body));
+
+    expect(retry.headers.get("Idempotent-Replay")).toBe("true");
+    expect(await retry.json()).toEqual(replay);
+    expect(mocks.create).toHaveBeenCalledTimes(1);
+    expect(mocks.completeCommerceCommand).toHaveBeenCalledTimes(1);
+    expect(mocks.commitTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["conflict", "idempotency-key-conflict"],
+    ["in_progress", "idempotency-in-progress"]
+  ] as const)("rejects a durable command %s", async (kind, error) => {
+    mocks.claimCommerceCommand.mockResolvedValue(
+      kind === "conflict"
+        ? { kind }
+        : { kind, businessKey: "lis_quote_test", retryAfterMs: 2_000 }
+    );
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      request({ productId: "product-1", skuId: "sku-1", quantity: 1 })
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ ok: false, error });
+    expect(mocks.beginTransaction).not.toHaveBeenCalled();
     expect(mocks.create).not.toHaveBeenCalled();
   });
 

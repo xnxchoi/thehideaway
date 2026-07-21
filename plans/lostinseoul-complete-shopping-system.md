@@ -8,6 +8,26 @@ Build a complete, operational physical-goods commerce system for LOSTINSEOUL on 
 
 This blueprint deliberately excludes invented commercial policy. Rates, regions, promises, timelines, and legal rules remain disabled or explicitly unresolved until the owner supplies them.
 
+## Scenario-test execution record
+
+Every work package uses the same gate: intended customer and staff journeys, retry and replay, concurrency, transaction rollback, direct-write boundaries, reconstruction, migration apply/re-entry, focused coverage, build, and independent review. Findings in an earlier package are fixed and committed before the next package starts.
+
+The PRs 1–4 audit completed on 2026-07-22:
+
+| Area | Scenarios exercised | Result |
+| --- | --- | --- |
+| Customer and staff access | Anonymous access, ownership filters, lifecycle permissions, evidence deletion, complete order/payment transition matrices | Anonymous reads now fail closed; generic order/payment deletion is disabled |
+| Customer retry flows | Cart and checkout route regressions, private quote double-submit, lost success response, altered-key conflict, in-progress command, blocked browser storage | Private quotes now use durable per-user commands and request-scoped client keys |
+| Provider recovery | Duplicate and reordered events, rejected replay, retryable recovery, stale lease, terminal metadata clearing | Stale outcome, error, and completion fields are cleared explicitly |
+| Inventory concurrency | Duplicate movement, last-unit debit, opposing transfers, movement against SKU/location deactivation | Stock is conserved and lock ordering completes without deadlock |
+| Inventory failure and recovery | Failure after a prior projection update, full rollback, same-key retry, reconstruction | Movement, projections, and idempotency state roll back together |
+| Database boundary | Invalid quantities/endpoints, append-only mutation protection, induced projection drift | Invalid writes fail; privileged projection drift is reported without automatic repair |
+| Migration | Empty disposable database through `pnpm migrate`, PR 3/4 guarded re-entry | Applied without invented data; guarded re-entry preserved rows |
+
+Gate result: 524 focused scenarios passed, including 33 PostgreSQL scenarios on a newly migrated disposable database. Scoped changed-module coverage was 90.20% statements, 89.93% branches, 85.71% functions, and 92.93% lines. The production build passed with one-off environment validation bypassed because local Kakao credentials are absent. Independent code, security, React, and TypeScript reviews found no remaining critical or high issue.
+
+Deferred by design: checkout still uses the legacy SKU inventory field until PR 6 introduces reservations; the full real-browser cart-to-payment journey belongs to PRs 6 and 10. These are planned dependencies, not PR 4 regressions.
+
 ## Current baseline
 
 The repository already has Products, ProductCarts, ProductOrders, ProductPayments, ProductOrderCampaigns, Coupons, and membership-oriented Invoices. It also has server-side cart resolution, transactional stock decrement/release, PortOne card payment, request-to-order campaigns, private quote intake, and an order-by-reference page.

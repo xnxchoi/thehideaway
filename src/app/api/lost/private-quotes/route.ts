@@ -1,6 +1,6 @@
 import { headers as nextHeaders } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getPayload } from "payload";
+import { getPayload, type PayloadRequest } from "payload";
 import config from "@payload-config";
 import { z } from "zod";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
@@ -11,6 +11,12 @@ import {
 } from "@/lib/db/sequences";
 import { makeLostOrderRef } from "@/lib/lost-commerce/format";
 import { resolveLostCheckout } from "@/lib/lost-commerce/cart";
+import {
+  claimCommerceCommand,
+  completeCommerceCommand,
+  hashCommerceCommandInput,
+  validateCommerceCommandKey
+} from "@/lib/lost-commerce/commerce-commands";
 import { createPrivateQuoteLineSnapshot } from "@/lib/lost-commerce/contracts";
 import { hasPositivePrivateOrderPreset } from "@/lib/lost-commerce/product-skus";
 
@@ -114,6 +120,62 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  const userId = String(auth.user.id);
+  let clientCommandKey: string;
+  try {
+    clientCommandKey = validateCommerceCommandKey(
+      req.headers.get("idempotency-key")
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { ok: false, error: (error as Error).message },
+      { status: 400 }
+    );
+  }
+  const commandKey = hashCommerceCommandInput({
+    endpoint: "lost/private-quotes",
+    userId,
+    key: clientCommandKey
+  });
+  let commandClaim;
+  try {
+    commandClaim = await claimCommerceCommand({
+      payload,
+      commandKey,
+      validatedInput: parsed.data,
+      createBusinessKey: () => makeLostOrderRef("lis_quote")
+    });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "commerce-command-unavailable" },
+      { status: 503 }
+    );
+  }
+  if (commandClaim.kind === "conflict") {
+    return NextResponse.json(
+      { ok: false, error: "idempotency-key-conflict" },
+      { status: 409 }
+    );
+  }
+  if (commandClaim.kind === "in_progress") {
+    return NextResponse.json(
+      { ok: false, error: "idempotency-in-progress" },
+      {
+        status: 409,
+        headers: {
+          "Retry-After": String(
+            Math.max(1, Math.ceil(commandClaim.retryAfterMs / 1000))
+          )
+        }
+      }
+    );
+  }
+  if (commandClaim.kind === "replay") {
+    return NextResponse.json(commandClaim.response, {
+      headers: { "Idempotent-Replay": "true" }
+    });
+  }
+
   let transactionID: string | number | null = null;
   try {
     transactionID = await payload.db.beginTransaction();
@@ -123,7 +185,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       payload,
       transactionID,
       context: {}
-    } as Parameters<typeof payload.create>[0]["req"];
+    } as PayloadRequest;
     const line = {
       productId: parsed.data.productId,
       skuId: parsed.data.skuId,
@@ -160,13 +222,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       disableErrors: true,
       req: txReq as never,
       overrideAccess: true
-    })) as {
+    })) as unknown as {
       id: string;
       name?: string;
       private_order_enabled?: boolean;
       private_preset_price_enabled?: boolean;
       private_unit_amount?: number | null;
-    };
+    } | null;
     if (!product?.private_order_enabled) {
       throw new Error("private-order-unavailable");
     }
@@ -192,13 +254,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const quoteLine = createPrivateQuoteLineSnapshot(snapshot);
     const hasPresetPrice = quoteLine.unitAmount !== null;
 
-    const order = await payload.create({
+    const order = (await payload.create({
       collection: "product-orders" as never,
       overrideAccess: true,
       req: txReq,
       data: {
-        order_ref: makeLostOrderRef("lis_quote"),
-        user: String(auth.user.id),
+        order_ref: commandClaim.businessKey,
+        user: userId,
         storefront: "lostinseoul",
         order_mode: "private_order",
         status: "quote_requested",
@@ -213,10 +275,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         contact: parsed.data.contact,
         quote: { state: "requested", note: parsed.data.note }
       } as never
+    })) as unknown as { id: string | number; order_ref: string };
+
+    const response = {
+      ok: true as const,
+      order: {
+        id: String(order.id),
+        order_ref: String(order.order_ref)
+      }
+    };
+    await completeCommerceCommand({
+      payload,
+      req: txReq,
+      commandKey,
+      requestHash: commandClaim.requestHash,
+      leaseToken: commandClaim.leaseToken,
+      response,
+      resource: { type: "product-order", id: String(order.id) }
     });
 
     await payload.db.commitTransaction(transactionID);
-    return NextResponse.json({ ok: true, order });
+    return NextResponse.json(response);
   } catch (error) {
     if (transactionID != null) {
       await payload.db

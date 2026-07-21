@@ -4,7 +4,8 @@ import type { CollectionConfig } from "payload";
 
 const ownsPayment = ({ req }: { req: { user?: { id?: string } | null } }) => {
   if (isAdmin({ req } as Parameters<typeof isAdmin>[0])) return true;
-  return { user: { equals: req.user?.id } };
+  const userId = req.user?.id;
+  return userId ? { user: { equals: userId } } : false;
 };
 
 export const ProductPayments: CollectionConfig = {
@@ -22,7 +23,7 @@ export const ProductPayments: CollectionConfig = {
     read: ownsPayment,
     create: () => false,
     update: isAdmin,
-    delete: isAdmin
+    delete: () => false
   },
   hooks: {
     beforeChange: [protectPaymentLifecycle]

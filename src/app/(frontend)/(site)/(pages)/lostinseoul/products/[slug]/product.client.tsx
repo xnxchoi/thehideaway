@@ -32,6 +32,11 @@ import {
 } from "./product-gallery-state";
 import { getLostProductMobileBuybarClassName } from "./product-mobile-buybar-state";
 import {
+  clearPrivateQuoteIdempotencyKey,
+  isPrivateQuoteSuccessBody,
+  privateQuoteIdempotencyKey
+} from "./private-quote-idempotency";
+import {
   canUseLostProductActions,
   didLostPrivateQuoteSucceed,
   getLostProductDetailPrice,
@@ -133,11 +138,13 @@ export function LostProductDetailClient({
   );
   const [added, setAdded] = useState(false);
   const [quoteFailed, setQuoteFailed] = useState(false);
+  const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [bagOpen, setBagOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const commerceRootRef = useRef<HTMLElement>(null);
+  const quoteSubmissionRef = useRef<symbol | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState(
     () =>
       getLostProductVariantsForMode(
@@ -265,6 +272,7 @@ export function LostProductDetailClient({
     setSelectedVariantId(variantsForMode[0]?.id ?? "");
     setAdded(false);
     setQuoteFailed(false);
+    setQuoteSubmitting(false);
   }, [selectedVariantId, variantsForMode]);
 
   useEffect(() => {
@@ -603,17 +611,18 @@ export function LostProductDetailClient({
                     >
                       {product.modes.map((item) => (
                         <li aria-label={labels[MODE_LABEL[item]]} key={item}>
-                        <Button
-                          aria-pressed={mode === item}
-                          className={cn(
-                            "lost-product-mode-button",
-                            mode === item && "is-active"
+                          <Button
+                            aria-pressed={mode === item}
+                            className={cn(
+                              "lost-product-mode-button",
+                              mode === item && "is-active"
                             )}
                             onClick={() => {
                               setMode(item);
                               setAdded(false);
                               setQuoteFailed(false);
                             }}
+                            disabled={quoteSubmitting}
                             type="button"
                           >
                             <span aria-hidden className="opacity-30">
@@ -683,6 +692,7 @@ export function LostProductDetailClient({
                                 setAdded(false);
                                 setQuoteFailed(false);
                               }}
+                              disabled={quoteSubmitting}
                               type="button"
                             >
                               <span aria-hidden className="opacity-30">
@@ -708,53 +718,87 @@ export function LostProductDetailClient({
 
               {canUseActions && isQuoteOnly ? (
                 <form
+                  aria-busy={quoteSubmitting}
                   className="grid gap-3 pb-8 lg:pb-10"
                   onSubmit={async (event) => {
                     event.preventDefault();
-                    if (!canUseActions || !selectedVariant) return;
+                    if (
+                      !canUseActions ||
+                      !selectedVariant ||
+                      quoteSubmissionRef.current
+                    ) {
+                      return;
+                    }
+                    const submissionToken = Symbol("private-quote-submission");
+                    quoteSubmissionRef.current = submissionToken;
                     setQuoteFailed(false);
+                    setQuoteSubmitting(true);
                     try {
+                      const quoteRequest = {
+                        productId: product.id,
+                        skuId: selectedVariant.id,
+                        quantity: 1,
+                        note: new FormData(event.currentTarget).get("note")
+                      };
+                      const serializedRequest = JSON.stringify(quoteRequest);
+                      const commandKey =
+                        await privateQuoteIdempotencyKey(serializedRequest);
                       const response = await fetch("/api/lost/private-quotes", {
                         method: "POST",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify({
-                          productId: product.id,
-                          skuId: selectedVariant.id,
-                          quantity: 1,
-                          note: new FormData(event.currentTarget).get("note")
-                        })
+                        headers: {
+                          "content-type": "application/json",
+                          "idempotency-key": commandKey
+                        },
+                        body: serializedRequest
                       });
-                      if (!didLostPrivateQuoteSucceed(response)) {
+                      const responseBody = await response
+                        .json()
+                        .catch(() => null);
+                      if (
+                        !didLostPrivateQuoteSucceed(response) ||
+                        !isPrivateQuoteSuccessBody(responseBody)
+                      ) {
                         setAdded(false);
                         setQuoteFailed(true);
                         return;
                       }
+                      await clearPrivateQuoteIdempotencyKey(
+                        serializedRequest,
+                        commandKey
+                      ).catch(() => undefined);
                       setAdded(true);
                     } catch {
                       setAdded(false);
                       setQuoteFailed(true);
+                    } finally {
+                      if (quoteSubmissionRef.current === submissionToken) {
+                        quoteSubmissionRef.current = null;
+                        setQuoteSubmitting(false);
+                      }
                     }
                   }}
-                  >
-                    <textarea
-                      aria-label={labels.privateQuote}
-                      className="lost-product-note"
-                      name="note"
-                      placeholder={labels.privateQuote}
+                >
+                  <textarea
+                    aria-label={labels.privateQuote}
+                    className="lost-product-note"
+                    name="note"
+                    placeholder={labels.privateQuote}
+                    disabled={quoteSubmitting}
                   />
                   <Button
                     className="lost-source-button lost-source-button--white justify-center"
+                    disabled={quoteSubmitting || added}
                     type="submit"
                   >
                     <span>{added ? labels.added : labels.requestQuote}</span>
                   </Button>
-                  {quoteFailed ? (
+                  {quoteFailed || added ? (
                     <p
                       aria-live="polite"
                       className="font-mono text-[1.1rem] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)]"
                       role="status"
                     >
-                      {labels.quoteFailed}
+                      {quoteFailed ? labels.quoteFailed : labels.added}
                     </p>
                   ) : null}
                 </form>

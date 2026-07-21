@@ -607,10 +607,6 @@ describeWithPostgres.sequential("inventory ledger with PostgreSQL", () => {
 
   it("rolls back the movement and every projection change after a transfer failure", async () => {
     const fixture = await createFixture();
-    const destinationId = await createLocation(
-      fixture.suffix,
-      "rollback-destination"
-    );
     await recordInventoryMovement({
       payload,
       request: inboundRequest(
@@ -643,7 +639,7 @@ describeWithPostgres.sequential("inventory ledger with PostgreSQL", () => {
           fixture,
           failedKey,
           2,
-          destinationId,
+          fixture.locationId,
           "quarantine"
         )
       })
@@ -660,6 +656,118 @@ describeWithPostgres.sequential("inventory ledger with PostgreSQL", () => {
       docs: [expect.objectContaining({ quantity: 3, movement_count: 1 })],
       totalDocs: 1
     });
+
+    await expect(
+      recordInventoryMovement({
+        payload,
+        request: transferRequest(
+          fixture,
+          failedKey,
+          2,
+          fixture.locationId,
+          "quarantine"
+        )
+      })
+    ).resolves.toMatchObject({ kind: "created" });
+    await expect(
+      findInventory("inventory-levels", { sku: { equals: fixture.skuId } })
+    ).resolves.toMatchObject({
+      docs: expect.arrayContaining([
+        expect.objectContaining({
+          aggregate_key: `${fixture.skuId}:${fixture.locationId}:available`,
+          quantity: 1,
+          movement_count: 2
+        }),
+        expect.objectContaining({
+          aggregate_key: `${fixture.skuId}:${fixture.locationId}:quarantine`,
+          quantity: 2,
+          movement_count: 1
+        })
+      ]),
+      totalDocs: 2
+    });
+    await expect(reconcileInventoryLedger(payload)).resolves.toEqual([]);
+  });
+
+  it("completes opposing transfers without deadlock and conserves stock", async () => {
+    const fixture = await createFixture();
+    await recordInventoryMovement({
+      payload,
+      request: inboundRequest(
+        fixture,
+        `inventory-opposing-available-${fixture.suffix}`,
+        5
+      )
+    });
+    await recordInventoryMovement({
+      payload,
+      request: inboundRequest(
+        fixture,
+        `inventory-opposing-quarantine-${fixture.suffix}`,
+        7,
+        fixture.locationId,
+        "quarantine"
+      )
+    });
+
+    await Promise.all([
+      recordInventoryMovement({
+        payload,
+        request: {
+          idempotencyKey: `inventory-opposing-a-${fixture.suffix}`,
+          skuId: fixture.skuId,
+          kind: "transfer",
+          quantity: 2,
+          from: {
+            locationId: fixture.locationId,
+            disposition: "available"
+          },
+          to: {
+            locationId: fixture.locationId,
+            disposition: "quarantine"
+          },
+          reasonCode: "opposing-transfer-test",
+          sourceType: "inventory_command"
+        }
+      }),
+      recordInventoryMovement({
+        payload,
+        request: {
+          idempotencyKey: `inventory-opposing-b-${fixture.suffix}`,
+          skuId: fixture.skuId,
+          kind: "transfer",
+          quantity: 3,
+          from: {
+            locationId: fixture.locationId,
+            disposition: "quarantine"
+          },
+          to: {
+            locationId: fixture.locationId,
+            disposition: "available"
+          },
+          reasonCode: "opposing-transfer-test",
+          sourceType: "inventory_command"
+        }
+      })
+    ]);
+
+    const levels = await findInventory("inventory-levels", {
+      sku: { equals: fixture.skuId }
+    });
+    expect(levels.docs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ disposition: "available", quantity: 6 }),
+        expect.objectContaining({ disposition: "quarantine", quantity: 6 })
+      ])
+    );
+    expect(
+      levels.docs.reduce(
+        (total, level) =>
+          total + Number((level as unknown as { quantity: number }).quantity),
+        0
+      )
+    ).toBe(12);
+    await expect(reconcileInventoryLedger(payload)).resolves.toEqual([]);
   });
 
   it("serializes location deactivation behind an in-flight movement", async () => {
@@ -715,6 +823,67 @@ describeWithPostgres.sequential("inventory ledger with PostgreSQL", () => {
       await expect(deactivation).resolves.toMatchObject({ active: false });
     } catch (error) {
       releaseLocationRead?.();
+      await movement.catch(() => undefined);
+      await deactivation.catch(() => undefined);
+      throw error;
+    }
+  });
+
+  it("serializes SKU deactivation behind an in-flight movement", async () => {
+    const fixture = await createFixture();
+    let skuReadCount = 0;
+    let releaseLockedSkuRead: (() => void) | undefined;
+    const lockedSkuReadGate = new Promise<void>((resolve) => {
+      releaseLockedSkuRead = resolve;
+    });
+    let markLockedSkuRead: (() => void) | undefined;
+    const lockedSkuReadStarted = new Promise<void>((resolve) => {
+      markLockedSkuRead = resolve;
+    });
+    const gatedPayload = new Proxy(payload, {
+      get(target, property) {
+        if (property === "findByID") {
+          return async (args: Parameters<Payload["findByID"]>[0]) => {
+            const result = await target.findByID(args);
+            if (
+              args.collection === "product-variants" &&
+              String(args.id) === fixture.skuId &&
+              ++skuReadCount === 2
+            ) {
+              markLockedSkuRead?.();
+              await lockedSkuReadGate;
+            }
+            return result;
+          };
+        }
+        const value = Reflect.get(target, property, target);
+        return typeof value === "function" ? value.bind(target) : value;
+      }
+    });
+
+    const movement = recordInventoryMovement({
+      payload: gatedPayload,
+      request: inboundRequest(
+        fixture,
+        `inventory-sku-race-${fixture.suffix}`,
+        1
+      )
+    });
+    await lockedSkuReadStarted;
+    const deactivation = payload.update({
+      collection: "product-variants",
+      id: fixture.skuId,
+      overrideAccess: true,
+      data: { active: false }
+    });
+
+    try {
+      await expectStillWaiting(deactivation);
+      releaseLockedSkuRead?.();
+      await expect(movement).resolves.toMatchObject({ kind: "created" });
+      await expect(deactivation).resolves.toMatchObject({ active: false });
+    } catch (error) {
+      releaseLockedSkuRead?.();
       await movement.catch(() => undefined);
       await deactivation.catch(() => undefined);
       throw error;

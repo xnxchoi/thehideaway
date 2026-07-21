@@ -50,10 +50,11 @@ describe("commerce collection access contracts", () => {
         await collection.access?.read?.(accessArgs("admin") as never)
       ).toBe(true);
       expect(
-        await collection.access?.read?.(
-          accessArgs("user", "buyer-1") as never
-        )
+        await collection.access?.read?.(accessArgs("user", "buyer-1") as never)
       ).toEqual({ user: { equals: "buyer-1" } });
+      expect(await collection.access?.read?.(accessArgs(null) as never)).toBe(
+        false
+      );
 
       expect(
         await collection.access?.create?.(accessArgs("admin") as never)
@@ -61,22 +62,19 @@ describe("commerce collection access contracts", () => {
       expect(
         await collection.access?.create?.(accessArgs("user") as never)
       ).toBe(false);
-      expect(
-        await collection.access?.create?.(accessArgs(null) as never)
-      ).toBe(false);
+      expect(await collection.access?.create?.(accessArgs(null) as never)).toBe(
+        false
+      );
 
       expect(
         await collection.access?.update?.(accessArgs("admin") as never)
       ).toBe(true);
       expect(
         await collection.access?.delete?.(accessArgs("admin") as never)
-      ).toBe(true);
+      ).toBe(false);
     }
 
-    const paymentEventsAccess = namedField(
-      ProductPayments,
-      "events"
-    ).access;
+    const paymentEventsAccess = namedField(ProductPayments, "events").access;
     expect(paymentEventsAccess?.create?.(accessArgs("admin"))).toBe(false);
     expect(paymentEventsAccess?.update?.(accessArgs("admin"))).toBe(false);
   });
