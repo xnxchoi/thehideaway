@@ -21,6 +21,11 @@ import { CommerceCommands } from "@/payload/collections/(consumption)/CommerceCo
 import { StockLocations } from "@/payload/collections/(consumption)/StockLocations";
 import { InventoryLevels } from "@/payload/collections/(consumption)/InventoryLevels";
 import { InventoryMovements } from "@/payload/collections/(consumption)/InventoryMovements";
+import { InventoryReceipts } from "@/payload/collections/(consumption)/InventoryReceipts";
+import { InventoryReceiptLines } from "@/payload/collections/(consumption)/InventoryReceiptLines";
+import { InventoryLots } from "@/payload/collections/(consumption)/InventoryLots";
+import { InventoryCycleCounts } from "@/payload/collections/(consumption)/InventoryCycleCounts";
+import { InventoryCycleCountLines } from "@/payload/collections/(consumption)/InventoryCycleCountLines";
 
 export interface MembershipPluginConfig {
   enabled: boolean;
@@ -55,7 +60,12 @@ export const MembershipPlugin =
       CommerceProviderEvents,
       StockLocations,
       InventoryLevels,
-      InventoryMovements
+      InventoryMovements,
+      InventoryReceipts,
+      InventoryReceiptLines,
+      InventoryLots,
+      InventoryCycleCounts,
+      InventoryCycleCountLines
     );
 
     return config;

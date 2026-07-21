@@ -14,6 +14,31 @@ import { releaseStandardInventory } from "./inventory";
 const testDatabaseUri = process.env.COMMERCE_TEST_DATABASE_URI;
 const describeWithPostgres = testDatabaseUri ? describe : describe.skip;
 
+type TestCollectionCreate = (
+  input:
+    | {
+        collection: "products";
+        overrideAccess: true;
+        data: {
+          name: string;
+          slug: string;
+          currency: "KRW";
+          unit_amount: number;
+        };
+      }
+    | {
+        collection: "product-variants";
+        overrideAccess: true;
+        data: {
+          product: string;
+          active: true;
+          sku: string;
+          inventory: number;
+          stock_state: "out_of_stock";
+        };
+      }
+) => Promise<{ id: string }>;
+
 const TestProducts: CollectionConfig = {
   slug: "products",
   fields: [
@@ -52,7 +77,10 @@ describeWithPostgres.sequential(
 
     it("serializes a release against a concurrent staff SKU update", async () => {
       const suffix = randomUUID();
-      const product = await payload.create({
+      const createTestDocument = payload.create.bind(
+        payload
+      ) as unknown as TestCollectionCreate;
+      const product = await createTestDocument({
         collection: "products",
         overrideAccess: true,
         data: {
@@ -62,7 +90,7 @@ describeWithPostgres.sequential(
           unit_amount: 120_000
         }
       });
-      const sku = await payload.create({
+      const sku = await createTestDocument({
         collection: "product-variants",
         overrideAccess: true,
         data: {

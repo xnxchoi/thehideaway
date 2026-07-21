@@ -176,10 +176,39 @@ jobs:
           echo "tags table present: ${schema_ready}"
           test "${schema_ready}" = "t"
 
-      - name: Verify inventory ledger against CI postgres
-        run: pnpm exec vitest run src/lib/lost-commerce/inventory-ledger.postgres.test.ts
+      - name: Verify inventory operation boundaries
+        run: >-
+          pnpm exec vitest run
+          src/app/api/lost/inventory/commands/route.test.ts
+          src/lib/lost-commerce/inventory-ledger-contracts.test.ts
+          src/lib/lost-commerce/inventory-ledger.test.ts
+          src/lib/lost-commerce/inventory-ledger-batch.test.ts
+          src/lib/lost-commerce/inventory-operation-runtime.test.ts
+          src/lib/lost-commerce/inventory-operations.test.ts
+          src/lib/lost-commerce/inventory-operations-hardening.test.ts
+          src/lib/lost-commerce/inventory-cycle-count-operations.test.ts
+          'src/payload/collections/(consumption)/inventory-ledger-access.test.ts'
+          'src/payload/collections/(consumption)/inventory-operations-collections.test.ts'
+
+      - name: Verify inventory operations against CI postgres
+        run: >-
+          pnpm exec vitest run
+          src/app/api/lost/inventory/commands/route.postgres.test.ts
+          src/lib/lost-commerce/inventory-ledger.postgres.test.ts
+          src/lib/lost-commerce/inventory-ledger-invariants.postgres.test.ts
+          src/lib/lost-commerce/inventory-locking.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-scenarios.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-service-scenarios.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-terminal-scenarios.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-lease-batch.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-boundary.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-cycle-boundary.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-wind-down.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr5-migration.postgres.test.ts
+          --no-file-parallelism
         env:
           COMMERCE_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
+          PR5_MIGRATION_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
 
       - name: Build Next.js (standalone)
         run: pnpm build

@@ -127,6 +127,11 @@ export interface Config {
     'stock-locations': StockLocation;
     'inventory-levels': InventoryLevel;
     'inventory-movements': InventoryMovement;
+    'inventory-receipts': InventoryReceipt;
+    'inventory-receipt-lines': InventoryReceiptLine;
+    'inventory-lots': InventoryLot;
+    'inventory-cycle-counts': InventoryCycleCount;
+    'inventory-cycle-count-lines': InventoryCycleCountLine;
     events: Event;
     'ticket-orders': TicketOrder;
     tickets: Ticket;
@@ -246,6 +251,11 @@ export interface Config {
     'stock-locations': StockLocationsSelect<false> | StockLocationsSelect<true>;
     'inventory-levels': InventoryLevelsSelect<false> | InventoryLevelsSelect<true>;
     'inventory-movements': InventoryMovementsSelect<false> | InventoryMovementsSelect<true>;
+    'inventory-receipts': InventoryReceiptsSelect<false> | InventoryReceiptsSelect<true>;
+    'inventory-receipt-lines': InventoryReceiptLinesSelect<false> | InventoryReceiptLinesSelect<true>;
+    'inventory-lots': InventoryLotsSelect<false> | InventoryLotsSelect<true>;
+    'inventory-cycle-counts': InventoryCycleCountsSelect<false> | InventoryCycleCountsSelect<true>;
+    'inventory-cycle-count-lines': InventoryCycleCountLinesSelect<false> | InventoryCycleCountLinesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'ticket-orders': TicketOrdersSelect<false> | TicketOrdersSelect<true>;
     tickets: TicketsSelect<false> | TicketsSelect<true>;
@@ -3318,10 +3328,103 @@ export interface InventoryMovement {
   to_disposition?:
     ('available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded') | null;
   reason_code: string;
-  source_type: 'inventory_command';
+  source_type:
+    | 'inventory_command'
+    | 'inventory_receipt'
+    | 'inventory_lot_release'
+    | 'inventory_adjustment'
+    | 'inventory_cycle_count';
   source_ref?: string | null;
+  receipt?: (string | null) | InventoryReceipt;
+  receipt_line?: (string | null) | InventoryReceiptLine;
+  lot?: (string | null) | InventoryLot;
+  cycle_count?: (string | null) | InventoryCycleCount;
+  cycle_count_line?: (string | null) | InventoryCycleCountLine;
   actor?: string | null;
   effective_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-receipts".
+ */
+export interface InventoryReceipt {
+  id: string;
+  location: string | StockLocation;
+  status: 'draft' | 'open' | 'closed' | 'cancelled';
+  supplier_name?: string | null;
+  external_reference?: string | null;
+  opened_at?: string | null;
+  opened_by?: (string | null) | User;
+  closed_at?: string | null;
+  closed_by?: (string | null) | User;
+  cancelled_at?: string | null;
+  cancelled_by?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-receipt-lines".
+ */
+export interface InventoryReceiptLine {
+  id: string;
+  receipt_sku_key: string;
+  receipt: string | InventoryReceipt;
+  sku: string | ProductVariant;
+  expected_quantity?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-lots".
+ */
+export interface InventoryLot {
+  id: string;
+  operation_key: string;
+  receipt_line: string | InventoryReceiptLine;
+  external_lot_code?: string | null;
+  received_quantity: number;
+  received_at: string;
+  actor: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-cycle-counts".
+ */
+export interface InventoryCycleCount {
+  id: string;
+  location: string | StockLocation;
+  status: 'draft' | 'submitted' | 'applied' | 'rejected' | 'cancelled';
+  submitted_at?: string | null;
+  submitted_by?: (string | null) | User;
+  applied_at?: string | null;
+  applied_by?: (string | null) | User;
+  rejected_at?: string | null;
+  rejected_by?: (string | null) | User;
+  cancelled_at?: string | null;
+  cancelled_by?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-cycle-count-lines".
+ */
+export interface InventoryCycleCountLine {
+  id: string;
+  count_aggregate_key: string;
+  count: string | InventoryCycleCount;
+  sku: string | ProductVariant;
+  disposition: 'available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded';
+  counted_quantity: number;
+  system_quantity: number;
+  movement_count_snapshot: number;
+  variance: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -3894,6 +3997,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'inventory-levels';
         value: string | InventoryLevel;
+      } | null)
+    | ({
+        relationTo: 'inventory-receipts';
+        value: string | InventoryReceipt;
+      } | null)
+    | ({
+        relationTo: 'inventory-receipt-lines';
+        value: string | InventoryReceiptLine;
+      } | null)
+    | ({
+        relationTo: 'inventory-cycle-counts';
+        value: string | InventoryCycleCount;
+      } | null)
+    | ({
+        relationTo: 'inventory-cycle-count-lines';
+        value: string | InventoryCycleCountLine;
       } | null)
     | ({
         relationTo: 'events';
@@ -5580,8 +5699,91 @@ export interface InventoryMovementsSelect<T extends boolean = true> {
   reason_code?: T;
   source_type?: T;
   source_ref?: T;
+  receipt?: T;
+  receipt_line?: T;
+  lot?: T;
+  cycle_count?: T;
+  cycle_count_line?: T;
   actor?: T;
   effective_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-receipts_select".
+ */
+export interface InventoryReceiptsSelect<T extends boolean = true> {
+  location?: T;
+  status?: T;
+  supplier_name?: T;
+  external_reference?: T;
+  opened_at?: T;
+  opened_by?: T;
+  closed_at?: T;
+  closed_by?: T;
+  cancelled_at?: T;
+  cancelled_by?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-receipt-lines_select".
+ */
+export interface InventoryReceiptLinesSelect<T extends boolean = true> {
+  receipt_sku_key?: T;
+  receipt?: T;
+  sku?: T;
+  expected_quantity?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-lots_select".
+ */
+export interface InventoryLotsSelect<T extends boolean = true> {
+  operation_key?: T;
+  receipt_line?: T;
+  external_lot_code?: T;
+  received_quantity?: T;
+  received_at?: T;
+  actor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-cycle-counts_select".
+ */
+export interface InventoryCycleCountsSelect<T extends boolean = true> {
+  location?: T;
+  status?: T;
+  submitted_at?: T;
+  submitted_by?: T;
+  applied_at?: T;
+  applied_by?: T;
+  rejected_at?: T;
+  rejected_by?: T;
+  cancelled_at?: T;
+  cancelled_by?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-cycle-count-lines_select".
+ */
+export interface InventoryCycleCountLinesSelect<T extends boolean = true> {
+  count_aggregate_key?: T;
+  count?: T;
+  sku?: T;
+  disposition?: T;
+  counted_quantity?: T;
+  system_quantity?: T;
+  movement_count_snapshot?: T;
+  variance?: T;
   updatedAt?: T;
   createdAt?: T;
 }

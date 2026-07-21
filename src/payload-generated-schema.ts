@@ -692,7 +692,32 @@ export const enum_inventory_movements_to_disposition = pgEnum(
 );
 export const enum_inventory_movements_source_type = pgEnum(
   "enum_inventory_movements_source_type",
-  ["inventory_command"]
+  [
+    "inventory_command",
+    "inventory_receipt",
+    "inventory_lot_release",
+    "inventory_adjustment",
+    "inventory_cycle_count"
+  ]
+);
+export const enum_inventory_receipts_status = pgEnum(
+  "enum_inventory_receipts_status",
+  ["draft", "open", "closed", "cancelled"]
+);
+export const enum_inventory_cycle_counts_status = pgEnum(
+  "enum_inventory_cycle_counts_status",
+  ["draft", "submitted", "applied", "rejected", "cancelled"]
+);
+export const enum_inventory_cycle_count_lines_disposition = pgEnum(
+  "enum_inventory_cycle_count_lines_disposition",
+  [
+    "available",
+    "quarantine",
+    "damaged",
+    "inspection_pending",
+    "returned_pending_release",
+    "discarded"
+  ]
 );
 export const enum_events_exclusive_links_type = pgEnum(
   "enum_events_exclusive_links_type",
@@ -7313,6 +7338,30 @@ export const inventory_movements = pgTable(
     reason_code: varchar("reason_code").notNull(),
     source_type: enum_inventory_movements_source_type("source_type").notNull(),
     source_ref: varchar("source_ref"),
+    receipt: uuid("receipt_id").references(() => inventory_receipts.id, {
+      onDelete: "set null"
+    }),
+    receipt_line: uuid("receipt_line_id").references(
+      () => inventory_receipt_lines.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    lot: uuid("lot_id").references(() => inventory_lots.id, {
+      onDelete: "set null"
+    }),
+    cycle_count: uuid("cycle_count_id").references(
+      () => inventory_cycle_counts.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    cycle_count_line: uuid("cycle_count_line_id").references(
+      () => inventory_cycle_count_lines.id,
+      {
+        onDelete: "set null"
+      }
+    ),
     actor: varchar("actor"),
     effective_at: timestamp("effective_at", {
       mode: "string",
@@ -7346,8 +7395,308 @@ export const inventory_movements = pgTable(
     ),
     index("inventory_movements_to_location_idx").on(columns.to_location),
     index("inventory_movements_to_disposition_idx").on(columns.to_disposition),
+    index("inventory_movements_receipt_idx").on(columns.receipt),
+    index("inventory_movements_receipt_line_idx").on(columns.receipt_line),
+    index("inventory_movements_lot_idx").on(columns.lot),
+    index("inventory_movements_cycle_count_idx").on(columns.cycle_count),
+    index("inventory_movements_cycle_count_line_idx").on(
+      columns.cycle_count_line
+    ),
     index("inventory_movements_updated_at_idx").on(columns.updatedAt),
     index("inventory_movements_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const inventory_receipts = pgTable(
+  "inventory_receipts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    location: uuid("location_id")
+      .notNull()
+      .references(() => stock_locations.id, {
+        onDelete: "set null"
+      }),
+    status: enum_inventory_receipts_status("status").notNull().default("draft"),
+    supplier_name: varchar("supplier_name"),
+    external_reference: varchar("external_reference"),
+    opened_at: timestamp("opened_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    opened_by: uuid("opened_by_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    closed_at: timestamp("closed_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    closed_by: uuid("closed_by_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    cancelled_at: timestamp("cancelled_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    cancelled_by: uuid("cancelled_by_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("inventory_receipts_location_idx").on(columns.location),
+    index("inventory_receipts_status_idx").on(columns.status),
+    index("inventory_receipts_external_reference_idx").on(
+      columns.external_reference
+    ),
+    index("inventory_receipts_opened_at_idx").on(columns.opened_at),
+    index("inventory_receipts_opened_by_idx").on(columns.opened_by),
+    index("inventory_receipts_closed_at_idx").on(columns.closed_at),
+    index("inventory_receipts_closed_by_idx").on(columns.closed_by),
+    index("inventory_receipts_cancelled_at_idx").on(columns.cancelled_at),
+    index("inventory_receipts_cancelled_by_idx").on(columns.cancelled_by),
+    index("inventory_receipts_updated_at_idx").on(columns.updatedAt),
+    index("inventory_receipts_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const inventory_receipt_lines = pgTable(
+  "inventory_receipt_lines",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    receipt_sku_key: varchar("receipt_sku_key").notNull(),
+    receipt: uuid("receipt_id")
+      .notNull()
+      .references(() => inventory_receipts.id, {
+        onDelete: "set null"
+      }),
+    sku: uuid("sku_id")
+      .notNull()
+      .references(() => product_variants.id, {
+        onDelete: "set null"
+      }),
+    expected_quantity: numeric("expected_quantity", { mode: "number" }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_receipt_lines_receipt_sku_key_idx").on(
+      columns.receipt_sku_key
+    ),
+    index("inventory_receipt_lines_receipt_idx").on(columns.receipt),
+    index("inventory_receipt_lines_sku_idx").on(columns.sku),
+    index("inventory_receipt_lines_updated_at_idx").on(columns.updatedAt),
+    index("inventory_receipt_lines_created_at_idx").on(columns.createdAt),
+    uniqueIndex("receipt_sku_idx").on(columns.receipt, columns.sku)
+  ]
+);
+
+export const inventory_lots = pgTable(
+  "inventory_lots",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    operation_key: varchar("operation_key").notNull(),
+    receipt_line: uuid("receipt_line_id")
+      .notNull()
+      .references(() => inventory_receipt_lines.id, {
+        onDelete: "set null"
+      }),
+    external_lot_code: varchar("external_lot_code"),
+    received_quantity: numeric("received_quantity", {
+      mode: "number"
+    }).notNull(),
+    received_at: timestamp("received_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    actor: uuid("actor_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_lots_operation_key_idx").on(columns.operation_key),
+    index("inventory_lots_receipt_line_idx").on(columns.receipt_line),
+    index("inventory_lots_external_lot_code_idx").on(columns.external_lot_code),
+    index("inventory_lots_received_at_idx").on(columns.received_at),
+    index("inventory_lots_actor_idx").on(columns.actor),
+    index("inventory_lots_updated_at_idx").on(columns.updatedAt),
+    index("inventory_lots_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const inventory_cycle_counts = pgTable(
+  "inventory_cycle_counts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    location: uuid("location_id")
+      .notNull()
+      .references(() => stock_locations.id, {
+        onDelete: "set null"
+      }),
+    status: enum_inventory_cycle_counts_status("status")
+      .notNull()
+      .default("draft"),
+    submitted_at: timestamp("submitted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    submitted_by: uuid("submitted_by_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    applied_at: timestamp("applied_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    applied_by: uuid("applied_by_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    rejected_at: timestamp("rejected_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    rejected_by: uuid("rejected_by_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    cancelled_at: timestamp("cancelled_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    cancelled_by: uuid("cancelled_by_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("inventory_cycle_counts_location_idx").on(columns.location),
+    index("inventory_cycle_counts_status_idx").on(columns.status),
+    index("inventory_cycle_counts_submitted_at_idx").on(columns.submitted_at),
+    index("inventory_cycle_counts_submitted_by_idx").on(columns.submitted_by),
+    index("inventory_cycle_counts_applied_at_idx").on(columns.applied_at),
+    index("inventory_cycle_counts_applied_by_idx").on(columns.applied_by),
+    index("inventory_cycle_counts_rejected_at_idx").on(columns.rejected_at),
+    index("inventory_cycle_counts_rejected_by_idx").on(columns.rejected_by),
+    index("inventory_cycle_counts_cancelled_at_idx").on(columns.cancelled_at),
+    index("inventory_cycle_counts_cancelled_by_idx").on(columns.cancelled_by),
+    index("inventory_cycle_counts_updated_at_idx").on(columns.updatedAt),
+    index("inventory_cycle_counts_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const inventory_cycle_count_lines = pgTable(
+  "inventory_cycle_count_lines",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    count_aggregate_key: varchar("count_aggregate_key").notNull(),
+    count: uuid("count_id")
+      .notNull()
+      .references(() => inventory_cycle_counts.id, {
+        onDelete: "set null"
+      }),
+    sku: uuid("sku_id")
+      .notNull()
+      .references(() => product_variants.id, {
+        onDelete: "set null"
+      }),
+    disposition:
+      enum_inventory_cycle_count_lines_disposition("disposition").notNull(),
+    counted_quantity: numeric("counted_quantity", { mode: "number" }).notNull(),
+    system_quantity: numeric("system_quantity", { mode: "number" }).notNull(),
+    movement_count_snapshot: numeric("movement_count_snapshot", {
+      mode: "number"
+    }).notNull(),
+    variance: numeric("variance", { mode: "number" }).notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_cycle_count_lines_count_aggregate_key_idx").on(
+      columns.count_aggregate_key
+    ),
+    index("inventory_cycle_count_lines_count_idx").on(columns.count),
+    index("inventory_cycle_count_lines_sku_idx").on(columns.sku),
+    index("inventory_cycle_count_lines_disposition_idx").on(
+      columns.disposition
+    ),
+    index("inventory_cycle_count_lines_updated_at_idx").on(columns.updatedAt),
+    index("inventory_cycle_count_lines_created_at_idx").on(columns.createdAt),
+    uniqueIndex("count_sku_disposition_idx").on(
+      columns.count,
+      columns.sku,
+      columns.disposition
+    )
   ]
 );
 
@@ -7826,6 +8175,10 @@ export const payload_locked_documents_rels = pgTable(
     "commerce-provider-eventsID": uuid("commerce_provider_events_id"),
     "stock-locationsID": uuid("stock_locations_id"),
     "inventory-levelsID": uuid("inventory_levels_id"),
+    "inventory-receiptsID": uuid("inventory_receipts_id"),
+    "inventory-receipt-linesID": uuid("inventory_receipt_lines_id"),
+    "inventory-cycle-countsID": uuid("inventory_cycle_counts_id"),
+    "inventory-cycle-count-linesID": uuid("inventory_cycle_count_lines_id"),
     eventsID: uuid("events_id"),
     "ticket-ordersID": uuid("ticket_orders_id"),
     ticketsID: uuid("tickets_id"),
@@ -7957,6 +8310,18 @@ export const payload_locked_documents_rels = pgTable(
     ),
     index("payload_locked_documents_rels_inventory_levels_id_idx").on(
       columns["inventory-levelsID"]
+    ),
+    index("payload_locked_documents_rels_inventory_receipts_id_idx").on(
+      columns["inventory-receiptsID"]
+    ),
+    index("payload_locked_documents_rels_inventory_receipt_lines_id_idx").on(
+      columns["inventory-receipt-linesID"]
+    ),
+    index("payload_locked_documents_rels_inventory_cycle_counts_id_idx").on(
+      columns["inventory-cycle-countsID"]
+    ),
+    index("payload_locked_documents_rels_inventory_cycle_count_line_idx").on(
+      columns["inventory-cycle-count-linesID"]
     ),
     index("payload_locked_documents_rels_events_id_idx").on(columns.eventsID),
     index("payload_locked_documents_rels_ticket_orders_id_idx").on(
@@ -8215,6 +8580,26 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["inventory-levelsID"]],
       foreignColumns: [inventory_levels.id],
       name: "payload_locked_documents_rels_inventory_levels_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["inventory-receiptsID"]],
+      foreignColumns: [inventory_receipts.id],
+      name: "payload_locked_documents_rels_inventory_receipts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["inventory-receipt-linesID"]],
+      foreignColumns: [inventory_receipt_lines.id],
+      name: "payload_locked_documents_rels_inventory_receipt_lines_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["inventory-cycle-countsID"]],
+      foreignColumns: [inventory_cycle_counts.id],
+      name: "payload_locked_documents_rels_inventory_cycle_counts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["inventory-cycle-count-linesID"]],
+      foreignColumns: [inventory_cycle_count_lines.id],
+      name: "payload_locked_documents_rels_inventory_cycle_count_lines_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["eventsID"]],
@@ -10926,6 +11311,131 @@ export const relations_inventory_movements = relations(
       fields: [inventory_movements.to_location],
       references: [stock_locations.id],
       relationName: "to_location"
+    }),
+    receipt: one(inventory_receipts, {
+      fields: [inventory_movements.receipt],
+      references: [inventory_receipts.id],
+      relationName: "receipt"
+    }),
+    receipt_line: one(inventory_receipt_lines, {
+      fields: [inventory_movements.receipt_line],
+      references: [inventory_receipt_lines.id],
+      relationName: "receipt_line"
+    }),
+    lot: one(inventory_lots, {
+      fields: [inventory_movements.lot],
+      references: [inventory_lots.id],
+      relationName: "lot"
+    }),
+    cycle_count: one(inventory_cycle_counts, {
+      fields: [inventory_movements.cycle_count],
+      references: [inventory_cycle_counts.id],
+      relationName: "cycle_count"
+    }),
+    cycle_count_line: one(inventory_cycle_count_lines, {
+      fields: [inventory_movements.cycle_count_line],
+      references: [inventory_cycle_count_lines.id],
+      relationName: "cycle_count_line"
+    })
+  })
+);
+export const relations_inventory_receipts = relations(
+  inventory_receipts,
+  ({ one }) => ({
+    location: one(stock_locations, {
+      fields: [inventory_receipts.location],
+      references: [stock_locations.id],
+      relationName: "location"
+    }),
+    opened_by: one(users, {
+      fields: [inventory_receipts.opened_by],
+      references: [users.id],
+      relationName: "opened_by"
+    }),
+    closed_by: one(users, {
+      fields: [inventory_receipts.closed_by],
+      references: [users.id],
+      relationName: "closed_by"
+    }),
+    cancelled_by: one(users, {
+      fields: [inventory_receipts.cancelled_by],
+      references: [users.id],
+      relationName: "cancelled_by"
+    })
+  })
+);
+export const relations_inventory_receipt_lines = relations(
+  inventory_receipt_lines,
+  ({ one }) => ({
+    receipt: one(inventory_receipts, {
+      fields: [inventory_receipt_lines.receipt],
+      references: [inventory_receipts.id],
+      relationName: "receipt"
+    }),
+    sku: one(product_variants, {
+      fields: [inventory_receipt_lines.sku],
+      references: [product_variants.id],
+      relationName: "sku"
+    })
+  })
+);
+export const relations_inventory_lots = relations(
+  inventory_lots,
+  ({ one }) => ({
+    receipt_line: one(inventory_receipt_lines, {
+      fields: [inventory_lots.receipt_line],
+      references: [inventory_receipt_lines.id],
+      relationName: "receipt_line"
+    }),
+    actor: one(users, {
+      fields: [inventory_lots.actor],
+      references: [users.id],
+      relationName: "actor"
+    })
+  })
+);
+export const relations_inventory_cycle_counts = relations(
+  inventory_cycle_counts,
+  ({ one }) => ({
+    location: one(stock_locations, {
+      fields: [inventory_cycle_counts.location],
+      references: [stock_locations.id],
+      relationName: "location"
+    }),
+    submitted_by: one(users, {
+      fields: [inventory_cycle_counts.submitted_by],
+      references: [users.id],
+      relationName: "submitted_by"
+    }),
+    applied_by: one(users, {
+      fields: [inventory_cycle_counts.applied_by],
+      references: [users.id],
+      relationName: "applied_by"
+    }),
+    rejected_by: one(users, {
+      fields: [inventory_cycle_counts.rejected_by],
+      references: [users.id],
+      relationName: "rejected_by"
+    }),
+    cancelled_by: one(users, {
+      fields: [inventory_cycle_counts.cancelled_by],
+      references: [users.id],
+      relationName: "cancelled_by"
+    })
+  })
+);
+export const relations_inventory_cycle_count_lines = relations(
+  inventory_cycle_count_lines,
+  ({ one }) => ({
+    count: one(inventory_cycle_counts, {
+      fields: [inventory_cycle_count_lines.count],
+      references: [inventory_cycle_counts.id],
+      relationName: "count"
+    }),
+    sku: one(product_variants, {
+      fields: [inventory_cycle_count_lines.sku],
+      references: [product_variants.id],
+      relationName: "sku"
     })
   })
 );
@@ -11279,6 +11789,26 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels["inventory-levelsID"]],
       references: [inventory_levels.id],
       relationName: "inventory-levels"
+    }),
+    "inventory-receiptsID": one(inventory_receipts, {
+      fields: [payload_locked_documents_rels["inventory-receiptsID"]],
+      references: [inventory_receipts.id],
+      relationName: "inventory-receipts"
+    }),
+    "inventory-receipt-linesID": one(inventory_receipt_lines, {
+      fields: [payload_locked_documents_rels["inventory-receipt-linesID"]],
+      references: [inventory_receipt_lines.id],
+      relationName: "inventory-receipt-lines"
+    }),
+    "inventory-cycle-countsID": one(inventory_cycle_counts, {
+      fields: [payload_locked_documents_rels["inventory-cycle-countsID"]],
+      references: [inventory_cycle_counts.id],
+      relationName: "inventory-cycle-counts"
+    }),
+    "inventory-cycle-count-linesID": one(inventory_cycle_count_lines, {
+      fields: [payload_locked_documents_rels["inventory-cycle-count-linesID"]],
+      references: [inventory_cycle_count_lines.id],
+      relationName: "inventory-cycle-count-lines"
     }),
     eventsID: one(events, {
       fields: [payload_locked_documents_rels.eventsID],
@@ -11694,6 +12224,9 @@ type DatabaseSchema = {
   enum_inventory_movements_from_disposition: typeof enum_inventory_movements_from_disposition;
   enum_inventory_movements_to_disposition: typeof enum_inventory_movements_to_disposition;
   enum_inventory_movements_source_type: typeof enum_inventory_movements_source_type;
+  enum_inventory_receipts_status: typeof enum_inventory_receipts_status;
+  enum_inventory_cycle_counts_status: typeof enum_inventory_cycle_counts_status;
+  enum_inventory_cycle_count_lines_disposition: typeof enum_inventory_cycle_count_lines_disposition;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
   enum_events_state: typeof enum_events_state;
   enum_ticket_orders_currency: typeof enum_ticket_orders_currency;
@@ -11852,6 +12385,11 @@ type DatabaseSchema = {
   stock_locations: typeof stock_locations;
   inventory_levels: typeof inventory_levels;
   inventory_movements: typeof inventory_movements;
+  inventory_receipts: typeof inventory_receipts;
+  inventory_receipt_lines: typeof inventory_receipt_lines;
+  inventory_lots: typeof inventory_lots;
+  inventory_cycle_counts: typeof inventory_cycle_counts;
+  inventory_cycle_count_lines: typeof inventory_cycle_count_lines;
   events_exclusive_links: typeof events_exclusive_links;
   events: typeof events;
   ticket_orders: typeof ticket_orders;
@@ -12017,6 +12555,11 @@ type DatabaseSchema = {
   relations_stock_locations: typeof relations_stock_locations;
   relations_inventory_levels: typeof relations_inventory_levels;
   relations_inventory_movements: typeof relations_inventory_movements;
+  relations_inventory_receipts: typeof relations_inventory_receipts;
+  relations_inventory_receipt_lines: typeof relations_inventory_receipt_lines;
+  relations_inventory_lots: typeof relations_inventory_lots;
+  relations_inventory_cycle_counts: typeof relations_inventory_cycle_counts;
+  relations_inventory_cycle_count_lines: typeof relations_inventory_cycle_count_lines;
   relations_events_exclusive_links: typeof relations_events_exclusive_links;
   relations_events: typeof relations_events;
   relations_ticket_orders: typeof relations_ticket_orders;

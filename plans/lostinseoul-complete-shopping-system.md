@@ -1,6 +1,6 @@
 # LOSTINSEOUL Complete Shopping System Blueprint
 
-Status: Adversarial review approved on 2026-07-20. PRs 1–4 were implemented locally on 2026-07-21 and reviewed with no critical or high findings. PR 4 adds Payload-managed stock locations, an append-only physical inventory ledger, cached balance projections, and read-only reconciliation. It does not add opening balances, reservations, fulfillment workflows, or customer inventory UI. PR 5 and later work packages have not started.
+Status: Adversarial review approved on 2026-07-20. PRs 1–5 were implemented locally by 2026-07-22 and committed as separate reversible work packages. PR 5 adds Payload-managed receipts, receipt lines, immutable lots, quarantine release, adjustments, cycle counts, guarded inventory commands, and database-enforced workflow evidence. Opening balances, procurement, costing, reservations, fulfillment workflows, and customer inventory UI remain excluded. PR 6 and later work packages have not started.
 
 ## Objective
 
@@ -14,19 +14,31 @@ Every work package uses the same gate: intended customer and staff journeys, ret
 
 The PRs 1–4 audit completed on 2026-07-22:
 
-| Area | Scenarios exercised | Result |
-| --- | --- | --- |
-| Customer and staff access | Anonymous access, ownership filters, lifecycle permissions, evidence deletion, complete order/payment transition matrices | Anonymous reads now fail closed; generic order/payment deletion is disabled |
-| Customer retry flows | Cart and checkout route regressions, private quote double-submit, lost success response, altered-key conflict, in-progress command, blocked browser storage | Private quotes now use durable per-user commands and request-scoped client keys |
-| Provider recovery | Duplicate and reordered events, rejected replay, retryable recovery, stale lease, terminal metadata clearing | Stale outcome, error, and completion fields are cleared explicitly |
-| Inventory concurrency | Duplicate movement, last-unit debit, opposing transfers, movement against SKU/location deactivation | Stock is conserved and lock ordering completes without deadlock |
-| Inventory failure and recovery | Failure after a prior projection update, full rollback, same-key retry, reconstruction | Movement, projections, and idempotency state roll back together |
-| Database boundary | Invalid quantities/endpoints, append-only mutation protection, induced projection drift | Invalid writes fail; privileged projection drift is reported without automatic repair |
-| Migration | Empty disposable database through `pnpm migrate`, PR 3/4 guarded re-entry | Applied without invented data; guarded re-entry preserved rows |
+| Area                           | Scenarios exercised                                                                                                                                         | Result                                                                                |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Customer and staff access      | Anonymous access, ownership filters, lifecycle permissions, evidence deletion, complete order/payment transition matrices                                   | Anonymous reads now fail closed; generic order/payment deletion is disabled           |
+| Customer retry flows           | Cart and checkout route regressions, private quote double-submit, lost success response, altered-key conflict, in-progress command, blocked browser storage | Private quotes now use durable per-user commands and request-scoped client keys       |
+| Provider recovery              | Duplicate and reordered events, rejected replay, retryable recovery, stale lease, terminal metadata clearing                                                | Stale outcome, error, and completion fields are cleared explicitly                    |
+| Inventory concurrency          | Duplicate movement, last-unit debit, opposing transfers, movement against SKU/location deactivation                                                         | Stock is conserved and lock ordering completes without deadlock                       |
+| Inventory failure and recovery | Failure after a prior projection update, full rollback, same-key retry, reconstruction                                                                      | Movement, projections, and idempotency state roll back together                       |
+| Database boundary              | Invalid quantities/endpoints, append-only mutation protection, induced projection drift                                                                     | Invalid writes fail; privileged projection drift is reported without automatic repair |
+| Migration                      | Empty disposable database through `pnpm migrate`, PR 3/4 guarded re-entry                                                                                   | Applied without invented data; guarded re-entry preserved rows                        |
 
 Gate result: 524 focused scenarios passed, including 33 PostgreSQL scenarios on a newly migrated disposable database. Scoped changed-module coverage was 90.20% statements, 89.93% branches, 85.71% functions, and 92.93% lines. The production build passed with one-off environment validation bypassed because local Kakao credentials are absent. Independent code, security, React, and TypeScript reviews found no remaining critical or high issue.
 
 Deferred by design: checkout still uses the legacy SKU inventory field until PR 6 introduces reservations; the full real-browser cart-to-payment journey belongs to PRs 6 and 10. These are planned dependencies, not PR 4 regressions.
+
+The PR 5 audit completed on 2026-07-22:
+
+| Area                     | Scenarios exercised                                                                                         | Result                                                                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Inbound stock            | Draft/open/close/cancel, partial and excess receipt, lot creation, quarantine release, replay, rollback     | Every receipt movement is tied to immutable lot, actor, and timestamp evidence  |
+| Adjustments and counts   | Outbound adjustment, disposition transfer, 50-line cycle count, stale snapshot, maker-checker approval      | Naked inbound adjustment is rejected; every variance has one matching movement  |
+| Concurrency and recovery | Duplicate commands, lease expiry, terminal races, lock ordering, rollback against active/expired claims     | Active or unknown leases block rollback; expired evidence-free claims do not    |
+| Database boundary        | Direct mutation, post-cancellation evidence backfill, provenance mismatch, orphan lot, reconstruction drift | Invalid history and projection writes fail at the database boundary             |
+| Migration                | Partial schema repair, populated re-entry, guarded down/up, fresh create/open/receive after reapply         | Payload-generated schema reapplies idempotently and preserves existing evidence |
+
+PR 5 gate result: 523 non-PostgreSQL scenarios passed. The complete 13-file PostgreSQL matrix passed 78 scenarios three consecutive times with deprecations treated as failures. Focused changed-module coverage was 93.06% statements, 89.67% branches, 97.54% functions, and 94.97% lines. Scoped TypeScript diagnostics, ESLint, Prettier, migration checks, and the production build passed. Final code, database, security, and TypeScript reviews found no critical, high, or medium issue.
 
 ## Current baseline
 
@@ -34,7 +46,7 @@ The repository already has Products, ProductCarts, ProductOrders, ProductPayment
 
 The baseline is not yet a complete shopping system:
 
-- Inventory is a mutable product number or value inside variant JSON. There is no SKU relation, movement ledger, reservation record, expiry worker, stock location, or inventory operations UI.
+- Inventory now has relational SKUs, stock locations, append-only physical movements, cached projections, receipts, lots, quarantine release, adjustments, and cycle counts. Checkout still reads and mutates the legacy SKU inventory field because reservations, reserved projections, and expiry recovery belong to PR 6.
 - Checkout stores contact and delivery data as arbitrary JSON, with one free-text address. There is no address book, normalized order snapshot, explicit save behavior, address validation, or delivery eligibility check.
 - Order totals are effectively merchandise subtotal. Shipping, promotions, tax treatment, and delivery estimates are not computed as server-owned quotes.
 - Fulfillment is a coarse order field. There are no shipment, package, partial-fulfillment, tracking, delivery-event, or warehouse workflows.

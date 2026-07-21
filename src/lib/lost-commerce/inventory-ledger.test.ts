@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { hashInventoryMovementRequest } from "./inventory-ledger-contracts";
-import { recordInventoryMovement } from "./inventory-ledger";
+import { recordInventoryMovement as recordInventoryMovementProduction } from "./inventory-ledger";
 
 const tracked = vi.hoisted(() => ({
   events: [] as string[],
@@ -31,15 +31,26 @@ vi.mock(
 const request = {
   idempotencyKey: "inventory-event-0001",
   skuId: "sku-1",
-  kind: "inbound" as const,
-  quantity: 4,
-  to: { locationId: "location-b", disposition: "available" as const },
+  kind: "outbound" as const,
+  quantity: 1,
+  from: { locationId: "location-b", disposition: "available" as const },
   reasonCode: "verified-stock-in",
   sourceType: "inventory_command" as const,
   sourceRef: "source-1",
   actorId: "actor-1",
   effectiveAt: "2026-07-22T00:00:00.000Z"
 };
+
+const adminReq = {
+  user: { id: "actor-1", role: "admin" },
+  context: {}
+} as any;
+
+function recordInventoryMovement(
+  input: Omit<Parameters<typeof recordInventoryMovementProduction>[0], "req">
+) {
+  return recordInventoryMovementProduction({ ...input, req: adminReq });
+}
 
 type Stored = Record<string, unknown>;
 
@@ -52,7 +63,7 @@ function makePayload(input?: {
 }) {
   const levels = input?.levels ?? [];
   let skuReadCount = 0;
-  const findByID = vi.fn(async ({ collection, id }: any) => {
+  const findByID = vi.fn(async ({ collection, id }: any): Promise<Stored> => {
     tracked.events.push(`read:${collection}:${id}`);
     if (collection === "product-variants") {
       skuReadCount += 1;
@@ -136,8 +147,50 @@ describe("recordInventoryMovement", () => {
     );
   });
 
-  it("locks identity and aggregates, appends one movement, and creates an absent projection", async () => {
-    const { payload, create } = makePayload();
+  it("requires an authenticated admin before starting a generic command", async () => {
+    const { payload } = makePayload({
+      levels: [
+        {
+          id: "level-source",
+          aggregate_key: "sku-1:location-b:available",
+          quantity: 1,
+          movement_count: 0
+        }
+      ]
+    });
+    await expect(
+      recordInventoryMovementProduction({
+        payload,
+        req: { user: null, context: {} } as any,
+        request
+      })
+    ).rejects.toThrow("inventory-operation-admin-required");
+    expect(payload.db.beginTransaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects a supplied actor that differs from the authenticated admin", async () => {
+    const { payload } = makePayload();
+    await expect(
+      recordInventoryMovementProduction({
+        payload,
+        req: adminReq,
+        request: { ...request, actorId: "actor-2" }
+      })
+    ).rejects.toThrow("inventory-movement-actor-mismatch");
+    expect(payload.db.beginTransaction).not.toHaveBeenCalled();
+  });
+
+  it("locks identity and aggregates, appends one movement, and updates its projection", async () => {
+    const { payload, create, update } = makePayload({
+      levels: [
+        {
+          id: "level-source",
+          aggregate_key: "sku-1:location-b:available",
+          quantity: 1,
+          movement_count: 0
+        }
+      ]
+    });
 
     const result = await recordInventoryMovement({ payload, request });
 
@@ -156,7 +209,7 @@ describe("recordInventoryMovement", () => {
       "authorize",
       "create:inventory-movements",
       "authorize",
-      "create:inventory-levels"
+      "update:inventory-levels:level-source"
     ]);
     expect(create).toHaveBeenNthCalledWith(
       1,
@@ -167,26 +220,22 @@ describe("recordInventoryMovement", () => {
           idempotency_key: request.idempotencyKey,
           request_hash: hashInventoryMovementRequest(request),
           sku: "sku-1",
-          kind: "inbound",
-          quantity: 4,
-          from_location: null,
-          from_disposition: null,
-          to_location: "location-b",
-          to_disposition: "available",
+          kind: "outbound",
+          quantity: 1,
+          from_location: "location-b",
+          from_disposition: "available",
+          to_location: null,
+          to_disposition: null,
           source_type: "inventory_command"
         })
       })
     );
-    expect(create).toHaveBeenNthCalledWith(
-      2,
+    expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: "inventory-levels",
+        id: "level-source",
         data: {
-          aggregate_key: "sku-1:location-b:available",
-          sku: "sku-1",
-          location: "location-b",
-          disposition: "available",
-          quantity: 4,
+          quantity: 0,
           movement_count: 1
         }
       })
@@ -262,7 +311,7 @@ describe("recordInventoryMovement", () => {
       expect.objectContaining({
         collection: "inventory-levels",
         id: "level-source",
-        data: { quantity: 1, movement_count: 3 }
+        data: { quantity: 4, movement_count: 3 }
       })
     );
     expect(create).toHaveBeenCalledWith(
@@ -270,7 +319,7 @@ describe("recordInventoryMovement", () => {
         collection: "inventory-levels",
         data: expect.objectContaining({
           aggregate_key: targetKey,
-          quantity: 4,
+          quantity: 1,
           movement_count: 1
         })
       })
@@ -297,7 +346,6 @@ describe("recordInventoryMovement", () => {
     const original = new Error("projection-write-failed");
     const { payload } = makePayload({
       updateError: original,
-      rollbackError: new Error("rollback-failed"),
       levels: [
         {
           id: "level-1",
@@ -315,28 +363,47 @@ describe("recordInventoryMovement", () => {
     expect(payload.db.commitTransaction).not.toHaveBeenCalled();
   });
 
-  it("rejects inbound stock for an inactive SKU", async () => {
-    const { payload, findByID } = makePayload();
-    findByID
-      .mockResolvedValueOnce({
-        id: "sku-1",
-        active: true,
-        sku: "LIS-001",
-        product: "product-1",
-        identity_locked: true
-      })
-      .mockResolvedValueOnce({
-        id: "sku-1",
-        active: false,
-        sku: "LIS-001",
-        product: "product-1",
-        identity_locked: true
-      });
+  it("preserves both the primary and rollback errors when rollback fails", async () => {
+    const original = new Error("projection-write-failed");
+    const rollback = new Error("rollback-failed");
+    const { payload } = makePayload({
+      updateError: original,
+      rollbackError: rollback,
+      levels: [
+        {
+          id: "level-1",
+          aggregate_key: "sku-1:location-b:available",
+          quantity: 1,
+          movement_count: 1
+        }
+      ]
+    });
 
-    await expect(recordInventoryMovement({ payload, request })).rejects.toThrow(
-      "inventory-sku-inactive"
+    const caught = await recordInventoryMovement({ payload, request }).catch(
+      (error: unknown) => error
     );
-    expect(payload.create).not.toHaveBeenCalled();
+
+    expect(caught).toBeInstanceOf(AggregateError);
+    expect((caught as AggregateError).errors).toEqual([original, rollback]);
+    expect(payload.db.rollbackTransaction).toHaveBeenCalledWith("tx-1");
+    expect(payload.db.commitTransaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects naked inbound stock before opening a transaction", async () => {
+    const { payload, findByID } = makePayload();
+    await expect(
+      recordInventoryMovement({
+        payload,
+        request: {
+          ...request,
+          kind: "inbound",
+          from: undefined,
+          to: { locationId: "location-b", disposition: "available" }
+        }
+      })
+    ).rejects.toThrow("inventory-inbound-requires-workflow");
+    expect(payload.db.beginTransaction).not.toHaveBeenCalled();
+    expect(findByID).not.toHaveBeenCalled();
   });
 
   it("allows outbound stock to drain an inactive identity-locked SKU and location", async () => {
@@ -521,14 +588,14 @@ describe("recordInventoryMovement", () => {
           },
           to: {
             locationId: "location-b",
-            disposition: "available"
+            disposition: "damaged"
           }
         }
       })
     ).resolves.toMatchObject({ kind: "created" });
   });
 
-  it("rejects inbound and cross-location transfer into an inactive destination", async () => {
+  it("rejects cross-location transfer into an inactive destination", async () => {
     const sourceKey = "sku-1:location-b:available";
     const { payload, findByID } = makePayload({
       levels: [
@@ -566,20 +633,6 @@ describe("recordInventoryMovement", () => {
           to: {
             locationId: "location-a",
             disposition: "quarantine"
-          }
-        }
-      })
-    ).rejects.toThrow("inventory-location-inactive");
-
-    await expect(
-      recordInventoryMovement({
-        payload,
-        request: {
-          ...request,
-          idempotencyKey: "inventory-event-0002",
-          to: {
-            locationId: "location-a",
-            disposition: "available"
           }
         }
       })

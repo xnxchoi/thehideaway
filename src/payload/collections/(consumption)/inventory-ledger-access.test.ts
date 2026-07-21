@@ -288,6 +288,11 @@ describe("inventory ledger collection contracts", () => {
       "reason_code",
       "source_type",
       "source_ref",
+      "receipt",
+      "receipt_line",
+      "lot",
+      "cycle_count",
+      "cycle_count_line",
       "actor",
       "effective_at"
     ];
@@ -347,10 +352,30 @@ describe("inventory ledger collection contracts", () => {
     });
     const sourceType = namedField(InventoryMovements, "source_type");
     expect(sourceType).toMatchObject({ type: "select", required: true });
-    expect(selectOptions(sourceType)).toEqual(["inventory_command"]);
+    expect(selectOptions(sourceType)).toEqual([
+      "inventory_command",
+      "inventory_receipt",
+      "inventory_lot_release",
+      "inventory_adjustment",
+      "inventory_cycle_count"
+    ]);
     expect(namedField(InventoryMovements, "source_ref")).toMatchObject({
       type: "text"
     });
+    for (const [name, relationTo] of [
+      ["receipt", "inventory-receipts"],
+      ["receipt_line", "inventory-receipt-lines"],
+      ["lot", "inventory-lots"],
+      ["cycle_count", "inventory-cycle-counts"],
+      ["cycle_count_line", "inventory-cycle-count-lines"]
+    ] as const) {
+      expect(namedField(InventoryMovements, name)).toMatchObject({
+        type: "relationship",
+        relationTo,
+        index: true,
+        admin: expect.objectContaining({ readOnly: true })
+      });
+    }
     expect(namedField(InventoryMovements, "actor")).toMatchObject({
       type: "text"
     });

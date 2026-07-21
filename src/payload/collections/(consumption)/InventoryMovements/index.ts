@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 
+import { INVENTORY_MOVEMENT_SOURCE_TYPES } from "@/lib/lost-commerce/inventory-ledger-contracts";
 import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 import { INVENTORY_DISPOSITIONS } from "../InventoryLevels/dispositions";
 import { protectInventoryMovement } from "./protectInventoryMovement";
@@ -8,6 +9,22 @@ const dispositionField = (name: "from_disposition" | "to_disposition") => ({
   name,
   type: "select" as const,
   options: [...INVENTORY_DISPOSITIONS],
+  index: true,
+  admin: { readOnly: true }
+});
+
+const provenanceField = (
+  name: "receipt" | "receipt_line" | "lot" | "cycle_count" | "cycle_count_line",
+  relationTo:
+    | "inventory-receipts"
+    | "inventory-receipt-lines"
+    | "inventory-lots"
+    | "inventory-cycle-counts"
+    | "inventory-cycle-count-lines"
+) => ({
+  name,
+  type: "relationship" as const,
+  relationTo,
   index: true,
   admin: { readOnly: true }
 });
@@ -96,7 +113,7 @@ export const InventoryMovements: CollectionConfig = {
       name: "source_type",
       type: "select",
       required: true,
-      options: ["inventory_command"],
+      options: [...INVENTORY_MOVEMENT_SOURCE_TYPES],
       admin: { readOnly: true }
     },
     {
@@ -104,6 +121,11 @@ export const InventoryMovements: CollectionConfig = {
       type: "text",
       admin: { readOnly: true }
     },
+    provenanceField("receipt", "inventory-receipts"),
+    provenanceField("receipt_line", "inventory-receipt-lines"),
+    provenanceField("lot", "inventory-lots"),
+    provenanceField("cycle_count", "inventory-cycle-counts"),
+    provenanceField("cycle_count_line", "inventory-cycle-count-lines"),
     {
       name: "actor",
       type: "text",
