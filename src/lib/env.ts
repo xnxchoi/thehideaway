@@ -500,6 +500,70 @@ const schema = z.object({
         'Master gate for card checkout. Card options stay hidden and card routes reject unless this is exactly "true", even when PortOne keys are present. Keep unset/false until a sandbox card payment has round-tripped successfully — see readmes/PORTONE_APPLICATION.md.'
       )
     ),
+  LOST_INVENTORY_RESERVATIONS_LIVE: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        'Master gate for stocked checkout reservations. Enabled only when exactly "true".'
+      )
+    ),
+  LOST_INVENTORY_RESERVATION_TTL_MINUTES: z
+    .string()
+    .regex(/^[1-9]\d*$/)
+    .optional()
+    .describe(
+      d("optional", "external-api", "Positive reservation lifetime in minutes.")
+    ),
+  LOST_INVENTORY_RESERVATION_LOCATION_CODE: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "Explicit stock-location code used by checkout."
+      )
+    ),
+  LOST_INVENTORY_SAFETY_STOCK: z
+    .string()
+    .regex(/^\d+$/)
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        "Nonnegative stock held outside available-to-promise."
+      )
+    ),
+  LOST_INVENTORY_RESERVATION_CONSUME_POINT: z
+    .enum(["payment_confirmed"])
+    .optional()
+    .describe(d("optional", "external-api", "Reservation consumption point.")),
+  LOST_INVENTORY_EXPIRY_BOUNDARY: z
+    .enum(["at_or_after"])
+    .optional()
+    .describe(
+      d("optional", "external-api", "Reservation expiry boundary rule.")
+    ),
+  LOST_INVENTORY_PAYMENT_TIME_SOURCE: z
+    .enum(["provider_paid_at"])
+    .optional()
+    .describe(
+      d("optional", "external-api", "Authoritative payment timestamp source.")
+    ),
+  LOST_INVENTORY_LATE_PAYMENT_POLICY: z
+    .enum(["manual_review"])
+    .optional()
+    .describe(d("optional", "external-api", "Late-payment handling policy.")),
+  LOST_INVENTORY_BACKORDER_MODE: z
+    .enum(["disabled"])
+    .optional()
+    .describe(
+      d("optional", "external-api", "Backorder policy for stocked checkout.")
+    ),
 
   // ── Auth misc ───────────────────────────────────────────────────────────
   COOKIE_DOMAIN: z

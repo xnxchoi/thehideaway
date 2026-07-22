@@ -118,7 +118,41 @@ const SECTION_TITLES: Record<string, string> = {
   runtime: "Node runtime (compose sets these automatically)"
 };
 
+const TEMPLATE_VALUE_OVERRIDES: Readonly<Record<string, string>> =
+  Object.freeze({
+    PORTONE_WEBHOOK_SECRET: "",
+    PORTONE_WEBHOOK_REQUIRE_SIGNATURE: "true",
+    PORTONE_WEBHOOK_ALLOW_LEGACY: "false",
+    LOST_INVENTORY_RESERVATIONS_LIVE: "false",
+    LOST_INVENTORY_RESERVATION_TTL_MINUTES: "",
+    LOST_INVENTORY_RESERVATION_LOCATION_CODE: "",
+    LOST_INVENTORY_SAFETY_STOCK: "0",
+    LOST_INVENTORY_RESERVATION_CONSUME_POINT: "payment_confirmed",
+    LOST_INVENTORY_EXPIRY_BOUNDARY: "at_or_after",
+    LOST_INVENTORY_PAYMENT_TIME_SOURCE: "provider_paid_at",
+    LOST_INVENTORY_LATE_PAYMENT_POLICY: "manual_review",
+    LOST_INVENTORY_BACKORDER_MODE: "disabled"
+  });
+
+const TEMPLATE_META_OVERRIDES: Readonly<
+  Record<string, Partial<Pick<FieldMeta, "description" | "hint" | "tier">>>
+> = Object.freeze({
+  PORTONE_WEBHOOK_ALLOW_LEGACY: {
+    description:
+      "Sandbox-only unsigned legacy compatibility. Never enable in production."
+  }
+});
+
+const TEMPLATE_ANNOTATION_OVERRIDES: Readonly<Record<string, string>> =
+  Object.freeze({
+    PORTONE_WEBHOOK_SECRET: "# [required when PortOne is enabled]",
+    PORTONE_WEBHOOK_REQUIRE_SIGNATURE: "# [required when PortOne is enabled]"
+  });
+
 function placeholderFor(meta: FieldMeta): string {
+  if (Object.hasOwn(TEMPLATE_VALUE_OVERRIDES, meta.key)) {
+    return TEMPLATE_VALUE_OVERRIDES[meta.key] ?? "";
+  }
   switch (meta.category) {
     case "secrets":
       return "CHANGE_ME_RUN_OPENSSL_RAND_HEX_32";
@@ -191,7 +225,11 @@ function collectFields(schema: z.ZodObject<z.ZodRawShape>): FieldMeta[] {
       meta.tier === "required" && isOptional(fieldType)
         ? "optional"
         : meta.tier;
-    out.push({ ...meta, tier });
+    out.push({
+      ...meta,
+      tier,
+      ...(TEMPLATE_META_OVERRIDES[key] ?? {})
+    });
   }
   return out;
 }
@@ -260,7 +298,8 @@ function renderTemplate(fields: readonly FieldMeta[]): string {
         }
       }
       lines.push(
-        `# [${field.tier}]${field.hint.length > 0 ? `  hint: ${field.hint}` : ""}`
+        TEMPLATE_ANNOTATION_OVERRIDES[field.key] ??
+          `# [${field.tier}]${field.hint.length > 0 ? `  hint: ${field.hint}` : ""}`
       );
       const value = placeholderFor(field);
       lines.push(`${field.key}=${value}`);

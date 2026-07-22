@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   commitTransaction: vi.fn(),
   completeCommerceCommand: vi.fn(),
   create: vi.fn(),
+  createLocalReq: vi.fn(),
   find: vi.fn(),
   findByID: vi.fn(),
   loggerError: vi.fn(),
@@ -16,6 +17,8 @@ const mocks = vi.hoisted(() => ({
   lockEvents: [] as string[],
   productInventoryLock: vi.fn(),
   productSkuMutationLock: vi.fn(),
+  requireInventoryReservationPolicyForCheckout: vi.fn(),
+  reserveCheckoutOrderInventoryInTransaction: vi.fn(),
   rollbackTransaction: vi.fn(),
   update: vi.fn()
 }));
@@ -27,6 +30,7 @@ vi.mock("next/headers", () => ({
 }));
 
 vi.mock("payload", () => ({
+  createLocalReq: mocks.createLocalReq,
   getPayload: vi.fn(async () => ({
     auth: mocks.auth,
     create: mocks.create,
@@ -103,6 +107,16 @@ vi.mock("@/lib/lost-commerce/campaigns", () => ({
   claimRequestOrderCapacity: mocks.claimRequestOrderCapacity
 }));
 
+vi.mock("@/lib/lost-commerce/inventory-reservations", () => ({
+  requireInventoryReservationPolicyForCheckout:
+    mocks.requireInventoryReservationPolicyForCheckout
+}));
+
+vi.mock("@/lib/lost-commerce/checkout-inventory-reservations", () => ({
+  reserveCheckoutOrderInventoryInTransaction:
+    mocks.reserveCheckoutOrderInventoryInTransaction
+}));
+
 vi.mock("@/lib/lost-commerce/format", () => ({
   makeLostOrderRef: vi.fn(() => "lis_test_order")
 }));
@@ -151,6 +165,15 @@ describe("POST /api/lost/checkout/intent", () => {
       businessKey: "lis_test_order",
       response: { ok: true }
     });
+    mocks.createLocalReq
+      .mockReset()
+      .mockImplementation(async ({ req, user }, payload) => ({
+        ...req,
+        context: { user },
+        headers: req?.headers ?? new Headers(),
+        payload,
+        user
+      }));
     mocks.rollbackTransaction.mockReset().mockResolvedValue(undefined);
     mocks.find.mockReset().mockResolvedValue({
       docs: [],
@@ -172,6 +195,16 @@ describe("POST /api/lost/checkout/intent", () => {
       .mockImplementation(async (_payload, _transactionID, skuId) => {
         mocks.lockEvents.push(`sku:${skuId}`);
       });
+    mocks.requireInventoryReservationPolicyForCheckout
+      .mockReset()
+      .mockReturnValue({
+        locationId: "location-1",
+        safetyStock: 0,
+        ttlMinutes: 15
+      });
+    mocks.reserveCheckoutOrderInventoryInTransaction
+      .mockReset()
+      .mockResolvedValue(undefined);
     mocks.loggerError.mockReset();
     mocks.update.mockReset().mockImplementation(async ({ data }) => ({
       id: "product-1",
@@ -300,7 +333,37 @@ describe("POST /api/lost/checkout/intent", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
-  it("reserves standard product inventory in the order transaction", async () => {
+  it("checks standard inventory reservation policy before claiming the command", async () => {
+    mocks.requireInventoryReservationPolicyForCheckout.mockImplementation(
+      () => {
+        throw new Error("inventory-reservations-unavailable");
+      }
+    );
+
+    const { POST } = await import("./route");
+    const res = await POST(
+      request({
+        paymentProvider: "manual",
+        lines: [
+          {
+            productId: "product-1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    );
+
+    expect(
+      mocks.requireInventoryReservationPolicyForCheckout
+    ).toHaveBeenCalledWith({ paymentProvider: "manual" });
+    expect(res.status).toBe(503);
+    expect(mocks.claimCommerceCommand).not.toHaveBeenCalled();
+    expect(mocks.beginTransaction).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("creates an expiring standard inventory reservation without mutating the SKU scalar", async () => {
     mocks.findByID.mockReset().mockResolvedValue({
       id: "product-1",
       active: true,
@@ -330,6 +393,16 @@ describe("POST /api/lost/checkout/intent", () => {
     );
 
     expect(res.status).toBe(200);
+    expect(mocks.createLocalReq).toHaveBeenCalledWith(
+      {
+        req: {
+          headers: expect.any(Headers),
+          transactionID: "tx-1"
+        },
+        user: expect.objectContaining({ id: "user-1" })
+      },
+      expect.anything()
+    );
     expect(mocks.beginTransaction).toHaveBeenCalledTimes(1);
     expect(mocks.productInventoryLock).toHaveBeenCalledWith(
       expect.anything(),
@@ -341,18 +414,27 @@ describe("POST /api/lost/checkout/intent", () => {
       "tx-1",
       "sku-1"
     );
-    expect(mocks.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: "product-variants",
-        id: "sku-1",
-        req: expect.objectContaining({ transactionID: "tx-1" }),
-        data: expect.objectContaining({ inventory: 1 })
-      })
+    expect(mocks.update).not.toHaveBeenCalledWith(
+      expect.objectContaining({ collection: "product-variants" })
     );
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: "product-orders",
-        req: expect.objectContaining({ transactionID: "tx-1" })
+        req: expect.objectContaining({ transactionID: "tx-1" }),
+        data: expect.objectContaining({ expires_at: expect.any(String) })
+      })
+    );
+    expect(
+      mocks.reserveCheckoutOrderInventoryInTransaction
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: expect.anything(),
+        req: expect.objectContaining({ transactionID: "tx-1" }),
+        order: expect.objectContaining({
+          id: "order-1",
+          expires_at: expect.any(String)
+        }),
+        lines: [expect.objectContaining({ skuId: "sku-1", quantity: 2 })]
       })
     );
     expect(mocks.completeCommerceCommand).toHaveBeenCalledWith(
@@ -771,7 +853,7 @@ describe("POST /api/lost/checkout/intent", () => {
     expect(mocks.rollbackTransaction).toHaveBeenCalledWith("tx-1");
   });
 
-  it("aggregates duplicate standard lines before decrementing inventory", async () => {
+  it("passes the resolved aggregate to the reservation service without scalar writes", async () => {
     mocks.findByID.mockReset().mockResolvedValue({
       id: "product-1",
       active: true,
@@ -806,16 +888,22 @@ describe("POST /api/lost/checkout/intent", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(mocks.update).toHaveBeenCalledWith(
+    expect(
+      mocks.reserveCheckoutOrderInventoryInTransaction
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
-        collection: "product-variants",
-        id: "sku-1",
-        data: expect.objectContaining({ inventory: 2 })
+        lines: [expect.objectContaining({ skuId: "sku-1", quantity: 3 })]
       })
+    );
+    expect(mocks.update).not.toHaveBeenCalledWith(
+      expect.objectContaining({ collection: "product-variants" })
     );
   });
 
   it("rolls back when reservation fails after the transactional recheck", async () => {
+    mocks.reserveCheckoutOrderInventoryInTransaction.mockRejectedValueOnce(
+      new Error("insufficient-available-to-promise")
+    );
     mocks.findByID.mockReset().mockResolvedValueOnce({
       id: "product-1",
       active: true,
@@ -842,13 +930,6 @@ describe("POST /api/lost/checkout/intent", () => {
       stock_state: "in_stock",
       inventory: 2
     });
-    mocks.findByID.mockResolvedValueOnce({
-      id: "product-1",
-      active: true,
-      stock_state: "in_stock",
-      inventory: 1
-    });
-
     const { POST } = await import("./route");
     const res = await POST(
       request({
@@ -866,9 +947,40 @@ describe("POST /api/lost/checkout/intent", () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       ok: false,
-      error: "insufficient-inventory"
+      error: "insufficient-available-to-promise"
     });
     expect(mocks.rollbackTransaction).toHaveBeenCalledWith("tx-1");
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: "product-orders" })
+    );
+    expect(mocks.create).not.toHaveBeenCalledWith(
+      expect.objectContaining({ collection: "product-payments" })
+    );
+  });
+
+  it("rolls back when local Payload request construction fails", async () => {
+    mocks.createLocalReq.mockRejectedValueOnce(
+      new Error("request-init-failed")
+    );
+
+    const { POST } = await import("./route");
+    const res = await POST(
+      request({
+        paymentProvider: "manual",
+        lines: [
+          {
+            productId: "product-1",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    );
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ ok: false, error: "checkout-failed" });
+    expect(mocks.rollbackTransaction).toHaveBeenCalledWith("tx-1");
+    expect(mocks.productInventoryLock).not.toHaveBeenCalled();
     expect(mocks.create).not.toHaveBeenCalled();
   });
 

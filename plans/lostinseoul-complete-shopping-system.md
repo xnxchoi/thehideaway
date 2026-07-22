@@ -1,6 +1,6 @@
 # LOSTINSEOUL Complete Shopping System Blueprint
 
-Status: Adversarial review approved on 2026-07-20. PRs 1–5 were implemented locally by 2026-07-22 and committed as separate reversible work packages. PR 5 adds Payload-managed receipts, receipt lines, immutable lots, quarantine release, adjustments, cycle counts, guarded inventory commands, and database-enforced workflow evidence. Opening balances, procurement, costing, reservations, fulfillment workflows, and customer inventory UI remain excluded. PR 6 and later work packages have not started.
+Status: Adversarial review approved on 2026-07-20. PRs 1–6 were implemented locally by 2026-07-22 and committed as separate reversible work packages. PR 6 adds atomic inventory reservations, available-to-promise calculation, payment-time consume or review, cancellation release, recurring expiry recovery, and storefront availability. Opening balances, procurement, costing, fulfillment workflows, and customer inventory UI remain excluded. PR 7 and later work packages have not started.
 
 ## Objective
 
@@ -40,20 +40,34 @@ The PR 5 audit completed on 2026-07-22:
 
 PR 5 gate result: 523 non-PostgreSQL scenarios passed. The complete 13-file PostgreSQL matrix passed 78 scenarios three consecutive times with deprecations treated as failures. Focused changed-module coverage was 93.06% statements, 89.67% branches, 97.54% functions, and 94.97% lines. Scoped TypeScript diagnostics, ESLint, Prettier, migration checks, and the production build passed. Final code, database, security, and TypeScript reviews found no critical, high, or medium issue.
 
+The PR 6 audit completed on 2026-07-22:
+
+| Area                     | Scenarios exercised                                                                                                                                          | Result                                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Reservation and ATP      | Last-unit contention, safety stock, multi-SKU rollback, duplicate commands, terminal history volume, storefront query failure                                | ATP is physical available stock minus active reservations and safety stock; terminal history does not increase checkout query count |
+| Payment and cancellation | Standard stocked payment, request-to-order, private order, missing/early/late provider timestamps, physical shortage, duplicate reconciliation, cancellation | Stocked orders consume once; valid non-stocked orders do not require reservations; unsafe payment timing enters durable review      |
+| Expiry and concurrency   | Payment versus expiry, payment versus cancellation, competing checkout, overlapping expiry workers, whole-order batch bounds                                 | Lock ordering prevents oversell and duplicate terminal actions; recurring expiry remains safe under overlap                         |
+| Database and migration   | Payload generation, partial enum repair, populated re-entry, guarded down/up, append-only evidence, deferred lifecycle agreement                             | The squashed Payload-generated schema reapplies idempotently and preserves established array IDs and jobs data                      |
+| Access and operations    | Reservation collection access, internal write guards, job run/queue/cancel access, checkout fail-closed policy, PII-safe operational logging                 | Reservations are system-written and admin-read; cron bearer is run-only; failures remain observable without customer data           |
+
+PR 6 gate result: 633 non-PostgreSQL commerce and route scenarios passed. The four-file PostgreSQL matrix passed 33 scenarios, including 16 payment/reservation lifecycle and 7 migration scenarios. Per-file coverage enforcement passed for every included PR 6 module; the focused suite reached 91.48% statements, 86.67% branches, 98.30% functions, and 92.74% lines. Payload 3.85.2 generation was previously validated against the committed dependency baseline; the final evidence option was generated from the Payload collection change and squashed into the pending PR 6 migration. Final database and security reviews found no critical, high, or medium issue.
+
+Pause boundary: PR 7 has not started. Resume by writing ownership and immutable-snapshot tests for saved delivery addresses, then add the Payload address and order-address-version collections through collection config and `rtk pnpm micreate`. Do not begin shipping quotes, totals, or checkout-address UI before the PR 7 address contracts and migration pass their own gate.
+
 ## Current baseline
 
 The repository already has Products, ProductCarts, ProductOrders, ProductPayments, ProductOrderCampaigns, Coupons, and membership-oriented Invoices. It also has server-side cart resolution, transactional stock decrement/release, PortOne card payment, request-to-order campaigns, private quote intake, and an order-by-reference page.
 
 The baseline is not yet a complete shopping system:
 
-- Inventory now has relational SKUs, stock locations, append-only physical movements, cached projections, receipts, lots, quarantine release, adjustments, and cycle counts. Checkout still reads and mutates the legacy SKU inventory field because reservations, reserved projections, and expiry recovery belong to PR 6.
+- Inventory now has relational SKUs, stock locations, append-only physical movements, cached projections, receipts, lots, quarantine release, adjustments, cycle counts, atomic reservations, available-to-promise calculation, and recurring expiry recovery. Standard checkout reserves stock and payment consumes or routes the order to inventory review.
 - Checkout stores contact and delivery data as arbitrary JSON, with one free-text address. There is no address book, normalized order snapshot, explicit save behavior, address validation, or delivery eligibility check.
 - Order totals are effectively merchandise subtotal. Shipping, promotions, tax treatment, and delivery estimates are not computed as server-owned quotes.
 - Fulfillment is a coarse order field. There are no shipment, package, partial-fulfillment, tracking, delivery-event, or warehouse workflows.
 - Request-to-order counts paid orders rather than units and has no deadline finalizer, failure/refund operation, production batch, or buyer progress.
 - Private made-to-order stops at quote intake. There are no quote revisions, acceptance, deposit/balance rules, specifications, production milestones, or completion flow.
 - Returns, exchanges, product receipts, operator queues, durable idempotency, outbox delivery, and reconciliation reports are missing.
-- A pending checkout does not set or process `ProductOrders.expires_at`; abandoned payments can hold inventory indefinitely.
+- Address, shipping, totals, fulfillment, returns, and reconciliation remain incomplete and are handled by PR 7 and later work packages.
 
 The current worktree is heavily dirty and contains active payment-reconciliation and unrelated visual work. Do not execute any step directly from this state. First establish a reviewed commerce baseline containing the current payment hardening. Preserve unrelated user changes. Do not commit, push, deploy, or rewrite the worktree without explicit approval.
 

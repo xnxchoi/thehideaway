@@ -6,6 +6,8 @@ import {
   isInventoryLedgerRequestAuthorized
 } from "./InventoryLevels/protectInventoryProjection";
 import { InventoryMovements } from "./InventoryMovements";
+import { InventoryReservationEntries } from "./InventoryReservationEntries";
+import { InventoryReservations } from "./InventoryReservations";
 import { StockLocations } from "./StockLocations";
 
 type AccessArgs = {
@@ -54,6 +56,72 @@ function selectOptions(field: Record<string, unknown>): string[] {
 }
 
 describe("inventory ledger collection contracts", () => {
+  it("keeps reservation aggregates and entries service-write-only", async () => {
+    for (const collection of [
+      InventoryReservations,
+      InventoryReservationEntries
+    ]) {
+      expect(
+        await collection.access?.read?.(accessArgs("admin") as never)
+      ).toBe(true);
+      for (const operation of ["create", "update", "delete"] as const) {
+        expect(
+          await collection.access?.[operation]?.(accessArgs("admin") as never)
+        ).toBe(false);
+      }
+    }
+  });
+
+  it("defines immutable reservation identity and append-only terminal evidence", () => {
+    expect(namedField(InventoryReservations, "reservation_key")).toMatchObject({
+      type: "text",
+      required: true,
+      unique: true,
+      index: true
+    });
+    expect(namedField(InventoryReservations, "status")).toMatchObject({
+      type: "select",
+      required: true,
+      defaultValue: "active",
+      index: true
+    });
+    expect(selectOptions(namedField(InventoryReservations, "status"))).toEqual([
+      "active",
+      "consumed",
+      "released",
+      "expired"
+    ]);
+    expect(namedField(InventoryReservations, "quantity")).toMatchObject({
+      type: "number",
+      required: true,
+      min: 1
+    });
+    expect(namedField(InventoryReservations, "expires_at")).toMatchObject({
+      type: "date",
+      required: true,
+      index: true
+    });
+
+    expect(InventoryReservationEntries.lockDocuments).toBe(false);
+    expect(
+      namedField(InventoryReservationEntries, "idempotency_key")
+    ).toMatchObject({
+      type: "text",
+      required: true,
+      unique: true,
+      index: true
+    });
+    expect(
+      selectOptions(namedField(InventoryReservationEntries, "operation"))
+    ).toEqual([
+      "reserve",
+      "consume",
+      "release",
+      "expire",
+      "late_payment_detected"
+    ]);
+  });
+
   it("allows only admins to manage stock locations and never exposes delete", async () => {
     for (const operation of ["read", "create", "update"] as const) {
       expect(
@@ -357,7 +425,8 @@ describe("inventory ledger collection contracts", () => {
       "inventory_receipt",
       "inventory_lot_release",
       "inventory_adjustment",
-      "inventory_cycle_count"
+      "inventory_cycle_count",
+      "inventory_reservation"
     ]);
     expect(namedField(InventoryMovements, "source_ref")).toMatchObject({
       type: "text"

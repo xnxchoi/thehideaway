@@ -15,7 +15,22 @@ const tracked = vi.hoisted(() => ({
   sku: vi.fn(),
   location: vi.fn(),
   aggregate: vi.fn(),
-  workflowAuthorization: Object.freeze({})
+  workflowAuthorization: Object.freeze({}),
+  reservationAuthorization: Object.freeze({})
+}));
+
+vi.mock("./inventory-reservation-ledger-authorization", () => ({
+  assertInventoryReservationLedgerAuthorization: (
+    authorization: unknown,
+    request: { sourceRef?: string }
+  ) => {
+    if (
+      authorization !== tracked.reservationAuthorization ||
+      request.sourceRef !== "reservation-1"
+    ) {
+      throw new Error("inventory-reservation-ledger-authorization-required");
+    }
+  }
 }));
 
 vi.mock("./inventory-operation-runtime", () => ({
@@ -289,6 +304,47 @@ describe("recordInventoryMovementsInTransaction", () => {
       })
     ).rejects.toThrow("inventory-movement-actor-mismatch");
     expect(tracked.idempotency).not.toHaveBeenCalled();
+  });
+
+  it("allows only a scoped reservation capability to consume available stock", async () => {
+    const { payload, req } = makePayload({
+      levels: [
+        {
+          id: "level-available-b",
+          aggregate_key: "sku-b:location-b:available",
+          quantity: 1,
+          movement_count: 1
+        }
+      ]
+    });
+    const request = {
+      idempotencyKey: "reservation-consume-0001",
+      skuId: "sku-b",
+      kind: "outbound" as const,
+      quantity: 1,
+      from: { locationId: "location-b", disposition: "available" as const },
+      reasonCode: "reservation-consumed",
+      sourceType: "inventory_reservation" as const,
+      sourceRef: "reservation-1",
+      actorId: "system:inventory-reservation"
+    };
+
+    await expect(
+      recordInventoryMovementsInTransactionProduction({
+        payload,
+        req: { ...req, user: null },
+        requests: [request],
+        authorization: tracked.reservationAuthorization as never
+      })
+    ).resolves.toMatchObject({ results: [{ kind: "created" }] });
+
+    await expect(
+      recordInventoryMovementsInTransactionProduction({
+        payload,
+        req: { ...req, user: null },
+        requests: [request]
+      })
+    ).rejects.toThrow("inventory-reservation-ledger-authorization-required");
   });
 
   it("keeps privileged PR5 sources out of the generic one-movement wrapper", async () => {

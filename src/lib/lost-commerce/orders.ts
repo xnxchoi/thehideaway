@@ -2,7 +2,10 @@ import type { Payload } from "payload";
 import type { ProductOrder, ProductPayment } from "@/payload-types";
 
 import { paymentWebhookLock } from "@/lib/db/sequences";
-import { releaseStandardInventory } from "./inventory";
+import { hashCommerceCommandInput } from "./commerce-commands";
+import type { ReservationTransactionRequest } from "./inventory-reservation-store";
+import { lockOrderInventoryReservationsInTransaction } from "./inventory-reservations";
+import { releaseOrderInventoryReservationsInTransaction } from "./order-inventory-reservations";
 import { authorizeCommerceLifecycleRequest } from "./lifecycle-authorization";
 import {
   assertOrderTransition,
@@ -49,16 +52,28 @@ export async function cancelUnpaidProductOrder(input: {
   const transactionID = await input.payload.db.beginTransaction();
   if (!transactionID) throw new Error("transaction-failed");
 
-  const txReq = {
+  const txReq: ReservationTransactionRequest = {
     payload: input.payload,
     transactionID,
-    context: {}
-  } as NonNullable<Parameters<typeof input.payload.update>[0]["req"]>;
+    context: { user: { role: "guest" } }
+  };
   authorizeCommerceLifecycleRequest(txReq);
 
   try {
     const orderRef = String(input.order.order_ref ?? "");
     if (!orderRef) throw new Error("missing-order-ref");
+    const orderId = String(input.order.id ?? "");
+    if (!orderId) throw new Error("order-not-found");
+    const releaseCommandKey = hashCommerceCommandInput({
+      orderId,
+      operation: "cancel-release"
+    });
+    await lockOrderInventoryReservationsInTransaction({
+      payload: input.payload,
+      req: txReq,
+      orderId,
+      terminal: { operation: "release", baseKey: releaseCommandKey }
+    });
     await paymentWebhookLock(input.payload, transactionID, orderRef);
 
     const locked = await input.payload.find({
@@ -104,10 +119,13 @@ export async function cancelUnpaidProductOrder(input: {
       });
     }
 
-    await releaseStandardInventory({
+    await releaseOrderInventoryReservationsInTransaction({
       payload: input.payload,
-      order,
-      req: txReq as never
+      req: txReq,
+      orderId: order.id,
+      idempotencyKey: releaseCommandKey,
+      effectiveAt: new Date().toISOString(),
+      locksHeld: true
     });
 
     await input.payload.update({

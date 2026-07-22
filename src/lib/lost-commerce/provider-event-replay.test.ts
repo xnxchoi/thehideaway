@@ -63,7 +63,8 @@ describe("provider event replay", () => {
     });
     expect(mocks.syncProductPayment).toHaveBeenCalledWith({
       payload,
-      paymentId: "lis_order_1"
+      paymentId: "lis_order_1",
+      providerEventRef: "event-row-1"
     });
     expect(mocks.completeCommerceProviderEvent).toHaveBeenCalledWith({
       payload,
@@ -220,30 +221,33 @@ describe("provider event replay", () => {
       event: { event_type: "Transaction.Refunded" },
       expected: "plan-payment-refunded"
     }
-  ])("replays terminal plan event as $expected", async ({ event, expected }) => {
-    const payload = {
-      findByID: vi.fn(async () => ({
-        id: "event-row-1",
-        provider: "portone",
-        payment_ref: "plan-payment-1",
-        ...event
-      })),
-      find: vi.fn(async () => ({ docs: [{ id: "subscription-1" }] }))
-    } as any;
-    mocks.cancelPendingPlanPayment.mockResolvedValue({
-      ok: true,
-      canceled: true
-    });
-    mocks.syncPlanPayment.mockResolvedValue({
-      ok: false,
-      status: 402,
-      reason: "not-paid"
-    });
+  ])(
+    "replays terminal plan event as $expected",
+    async ({ event, expected }) => {
+      const payload = {
+        findByID: vi.fn(async () => ({
+          id: "event-row-1",
+          provider: "portone",
+          payment_ref: "plan-payment-1",
+          ...event
+        })),
+        find: vi.fn(async () => ({ docs: [{ id: "subscription-1" }] }))
+      } as any;
+      mocks.cancelPendingPlanPayment.mockResolvedValue({
+        ok: true,
+        canceled: true
+      });
+      mocks.syncPlanPayment.mockResolvedValue({
+        ok: false,
+        status: 402,
+        reason: "not-paid"
+      });
 
-    await expect(
-      replayCommerceProviderEvent({ payload, eventId: "event-row-1" })
-    ).resolves.toMatchObject({ status: "processed", outcomeCode: expected });
-  });
+      await expect(
+        replayCommerceProviderEvent({ payload, eventId: "event-row-1" })
+      ).resolves.toMatchObject({ status: "processed", outcomeCode: expected });
+    }
+  );
 
   it("uses current paid state instead of stale failed event evidence", async () => {
     const payload = {

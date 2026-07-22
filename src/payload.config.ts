@@ -16,16 +16,17 @@ import { Footer } from "@/payload/globals/Footer/config";
 import { Header } from "@/payload/globals/Header";
 import { defaultLexical } from "@/payload/Lexical/defaultLexical";
 import { plugins } from "@/payload/plugins";
+import { payloadJobsAccess } from "@/payload/jobs/access";
+import { expireInventoryReservationsTask } from "@/payload/jobs/expireInventoryReservations";
 import { calculateSearchScore } from "@/payload/search/calculateScore";
 import { afterSchemaInit } from "@/scripts/afterSchemaInit";
 import { postgresAdapter } from "@payloadcms/db-postgres";
-import { timingSafeEqual } from "crypto";
 // nanoid was used by the inline tag-seed block that lived in onInit;
 // the seed now lives in `src/seed/initial.ts`. The commented-out
 // legacy snippet below still references `nanoid` — left as historical
 // context only; safe to remove once that block is deleted.
 import path from "path";
-import { buildConfig, PayloadRequest } from "payload";
+import { buildConfig } from "payload";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
 import { uuidv7 } from "uuidv7";
@@ -258,24 +259,9 @@ export default buildConfig({
         ]
       };
     },
-    access: {
-      run: ({ req }: { req: PayloadRequest }): boolean => {
-        // Allow logged in users to execute this endpoint (default)
-        if (req.user) return true;
-
-        // If there is no logged in user, check the Vercel Cron secret.
-        // SECURITY: use timing-safe comparison to prevent token leakage.
-        const cronSecret = process.env.CRON_SECRET;
-        if (!cronSecret) return false;
-
-        const authHeader = req.headers.get("authorization") ?? "";
-        const expected = `Bearer ${cronSecret}`;
-        const a = Buffer.from(authHeader.padEnd(expected.length));
-        const b = Buffer.from(expected.padEnd(authHeader.length));
-        return a.length === b.length && timingSafeEqual(a, b);
-      }
-    },
+    access: payloadJobsAccess,
     tasks: [
+      expireInventoryReservationsTask,
       {
         slug: "welcomeUser",
         label: "Add welcome notification & profile for new user",

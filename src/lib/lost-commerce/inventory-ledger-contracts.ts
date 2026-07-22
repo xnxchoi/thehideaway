@@ -20,7 +20,8 @@ export const INVENTORY_MOVEMENT_SOURCE_TYPES = [
   "inventory_receipt",
   "inventory_lot_release",
   "inventory_adjustment",
-  "inventory_cycle_count"
+  "inventory_cycle_count",
+  "inventory_reservation"
 ] as const;
 
 export type InventoryMovementSourceType =
@@ -215,7 +216,16 @@ function validateSourceSemantics(input: {
       input.to?.disposition !== "available");
   const invalidCount =
     input.sourceType === "inventory_cycle_count" && input.kind === "transfer";
-  if (invalidAdjustment || invalidReceipt || invalidRelease || invalidCount) {
+  const invalidReservation =
+    input.sourceType === "inventory_reservation" &&
+    (input.kind !== "outbound" || input.from?.disposition !== "available");
+  if (
+    invalidAdjustment ||
+    invalidReceipt ||
+    invalidRelease ||
+    invalidCount ||
+    invalidReservation
+  ) {
     throw new Error("invalid-inventory-source-semantics");
   }
   if (input.sourceType === "inventory_adjustment") {
@@ -254,6 +264,9 @@ function resolveSourceRef(
     request.sourceRef,
     "invalid-inventory-source-ref"
   );
+  if (sourceType === "inventory_reservation" && !supplied) {
+    throw new Error("invalid-inventory-source-ref");
+  }
   const required =
     sourceType === "inventory_receipt" || sourceType === "inventory_lot_release"
       ? provenance.lotId

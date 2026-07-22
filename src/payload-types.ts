@@ -132,6 +132,8 @@ export interface Config {
     'inventory-lots': InventoryLot;
     'inventory-cycle-counts': InventoryCycleCount;
     'inventory-cycle-count-lines': InventoryCycleCountLine;
+    'inventory-reservations': InventoryReservation;
+    'inventory-reservation-entries': InventoryReservationEntry;
     events: Event;
     'ticket-orders': TicketOrder;
     tickets: Ticket;
@@ -256,6 +258,8 @@ export interface Config {
     'inventory-lots': InventoryLotsSelect<false> | InventoryLotsSelect<true>;
     'inventory-cycle-counts': InventoryCycleCountsSelect<false> | InventoryCycleCountsSelect<true>;
     'inventory-cycle-count-lines': InventoryCycleCountLinesSelect<false> | InventoryCycleCountLinesSelect<true>;
+    'inventory-reservations': InventoryReservationsSelect<false> | InventoryReservationsSelect<true>;
+    'inventory-reservation-entries': InventoryReservationEntriesSelect<false> | InventoryReservationEntriesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'ticket-orders': TicketOrdersSelect<false> | TicketOrdersSelect<true>;
     tickets: TicketsSelect<false> | TicketsSelect<true>;
@@ -273,10 +277,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: 'en' | 'ko';
   widgets: {
@@ -285,6 +291,7 @@ export interface Config {
   user: User | Admin;
   jobs: {
     tasks: {
+      expireInventoryReservations: TaskExpireInventoryReservations;
       welcomeUser: TaskWelcomeUser;
       welcomeUsers: TaskWelcomeUsers;
       refreshSearchScores: TaskRefreshSearchScores;
@@ -3031,7 +3038,7 @@ export interface ProductVariant {
   legacy_variant_ref?: string | null;
   legacy_key?: string | null;
   /**
-   * Temporary value until the inventory ledger is active.
+   * Historical scalar. Inventory availability comes from the ledger.
    */
   inventory?: number | null;
   stock_state?: ('in_stock' | 'out_of_stock' | 'pre_order' | 'on_request') | null;
@@ -3127,6 +3134,7 @@ export interface ProductOrder {
     | 'quote_ready'
     | 'pending_payment'
     | 'paid'
+    | 'paid_inventory_review'
     | 'committed'
     | 'confirmed'
     | 'converted'
@@ -3333,7 +3341,8 @@ export interface InventoryMovement {
     | 'inventory_receipt'
     | 'inventory_lot_release'
     | 'inventory_adjustment'
-    | 'inventory_cycle_count';
+    | 'inventory_cycle_count'
+    | 'inventory_reservation';
   source_ref?: string | null;
   receipt?: (string | null) | InventoryReceipt;
   receipt_line?: (string | null) | InventoryReceiptLine;
@@ -3425,6 +3434,61 @@ export interface InventoryCycleCountLine {
   system_quantity: number;
   movement_count_snapshot: number;
   variance: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservations".
+ */
+export interface InventoryReservation {
+  id: string;
+  reservation_key: string;
+  request_hash: string;
+  order: string | ProductOrder;
+  sku: string | ProductVariant;
+  location: string | StockLocation;
+  quantity: number;
+  status: 'active' | 'consumed' | 'released' | 'expired';
+  expires_at: string;
+  reserved_at: string;
+  terminal_at?: string | null;
+  policy_version: number;
+  ttl_minutes: number;
+  safety_stock: number;
+  consume_point: 'payment_confirmed';
+  expiry_boundary: 'at_or_after';
+  payment_time_source: 'provider_paid_at';
+  late_payment_policy: 'manual_review';
+  backorder_mode: 'disabled';
+  recovery_of?: (string | null) | InventoryReservation;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservation-entries".
+ */
+export interface InventoryReservationEntry {
+  id: string;
+  idempotency_key: string;
+  request_hash: string;
+  reservation: string | InventoryReservation;
+  operation: 'reserve' | 'consume' | 'release' | 'expire' | 'late_payment_detected';
+  quantity: number;
+  payment?: (string | null) | ProductPayment;
+  provider_event_ref?: string | null;
+  provider_paid_at?: string | null;
+  evidence_code?:
+    | (
+        | 'provider_timestamp_missing'
+        | 'provider_timestamp_before_reservation'
+        | 'provider_payment_late'
+        | 'physical_inventory_unavailable'
+      )
+    | null;
+  actor?: string | null;
+  effective_at: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -3738,6 +3802,7 @@ export interface PayloadJob {
         completedAt: string;
         taskSlug:
           | 'inline'
+          | 'expireInventoryReservations'
           | 'welcomeUser'
           | 'welcomeUsers'
           | 'refreshSearchScores'
@@ -3780,6 +3845,7 @@ export interface PayloadJob {
   taskSlug?:
     | (
         | 'inline'
+        | 'expireInventoryReservations'
         | 'welcomeUser'
         | 'welcomeUsers'
         | 'refreshSearchScores'
@@ -3791,6 +3857,15 @@ export interface PayloadJob {
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   id: string;
   updatedAt: string;
   createdAt: string;
@@ -5789,6 +5864,52 @@ export interface InventoryCycleCountLinesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservations_select".
+ */
+export interface InventoryReservationsSelect<T extends boolean = true> {
+  reservation_key?: T;
+  request_hash?: T;
+  order?: T;
+  sku?: T;
+  location?: T;
+  quantity?: T;
+  status?: T;
+  expires_at?: T;
+  reserved_at?: T;
+  terminal_at?: T;
+  policy_version?: T;
+  ttl_minutes?: T;
+  safety_stock?: T;
+  consume_point?: T;
+  expiry_boundary?: T;
+  payment_time_source?: T;
+  late_payment_policy?: T;
+  backorder_mode?: T;
+  recovery_of?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservation-entries_select".
+ */
+export interface InventoryReservationEntriesSelect<T extends boolean = true> {
+  idempotency_key?: T;
+  request_hash?: T;
+  reservation?: T;
+  operation?: T;
+  quantity?: T;
+  payment?: T;
+  provider_event_ref?: T;
+  provider_paid_at?: T;
+  evidence_code?: T;
+  actor?: T;
+  effective_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
@@ -5914,6 +6035,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   id?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -6240,6 +6362,24 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: string;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -6353,6 +6493,16 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -6360,6 +6510,19 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskExpireInventoryReservations".
+ */
+export interface TaskExpireInventoryReservations {
+  input?: unknown;
+  output: {
+    ordersExamined: number;
+    ordersExpired: number;
+    ordersFailed: number;
+    reservationsExpired: number;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

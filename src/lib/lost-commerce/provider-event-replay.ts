@@ -157,7 +157,8 @@ export async function replayCommerceProviderEvent(input: {
 
   const result = await syncProductPayment({
     payload: input.payload,
-    paymentId
+    paymentId,
+    providerEventRef: input.eventId
   });
   return finishReplay({
     ...input,

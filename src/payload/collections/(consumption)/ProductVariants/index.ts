@@ -116,15 +116,21 @@ export const ProductVariants: CollectionConfig = {
       type: "number",
       min: 0,
       index: true,
+      access: { update: () => false },
       admin: {
-        description: "Temporary value until the inventory ledger is active."
+        hidden: true,
+        readOnly: true,
+        description:
+          "Historical scalar. Inventory availability comes from the ledger."
       }
     },
     {
       name: "stock_state",
       type: "select",
       options: ["in_stock", "out_of_stock", "pre_order", "on_request"],
-      index: true
+      index: true,
+      access: { update: () => false },
+      admin: { hidden: true, readOnly: true }
     },
     {
       name: "sort",

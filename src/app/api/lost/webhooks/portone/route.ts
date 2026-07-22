@@ -3,37 +3,18 @@ import { timingSafeEqual } from "crypto";
 import { Webhook } from "@portone/server-sdk";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { paymentWebhookLock } from "@/lib/db/sequences";
-import { markRequestOrderPaid } from "@/lib/lost-commerce/campaigns";
-import { releaseStandardInventory } from "@/lib/lost-commerce/inventory";
-import { authorizeCommerceLifecycleRequest } from "@/lib/lost-commerce/lifecycle-authorization";
 import {
   cancelPendingPlanPayment,
   syncPlanPayment
 } from "@/lib/lost-commerce/plan-payment";
 import { syncProductPayment } from "@/lib/lost-commerce/product-payment";
 import {
-  getPortOnePayment,
-  requiresLiveChannel,
-  verifyPortOnePayment,
-  type PortOnePaymentRecord
-} from "@/lib/lost-commerce/verify-payment";
-import {
   claimCommerceProviderEvent,
   completeCommerceProviderEvent,
   recordCommerceProviderEventStandalone
 } from "@/lib/lost-commerce/provider-events";
-import {
-  assertOrderTransition,
-  assertPaymentTransition,
-  CommerceTransitionError,
-  isCommerceOrderState,
-  isCommercePaymentState
-} from "@/lib/lost-commerce/transitions";
 
 export const runtime = "nodejs";
-
-const legacyPortOneActor = { kind: "system", id: "portone-legacy" } as const;
 
 /**
  * Extract the paymentId a PortOne webhook carries, from every shape we might
@@ -109,38 +90,13 @@ function isConfiguredWebhookSecret(value: string | undefined): value is string {
   const secret = value?.trim();
   return Boolean(
     secret &&
-      secret.length >= 32 &&
-      !/change[_-]?me|placeholder|example/i.test(secret)
+    secret.length >= 32 &&
+    !/change[_-]?me|placeholder|example/i.test(secret)
   );
 }
 
 function eventIdOf(event: Record<string, unknown>): string {
   return String(event.webhook_id ?? event.event_id ?? "");
-}
-
-function orderStatusForPaymentStatus(
-  paymentStatus: string,
-  orderMode?: string
-): string {
-  if (paymentStatus === "paid") {
-    return orderMode === "request_to_order" ? "paid" : "confirmed";
-  }
-  if (paymentStatus === "pending") return "pending_payment";
-  return paymentStatus;
-}
-
-function eventAmountOf(event: Record<string, unknown>): number | null {
-  const amount = event.amount ?? event.paid_amount ?? event.total_amount;
-  if (typeof amount === "number" && Number.isFinite(amount)) return amount;
-  if (typeof amount === "string" && amount.trim()) {
-    const parsed = Number(amount);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
-function eventCurrencyOf(event: Record<string, unknown>): string {
-  return String(event.currency ?? event.payment_currency ?? "");
 }
 
 async function finishProviderEvent(
@@ -445,337 +401,47 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         result.reason
       );
     }
-    if (isV2PaymentWebhook(event)) {
-      const result = await syncProductPayment({
-        payload,
-        paymentId: webhookPaymentId
-      });
-      if (result.ok) {
-        return finishProviderEvent(
-          processingContext,
-          NextResponse.json({
-            ok: true,
-            orderId: result.orderId,
-            alreadyProcessed: result.alreadyProcessed
-          }),
-          "processed",
-          "product-payment-paid"
-        );
-      }
-      if (result.reason === "verify-unavailable") {
-        return finishProviderEvent(
-          processingContext,
-          NextResponse.json(
-            { ok: false, error: result.reason },
-            { status: 503 }
-          ),
-          "retryable",
-          result.reason
-        );
-      }
-      payload.logger?.warn?.(
-        `[lost/portone/webhook] product payment ${webhookPaymentId} rejected: ${result.reason}`
-      );
-      return finishProviderEvent(
-        processingContext,
-        NextResponse.json({ ok: true, rejected: result.reason }),
-        "rejected",
-        result.reason
-      );
-    }
-    // No subscription and no V2 data.paymentId → legacy product path.
-  }
-
-  const orderRef = String(
-    event.merchant_order_id ?? event.portone_order_ref ?? event.order_ref ?? ""
-  );
-  if (!orderRef) {
-    return finishProviderEvent(
-      processingContext,
-      NextResponse.json(
-        { ok: false, error: "missing-order-ref" },
-        { status: 400 }
-      ),
-      "rejected",
-      "missing-order-ref"
-    );
-  }
-
-  const legacyPaymentStatus = normalizePaymentStatus(
-    event.payment_status ?? event.status ?? event.transaction_status
-  );
-  let authoritativePayment: PortOnePaymentRecord | null = null;
-  if (legacyPaymentStatus === "paid") {
-    try {
-      authoritativePayment = await getPortOnePayment(orderRef);
-    } catch {
-      return finishProviderEvent(
-        processingContext,
-        NextResponse.json(
-          { ok: false, error: "verify-unavailable" },
-          { status: 503 }
-        ),
-        "retryable",
-        "verify-unavailable"
-      );
-    }
-  }
-
-  const transactionID = await payload.db.beginTransaction();
-  if (!transactionID) {
-    return finishProviderEvent(
-      processingContext,
-      NextResponse.json(
-        { ok: false, error: "transaction-failed" },
-        { status: 500 }
-      ),
-      "retryable",
-      "transaction-failed"
-    );
-  }
-  const txReq = {
-    payload,
-    transactionID,
-    context: {}
-  } as NonNullable<Parameters<typeof payload.update>[0]["req"]>;
-  authorizeCommerceLifecycleRequest(txReq);
-
-  try {
-    await paymentWebhookLock(payload, transactionID, orderRef);
-
-    const orders = await payload.find({
-      collection: "product-orders" as never,
-      overrideAccess: true,
-      req: txReq as never,
-      depth: 0,
-      limit: 1,
-      where: { order_ref: { equals: orderRef } }
+    const result = await syncProductPayment({
+      payload,
+      paymentId: webhookPaymentId,
+      providerEventRef: processingContext.eventId
     });
-    const order = orders.docs?.[0] as
-      | {
-          id: string;
-          user?: string;
-          order_mode?: string;
-          campaign?: string | { id?: string };
-          status?: string;
-          lines?: unknown[];
-          payment_status?: string;
-          total_amount?: number;
-          currency?: string;
-        }
-      | undefined;
-    if (!order) {
-      await payload.db.rollbackTransaction(transactionID);
-      return finishProviderEvent(
-        processingContext,
-        NextResponse.json(
-          { ok: false, error: "order-not-found" },
-          { status: 404 }
-        ),
-        "retryable",
-        "order-not-found"
-      );
-    }
-
-    const paymentStatus = legacyPaymentStatus;
-    const payments = await payload.find({
-      collection: "product-payments" as never,
-      overrideAccess: true,
-      req: txReq as never,
-      depth: 0,
-      limit: 1,
-      where: {
-        and: [
-          { portone_order_ref: { equals: orderRef } },
-          { provider: { equals: "portone" } }
-        ]
-      }
-    });
-    const payment = payments.docs?.[0] as
-      | {
-          id: string;
-          amount?: number;
-          currency?: string;
-          provider?: string;
-          status?: string;
-          events?: unknown[];
-        }
-      | undefined;
-    if (!payment || payment.provider !== "portone") {
-      await payload.db.rollbackTransaction(transactionID);
-      return finishProviderEvent(
-        processingContext,
-        NextResponse.json(
-          { ok: false, error: "payment-not-found" },
-          { status: 404 }
-        ),
-        "retryable",
-        "payment-not-found"
-      );
-    }
-    const expectedAmount = Number(payment.amount ?? order.total_amount ?? NaN);
-    const eventAmount = eventAmountOf(event);
-    const expectedCurrency = String(payment.currency ?? order.currency ?? "");
-    const eventCurrency = eventCurrencyOf(event);
-    if (
-      eventAmount === null ||
-      eventAmount !== expectedAmount ||
-      eventCurrency !== expectedCurrency
-    ) {
-      await payload.db.rollbackTransaction(transactionID);
-      return finishProviderEvent(
-        processingContext,
-        NextResponse.json(
-          { ok: false, error: "payment-mismatch" },
-          { status: 409 }
-        ),
-        "rejected",
-        "payment-mismatch"
-      );
-    }
-
-    if (paymentStatus === "paid") {
-      const verification = verifyPortOnePayment(authoritativePayment, {
-        amount: expectedAmount,
-        currency: expectedCurrency,
-        requireLiveChannel: requiresLiveChannel()
-      });
-      if (!verification.ok) {
-        await payload.db.rollbackTransaction(transactionID);
-        return finishProviderEvent(
-          processingContext,
-          NextResponse.json({ ok: true, rejected: verification.reason }),
-          "rejected",
-          verification.reason
-        );
-      }
-    }
-
-    const nextOrderStatus = orderStatusForPaymentStatus(
-      paymentStatus,
-      order.order_mode
-    );
-    if (
-      !isCommerceOrderState(order.status) ||
-      !isCommerceOrderState(nextOrderStatus) ||
-      !isCommercePaymentState(payment.status) ||
-      !isCommercePaymentState(paymentStatus)
-    ) {
-      await payload.db.rollbackTransaction(transactionID);
+    if (result.ok) {
       return finishProviderEvent(
         processingContext,
         NextResponse.json({
           ok: true,
-          rejected: "invalid-commerce-transition"
+          orderId: result.orderId,
+          alreadyProcessed: result.alreadyProcessed
         }),
-        "rejected",
-        "invalid-commerce-transition"
-      );
-    }
-    try {
-      assertOrderTransition({
-        from: order.status,
-        to: nextOrderStatus,
-        actor: legacyPortOneActor
-      });
-      assertPaymentTransition({
-        from: payment.status,
-        to: paymentStatus,
-        actor: legacyPortOneActor
-      });
-    } catch (error) {
-      if (!(error instanceof CommerceTransitionError)) throw error;
-      await payload.db.rollbackTransaction(transactionID);
-      return finishProviderEvent(
-        processingContext,
-        NextResponse.json({ ok: true, rejected: error.code }),
-        "rejected",
-        error.code
-      );
-    }
-
-    const alreadyApplied =
-      order.status === nextOrderStatus &&
-      order.payment_status === paymentStatus &&
-      payment.status === paymentStatus;
-    if (alreadyApplied) {
-      await payload.db.commitTransaction(transactionID);
-      return finishProviderEvent(
-        processingContext,
-        NextResponse.json({ ok: true }),
         "processed",
-        "already-processed"
+        "product-payment-paid"
       );
     }
-
-    const wasAlreadyPaid = order.payment_status === "paid";
-    const shouldReleaseStandardInventory =
-      paymentStatus === "failed" &&
-      !wasAlreadyPaid &&
-      order.payment_status !== "failed" &&
-      order.status !== "failed" &&
-      order.status !== "canceled" &&
-      order.status !== "refunded";
-
-    if (shouldReleaseStandardInventory) {
-      await releaseStandardInventory({ payload, order, req: txReq as never });
+    const retryableFailure =
+      result.reason === "verify-unavailable" ||
+      (!isV2PaymentWebhook(event) &&
+        (result.reason === "order-not-found" ||
+          result.reason === "payment-not-found"));
+    if (retryableFailure) {
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json(
+          { ok: false, error: result.reason },
+          { status: result.status }
+        ),
+        "retryable",
+        result.reason
+      );
     }
-
-    await payload.update({
-      collection: "product-orders" as never,
-      id: order.id,
-      req: txReq,
-      overrideAccess: true,
-      data: {
-        payment_status: paymentStatus,
-        status: nextOrderStatus,
-        paid_at: paymentStatus === "paid" ? new Date().toISOString() : undefined
-      } as never
-    });
-
-    await payload.update({
-      collection: "product-payments" as never,
-      id: payment.id,
-      req: txReq,
-      overrideAccess: true,
-      data: {
-        status: paymentStatus,
-        portone_transaction_ref: event.payment_txn_ref ?? event.transaction_ref,
-        paid_at: paymentStatus === "paid" ? new Date().toISOString() : undefined
-      } as never
-    });
-
-    if (paymentStatus === "paid" && !wasAlreadyPaid) {
-      await markRequestOrderPaid({
-        payload,
-        order: { ...order, status: nextOrderStatus },
-        req: txReq as never
-      });
-    }
-
-    await payload.db.commitTransaction(transactionID);
-  } catch (err) {
-    await payload.db.rollbackTransaction(transactionID).catch(() => undefined);
-    payload.logger.error?.(
-      `[lost/portone/webhook] transaction failed for ${orderRef}: ${(err as Error).message}`
+    payload.logger?.warn?.(
+      `[lost/portone/webhook] product payment ${webhookPaymentId} rejected: ${result.reason}`
     );
     return finishProviderEvent(
       processingContext,
-      NextResponse.json(
-        { ok: false, error: "webhook-transaction-failed" },
-        { status: 500 }
-      ),
-      "retryable",
-      "webhook-transaction-failed"
+      NextResponse.json({ ok: true, rejected: result.reason }),
+      "rejected",
+      result.reason
     );
   }
-
-  return finishProviderEvent(
-    processingContext,
-    NextResponse.json({ ok: true }),
-    "processed",
-    `legacy-${normalizePaymentStatus(
-      event.payment_status ?? event.status ?? event.transaction_status
-    )}`
-  );
 }

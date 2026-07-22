@@ -594,6 +594,7 @@ export const enum_product_orders_status = pgEnum("enum_product_orders_status", [
   "quote_ready",
   "pending_payment",
   "paid",
+  "paid_inventory_review",
   "committed",
   "confirmed",
   "converted",
@@ -697,7 +698,8 @@ export const enum_inventory_movements_source_type = pgEnum(
     "inventory_receipt",
     "inventory_lot_release",
     "inventory_adjustment",
-    "inventory_cycle_count"
+    "inventory_cycle_count",
+    "inventory_reservation"
   ]
 );
 export const enum_inventory_receipts_status = pgEnum(
@@ -717,6 +719,43 @@ export const enum_inventory_cycle_count_lines_disposition = pgEnum(
     "inspection_pending",
     "returned_pending_release",
     "discarded"
+  ]
+);
+export const enum_inventory_reservations_status = pgEnum(
+  "enum_inventory_reservations_status",
+  ["active", "consumed", "released", "expired"]
+);
+export const enum_inventory_reservations_consume_point = pgEnum(
+  "enum_inventory_reservations_consume_point",
+  ["payment_confirmed"]
+);
+export const enum_inventory_reservations_expiry_boundary = pgEnum(
+  "enum_inventory_reservations_expiry_boundary",
+  ["at_or_after"]
+);
+export const enum_inventory_reservations_payment_time_source = pgEnum(
+  "enum_inventory_reservations_payment_time_source",
+  ["provider_paid_at"]
+);
+export const enum_inventory_reservations_late_payment_policy = pgEnum(
+  "enum_inventory_reservations_late_payment_policy",
+  ["manual_review"]
+);
+export const enum_inventory_reservations_backorder_mode = pgEnum(
+  "enum_inventory_reservations_backorder_mode",
+  ["disabled"]
+);
+export const enum_inventory_reservation_entries_operation = pgEnum(
+  "enum_inventory_reservation_entries_operation",
+  ["reserve", "consume", "release", "expire", "late_payment_detected"]
+);
+export const enum_inventory_reservation_entries_evidence_code = pgEnum(
+  "enum_inventory_reservation_entries_evidence_code",
+  [
+    "provider_timestamp_missing",
+    "provider_timestamp_before_reservation",
+    "provider_payment_late",
+    "physical_inventory_unavailable"
   ]
 );
 export const enum_events_exclusive_links_type = pgEnum(
@@ -747,6 +786,7 @@ export const enum_payload_jobs_log_task_slug = pgEnum(
   "enum_payload_jobs_log_task_slug",
   [
     "inline",
+    "expireInventoryReservations",
     "welcomeUser",
     "welcomeUsers",
     "refreshSearchScores",
@@ -767,6 +807,7 @@ export const enum_payload_jobs_task_slug = pgEnum(
   "enum_payload_jobs_task_slug",
   [
     "inline",
+    "expireInventoryReservations",
     "welcomeUser",
     "welcomeUsers",
     "refreshSearchScores",
@@ -7700,6 +7741,180 @@ export const inventory_cycle_count_lines = pgTable(
   ]
 );
 
+export const inventory_reservations = pgTable(
+  "inventory_reservations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    reservation_key: varchar("reservation_key").notNull(),
+    request_hash: varchar("request_hash").notNull(),
+    order: uuid("order_id")
+      .notNull()
+      .references(() => product_orders.id, {
+        onDelete: "set null"
+      }),
+    sku: uuid("sku_id")
+      .notNull()
+      .references(() => product_variants.id, {
+        onDelete: "set null"
+      }),
+    location: uuid("location_id")
+      .notNull()
+      .references(() => stock_locations.id, {
+        onDelete: "set null"
+      }),
+    quantity: numeric("quantity", { mode: "number" }).notNull(),
+    status: enum_inventory_reservations_status("status")
+      .notNull()
+      .default("active"),
+    expires_at: timestamp("expires_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    reserved_at: timestamp("reserved_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    terminal_at: timestamp("terminal_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    policy_version: numeric("policy_version", { mode: "number" }).notNull(),
+    ttl_minutes: numeric("ttl_minutes", { mode: "number" }).notNull(),
+    safety_stock: numeric("safety_stock", { mode: "number" }).notNull(),
+    consume_point:
+      enum_inventory_reservations_consume_point("consume_point").notNull(),
+    expiry_boundary:
+      enum_inventory_reservations_expiry_boundary("expiry_boundary").notNull(),
+    payment_time_source: enum_inventory_reservations_payment_time_source(
+      "payment_time_source"
+    ).notNull(),
+    late_payment_policy: enum_inventory_reservations_late_payment_policy(
+      "late_payment_policy"
+    ).notNull(),
+    backorder_mode:
+      enum_inventory_reservations_backorder_mode("backorder_mode").notNull(),
+    recovery_of: uuid("recovery_of_id").references(
+      (): AnyPgColumn => inventory_reservations.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_reservations_reservation_key_idx").on(
+      columns.reservation_key
+    ),
+    index("inventory_reservations_order_idx").on(columns.order),
+    index("inventory_reservations_sku_idx").on(columns.sku),
+    index("inventory_reservations_location_idx").on(columns.location),
+    index("inventory_reservations_status_idx").on(columns.status),
+    index("inventory_reservations_expires_at_idx").on(columns.expires_at),
+    index("inventory_reservations_terminal_at_idx").on(columns.terminal_at),
+    index("inventory_reservations_recovery_of_idx").on(columns.recovery_of),
+    index("inventory_reservations_updated_at_idx").on(columns.updatedAt),
+    index("inventory_reservations_created_at_idx").on(columns.createdAt),
+    index("sku_location_status_idx").on(
+      columns.sku,
+      columns.location,
+      columns.status
+    ),
+    index("status_expires_at_idx").on(columns.status, columns.expires_at)
+  ]
+);
+
+export const inventory_reservation_entries = pgTable(
+  "inventory_reservation_entries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    idempotency_key: varchar("idempotency_key").notNull(),
+    request_hash: varchar("request_hash").notNull(),
+    reservation: uuid("reservation_id")
+      .notNull()
+      .references(() => inventory_reservations.id, {
+        onDelete: "set null"
+      }),
+    operation:
+      enum_inventory_reservation_entries_operation("operation").notNull(),
+    quantity: numeric("quantity", { mode: "number" }).notNull(),
+    payment: uuid("payment_id").references(() => product_payments.id, {
+      onDelete: "set null"
+    }),
+    provider_event_ref: varchar("provider_event_ref"),
+    provider_paid_at: timestamp("provider_paid_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    evidence_code:
+      enum_inventory_reservation_entries_evidence_code("evidence_code"),
+    actor: varchar("actor"),
+    effective_at: timestamp("effective_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_reservation_entries_idempotency_key_idx").on(
+      columns.idempotency_key
+    ),
+    index("inventory_reservation_entries_reservation_idx").on(
+      columns.reservation
+    ),
+    index("inventory_reservation_entries_operation_idx").on(columns.operation),
+    index("inventory_reservation_entries_payment_idx").on(columns.payment),
+    index("inventory_reservation_entries_provider_event_ref_idx").on(
+      columns.provider_event_ref
+    ),
+    index("inventory_reservation_entries_provider_paid_at_idx").on(
+      columns.provider_paid_at
+    ),
+    index("inventory_reservation_entries_evidence_code_idx").on(
+      columns.evidence_code
+    ),
+    index("inventory_reservation_entries_effective_at_idx").on(
+      columns.effective_at
+    ),
+    index("inventory_reservation_entries_updated_at_idx").on(columns.updatedAt),
+    index("inventory_reservation_entries_created_at_idx").on(columns.createdAt),
+    index("reservation_operation_idx").on(
+      columns.reservation,
+      columns.operation
+    )
+  ]
+);
+
 export const events_exclusive_links = pgTable(
   "events_exclusive_links",
   {
@@ -8010,6 +8225,7 @@ export const payload_jobs = pgTable(
       precision: 3
     }),
     processing: boolean("processing").default(false),
+    meta: jsonb("meta"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -9085,6 +9301,21 @@ export const footer_rels = pgTable(
     }).onDelete("cascade")
   ]
 );
+
+export const payload_jobs_stats = pgTable("payload_jobs_stats", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  stats: jsonb("stats"),
+  updatedAt: timestamp("updated_at", {
+    mode: "string",
+    withTimezone: true,
+    precision: 3
+  }),
+  createdAt: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+    precision: 3
+  })
+});
 
 export const relations_users_locales = relations(users_locales, ({ one }) => ({
   _parentID: one(users, {
@@ -11439,6 +11670,46 @@ export const relations_inventory_cycle_count_lines = relations(
     })
   })
 );
+export const relations_inventory_reservations = relations(
+  inventory_reservations,
+  ({ one }) => ({
+    order: one(product_orders, {
+      fields: [inventory_reservations.order],
+      references: [product_orders.id],
+      relationName: "order"
+    }),
+    sku: one(product_variants, {
+      fields: [inventory_reservations.sku],
+      references: [product_variants.id],
+      relationName: "sku"
+    }),
+    location: one(stock_locations, {
+      fields: [inventory_reservations.location],
+      references: [stock_locations.id],
+      relationName: "location"
+    }),
+    recovery_of: one(inventory_reservations, {
+      fields: [inventory_reservations.recovery_of],
+      references: [inventory_reservations.id],
+      relationName: "recovery_of"
+    })
+  })
+);
+export const relations_inventory_reservation_entries = relations(
+  inventory_reservation_entries,
+  ({ one }) => ({
+    reservation: one(inventory_reservations, {
+      fields: [inventory_reservation_entries.reservation],
+      references: [inventory_reservations.id],
+      relationName: "reservation"
+    }),
+    payment: one(product_payments, {
+      fields: [inventory_reservation_entries.payment],
+      references: [product_payments.id],
+      relationName: "payment"
+    })
+  })
+);
 export const relations_events_exclusive_links = relations(
   events_exclusive_links,
   ({ one }) => ({
@@ -12081,6 +12352,10 @@ export const relations_footer = relations(footer, ({ one, many }) => ({
     relationName: "_rels"
   })
 }));
+export const relations_payload_jobs_stats = relations(
+  payload_jobs_stats,
+  () => ({})
+);
 
 type DatabaseSchema = {
   enum__locales: typeof enum__locales;
@@ -12227,6 +12502,14 @@ type DatabaseSchema = {
   enum_inventory_receipts_status: typeof enum_inventory_receipts_status;
   enum_inventory_cycle_counts_status: typeof enum_inventory_cycle_counts_status;
   enum_inventory_cycle_count_lines_disposition: typeof enum_inventory_cycle_count_lines_disposition;
+  enum_inventory_reservations_status: typeof enum_inventory_reservations_status;
+  enum_inventory_reservations_consume_point: typeof enum_inventory_reservations_consume_point;
+  enum_inventory_reservations_expiry_boundary: typeof enum_inventory_reservations_expiry_boundary;
+  enum_inventory_reservations_payment_time_source: typeof enum_inventory_reservations_payment_time_source;
+  enum_inventory_reservations_late_payment_policy: typeof enum_inventory_reservations_late_payment_policy;
+  enum_inventory_reservations_backorder_mode: typeof enum_inventory_reservations_backorder_mode;
+  enum_inventory_reservation_entries_operation: typeof enum_inventory_reservation_entries_operation;
+  enum_inventory_reservation_entries_evidence_code: typeof enum_inventory_reservation_entries_evidence_code;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
   enum_events_state: typeof enum_events_state;
   enum_ticket_orders_currency: typeof enum_ticket_orders_currency;
@@ -12390,6 +12673,8 @@ type DatabaseSchema = {
   inventory_lots: typeof inventory_lots;
   inventory_cycle_counts: typeof inventory_cycle_counts;
   inventory_cycle_count_lines: typeof inventory_cycle_count_lines;
+  inventory_reservations: typeof inventory_reservations;
+  inventory_reservation_entries: typeof inventory_reservation_entries;
   events_exclusive_links: typeof events_exclusive_links;
   events: typeof events;
   ticket_orders: typeof ticket_orders;
@@ -12413,6 +12698,7 @@ type DatabaseSchema = {
   footer_column3_links: typeof footer_column3_links;
   footer: typeof footer;
   footer_rels: typeof footer_rels;
+  payload_jobs_stats: typeof payload_jobs_stats;
   relations_users_locales: typeof relations_users_locales;
   relations_users: typeof relations_users;
   relations__users_v_locales: typeof relations__users_v_locales;
@@ -12560,6 +12846,8 @@ type DatabaseSchema = {
   relations_inventory_lots: typeof relations_inventory_lots;
   relations_inventory_cycle_counts: typeof relations_inventory_cycle_counts;
   relations_inventory_cycle_count_lines: typeof relations_inventory_cycle_count_lines;
+  relations_inventory_reservations: typeof relations_inventory_reservations;
+  relations_inventory_reservation_entries: typeof relations_inventory_reservation_entries;
   relations_events_exclusive_links: typeof relations_events_exclusive_links;
   relations_events: typeof relations_events;
   relations_ticket_orders: typeof relations_ticket_orders;
@@ -12583,6 +12871,7 @@ type DatabaseSchema = {
   relations_footer_column3_links: typeof relations_footer_column3_links;
   relations_footer_rels: typeof relations_footer_rels;
   relations_footer: typeof relations_footer;
+  relations_payload_jobs_stats: typeof relations_payload_jobs_stats;
 };
 
 declare module "@payloadcms/db-postgres" {

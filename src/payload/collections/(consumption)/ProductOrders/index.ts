@@ -75,6 +75,7 @@ export const ProductOrders: CollectionConfig = {
         "quote_ready",
         "pending_payment",
         "paid",
+        "paid_inventory_review",
         "committed",
         "confirmed",
         "converted",

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getPayload } from "payload";
 import {
   normalizeLostDropCard,
@@ -16,6 +16,35 @@ vi.mock("@payload-config", () => ({ default: {} }));
 vi.mock("payload", () => ({ getPayload: vi.fn() }));
 
 const find = vi.fn();
+const execute = vi.fn();
+
+const POLICY_ENV = {
+  LOST_INVENTORY_RESERVATIONS_LIVE: "true",
+  LOST_INVENTORY_RESERVATION_TTL_MINUTES: "15",
+  LOST_INVENTORY_RESERVATION_LOCATION_CODE: "SEOUL",
+  LOST_INVENTORY_SAFETY_STOCK: "0",
+  LOST_INVENTORY_RESERVATION_CONSUME_POINT: "payment_confirmed",
+  LOST_INVENTORY_EXPIRY_BOUNDARY: "at_or_after",
+  LOST_INVENTORY_PAYMENT_TIME_SOURCE: "provider_paid_at",
+  LOST_INVENTORY_LATE_PAYMENT_POLICY: "manual_review",
+  LOST_INVENTORY_BACKORDER_MODE: "disabled"
+} as const;
+
+const originalEnv = Object.fromEntries(
+  Object.keys(POLICY_ENV).map((key) => [key, process.env[key]])
+);
+
+const defaultAvailabilityRows = [
+  "sku-1",
+  "sku-2",
+  "sku-active",
+  "sku-eligible",
+  "sku-high",
+  "sku-incomplete",
+  "sku-ineligible",
+  "sku-low",
+  "sku-override"
+].map((sku_id) => ({ sku_id, available_to_promise: 1 }));
 
 function product(overrides: Record<string, unknown> = {}) {
   return {
@@ -38,6 +67,15 @@ function mockProductQuery(
   skuPages: Record<number, Record<string, unknown>[]>,
   campaignDocs: Record<string, unknown>[] = []
 ) {
+  execute.mockResolvedValue({
+    rows: Object.values(skuPages)
+      .flat()
+      .filter((sku) => sku.active !== false)
+      .map((sku) => ({
+        sku_id: sku.id,
+        available_to_promise: 1
+      }))
+  });
   find.mockImplementation(
     async ({ collection, page = 1 }: { collection: string; page?: number }) => {
       if (collection === "products") {
@@ -59,7 +97,20 @@ function mockProductQuery(
 
 beforeEach(() => {
   find.mockReset();
-  vi.mocked(getPayload).mockResolvedValue({ find } as never);
+  execute.mockReset();
+  execute.mockResolvedValue({ rows: defaultAvailabilityRows });
+  Object.assign(process.env, POLICY_ENV);
+  vi.mocked(getPayload).mockResolvedValue({
+    db: { drizzle: { execute } },
+    find
+  } as never);
+});
+
+afterAll(() => {
+  for (const [key, value] of Object.entries(originalEnv)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
 });
 
 describe("lost commerce query normalization", () => {
@@ -253,7 +304,7 @@ describe("lost commerce relational SKU queries", () => {
     expect(result?.variants).toEqual([]);
   });
 
-  it("does not expose standard purchase for an SKU without physical availability", async () => {
+  it("ignores legacy variant inventory fields when batched ATP is positive", async () => {
     mockProductQuery(
       product({
         request_to_order_enabled: false,
@@ -276,9 +327,113 @@ describe("lost commerce relational SKU queries", () => {
 
     const result = await getLostProductBySlug("catalyst");
 
+    expect(result?.modes).toEqual(["standard_purchase"]);
+    expect(result?.variants[0]?.actionableModes).toEqual(["standard_purchase"]);
+    expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails standard purchase closed when the full PortOne reservation policy is unavailable", async () => {
+    delete process.env.LOST_INVENTORY_RESERVATION_LOCATION_CODE;
+    mockProductQuery(
+      product({
+        request_to_order_enabled: false,
+        private_order_enabled: false
+      }),
+      {
+        1: [
+          {
+            id: "sku-incomplete",
+            product: "product-1",
+            active: true,
+            sku: "LIS-INCOMPLETE",
+            inventory: 999,
+            stock_state: "in_stock",
+            options: []
+          }
+        ]
+      }
+    );
+
+    const result = await getLostProductBySlug("catalyst");
+
     expect(result?.modes).toEqual([]);
-    expect(result?.displayPrice).toBeNull();
     expect(result?.variants[0]?.actionableModes).toEqual([]);
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it("uses ATP rather than positive legacy stock fields for standard purchase", async () => {
+    mockProductQuery(
+      product({
+        request_to_order_enabled: false,
+        private_order_enabled: false
+      }),
+      {
+        1: [
+          {
+            id: "sku-incomplete",
+            product: "product-1",
+            active: true,
+            sku: "LIS-INCOMPLETE",
+            inventory: 999,
+            stock_state: "in_stock",
+            options: []
+          }
+        ]
+      }
+    );
+    execute.mockResolvedValue({
+      rows: [{ sku_id: "sku-incomplete", available_to_promise: 0 }]
+    });
+
+    const result = await getLostProductBySlug("catalyst");
+
+    expect(result?.modes).toEqual([]);
+    expect(result?.variants[0]?.actionableModes).toEqual([]);
+    expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves request and private modes unchanged when standard purchase fails closed", async () => {
+    delete process.env.LOST_INVENTORY_RESERVATION_LOCATION_CODE;
+    mockProductQuery(
+      product({
+        standard_enabled: true,
+        request_to_order_enabled: true,
+        private_order_enabled: true,
+        private_preset_price_enabled: false
+      }),
+      {
+        1: [
+          {
+            id: "sku-eligible",
+            product: "product-1",
+            active: true,
+            sku: "LIS-ELIGIBLE",
+            inventory: 999,
+            stock_state: "in_stock",
+            options: []
+          }
+        ]
+      },
+      [
+        {
+          id: "campaign-1",
+          title: "Production run",
+          state: "open",
+          deadline: "2099-08-31T00:00:00.000Z",
+          maximum_commitments: null,
+          eligible_skus: ["sku-eligible"]
+        }
+      ]
+    );
+
+    const result = await getLostProductBySlug("catalyst");
+
+    expect(result?.modes).toEqual(["request_to_order", "private_order"]);
+    expect(result?.variants[0]?.actionableModes).toEqual([
+      "request_to_order",
+      "private_order"
+    ]);
+    expect(execute).not.toHaveBeenCalled();
   });
 
   it("keeps an unpriced made-to-order SKU available only through private quote", async () => {
@@ -643,6 +798,9 @@ describe("lost commerce storefront queries", () => {
   );
 
   it("uses the active SKU override when the product base price is zero", async () => {
+    execute.mockResolvedValue({
+      rows: [{ sku_id: "sku-override", available_to_promise: 1 }]
+    });
     find.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === "products") {
         return {
@@ -684,6 +842,12 @@ describe("lost commerce storefront queries", () => {
   });
 
   it("shows the active SKU price range when overrides differ", async () => {
+    execute.mockResolvedValue({
+      rows: [
+        { sku_id: "sku-high", available_to_promise: 1 },
+        { sku_id: "sku-low", available_to_promise: 1 }
+      ]
+    });
     find.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === "products") {
         return {
@@ -735,6 +899,9 @@ describe("lost commerce storefront queries", () => {
   });
 
   it("loads home products, campaigns, drops, and normalized media", async () => {
+    execute.mockResolvedValue({
+      rows: [{ sku_id: "sku-1", available_to_promise: 1 }]
+    });
     find.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === "products") {
         return {

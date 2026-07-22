@@ -2,6 +2,12 @@ import type { getPayload } from "payload";
 import type { ProductOrder, ProductPayment } from "@/payload-types";
 
 import { paymentWebhookLock } from "@/lib/db/sequences";
+import { hashCommerceCommandInput } from "./commerce-commands";
+import type { ReservationTransactionRequest } from "./inventory-reservation-store";
+import {
+  finalizePaidOrderInventoryInTransaction,
+  lockOrderInventoryReservationsInTransaction
+} from "./inventory-reservations";
 import { markRequestOrderPaid } from "./campaigns";
 import { authorizeCommerceLifecycleRequest } from "./lifecycle-authorization";
 import { recordCommerceProviderEventStandalone } from "./provider-events";
@@ -21,6 +27,7 @@ import {
 
 type PayloadInstance = Awaited<ReturnType<typeof getPayload>>;
 const portOneActor = { kind: "system", id: "portone" } as const;
+const providerEventReferencePattern = /^[A-Za-z0-9_.:~/-]{1,200}$/;
 
 export type SyncProductPaymentResult =
   | {
@@ -108,8 +115,16 @@ export async function syncProductPayment(input: {
   paymentId: string;
   expectedUserId?: string;
   event?: Record<string, unknown>;
+  providerEventRef?: string;
 }): Promise<SyncProductPaymentResult> {
   const { payload, paymentId, expectedUserId, event } = input;
+  let providerEventRef = input.providerEventRef;
+  if (
+    providerEventRef !== undefined &&
+    !providerEventReferencePattern.test(providerEventRef)
+  ) {
+    return { ok: false, status: 400, reason: "malformed" };
+  }
   if (event) {
     try {
       const providerEvent = await recordCommerceProviderEventStandalone({
@@ -120,6 +135,10 @@ export async function syncProductPayment(input: {
       if (!providerEvent.recorded && !providerEvent.duplicate) {
         return { ok: false, status: 400, reason: "malformed" };
       }
+      if (!providerEvent.eventId) {
+        return { ok: false, status: 400, reason: "malformed" };
+      }
+      providerEventRef = providerEvent.eventId;
     } catch {
       return { ok: false, status: 503, reason: "verify-unavailable" };
     }
@@ -202,12 +221,24 @@ export async function syncProductPayment(input: {
   if (!transactionID) {
     return { ok: false, status: 503, reason: "verify-unavailable" };
   }
-  const txReq = { payload, transactionID, context: {} } as NonNullable<
-    Parameters<typeof payload.update>[0]["req"]
-  >;
+  const txReq: ReservationTransactionRequest = {
+    payload,
+    transactionID,
+    context: { user: { role: "guest" } }
+  };
   authorizeCommerceLifecycleRequest(txReq);
+  const inventoryCommandKey = hashCommerceCommandInput({
+    paymentId,
+    operation: "consume-reservations"
+  });
 
   try {
+    await lockOrderInventoryReservationsInTransaction({
+      payload,
+      req: txReq,
+      orderId: String(preOrder.id),
+      terminal: { operation: "consume", baseKey: inventoryCommandKey }
+    });
     await paymentWebhookLock(payload, transactionID, paymentId);
     const [order, payment] = await Promise.all([
       findOrder(payload, paymentId, txReq),
@@ -262,41 +293,24 @@ export async function syncProductPayment(input: {
         alreadyProcessed: true
       };
     }
-    if (["failed", "canceled", "refunded"].includes(String(order.status))) {
+    if (String(order.status) === "refunded") {
       await payload.db.rollbackTransaction(transactionID);
       return { ok: false, status: 409, reason: "order-final" };
     }
 
-    const nextOrderStatus = paidOrderStatus(order.order_mode);
     if (
       !isCommerceOrderState(order.status) ||
       !isCommercePaymentState(payment.status)
     ) {
       throw new CommerceTransitionError("invalid-commerce-transition");
     }
-    assertOrderTransition({
-      from: order.status,
-      to: nextOrderStatus,
-      actor: portOneActor
-    });
     assertPaymentTransition({
       from: payment.status,
       to: "paid",
       actor: portOneActor
     });
 
-    const paidAt = new Date().toISOString();
-    await payload.update({
-      collection: "product-orders" as never,
-      id: String(order.id),
-      overrideAccess: true,
-      req: txReq,
-      data: {
-        payment_status: "paid",
-        status: nextOrderStatus,
-        paid_at: paidAt
-      } as never
-    });
+    const paidAt = record.paidAt;
     await payload.update({
       collection: "product-payments" as never,
       id: String(payment.id),
@@ -308,11 +322,50 @@ export async function syncProductPayment(input: {
         paid_at: paidAt
       } as never
     });
-    await markRequestOrderPaid({
-      payload,
-      order: { ...order, status: nextOrderStatus },
-      req: txReq as never
+    const inventoryResult =
+      order.order_mode === "standard_purchase"
+        ? await finalizePaidOrderInventoryInTransaction({
+            payload,
+            req: txReq,
+            orderId: String(order.id),
+            paymentId: String(payment.id),
+            idempotencyKey: inventoryCommandKey,
+            providerEventRef,
+            providerPaidAt: paidAt,
+            locksHeld: true
+          })
+        : undefined;
+    const nonStockedPaymentNeedsReview =
+      order.order_mode !== "standard_purchase" &&
+      (order.status === "failed" || order.status === "canceled");
+    const nextOrderStatus =
+      inventoryResult?.kind === "paid_inventory_review" ||
+      nonStockedPaymentNeedsReview
+        ? "paid_inventory_review"
+        : paidOrderStatus(order.order_mode);
+    assertOrderTransition({
+      from: order.status,
+      to: nextOrderStatus,
+      actor: portOneActor
     });
+    await payload.update({
+      collection: "product-orders" as never,
+      id: String(order.id),
+      overrideAccess: true,
+      req: txReq,
+      data: {
+        payment_status: "paid",
+        status: nextOrderStatus,
+        paid_at: paidAt
+      } as never
+    });
+    if (nextOrderStatus !== "paid_inventory_review") {
+      await markRequestOrderPaid({
+        payload,
+        order: { ...order, status: nextOrderStatus },
+        req: txReq as never
+      });
+    }
     await payload.db.commitTransaction(transactionID);
     return {
       ok: true,

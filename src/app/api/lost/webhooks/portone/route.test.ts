@@ -7,12 +7,11 @@ const update = vi.fn();
 const beginTransaction = vi.fn();
 const commitTransaction = vi.fn();
 const rollbackTransaction = vi.fn();
-const markRequestOrderPaid = vi.fn(async () => undefined);
+const paymentWebhookLock = vi.fn(async () => undefined);
 const releaseStandardInventory = vi.fn(async () => undefined);
 const syncPlanPayment = vi.fn();
 const cancelPendingPlanPayment = vi.fn();
 const syncProductPayment = vi.fn();
-const getPortOnePayment = vi.fn();
 const recordCommerceProviderEventStandalone = vi.fn();
 const claimCommerceProviderEvent = vi.fn();
 const completeCommerceProviderEvent = vi.fn();
@@ -27,15 +26,13 @@ vi.mock("@/lib/lost-commerce/plan-payment", () => ({
 vi.mock("@/lib/lost-commerce/product-payment", () => ({
   syncProductPayment
 }));
-vi.mock("@/lib/lost-commerce/verify-payment", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/lost-commerce/verify-payment")>()),
-  getPortOnePayment
-}));
 vi.mock("@/lib/lost-commerce/provider-events", () => ({
   claimCommerceProviderEvent,
   completeCommerceProviderEvent,
   recordCommerceProviderEventStandalone
 }));
+
+vi.mock("@/lib/db/sequences", () => ({ paymentWebhookLock }));
 
 vi.mock("payload", () => ({
   getPayload: vi.fn(async () => ({
@@ -57,10 +54,6 @@ vi.mock("payload", () => ({
   }))
 }));
 
-vi.mock("@/lib/lost-commerce/campaigns", () => ({
-  markRequestOrderPaid
-}));
-
 vi.mock("@/lib/lost-commerce/inventory", () => ({
   releaseStandardInventory
 }));
@@ -69,15 +62,12 @@ const OLD_ENV = { ...process.env };
 const LEGACY_SECRET = "legacy-webhook-secret-0123456789abcdef";
 
 function webhookRequest(body: unknown, secret?: string) {
-  const requestSecret =
-    secret === "webhook-secret" ? LEGACY_SECRET : secret;
+  const requestSecret = secret === "webhook-secret" ? LEGACY_SECRET : secret;
   return new NextRequest("https://hideaway.test/api/lost/webhooks/portone", {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      ...(requestSecret
-        ? { "x-portone-webhook-secret": requestSecret }
-        : {})
+      ...(requestSecret ? { "x-portone-webhook-secret": requestSecret } : {})
     },
     body: JSON.stringify(body)
   });
@@ -132,17 +122,15 @@ describe("POST /api/lost/webhooks/portone", () => {
     beginTransaction.mockReset().mockResolvedValue("tx-1");
     commitTransaction.mockReset().mockResolvedValue(undefined);
     rollbackTransaction.mockReset().mockResolvedValue(undefined);
-    markRequestOrderPaid.mockClear();
+    paymentWebhookLock.mockClear();
     releaseStandardInventory.mockClear();
     syncPlanPayment.mockReset();
     cancelPendingPlanPayment.mockReset();
-    syncProductPayment.mockReset();
-    getPortOnePayment.mockReset().mockResolvedValue({
-      status: "PAID",
-      amount: { total: 1000, paid: 1000 },
-      currency: "KRW",
-      channel: { type: "LIVE" },
-      transactionId: "txn-1"
+    syncProductPayment.mockReset().mockResolvedValue({
+      ok: true,
+      orderId: "order-1",
+      status: "paid",
+      alreadyProcessed: false
     });
     recordCommerceProviderEventStandalone.mockReset().mockResolvedValue({
       recorded: true,
@@ -260,7 +248,10 @@ describe("POST /api/lost/webhooks/portone", () => {
     );
 
     expect(res.status).toBe(401);
-    expect(await res.json()).toEqual({ ok: false, error: "signature-required" });
+    expect(await res.json()).toEqual({
+      ok: false,
+      error: "signature-required"
+    });
     expect(find).not.toHaveBeenCalled();
   });
 
@@ -282,11 +273,19 @@ describe("POST /api/lost/webhooks/portone", () => {
     );
 
     expect(res.status).toBe(401);
-    expect(await res.json()).toEqual({ ok: false, error: "signature-required" });
+    expect(await res.json()).toEqual({
+      ok: false,
+      error: "signature-required"
+    });
     expect(find).not.toHaveBeenCalled();
   });
 
-  it("rejects events that omit currency before mutating state", async () => {
+  it("ACKs a canonical currency rejection without route-owned mutation", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: false,
+      status: 409,
+      reason: "currency-mismatch"
+    });
     const { POST } = await import("./route");
     const res = await POST(
       webhookRequest(
@@ -299,15 +298,26 @@ describe("POST /api/lost/webhooks/portone", () => {
         "webhook-secret"
       )
     );
-    const body = (await res.json()) as { ok: boolean; error: string };
-
-    expect(res.status).toBe(409);
-    expect(body).toEqual({ ok: false, error: "payment-mismatch" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      ok: true,
+      rejected: "currency-mismatch"
+    });
     expect(update).not.toHaveBeenCalled();
-    expect(markRequestOrderPaid).not.toHaveBeenCalled();
+    expect(completeCommerceProviderEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "rejected",
+        outcomeCode: "currency-mismatch"
+      })
+    );
   });
 
-  it("rejects amount and currency mismatches before mutating state", async () => {
+  it("ACKs a canonical amount rejection instead of trusting webhook totals", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: false,
+      status: 409,
+      reason: "amount-mismatch"
+    });
     const { POST } = await import("./route");
     const res = await POST(
       webhookRequest(
@@ -321,12 +331,12 @@ describe("POST /api/lost/webhooks/portone", () => {
         "webhook-secret"
       )
     );
-    const body = (await res.json()) as { ok: boolean; error: string };
-
-    expect(res.status).toBe(409);
-    expect(body).toEqual({ ok: false, error: "payment-mismatch" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      ok: true,
+      rejected: "amount-mismatch"
+    });
     expect(update).not.toHaveBeenCalled();
-    expect(markRequestOrderPaid).not.toHaveBeenCalled();
   });
 
   it("reconciles a V2 product webhook from data.paymentId", async () => {
@@ -364,6 +374,118 @@ describe("POST /api/lost/webhooks/portone", () => {
         eventId: "event-row-1",
         leaseToken: "lease-1",
         status: "processed"
+      })
+    );
+  });
+
+  it("routes a legacy product webhook through canonical reconciliation without taking the legacy payment lock", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: true,
+      orderId: "order-1",
+      status: "paid",
+      alreadyProcessed: false
+    });
+    const { POST } = await import("./route");
+    const res = await POST(
+      webhookRequest(
+        {
+          webhook_id: "evt-legacy-product",
+          merchant_order_id: "lis_1",
+          status: "PAID",
+          amount: 1000,
+          currency: "KRW"
+        },
+        "webhook-secret"
+      )
+    );
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      ok: true,
+      orderId: "order-1",
+      alreadyProcessed: false
+    });
+    expect(syncProductPayment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentId: "lis_1",
+        providerEventRef: "event-row-1"
+      })
+    );
+    expect(claimCommerceProviderEvent).toHaveBeenCalledWith({
+      payload: expect.anything(),
+      eventId: "event-row-1"
+    });
+    expect(paymentWebhookLock).not.toHaveBeenCalled();
+    expect(releaseStandardInventory).not.toHaveBeenCalled();
+    expect(beginTransaction).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+    expect(completeCommerceProviderEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: "event-row-1",
+        leaseToken: "lease-1",
+        status: "processed",
+        outcomeCode: "product-payment-paid"
+      })
+    );
+  });
+
+  it("keeps legacy product lookup failures retryable", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: false,
+      status: 404,
+      reason: "order-not-found"
+    });
+    const { POST } = await import("./route");
+    const res = await POST(
+      webhookRequest(
+        {
+          webhook_id: "evt-legacy-missing-order",
+          merchant_order_id: "lis_delayed"
+        },
+        "webhook-secret"
+      )
+    );
+
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({
+      ok: false,
+      error: "order-not-found"
+    });
+    expect(completeCommerceProviderEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "retryable",
+        outcomeCode: "order-not-found"
+      })
+    );
+  });
+
+  it("keeps V2 product lookup failures terminally ACKed", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: false,
+      status: 404,
+      reason: "order-not-found"
+    });
+    const { POST } = await import("./route");
+    const res = await POST(
+      webhookRequest(
+        {
+          webhook_id: "evt-v2-missing-order",
+          type: "Transaction.Paid",
+          data: { paymentId: "lis_delayed" }
+        },
+        "webhook-secret"
+      )
+    );
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      ok: true,
+      rejected: "order-not-found"
+    });
+    expect(completeCommerceProviderEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "rejected",
+        outcomeCode: "order-not-found"
       })
     );
   });
@@ -453,7 +575,18 @@ describe("POST /api/lost/webhooks/portone", () => {
         conflict: false,
         eventId: "event-row-1"
       });
-    beginTransaction.mockResolvedValueOnce(null).mockResolvedValueOnce("tx-1");
+    syncProductPayment
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        reason: "verify-unavailable"
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        orderId: "order-1",
+        status: "paid",
+        alreadyProcessed: false
+      });
     const { POST } = await import("./route");
     const event = {
       webhook_id: "evt-1",
@@ -466,11 +599,24 @@ describe("POST /api/lost/webhooks/portone", () => {
     const first = await POST(webhookRequest(event, "webhook-secret"));
     const retry = await POST(webhookRequest(event, "webhook-secret"));
 
-    expect(first.status).toBe(500);
+    expect(first.status).toBe(503);
     expect(retry.status).toBe(200);
     expect(recordCommerceProviderEventStandalone).toHaveBeenCalledTimes(2);
-    expect(update).toHaveBeenCalledTimes(2);
-    expect(commitTransaction).toHaveBeenCalledWith("tx-1");
+    expect(syncProductPayment).toHaveBeenCalledTimes(2);
+    expect(completeCommerceProviderEvent).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        status: "retryable",
+        outcomeCode: "verify-unavailable"
+      })
+    );
+    expect(completeCommerceProviderEvent).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        status: "processed",
+        outcomeCode: "product-payment-paid"
+      })
+    );
   });
 
   it("does not rewrite settlement data after successful reconciliation", async () => {
@@ -480,40 +626,11 @@ describe("POST /api/lost/webhooks/portone", () => {
       conflict: false,
       eventId: "event-row-1"
     });
-    find.mockImplementation(async ({ collection }) => {
-      if (collection === "product-orders") {
-        return {
-          docs: [
-            {
-              id: "order-1",
-              order_ref: "lis_1",
-              order_mode: "standard_purchase",
-              status: "confirmed",
-              payment_status: "paid",
-              paid_at: "2026-07-21T07:00:00.000Z",
-              total_amount: 1000,
-              currency: "KRW"
-            }
-          ]
-        };
-      }
-      if (collection === "product-payments") {
-        return {
-          docs: [
-            {
-              id: "payment-1",
-              amount: 1000,
-              currency: "KRW",
-              provider: "portone",
-              status: "paid",
-              paid_at: "2026-07-21T07:00:00.000Z",
-              portone_order_ref: "lis_1",
-              portone_transaction_ref: "txn-original"
-            }
-          ]
-        };
-      }
-      return { docs: [] };
+    syncProductPayment.mockResolvedValue({
+      ok: true,
+      orderId: "order-1",
+      status: "paid",
+      alreadyProcessed: true
     });
 
     const { POST } = await import("./route");
@@ -532,9 +649,14 @@ describe("POST /api/lost/webhooks/portone", () => {
     );
 
     expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      ok: true,
+      orderId: "order-1",
+      alreadyProcessed: true
+    });
     expect(update).not.toHaveBeenCalled();
-    expect(markRequestOrderPaid).not.toHaveBeenCalled();
-    expect(commitTransaction).toHaveBeenCalledWith("tx-1");
+    expect(paymentWebhookLock).not.toHaveBeenCalled();
+    expect(beginTransaction).not.toHaveBeenCalled();
   });
 
   it("returns 503 when authenticated legacy event evidence cannot be stored", async () => {
@@ -595,13 +717,12 @@ describe("POST /api/lost/webhooks/portone", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
-  it("records a terminal outcome when a legacy event has no order reference", async () => {
+  it("records a terminal outcome when an event has no payment reference", async () => {
     const { POST } = await import("./route");
     const res = await POST(
       webhookRequest(
         {
           webhook_id: "evt-missing-order",
-          paymentId: "provider-payment-1",
           status: "PAID"
         },
         "webhook-secret"
@@ -618,7 +739,12 @@ describe("POST /api/lost/webhooks/portone", () => {
     });
   });
 
-  it("maps non-paid PortOne events to valid product order statuses", async () => {
+  it("ACKs a canonical non-paid product outcome", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: false,
+      status: 402,
+      reason: "not-paid"
+    });
     find.mockImplementation(async ({ collection }) => {
       if (collection === "product-orders") {
         return {
@@ -667,30 +793,19 @@ describe("POST /api/lost/webhooks/portone", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(find).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: "product-payments",
-        where: {
-          and: [
-            { portone_order_ref: { equals: "lis_1" } },
-            { provider: { equals: "portone" } }
-          ]
-        }
-      })
+    expect(await res.json()).toEqual({ ok: true, rejected: "not-paid" });
+    expect(syncProductPayment).toHaveBeenCalledWith(
+      expect.objectContaining({ paymentId: "lis_1" })
     );
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: "product-orders",
-        id: "order-1",
-        data: expect.objectContaining({
-          payment_status: "pending",
-          status: "pending_payment"
-        })
-      })
-    );
+    expect(update).not.toHaveBeenCalled();
   });
 
-  it("releases standard inventory when PortOne reports payment failure", async () => {
+  it("delegates terminal legacy failures without route-owned locks or scalar inventory release", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: false,
+      status: 402,
+      reason: "payment-failed"
+    });
     const { POST } = await import("./route");
     const res = await POST(
       webhookRequest(
@@ -706,26 +821,23 @@ describe("POST /api/lost/webhooks/portone", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(releaseStandardInventory).toHaveBeenCalledWith(
+    expect(await res.json()).toEqual({
+      ok: true,
+      rejected: "payment-failed"
+    });
+    expect(syncProductPayment).toHaveBeenCalledWith(
+      expect.objectContaining({ paymentId: "lis_1" })
+    );
+    expect(completeCommerceProviderEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        payload: expect.objectContaining({ update }),
-        req: expect.objectContaining({ transactionID: "tx-1" }),
-        order: expect.objectContaining({
-          id: "order-1",
-          order_mode: "standard_purchase"
-        })
+        status: "rejected",
+        outcomeCode: "payment-failed"
       })
     );
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: "product-orders",
-        id: "order-1",
-        data: expect.objectContaining({
-          payment_status: "failed",
-          status: "failed"
-        })
-      })
-    );
+    expect(paymentWebhookLock).not.toHaveBeenCalled();
+    expect(beginTransaction).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+    expect(releaseStandardInventory).not.toHaveBeenCalled();
   });
 
   it("does not release inventory again for an order already marked failed", async () => {
@@ -797,6 +909,11 @@ describe("POST /api/lost/webhooks/portone", () => {
   });
 
   it("rejects a reordered failure after payment without mutating state", async () => {
+    syncProductPayment.mockResolvedValue({
+      ok: false,
+      status: 409,
+      reason: "order-final"
+    });
     find.mockImplementation(async ({ collection }) => {
       if (collection === "product-orders") {
         return {
@@ -848,14 +965,14 @@ describe("POST /api/lost/webhooks/portone", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
       ok: true,
-      rejected: "invalid-commerce-transition"
+      rejected: "order-final"
     });
     expect(releaseStandardInventory).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
-    expect(rollbackTransaction).toHaveBeenCalledWith("tx-1");
+    expect(beginTransaction).not.toHaveBeenCalled();
   });
 
-  it("passes the paid order state to request-to-order campaign handling", async () => {
+  it("leaves request-to-order campaign handling to canonical reconciliation", async () => {
     find.mockImplementation(async ({ collection }) => {
       if (collection === "product-orders") {
         return {
@@ -905,11 +1022,11 @@ describe("POST /api/lost/webhooks/portone", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(markRequestOrderPaid).toHaveBeenCalledWith(
-      expect.objectContaining({
-        order: expect.objectContaining({ status: "paid" })
-      })
+    expect(syncProductPayment).toHaveBeenCalledWith(
+      expect.objectContaining({ paymentId: "lis_1" })
     );
+    expect(beginTransaction).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   describe("Standard-Webhooks signature verification", () => {
@@ -931,13 +1048,13 @@ describe("POST /api/lost/webhooks/portone", () => {
       const body = (await res.json()) as { ok: boolean };
 
       expect(res.status).toBe(200);
-      expect(body).toEqual({ ok: true });
-      expect(update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          collection: "product-orders",
-          id: "order-1",
-          data: expect.objectContaining({ payment_status: "paid" })
-        })
+      expect(body).toEqual({
+        ok: true,
+        orderId: "order-1",
+        alreadyProcessed: false
+      });
+      expect(syncProductPayment).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentId: "lis_1" })
       );
     });
 
@@ -954,7 +1071,7 @@ describe("POST /api/lost/webhooks/portone", () => {
       expect(body).toEqual({ ok: false, error: "invalid-webhook-signature" });
       expect(find).not.toHaveBeenCalled();
       expect(update).not.toHaveBeenCalled();
-      expect(markRequestOrderPaid).not.toHaveBeenCalled();
+      expect(syncProductPayment).not.toHaveBeenCalled();
     });
 
     it("rejects a signature made with the wrong key with 400", async () => {
@@ -998,22 +1115,17 @@ describe("POST /api/lost/webhooks/portone", () => {
       const res = await POST(webhookRequest(PAID_EVENT, WHSEC));
 
       expect(res.status).toBe(200);
-      expect(getPortOnePayment).toHaveBeenCalledWith("lis_1");
-      expect(update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          collection: "product-orders",
-          data: expect.objectContaining({ payment_status: "paid" })
-        })
+      expect(syncProductPayment).toHaveBeenCalledWith(
+        expect.objectContaining({ paymentId: "lis_1" })
       );
+      expect(update).not.toHaveBeenCalled();
     });
 
     it("rejects a legacy paid event when authoritative provider data disagrees", async () => {
-      getPortOnePayment.mockResolvedValue({
-        status: "PAID",
-        amount: { total: 999, paid: 999 },
-        currency: "KRW",
-        channel: { type: "LIVE" },
-        transactionId: "txn-wrong"
+      syncProductPayment.mockResolvedValue({
+        ok: false,
+        status: 409,
+        reason: "amount-mismatch"
       });
       const { POST } = await import("./route");
       const res = await POST(webhookRequest(PAID_EVENT, WHSEC));

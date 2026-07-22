@@ -256,3 +256,42 @@ export async function inventoryAggregateLock(
     advisoryLockKey(`inventory-aggregate:${aggregateKey}`)
   );
 }
+
+/** Serializes permanent reservation-entry idempotency for one command key. */
+export async function inventoryReservationIdempotencyLock(
+  payload: Payload,
+  transactionID: string | number,
+  idempotencyKey: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`inventory-reservation-command:${idempotencyKey}`)
+  );
+}
+
+/** Serializes active reserved quantity for one SKU/location pair. */
+export async function inventoryReservationAggregateLock(
+  payload: Payload,
+  transactionID: string | number,
+  aggregateKey: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`inventory-reservation-aggregate:${aggregateKey}`)
+  );
+}
+
+/** Serializes lifecycle transitions for one immutable reservation root. */
+export async function inventoryReservationLock(
+  payload: Payload,
+  transactionID: string | number,
+  reservationId: string
+): Promise<void> {
+  await transactionAdvisoryLock(
+    payload,
+    transactionID,
+    advisoryLockKey(`inventory-reservation:${reservationId}`)
+  );
+}

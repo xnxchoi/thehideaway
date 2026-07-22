@@ -4,6 +4,7 @@ export const ORDER_STATES = [
   "quote_ready",
   "pending_payment",
   "paid",
+  "paid_inventory_review",
   "committed",
   "confirmed",
   "converted",
@@ -46,13 +47,26 @@ const orderTransitions: Readonly<
   draft: new Set(["quote_requested", "pending_payment", "canceled"]),
   quote_requested: new Set(["quote_ready", "canceled"]),
   quote_ready: new Set(["pending_payment", "failed", "canceled"]),
-  pending_payment: new Set(["paid", "confirmed", "failed", "canceled"]),
-  paid: new Set(["committed", "confirmed", "refunded", "canceled"]),
+  pending_payment: new Set([
+    "paid",
+    "paid_inventory_review",
+    "confirmed",
+    "failed",
+    "canceled"
+  ]),
+  paid: new Set([
+    "paid_inventory_review",
+    "committed",
+    "confirmed",
+    "refunded",
+    "canceled"
+  ]),
+  paid_inventory_review: new Set(["confirmed", "refunded", "canceled"]),
   committed: new Set(["confirmed", "failed", "refunded", "canceled"]),
   confirmed: new Set(["converted", "refunded", "canceled"]),
   converted: new Set(),
-  failed: new Set(),
-  canceled: new Set(),
+  failed: new Set(["paid_inventory_review"]),
+  canceled: new Set(["paid_inventory_review"]),
   refunded: new Set()
 };
 
@@ -63,7 +77,7 @@ const paymentTransitions: Readonly<
   pending: new Set(["paid", "failed"]),
   manual_pending: new Set(["paid", "failed"]),
   paid: new Set(["partially_refunded", "refunded"]),
-  failed: new Set(),
+  failed: new Set(["paid"]),
   partially_refunded: new Set(["refunded"]),
   refunded: new Set()
 };
@@ -103,18 +117,38 @@ function isStaffLifecycleActor(actor: CommerceTransitionActor): boolean {
   );
 }
 
+function isAuthoritativePortOneActor(actor: CommerceTransitionActor): boolean {
+  return (
+    actor.kind === "system" &&
+    (actor.id === "portone" || actor.id === "portone-legacy")
+  );
+}
+
 function canChangeOrder(
   actor: CommerceTransitionActor,
   from: CommerceOrderState,
   to: CommerceOrderState
 ): boolean {
+  if (to === "paid_inventory_review") {
+    return isAuthoritativePortOneActor(actor);
+  }
+  if (from === "paid_inventory_review") {
+    return isAuthoritativePortOneActor(actor) || isStaffLifecycleActor(actor);
+  }
   if (actor.kind === "system" || isStaffLifecycleActor(actor)) return true;
   return (
     actor.kind === "customer" && from === "pending_payment" && to === "canceled"
   );
 }
 
-function canChangePayment(actor: CommerceTransitionActor): boolean {
+function canChangePayment(
+  actor: CommerceTransitionActor,
+  from: CommercePaymentState,
+  to: CommercePaymentState
+): boolean {
+  if (from === "failed" && to === "paid") {
+    return isAuthoritativePortOneActor(actor);
+  }
   return actor.kind === "system" || isStaffLifecycleActor(actor);
 }
 
@@ -162,7 +196,7 @@ export function assertPaymentTransition(input: {
   if (input.from === input.to) {
     return Object.freeze({ changed: false, from: input.from, to: input.to });
   }
-  if (!canChangePayment(input.actor)) {
+  if (!canChangePayment(input.actor, input.from, input.to)) {
     throw new CommerceTransitionError("commerce-transition-forbidden");
   }
   if (!paymentTransitions[input.from]?.has(input.to)) {

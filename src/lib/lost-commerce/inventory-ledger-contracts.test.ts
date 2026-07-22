@@ -42,13 +42,14 @@ describe("inventory ledger contracts", () => {
     ]);
   });
 
-  it("defines explicit PR5 inventory provenance sources", () => {
+  it("defines explicit inventory provenance sources", () => {
     expect(INVENTORY_MOVEMENT_SOURCE_TYPES).toEqual([
       "inventory_command",
       "inventory_receipt",
       "inventory_lot_release",
       "inventory_adjustment",
-      "inventory_cycle_count"
+      "inventory_cycle_count",
+      "inventory_reservation"
     ]);
   });
 
@@ -295,6 +296,31 @@ describe("inventory ledger contracts", () => {
   ])("rejects invalid $sourceType movement semantics", (overrides) => {
     expect(() =>
       validateInventoryMovementRequest({ ...inbound, ...overrides })
+    ).toThrow("invalid-inventory-source-semantics");
+  });
+
+  it("accepts only an available outbound movement for reservation consumption", () => {
+    expect(
+      validateInventoryMovementRequest({
+        ...inbound,
+        sourceType: "inventory_reservation",
+        sourceRef: "reservation-1",
+        kind: "outbound",
+        to: undefined,
+        from: { locationId: "location-1", disposition: "available" }
+      })
+    ).toMatchObject({
+      sourceType: "inventory_reservation",
+      sourceRef: "reservation-1",
+      kind: "outbound"
+    });
+
+    expect(() =>
+      validateInventoryMovementRequest({
+        ...inbound,
+        sourceType: "inventory_reservation",
+        sourceRef: "reservation-1"
+      })
     ).toThrow("invalid-inventory-source-semantics");
   });
 

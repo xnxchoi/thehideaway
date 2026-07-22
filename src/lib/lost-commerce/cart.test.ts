@@ -392,9 +392,8 @@ describe("resolveLostCheckout", () => {
     });
   });
 
-  it("rejects standard purchases when product stock is unavailable", async () => {
-    await expect(
-      resolveLostCheckout({
+  it("does not treat legacy stock state as checkout availability", async () => {
+    const result = await resolveLostCheckout({
         payload: payloadWith({
           product_1: {
             id: "product_1",
@@ -420,13 +419,12 @@ describe("resolveLostCheckout", () => {
             quantity: 1
           }
         ]
-      })
-    ).rejects.toThrow("out-of-stock");
+      });
+    expect(result.totalAmount).toBe(120000);
   });
 
-  it("rejects standard purchases above SKU inventory", async () => {
-    await expect(
-      resolveLostCheckout({
+  it("does not treat the legacy SKU inventory scalar as a quantity cap", async () => {
+    const result = await resolveLostCheckout({
         payload: payloadWith({
           product_1: {
             id: "product_1",
@@ -452,8 +450,8 @@ describe("resolveLostCheckout", () => {
             quantity: 2
           }
         ]
-      })
-    ).rejects.toThrow("insufficient-inventory");
+      });
+    expect(result.totalAmount).toBe(240000);
   });
 
   it("aggregates duplicate raw lines before enforcing max order quantity", async () => {
@@ -574,9 +572,8 @@ describe("resolveLostCheckout", () => {
     }
   );
 
-  it("rejects on-request products in standard purchase mode", async () => {
-    await expect(
-      resolveLostCheckout({
+  it("uses the standard-enabled mode flag instead of legacy SKU stock state", async () => {
+    const result = await resolveLostCheckout({
         payload: payloadWith({
           product_1: {
             id: "product_1",
@@ -602,8 +599,8 @@ describe("resolveLostCheckout", () => {
             quantity: 1
           }
         ]
-      })
-    ).rejects.toThrow("standard-unavailable");
+      });
+    expect(result.totalAmount).toBe(120000);
   });
 
   it("rejects unknown SKU ids instead of falling back to product pricing", async () => {
@@ -637,9 +634,8 @@ describe("resolveLostCheckout", () => {
     ).rejects.toThrow("sku-not-found");
   });
 
-  it("rejects standard purchases above variant inventory", async () => {
-    await expect(
-      resolveLostCheckout({
+  it("leaves standard inventory authority to the reservation ledger", async () => {
+    const result = await resolveLostCheckout({
         payload: payloadWith({
           product_1: {
             id: "product_1",
@@ -665,11 +661,11 @@ describe("resolveLostCheckout", () => {
             quantity: 2
           }
         ]
-      })
-    ).rejects.toThrow("insufficient-inventory");
+      });
+    expect(result.totalAmount).toBe(240000);
   });
 
-  it("treats SKU inventory as the standard-purchase cap", async () => {
+  it("ignores divergent product and SKU inventory scalars", async () => {
     const result = await resolveLostCheckout({
       payload: payloadWith({
         product_1: {

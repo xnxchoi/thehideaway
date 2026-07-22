@@ -24,17 +24,24 @@ const allowedOrderTransitions = new Set([
   "pending_payment:confirmed",
   "pending_payment:failed",
   "pending_payment:canceled",
+  "pending_payment:paid_inventory_review",
   "paid:committed",
   "paid:confirmed",
   "paid:refunded",
   "paid:canceled",
+  "paid:paid_inventory_review",
   "committed:confirmed",
   "committed:failed",
   "committed:refunded",
   "committed:canceled",
   "confirmed:converted",
   "confirmed:refunded",
-  "confirmed:canceled"
+  "confirmed:canceled",
+  "failed:paid_inventory_review",
+  "canceled:paid_inventory_review",
+  "paid_inventory_review:confirmed",
+  "paid_inventory_review:refunded",
+  "paid_inventory_review:canceled"
 ]);
 
 const allowedPaymentTransitions = new Set([
@@ -44,6 +51,7 @@ const allowedPaymentTransitions = new Set([
   "initiated:failed",
   "pending:paid",
   "pending:failed",
+  "failed:paid",
   "manual_pending:paid",
   "manual_pending:failed",
   "paid:partially_refunded",
@@ -177,6 +185,23 @@ describe("order transitions", () => {
     ).toThrow("invalid-commerce-transition");
     expect(isTerminalCommerceState("order", "refunded")).toBe(true);
   });
+
+  it("limits paid inventory review recovery to authoritative payment actors", () => {
+    expect(
+      assertOrderTransition({
+        from: "failed",
+        to: "paid_inventory_review",
+        actor: systemActor
+      }).changed
+    ).toBe(true);
+    expect(() =>
+      assertOrderTransition({
+        from: "failed",
+        to: "paid_inventory_review",
+        actor: { kind: "system", id: "expiry-worker" }
+      })
+    ).toThrow("commerce-transition-forbidden");
+  });
 });
 
 describe("payment transitions", () => {
@@ -230,6 +255,23 @@ describe("payment transitions", () => {
         from: "pending",
         to: "paid",
         actor: customerActor
+      })
+    ).toThrow("commerce-transition-forbidden");
+  });
+
+  it("limits authoritative recovery from failed to a PortOne actor", () => {
+    expect(
+      assertPaymentTransition({
+        from: "failed",
+        to: "paid",
+        actor: systemActor
+      }).changed
+    ).toBe(true);
+    expect(() =>
+      assertPaymentTransition({
+        from: "failed",
+        to: "paid",
+        actor: { kind: "system", id: "expiry-worker" }
       })
     ).toThrow("commerce-transition-forbidden");
   });

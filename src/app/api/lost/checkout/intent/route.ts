@@ -1,6 +1,6 @@
 import { headers as nextHeaders } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getPayload } from "payload";
+import { createLocalReq, getPayload } from "payload";
 import config from "@payload-config";
 import { z } from "zod";
 import { isSameOrigin } from "@/lib/api/isSameOrigin";
@@ -26,8 +26,10 @@ import {
   hashCommerceCommandInput,
   validateCommerceCommandKey
 } from "@/lib/lost-commerce/commerce-commands";
-import type { LostCartLineSnapshot } from "@/lib/lost-commerce/types";
 import { isManualPaymentEnabled } from "@/lib/lost-commerce/payment-methods";
+import { requireInventoryReservationPolicyForCheckout } from "@/lib/lost-commerce/inventory-reservations";
+import { reserveCheckoutOrderInventoryInTransaction } from "@/lib/lost-commerce/checkout-inventory-reservations";
+import type { ReservationTransactionRequest } from "@/lib/lost-commerce/inventory-reservation-store";
 
 export const runtime = "nodejs";
 
@@ -49,8 +51,6 @@ const BodySchema = z.object({
   contact: z.record(z.string(), z.unknown()).optional()
 });
 
-type AnyDoc = Record<string, any>;
-
 function requestOrigin(req: NextRequest): string {
   const origin = req.headers.get("origin");
   if (origin) return origin;
@@ -62,50 +62,6 @@ function lostStorefrontBase(origin: string): string {
   return host === "lostinseoul.com" || host === "www.lostinseoul.com"
     ? ""
     : "/lostinseoul";
-}
-
-function reservationKey(line: LostCartLineSnapshot): string {
-  return `${line.productId}:${line.skuId}`;
-}
-
-function aggregateStandardLines(lines: LostCartLineSnapshot[]) {
-  const reservations = new Map<
-    string,
-    { productId: string; quantity: number; skuId: string }
-  >();
-  for (const line of lines) {
-    if (line.mode !== "standard_purchase") continue;
-    const key = reservationKey(line);
-    const existing = reservations.get(key);
-    if (existing) {
-      existing.quantity += line.quantity;
-      continue;
-    }
-    reservations.set(key, {
-      productId: line.productId,
-      quantity: line.quantity,
-      skuId: line.skuId
-    });
-  }
-  return [...reservations.values()];
-}
-
-function numericInventory(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function stockStateOf(sku: AnyDoc): string {
-  return String(sku.stock_state ?? "out_of_stock");
-}
-
-function assertReservable(stockState: string) {
-  if (stockState === "out_of_stock") throw new Error("out-of-stock");
-  if (stockState === "on_request") throw new Error("standard-unavailable");
-}
-
-function decrement(value: number, quantity: number): number {
-  if (quantity > value) throw new Error("insufficient-inventory");
-  return value - quantity;
 }
 
 async function lockCheckoutProducts(input: {
@@ -132,44 +88,9 @@ async function lockCheckoutSkus(input: {
   }
 }
 
-async function reserveStandardInventory(input: {
-  lines: LostCartLineSnapshot[];
-  payload: Awaited<ReturnType<typeof getPayload>>;
-  req: Record<string, unknown>;
-}) {
-  const reservations = aggregateStandardLines(input.lines);
-  for (const reservation of reservations) {
-    const sku = (await input.payload.findByID({
-      collection: "product-variants",
-      id: reservation.skuId,
-      depth: 0,
-      req: input.req as never,
-      overrideAccess: true
-    })) as AnyDoc;
-    const skuProductId =
-      typeof sku.product === "string" ? sku.product : sku.product?.id;
-    if (!sku?.active || skuProductId !== reservation.productId) {
-      throw new Error("sku-unavailable");
-    }
-    assertReservable(stockStateOf(sku));
-    const skuInventory = numericInventory(sku.inventory);
-    if (skuInventory === null) throw new Error("standard-unavailable");
-    const nextInventory = decrement(skuInventory, reservation.quantity);
-    await input.payload.update({
-      collection: "product-variants",
-      id: reservation.skuId,
-      req: input.req as never,
-      overrideAccess: true,
-      data: {
-        inventory: nextInventory,
-        ...(nextInventory === 0 ? { stock_state: "out_of_stock" } : {})
-      }
-    });
-  }
-}
-
 const CHECKOUT_ERROR_STATUS = new Map<string, number>([
   ["portone-not-configured", 503],
+  ["insufficient-available-to-promise", 409],
   ["insufficient-inventory", 409],
   ["out-of-stock", 409],
   ["campaign-full", 409],
@@ -258,6 +179,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  let reservationPolicy:
+    ReturnType<typeof requireInventoryReservationPolicyForCheckout> | undefined;
+  if (parsed.data.lines.some((line) => line.mode === "standard_purchase")) {
+    try {
+      reservationPolicy = requireInventoryReservationPolicyForCheckout({
+        paymentProvider: parsed.data.paymentProvider
+      });
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "inventory-reservations-unavailable" },
+        { status: 503 }
+      );
+    }
+  }
+
   let clientCommandKey: string;
   try {
     clientCommandKey = validateCommerceCommandKey(
@@ -329,16 +265,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { status: 500 }
     );
   }
-  const txReq = {
-    payload,
-    transactionID,
-    context: {}
-  } as Parameters<typeof payload.create>[0]["req"];
-
   let order: { id: string; order_ref: string };
   let portonePayload: unknown = null;
   let paymentStatus = "manual_pending";
   try {
+    const txReq = {
+      ...(await createLocalReq(
+        {
+          req: { headers: req.headers, transactionID },
+          user: auth.user
+        },
+        payload
+      )),
+      transactionID
+    } satisfies ReservationTransactionRequest;
+
     await lockCheckoutProducts({
       lines: parsed.data.lines,
       payload,
@@ -428,11 +369,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       paymentStatus = "initiated";
     }
 
-    await reserveStandardInventory({
-      payload,
-      req: txReq as never,
-      lines: resolved.lines
-    });
+    const expiresAt = reservationPolicy
+      ? new Date(
+          Date.now() + reservationPolicy.ttlMinutes * 60_000
+        ).toISOString()
+      : undefined;
 
     order = (await payload.create({
       collection: "product-orders" as never,
@@ -457,9 +398,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         line_snapshot_version: 2,
         lines: resolved.lines,
         shipping: parsed.data.shipping,
-        contact: parsed.data.contact
+        contact: parsed.data.contact,
+        expires_at: expiresAt
       } as never
     })) as { id: string; order_ref: string };
+
+    if (reservationPolicy) {
+      await reserveCheckoutOrderInventoryInTransaction({
+        payload,
+        req: txReq,
+        order: { ...order, expires_at: expiresAt },
+        lines: resolved.lines,
+        policy: reservationPolicy,
+        commandKey,
+        effectiveAt: new Date().toISOString()
+      });
+    }
 
     const paymentRef = `${orderRef}_${parsed.data.paymentProvider}`;
     await payload.create({
@@ -484,7 +438,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     await completeCommerceCommand({
       payload,
-      req: txReq as NonNullable<Parameters<typeof payload.create>[0]["req"]>,
+      req: txReq,
       commandKey,
       requestHash: commandClaim.requestHash,
       leaseToken: commandClaim.leaseToken,

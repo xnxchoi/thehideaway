@@ -39,6 +39,7 @@ export type PortOnePaymentRecord = {
   amount?: { total?: number; paid?: number } | null;
   currency?: string;
   channel?: { type?: string } | null;
+  paidAt?: string;
   transactionId?: string;
   id?: string;
   paymentId?: string;

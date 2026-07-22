@@ -47,22 +47,6 @@ function assertModeAllowed(product: AnyDoc, mode: LostOrderMode, user: AnyDoc) {
   }
 }
 
-function numericInventory(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function assertStandardAvailability(sku: AnyDoc, quantity: number) {
-  const stockState = String(sku.stock_state ?? "out_of_stock");
-  if (stockState === "out_of_stock") throw new Error("out-of-stock");
-  if (stockState === "on_request") throw new Error("standard-unavailable");
-
-  const inventory = numericInventory(sku.inventory);
-  if (inventory === null) throw new Error("standard-unavailable");
-  if (quantity > inventory) {
-    throw new Error("insufficient-inventory");
-  }
-}
-
 async function resolveSku(
   payload: Payload,
   line: LostCartLineInput,
@@ -238,9 +222,6 @@ export async function resolveLostCheckout(input: {
     if (quantity < min || quantity > max)
       throw new Error("quantity-out-of-range");
 
-    if (line.mode === "standard_purchase") {
-      assertStandardAvailability(sku, quantity);
-    }
     const lineCurrency = (product.currency ?? "KRW") as LostCurrency;
     if (currency && currency !== lineCurrency)
       throw new Error("mixed-currency");

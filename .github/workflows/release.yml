@@ -210,6 +210,70 @@ jobs:
           COMMERCE_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
           PR5_MIGRATION_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
 
+      - name: Verify inventory reservations
+        run: >-
+          pnpm exec vitest run
+          src/app/api/lost/checkout/intent/route.test.ts
+          src/app/api/lost/webhooks/portone/route.test.ts
+          src/lib/lost-commerce/checkout-inventory-reservations.test.ts
+          src/lib/lost-commerce/inventory-reservation-contracts.test.ts
+          src/lib/lost-commerce/inventory-reservation-expiry.test.ts
+          src/lib/lost-commerce/inventory-reservation-locks.test.ts
+          src/lib/lost-commerce/inventory-reservation-reconstruction.test.ts
+          src/lib/lost-commerce/inventory-reservation-review-evidence.test.ts
+          src/lib/lost-commerce/inventory-reservation-store.test.ts
+          src/lib/lost-commerce/inventory-reservations.test.ts
+          src/lib/lost-commerce/product-payment.test.ts
+          src/lib/lost-commerce/provider-event-replay.test.ts
+          src/lib/lost-commerce/queries.test.ts
+          src/lib/lost-commerce/storefront-inventory-availability.test.ts
+          src/payload/jobs/access.test.ts
+          src/payload/jobs/expireInventoryReservations.test.ts
+
+      - name: Verify inventory reservations against CI postgres
+        run: >-
+          pnpm exec vitest run
+          src/lib/lost-commerce/inventory-reservations.postgres.test.ts
+          src/lib/lost-commerce/inventory-reservation-expiry.postgres.test.ts
+          src/lib/lost-commerce/product-payment-reservation-lifecycle.postgres.test.ts
+          src/lib/lost-commerce/inventory-pr6-migration.postgres.test.ts
+          --no-file-parallelism
+        env:
+          COMMERCE_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
+          PR6_MIGRATION_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
+
+      - name: Enforce inventory reservation coverage
+        run: >-
+          pnpm exec vitest run
+          src/lib/lost-commerce/checkout-inventory-reservations.test.ts
+          src/lib/lost-commerce/inventory-reservation-contracts.test.ts
+          src/lib/lost-commerce/inventory-reservation-expiry.test.ts
+          src/lib/lost-commerce/inventory-reservation-expiry.postgres.test.ts
+          src/lib/lost-commerce/inventory-reservation-ledger-authorization.test.ts
+          src/lib/lost-commerce/inventory-reservation-locks.test.ts
+          src/lib/lost-commerce/inventory-reservation-reconstruction.test.ts
+          src/lib/lost-commerce/inventory-reservation-review-evidence.test.ts
+          src/lib/lost-commerce/inventory-reservation-store.test.ts
+          src/lib/lost-commerce/inventory-reservations.test.ts
+          src/lib/lost-commerce/inventory-reservations.postgres.test.ts
+          src/lib/lost-commerce/order-inventory-reservations.test.ts
+          src/lib/lost-commerce/product-payment.test.ts
+          src/lib/lost-commerce/product-payment-reservation-lifecycle.postgres.test.ts
+          src/lib/lost-commerce/provider-event-replay.test.ts
+          src/lib/lost-commerce/storefront-inventory-availability.test.ts
+          src/payload/jobs/access.test.ts
+          src/payload/jobs/expireInventoryReservations.test.ts
+          --no-file-parallelism
+          --coverage
+          --coverage.include='src/{lib/lost-commerce/{checkout-inventory-reservations,inventory-reservation-*,inventory-reservations,order-inventory-reservations,product-payment,provider-event-replay,storefront-inventory-availability},payload/jobs/{access,expireInventoryReservations}}.ts'
+          --coverage.thresholds.lines=80
+          --coverage.thresholds.functions=80
+          --coverage.thresholds.statements=80
+          --coverage.thresholds.branches=80
+          --coverage.thresholds.perFile=true
+        env:
+          COMMERCE_TEST_DATABASE_URI: postgres://postgres:postgres@localhost:5432/theestate
+
       - name: Build Next.js (standalone)
         run: pnpm build
         env:

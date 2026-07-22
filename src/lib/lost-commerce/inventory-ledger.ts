@@ -32,6 +32,10 @@ import {
   requireInventoryAdmin,
   type InventoryWorkflowAuthorization
 } from "./inventory-operation-runtime";
+import {
+  assertInventoryReservationLedgerAuthorization,
+  type InventoryReservationLedgerAuthorization
+} from "./inventory-reservation-ledger-authorization";
 
 type AggregateChange = {
   aggregateKey: string;
@@ -426,7 +430,9 @@ export async function recordInventoryMovementsInTransaction(input: {
   req: InventoryTransactionRequest;
   requests: readonly unknown[];
   expectedProjections?: readonly InventoryProjectionExpectation[];
-  authorization?: InventoryWorkflowAuthorization;
+  authorization?:
+    | InventoryWorkflowAuthorization
+    | InventoryReservationLedgerAuthorization;
 }): Promise<InventoryMovementBatchResult> {
   const prepared = prepareMovements(input.requests);
   const expectations = prepareProjectionExpectations(input.expectedProjections);
@@ -434,9 +440,27 @@ export async function recordInventoryMovementsInTransaction(input: {
     throw new Error("invalid-inventory-movement-batch");
   }
   const workflowMovements = prepared.filter(
-    (item) => item.request.sourceType !== "inventory_command"
+    (item) =>
+      item.request.sourceType !== "inventory_command" &&
+      item.request.sourceType !== "inventory_reservation"
   );
-  if (prepared.length > 0) {
+  const reservationMovements = prepared.filter(
+    (item) => item.request.sourceType === "inventory_reservation"
+  );
+  if (reservationMovements.length > 0) {
+    if (reservationMovements.length !== prepared.length) {
+      throw new Error("inventory-reservation-mixed-batch-forbidden");
+    }
+    for (const item of reservationMovements) {
+      if (item.request.actorId !== "system:inventory-reservation") {
+        throw new Error("inventory-reservation-ledger-actor-required");
+      }
+      assertInventoryReservationLedgerAuthorization(
+        input.authorization,
+        item.request
+      );
+    }
+  } else if (prepared.length > 0) {
     const actorId = requireInventoryAdmin(input.req);
     if (prepared.some((item) => item.request.actorId !== actorId)) {
       throw new Error("inventory-movement-actor-mismatch");

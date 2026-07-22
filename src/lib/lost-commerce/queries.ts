@@ -1,6 +1,7 @@
 import config from "@payload-config";
 import { getPayload } from "payload";
 import { formatLostMoney } from "./format";
+import { getStorefrontInventoryAvailability } from "./storefront-inventory-availability";
 import {
   normalizeLostDropCard,
   normalizeLostProductSkus,
@@ -119,12 +120,14 @@ function hasActiveSkuIdentity(variant: NormalizedLostProductVariant): boolean {
   return Boolean(variant.id.trim() && variant.sku?.trim());
 }
 
-function isStandardSkuActionable(variant: NormalizedLostProductVariant) {
+function isStandardSkuActionable(
+  variant: NormalizedLostProductVariant,
+  availableToPromise: number | undefined
+) {
   return (
     isPositiveAmount(variant.amount) &&
-    Number.isSafeInteger(variant.inventory) &&
-    Number(variant.inventory) >= 1 &&
-    (variant.stockState === "in_stock" || variant.stockState === "pre_order")
+    Number.isSafeInteger(availableToPromise) &&
+    Number(availableToPromise) >= 1
   );
 }
 
@@ -149,7 +152,8 @@ function isCampaignCheckoutActionable(campaign?: AnyDoc | null): boolean {
 function annotateActionableModes(
   product: AnyDoc,
   campaign: AnyDoc | null,
-  variants: NormalizedLostProductVariant[]
+  variants: NormalizedLostProductVariant[],
+  availableToPromiseBySku: ReadonlyMap<string, number>
 ): LostProductVariant[] {
   const eligibleRequestSkuIds = new Set(
     isCampaignCheckoutActionable(campaign)
@@ -166,7 +170,8 @@ function annotateActionableModes(
       return { ...variant, actionableModes: [] };
     }
     const actionableModes = [
-      product.standard_enabled && isStandardSkuActionable(variant)
+      product.standard_enabled &&
+      isStandardSkuActionable(variant, availableToPromiseBySku.get(variant.id))
         ? "standard_purchase"
         : null,
       product.request_to_order_enabled &&
@@ -358,6 +363,19 @@ async function activeSkusByProduct(
   );
 }
 
+async function storefrontAvailability(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  skuMap: ReadonlyMap<string, readonly NormalizedLostProductVariant[]>
+): Promise<ReadonlyMap<string, number>> {
+  return getStorefrontInventoryAvailability({
+    payload,
+    paymentProvider: "portone",
+    skuIds: [...skuMap.values()].flatMap((variants) =>
+      variants.map((variant) => variant.id)
+    )
+  });
+}
+
 async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
   const payload = await getPayload({ config });
   const result = await payload.find({
@@ -408,13 +426,15 @@ export async function getLostHomeData(): Promise<{
 
   const productDocs = productsResult.docs as AnyDoc[];
   const skuMap = await activeSkusByProduct(payload, productDocs);
+  const availableToPromiseBySku = await storefrontAvailability(payload, skuMap);
   const products = await Promise.all(
     productDocs.map(async (product) => {
       const campaign = await activeCampaignFor(stringValue(product.id));
       const variants = annotateActionableModes(
         product,
         campaign,
-        skuMap.get(stringValue(product.id)) ?? []
+        skuMap.get(stringValue(product.id)) ?? [],
+        availableToPromiseBySku
       );
       return card(product, campaign, variants);
     })
@@ -446,11 +466,13 @@ export async function getLostProductBySlug(
   const product = result.docs[0] as AnyDoc | undefined;
   if (!product) return null;
   const skuMap = await activeSkusByProduct(payload, [product]);
+  const availableToPromiseBySku = await storefrontAvailability(payload, skuMap);
   const campaign = await activeCampaignFor(stringValue(product.id));
   const variants = annotateActionableModes(
     product,
     campaign,
-    skuMap.get(stringValue(product.id)) ?? []
+    skuMap.get(stringValue(product.id)) ?? [],
+    availableToPromiseBySku
   );
 
   const gallery = Array.isArray(product.gallery)
@@ -555,13 +577,15 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
 
   const productDocs = productResult.docs as AnyDoc[];
   const skuMap = await activeSkusByProduct(payload, productDocs);
+  const availableToPromiseBySku = await storefrontAvailability(payload, skuMap);
   const products = await Promise.all(
     productDocs.map(async (product) => {
       const campaign = await activeCampaignFor(stringValue(product.id));
       const variants = annotateActionableModes(
         product,
         campaign,
-        skuMap.get(stringValue(product.id)) ?? []
+        skuMap.get(stringValue(product.id)) ?? [],
+        availableToPromiseBySku
       );
       return card(product, campaign, variants);
     })
