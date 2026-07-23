@@ -1,6 +1,6 @@
 # LOSTINSEOUL Complete Shopping System Blueprint
 
-Status: Adversarial review approved on 2026-07-20. PRs 1–6 were implemented locally by 2026-07-22 and committed as separate reversible work packages. PR 6 adds atomic inventory reservations, available-to-promise calculation, payment-time consume or review, cancellation release, recurring expiry recovery, and storefront availability. Opening balances, procurement, costing, fulfillment workflows, and customer inventory UI remain excluded. PR 7 and later work packages have not started.
+Status: Adversarial review approved on 2026-07-20. PRs 1–6 were implemented locally by 2026-07-22 and committed as separate reversible work packages. PR 6 adds atomic inventory reservations, available-to-promise calculation, payment-time consume or review, cancellation release, recurring expiry recovery, and storefront availability. On 2026-07-23, the owner added a system-wide requirement that every supply-chain capability remain fully manually operable and interoperable with optional automation. Opening balances, procurement, costing, fulfillment workflows, and customer inventory UI remain excluded. PR 7 and later work packages have not started.
 
 ## Objective
 
@@ -52,7 +52,7 @@ The PR 6 audit completed on 2026-07-22:
 
 PR 6 gate result: 633 non-PostgreSQL commerce and route scenarios passed. The four-file PostgreSQL matrix passed 33 scenarios, including 16 payment/reservation lifecycle and 7 migration scenarios. Per-file coverage enforcement passed for every included PR 6 module; the focused suite reached 91.48% statements, 86.67% branches, 98.30% functions, and 92.74% lines. Payload 3.85.2 generation was previously validated against the committed dependency baseline; the final evidence option was generated from the Payload collection change and squashed into the pending PR 6 migration. Final database and security reviews found no critical, high, or medium issue.
 
-Pause boundary: PR 7 has not started. Resume by writing ownership and immutable-snapshot tests for saved delivery addresses, then add the Payload address and order-address-version collections through collection config and `rtk pnpm micreate`. Do not begin shipping quotes, totals, or checkout-address UI before the PR 7 address contracts and migration pass their own gate.
+Pause boundary: The 2026-07-23 manual-operability review found that PR 6 reservations are system-written/admin-read and have automated expiry, but no guarded operator command surface. PR 6A is inserted as the next remediation work package in this serial session; PR 7 has not started but remains independent and may proceed separately. PR 6A must land before PRs 8 and 10 or later fulfillment work.
 
 ## Current baseline
 
@@ -104,16 +104,34 @@ The current worktree is heavily dirty and contains active payment-reconciliation
 8. Every schema change starts in Payload collection/global/field/plugin config and uses `rtk pnpm micreate` to generate the migration from that schema. Hand-written schema migrations are prohibited unless Payload cannot express the required operation and the exception is documented. Regenerate Payload types and never edit generated `src/types/payload-types.ts` by hand.
 9. Operational balances and lifecycle fields are changed through guarded commands, not arbitrary Payload field edits.
 10. Existing authentication and authorization boundaries remain in force. Customer-owned records are scoped server-side; staff actions require explicit roles and audit entries.
+11. Every supply-chain capability has a complete guarded manual operating path. Manual and automated actors use source-specific authentication and authorization that feed the same capability policy, domain commands, validation, locking, idempotency, transition guards, audit records, and normalized events; automation is an optional adapter, never the only way to operate the capability.
+12. Manual and automated work may continue on the same record. A manual entry may seed later automation, but provider synchronization appends normalized evidence and updates projections through domain commands; it never rewrites manual history or silently wins a conflict.
+
+### Manual operation and automation contract
+
+- Each capability defines its own provider-neutral commands and normalized input/output contracts before adding a provider adapter, scheduled job, importer, webhook, or polling worker. Do not replace these focused contracts with one generic supply-chain command.
+- Customer/staff UI, manual imports, scheduled jobs, API results, webhooks, and polling are input adapters to the same capability commands. They operate on the same canonical aggregate; a later provider identity attaches to an existing manual record instead of creating a copy or resetting state.
+- Payload admin actions and focused operator screens call those commands. Staff do not edit lifecycle states, balances, provider projections, or synchronization checkpoints directly.
+- Manual operation is the baseline adapter, not an outage-only mode. It must support creating, advancing, correcting, and reconciling records within the same business rules used by automation. Corrections append a version or correction event and switch only a guarded projection pointer; they never mutate earlier manual or provider evidence.
+- Every command/event records source, actor, idempotency key, aggregate version, correlation and causation identifiers, effective timestamp, local receipt timestamp, and evidence/reference. Provider-specific payloads remain immutable evidence outside the provider-neutral domain projection.
+- Provider configuration is replaceable and versioned per provider account and capability, with `disabled`, `observe`, `assist`, and `execute` modes. Credentials stay in environment or secret storage; domain records retain only non-secret provider/configuration identifiers needed to reproduce behavior. Manual operation and reconciliation remain available in every mode.
+- Provider-specific identifiers, enums, SDKs, and payload formats remain at the adapter boundary. External references map provider/account/object identities to canonical aggregates; a tracking number alone is never treated as a globally unique identity.
+- Side-effecting or asynchronously retried outbound automation is recorded transactionally as an automation request/outbox item. Provider calls happen outside the domain transaction, and their immutable result re-enters through the normal observation path. Read-only quote or validation calls may run synchronously outside a transaction with strict timeouts, immutable response evidence, and an independently operable manual/table path.
+- A manual entry can enqueue compatible automation. For example, a guarded carrier and tracking-number command creates a shipment or appends a correction, then an enabled adapter may poll or receive webhooks and append normalized tracking events.
+- Duplicate and stale observations are retained as idempotent no-ops. Unmatched observations, manual/provider disagreement, unknown provider outcomes, unsupported automation, illegal transitions, and adapter failure enter an operator queue. There is no global provider-wins or last-write-wins rule; authority and merge rules are explicit per capability.
+- Each affected PR tests manual-only operation, automated-only operation where enabled, manual-to-automated continuation, duplicate/reordered input, provider outage, adapter replacement or disablement, and conflict recovery.
 
 ## Owner decisions required
 
 These are decision gates, not invitations for an implementation agent to choose defaults:
 
 - Countries and regions served; Jeju, islands, and remote-area handling.
-- Shipping methods, rates, free-shipping threshold, carrier or aggregator, and manual fallback.
+- Shipping methods, rates, free-shipping threshold, carrier or aggregator, and the required manual operating rules.
+- Which carrier/tracking adapters and provider accounts may be enabled; capability mode, external-reference matching keys, event authority/merge rules, polling/webhook policy, and conflict-resolution owner. Until approved, shipment and tracking operation remains manual.
 - Product weights, dimensions, packaging rules, and dispatch targets.
 - Whether prices include VAT; product receipt, cash receipt, and Korean tax-invoice scope.
 - Inventory reservation duration; oversell/backorder and split-shipment policy.
+- Reservation operator roles, required reason/evidence, and which terminal outcomes an operator may initiate through guarded PR 6A commands.
 - Address-book default behavior and whether checkout offers save, update, or create-new choices.
 - Manual-payment instructions, reference format, proof requirements, and expiry.
 - Request-to-order minimum/maximum unit semantics, close time, failure/refund policy, and production owner.
@@ -130,32 +148,33 @@ Unknown decisions must be represented as disabled configuration or a documented 
 
 ```text
 1 Contracts ── 2 Durable commands/webhooks
-     ├── 3 SKUs ── 4 Inventory ledger ── 5 Inbound stock ── 6 Reservations
+     ├── 3 SKUs ── 4 Inventory ledger ── 5 Inbound stock ── 6 Reservations ── 6A Reservation operations
      └── 7 Address versions
-3 + 6 + 7 ── 8 Shipping quotes ── 9 Totals/promotions/tax
-2 + 6 + 7 + 9 ── 10 Cart/checkout ── 13 Events/outbox
-13 ── 11 Card payment; 11A Manual payment
+3 + 6A + 7 ── 8 Shipping quotes ── 9 Totals/promotions/tax
+2 + 6A + 7 + 9 ── 10 Cart/checkout ── 13 Events/outbox
+13 ── 11 Card payment; 11A Manual payment; 13A Provider interoperability
 11 + 13 ── 12 Refund core ── 11B Stocked-order cancellation
 7 + 11 + 13 ── 14 Customer orders; 11B + 12 + 14 ── 14A Support cases
-6 + 7 + 8 + 11 + 13 ── 15 Allocation/packages ── 15A Shipments/tracking ── 16 Admin/carrier
+6A + 7 + 8 + 11 + 13 ── 15 Allocation/packages; 13A + 15 ── 15A Shipments/tracking ── 16 Manual operations
+13A + 16 ── 16A Optional carrier adapter
 12 + 13 + 15A ── 17 Request-to-order
 11 + 12 + 13 + 15A ── 18 Private made-to-order
 12 + 15A ── 19 Returns/inspection ── 19A Exchanges; 19B Receipts
-11 + 12 ── 20 Settlement/accounting
+11 + 12 + 13A ── 20 Settlement/accounting
 all domains ── 21 Reconciliation ── 21A Privacy ── 21B Observability/recovery ── 22 Launch gate
 ```
 
 Parallel groups:
 
 - After PR 1: PRs 2 and 3 can proceed in separate worktrees.
-- After PR 3: PRs 4 and 7 can proceed in parallel.
-- After PR 13: PRs 11 and 11A can proceed in parallel; PR 11B adopts the same outbox contract.
-- After PRs 13 and 15A: PRs 17 and 18 can proceed in parallel. PR 19 follows refund and shipment contracts; there is no refund dependency cycle.
-- PR 20 can proceed beside PRs 17–19 once PRs 11–12 are stable.
+- After PR 3: PRs 4 and 7 can proceed in parallel. After PR 6, PR 6A can proceed independently of PR 7.
+- After PR 13: PRs 11, 11A, and 13A can proceed in parallel; PR 11B adopts the same outbox contract. Real carrier work waits for PR 13A, but card-payment work does not.
+- After PRs 12, 13, and 15A: PRs 17 and 18 can proceed in parallel. PR 19 follows refund and shipment contracts; there is no refund dependency cycle.
+- PR 20 can proceed beside PRs 17–19 once PRs 11–12 and 13A are stable.
 
-Critical path for stocked goods: `1 → 2 → 3 → 4 → 6 → 8 → 9 → 10 → 13 → 11 → 12 → 11B → 15 → 15A → 19 → 21 → 21B → 22`, with PR 7 required before PR 8 and PR 5 required before operational launch.
+Critical path for stocked goods: `1 → 2 → 3 → 4 → 6 → 6A → 8 → 9 → 10 → 13 → 11 → 12 → 11B → 15 → 15A → 19 → 21 → 21B → 22`, with PR 7 required before PR 8, PR 5 required before operational launch, and PR 13A running after PR 13 in parallel with payment work but joining before PR 15A.
 
-Critical path for made-to-order: `1 → 2 → 3 → 4 → 6 → 10 → 13 → 11 → 12 → 15 → 15A → 17 or 18 → 21 → 21B → 22`; each special-order PR adds its own cancellation effects through shared refund/cancellation APIs.
+Critical path for made-to-order: `1 → 2 → 3 → 4 → 6 → 6A → 10 → 13 → 11 → 12 → 15 → 15A → 17 or 18 → 21 → 21B → 22`; PR 13A runs after PR 13 and joins before PR 15A, and each special-order PR adds its own cancellation effects through shared refund/cancellation APIs.
 
 ## PR work packages
 
@@ -169,26 +188,29 @@ Each row is one reviewable PR. Read it together with the corresponding detailed 
 | 4   | Add locations, physical inventory entries, and balance projections. Current stock is an unexplained scalar.                                                                          | 3                           | New `StockLocations/`, `InventoryLevels/`, `InventoryMovements/`, inventory service, `src/payload.config.ts`                            | Concurrent movement, nonnegative, replay, reconstruction tests; on-hand is reconstructible.                                                                                  | Strongest; opening balances require approval.                                                                                                |
 | 5   | Add inbound receipts, lots/quarantine, adjustments, and cycle counts. A generic receive adjustment lacks provenance.                                                                 | 4                           | New `InventoryReceipts/` and line/count records, guarded inventory actions/admin, `src/payload.config.ts`                               | Partial receipt, variance, quarantine release, count approval tests; no inbound stock uses naked balance edits.                                                              | Strongest; procurement/costing excluded unless approved.                                                                                     |
 | 6   | Add atomic reservations and expiry recovery. Current checkout permanently decrements stock.                                                                                          | 2, 4                        | New `InventoryReservations/`, inventory service, checkout/cancel routes, scheduled job service, `src/payload.config.ts`                 | Last-unit, expiry/payment race, duplicate release/consume, overlapping-job tests; availability/recovery are safe.                                                            | Strongest; TTL/capture timing required.                                                                                                      |
+| 6A  | Add guarded reservation operator commands and queues. PR 6 has safe automatic reservation/expiry services but no manual resolution surface.                                          | 5, 6                        | Reservation command service and API/admin actions, active/stuck/review queues, existing reservation collections                         | Authorized manual inspect/release/expire/reconcile, job-outage, payment/expiry race, evidence, replay tests; no direct reservation edits.                                    | Strongest; operator authority and evidence/reason requirements required.                                                                     |
 | 7   | Add saved addresses plus append-only order-address versions. Current delivery JSON is untyped.                                                                                       | 1                           | New `Addresses/`, `OrderAddressVersions/`, ProductOrders, checkout/account UI, `src/payload.config.ts`                                  | IDOR, default race, correction/allocation/dispatch race tests; original/current versions are immutable/audited.                                                              | Strongest; countries/save/cutoff required.                                                                                                   |
-| 8   | Add delivery eligibility and versioned shipping quotes. Current total has no shipping.                                                                                               | 3, 6, 7                     | New shipping config, product shipping profiles, `src/lib/lost-commerce/shipping/`, checkout UI, `src/payload.config.ts`                 | Unsupported destination, stale quote, missing physical data tests; configured delivery can be quoted or rejected.                                                            | Strongest; regions/rates/carrier required.                                                                                                   |
+| 8   | Add delivery eligibility and versioned shipping quotes. Current total has no shipping.                                                                                               | 3, 6A, 7                    | New shipping config, product shipping profiles, `src/lib/lost-commerce/shipping/`, checkout UI, `src/payload.config.ts`                 | Unsupported destination, stale quote, missing physical data tests; configured manual/table delivery can be quoted or rejected.                                               | Strongest; regions, methods, manual rates, packaging, and physical data required; carrier automation optional.                               |
 | 9   | Add authoritative totals, promotion redemption, and explicitly enabled tax capability.                                                                                               | 8                           | `src/lib/lost-commerce/pricing/`, commerce promotion/redemption records, ProductOrders totals, checkout UI                              | Rounding, tamper, promotion race, disabled-tax tests; money is reproducible from snapshots.                                                                                  | Strongest; VAT/promotion rules required.                                                                                                     |
-| 10  | Complete server cart hydration/merge and atomic checkout conversion. Current UI treats local storage as primary.                                                                     | 2, 6, 7, 9                  | ProductCarts, `useLostCart.tsx`, cart route, checkout intent/client, `src/payload.config.ts`                                            | Cross-device merge, duplicate submit, stale quote/stock tests; one active cart converts once.                                                                                | Strongest; authenticated checkout remains default.                                                                                           |
+| 10  | Complete server cart hydration/merge and atomic checkout conversion. Current UI treats local storage as primary.                                                                     | 2, 6A, 7, 9                 | ProductCarts, `useLostCart.tsx`, cart route, checkout intent/client, `src/payload.config.ts`                                            | Cross-device merge, duplicate submit, stale quote/stock tests; one active cart converts once.                                                                                | Strongest; authenticated checkout remains default.                                                                                           |
 | 11  | Complete authoritative PortOne card reconciliation and payment transitions using the transactional outbox API.                                                                       | 10, 13                      | ProductPayments, PortOne webhook/verify/return, payment service                                                                         | Provider ordering, mismatch, replay, and atomic payment-event tests; card state is authoritative and replayable.                                                             | Strongest; authorization/capture timing required.                                                                                            |
 | 11A | Add manual-payment instructions, evidence, expiry, bank reference, and guarded approve/reject operations.                                                                            | 10, 13                      | ProductPayments manual fields, admin actions, customer payment state                                                                    | Duplicate approval, late receipt, expiry, role and notification tests; pending is never shown as paid.                                                                       | Strongest; manual policy required or capability stays disabled.                                                                              |
-| 11B | Add pre-dispatch stocked-order and manual-pending cancellation using payment/refund, stock, promotion, and outbox contracts. Special-order effects are added in PRs 17–18.           | 6, 9, 11, 11A, 12, 13       | Cancel route, guarded stocked-order cancellation service/actions                                                                        | Capture/dispatch/expiry races and atomic stock/promotion/manual rollback tests; cancellation either commits all scoped effects or none.                                      | Strongest; authority/fees/cutoff required. If manual payment is disabled, remove that dependency and prove its routes/copy are inaccessible. |
+| 11B | Add pre-dispatch stocked-order and manual-pending cancellation using payment/refund, stock, promotion, and outbox contracts. Special-order effects are added in PRs 17–18.           | 6A, 9, 11, 11A, 12, 13      | Cancel route, guarded stocked-order cancellation service/actions                                                                        | Capture/dispatch/expiry races and atomic stock/promotion/manual rollback tests; cancellation either commits all scoped effects or none.                                      | Strongest; authority/fees/cutoff required. If manual payment is disabled, remove that dependency and prove its routes/copy are inaccessible. |
 | 12  | Add provider-neutral refund core with refundable-balance reservation plus PortOne V2 and guarded manual-refund adapters.                                                             | 2, 11, 11A, 13              | New Refunds/RefundEvents, PortOne V2 and manual refund adapters, `src/lib/lost-commerce/refunds/`, `src/payload.config.ts`              | Concurrent refunds, crash after provider success, manual bank evidence/authorization, unknown outcome, duplicate response tests; in-flight reservations prevent over-refund. | Strongest; manual refund and approval ownership required. If manual payment is disabled, its adapter stays inaccessible.                     |
-| 13  | Add transactional events/outbox, worker leases, retries, and dead-letter replay before payment/cancellation adoption.                                                                | 2, 10                       | New CommerceEvents/OutboxJobs, Notifications integration, job service, `src/payload.config.ts`                                          | Rollback/no-send, duplicate delivery, overlap, retry/dead-letter tests; shared event API is ready for PRs 11, 11A, 11B, and 12.                                              | Strongest; channels/runner required.                                                                                                         |
+| 13  | Add transactional domain events/outbox, worker leases, retries, and dead-letter replay before payment/cancellation adoption.                                                         | 2, 10                       | New CommerceEvents/OutboxJobs, Notifications integration, job service, `src/payload.config.ts`                                          | Rollback/no-send, duplicate delivery, overlap, retry/dead-letter tests; shared event API is ready for PRs 11, 11A, 11B, and 12.                                              | Strongest; channels/runner required.                                                                                                         |
+| 13A | Add reusable provider observations, external references, capability modes, automation requests, sync checkpoints, conflict queues, and adapter conformance.                          | 2, 13                       | New ProviderObservations/ExternalReferences/ProviderCapabilities/AutomationRequests/SyncCheckpoints, adapter-boundary services          | Duplicate/stale/unmatched/conflict observation, manual attachment, mode, outage, replacement, replay tests; disabled/test configuration requires no live provider.           | Strongest; provider-specific authority rules gate only that adapter's execution mode.                                                        |
 | 14  | Add customer address management plus order list/detail and safe bilingual timelines.                                                                                                 | 7, 11, 13                   | LOSTINSEOUL address/order pages and messages                                                                                            | IDOR, raw-state leakage, address/archive, bilingual Playwright tests; customers see only owned mapped data.                                                                  | Default plus strongest security review.                                                                                                      |
 | 14A | Add minimal support cases/interactions with separate internal/customer notes and guarded domain actions.                                                                             | 11B, 12, 14                 | New `CommerceSupportCases/`, support UI/actions, `src/payload.config.ts`                                                                | Ownership, note visibility, resend/correction/cancel/refund authorization tests; support never edits lifecycle fields.                                                       | Strongest security review; support ownership required.                                                                                       |
-| 15  | Add line allocation, pick/pack quantities, packages, inventory consumption, and address-version freeze.                                                                              | 6, 7, 8, 11, 13             | New fulfillment/allocation/package collections, inventory service, `src/payload.config.ts`                                              | Quantity balance, over-allocation, consume replay, address-freeze tests; allocation/package core balances.                                                                   | Strongest; split/consume point required.                                                                                                     |
-| 15A | Add shipment records, tracking-event projection, partial shipment, delivery/exception states, and customer shipment view.                                                            | 15                          | New Shipments/ShipmentEvents, tracking service, order detail                                                                            | Duplicate/reordered events, partial shipment, failed-delivery, visibility tests; shipment projection is replayable.                                                          | Strongest; delivery-confirmation source required.                                                                                            |
-| 16  | Add focused fulfillment/inventory queues and a manual carrier adapter; add a chosen carrier only if approved.                                                                        | 5, 15A                      | Payload admin components/actions, carrier interface, exception queues                                                                   | Role, pick/pack/dispatch, manual tracking, recovery E2E; staff do not edit balances/states directly.                                                                         | Default with strongest review; carrier/label rules required.                                                                                 |
+| 15  | Add line allocation, pick/pack quantities, packages, inventory consumption, and address-version freeze.                                                                              | 6A, 7, 8, 11, 13            | New fulfillment/allocation/package collections, inventory service, `src/payload.config.ts`                                              | Quantity balance, over-allocation, consume replay, address-freeze tests; allocation/package core balances.                                                                   | Strongest; split/consume point required.                                                                                                     |
+| 15A | Add provider-neutral shipment records, manual carrier/tracking commands, normalized observation ingestion, partial shipment, delivery/exception states, and customer shipment view.  | 13A, 15                     | New Shipments/ShipmentEvents, tracking command/event service, order detail                                                              | Manual-only, normalized-observation fixture, duplicate/reordered events, partial shipment, failed-delivery, visibility tests; projection is replayable.                      | Strongest; manual operation required; real carrier execution remains optional PR 16A.                                                        |
+| 16  | Add focused manual fulfillment/inventory queues, guarded staff actions, an adapter registry, and provider-neutral conformance fixtures.                                              | 5, 13A, 15A                 | Payload admin components/actions, manual carrier adapter, adapter registry/test fixtures, exception queues                              | Role, pick/pack/dispatch, manual tracking, fixture-based handoff/outage/disablement/replacement, recovery E2E; no live provider required.                                    | Default with strongest review; fulfillment roles and label/dispatch rules required.                                                          |
+| 16A | Add one approved replaceable carrier/tracking adapter without changing the manual workflow or canonical shipment model.                                                              | 13A, 16                     | Selected adapter, webhook/polling workers, provider configuration, sandbox tests                                                        | Manual-to-provider continuation, webhook/poll duplicate, outage/catch-up, disablement/replacement, sandbox E2E; manual operation remains available.                          | Optional; carrier/account/authority/synchronization approval required or the package is skipped.                                             |
 | 17  | Complete request-to-order unit commitments, deadline close, failed-campaign refunds, production batches, and campaign-specific cancellation through shared cancellation/refund APIs. | 12, 13, 15A                 | ProductOrderCampaigns, commitment/batch/milestone records, finalizer, customer/admin UI                                                 | Capacity/deadline/payment/refund/cancel race tests; campaign cancellation updates commitment and refund effects atomically.                                                  | Strongest; unit/deadline/refund/milestone rules required.                                                                                    |
 | 18  | Complete private quote revisions, acceptance, payment, specifications, production, and private-order cancellation through shared cancellation/refund APIs.                           | 11, 12, 13, 15A             | Private quote API/UI, QuoteRevisions/SpecApprovals/Production records, admin/customer UI                                                | Stale/tampered quote, approval, payment, refund/cancel, milestone tests; accepted terms and cancellation effects are auditable.                                              | Strongest; quote/deposit/change/cancel rules required.                                                                                       |
 | 19  | Add return requests, line eligibility, inbound return shipment, inspection, and inventory disposition using refund core.                                                             | 12, 15A                     | Return/inspection records, inventory disposition, customer/admin UI                                                                     | Eligibility, repeated quantity, inspection, bucket-release, and enabled card/manual refund E2E tests; return quantities/money/stock balance.                                 | Strongest; return/inspection rules required.                                                                                                 |
 | 19A | Add exchanges as linked replacement orders and fulfillment, never mutation of the original order.                                                                                    | 19                          | Exchange linkage, replacement order/stock services, customer/admin UI                                                                   | Exchange stock failure, duplicate replacement, refund-difference tests; both orders remain auditable.                                                                        | Strongest; exchange pricing/shipping rules required.                                                                                         |
 | 19B | Add immutable product receipt data, numbering, and PDF/download surface.                                                                                                             | 12, 19                      | Product receipt records/PDF, customer/admin surface                                                                                     | Partial refund, numbering race, seller snapshot, access tests; historical receipts remain correct.                                                                           | Strongest; seller/tax-document scope required.                                                                                               |
-| 20  | Add PortOne settlement/payout/fee/net reconciliation, manual payment/refund bank matching, immutable finance export, and close evidence.                                             | 11, 11A, 12                 | Settlement snapshots/lines, finance reconciliation service/queue/export, `src/payload.config.ts`                                        | Gross-fee-net, payout mismatch, duplicate import, manual receipt/refund match, refund liability tests; finance explains receipts through close.                              | Strongest; owner/export/numbering required.                                                                                                  |
+| 20  | Add PortOne settlement/payout/fee/net reconciliation, manual payment/refund bank matching, immutable finance export, and close evidence.                                             | 11, 11A, 12, 13A            | Settlement snapshots/lines, finance reconciliation service/queue/export, `src/payload.config.ts`                                        | Gross-fee-net, payout mismatch, duplicate import, manual receipt/refund match, provider/manual continuation tests; finance explains receipts through close.                  | Strongest; owner/export/numbering required.                                                                                                  |
 | 21  | Add domain reconciliation reports, exception queues, leases, and safe replay commands.                                                                                               | 13–20                       | Scheduled jobs, Payload queues, reconciliation services                                                                                 | Induced drift, overlap, partial replay tests; every invariant has a resolvable queue/report.                                                                                 | Strongest; operations ownership required.                                                                                                    |
 | 21A | Add commerce PII retention, export, redaction, and deletion behavior with statutory-data preservation.                                                                               | 14A, 19B, 21                | PII services/actions and audit records                                                                                                  | Access, retention boundary, redaction, export, legal-record preservation tests.                                                                                              | Strongest security/privacy review; retention rules required.                                                                                 |
 | 21B | Add structured metrics/alerts plus provider outage, backup/restore, replay, and recovery runbooks/drills.                                                                            | 21, 21A                     | Metrics/logging, alert integration, `readmes/` runbooks                                                                                 | PII-free logs, alert dedupe, restore/reconcile, provider/refund/outbox failure drills.                                                                                       | Strongest; on-call/alert destination required.                                                                                               |
@@ -201,6 +223,7 @@ Each row is one reviewable PR. Read it together with the corresponding detailed 
 - Every schema PR changes Payload collection/global/field/plugin config first, runs `rtk pnpm micreate`, and reviews the generated migration. Do not draft the schema migration manually. Edit that migration only for mandatory idempotency safeguards or a documented operation the Payload generator cannot express; mark true schema overrides with `WHY-OVERRIDE-PAYLOAD`. Then run `rtk pnpm generate:schema` and `rtk pnpm generate:types` and review the regenerated artifacts without editing them. Run destructive reset verification such as `rtk pnpm migrate:fresh` only with explicit approval; otherwise report it as not run. Never hand-edit `src/payload-generated-schema.ts` or `src/types/payload-types.ts`.
 - Require at least 80% coverage for new or changed domain modules. Run focused TypeScript checks or prove the repository TypeScript error baseline does not increase; `build` alone is not a type-safety gate because the project currently ignores build-time TypeScript errors.
 - Security-sensitive PRs get security review in that PR for IDOR, mass assignment, CSRF, webhook authenticity/replay, roles, PII logging, and secrets.
+- For every supply-chain capability touched, identify its guarded manual commands, optional automation adapters, shared normalized events, operator queue, and manual-to-automated continuation path. Test the enabled combinations in that PR.
 - Minimum checks: focused Vitest, real-PostgreSQL integration tests, direct ESLint on changed paths, focused typecheck/baseline check, `rtk pnpm build`, and `rtk git diff --check`. UI PRs add focused Playwright; schema PRs add the migration checks above.
 - Exit requires test/migration evidence, access review, neutral bilingual copy, rollback instructions, and no unrelated diff. Rollback disables new writes first and preserves audit/provider/financial evidence.
 - Branch names use `feat/lost-commerce-NN-short-name` (`test/` for PR 22). If a row grows beyond one reviewable PR, mutate this plan before coding.
@@ -323,6 +346,7 @@ rtk pnpm build
 
 - Write failing ownership, validation, default-address, snapshot, and concurrency tests.
 - Define a country-aware structured address contract: recipient, phone, postal code, address lines, locality/city, region, country, and delivery note. Required fields vary only through explicit supported-country configuration.
+- Keep structured manual entry and guarded staff correction complete without a validation/geocoding provider. Any later adapter records evidence and suggestions through the same address commands; it cannot silently rewrite an address or claim shipping eligibility.
 - Add customer-owned saved addresses with one database-enforced default per user and soft archival when referenced.
 - Add list/create/update/archive/set-default commands with server-side ownership checks and normalized input.
 - Add checkout prefill and explicit `use once`, `save new`, or `update saved` behavior after the owner selects the desired choices. No implicit profile overwrite.
@@ -330,7 +354,7 @@ rtk pnpm build
 - Store an audited `selected_fulfillment_address_version` pointer. A staff-authorized pre-cutoff correction appends a version and atomically switches that pointer; it never edits an earlier version or the address book. Allocation/label/dispatch locks the pointer according to confirmed policy, and each shipment copies the selected version.
 - Define PII redaction/export hooks consistent with the confirmed retention rule.
 
-**Tests first:** Cross-user access denial, invalid country/postcode combinations, two simultaneous default updates, editing/deleting a saved address after purchase, original/version immutability, and correction racing allocation, label creation, and dispatch.
+**Tests first:** Cross-user access denial, invalid country/postcode combinations, complete manual entry with no provider, two simultaneous default updates, editing/deleting a saved address after purchase, original/version immutability, and correction racing allocation, label creation, and dispatch. Suggestion acceptance/rejection belongs to the later PR that actually introduces a validation/geocoding adapter.
 
 **Migration/types:** Add address records and typed snapshot fields. Preserve legacy JSON read-only during backfill; do not fabricate structure from ambiguous free text. Regenerate types/schema.
 
@@ -375,12 +399,14 @@ rtk pnpm build
 - Use one documented lock order for every stock command: SKU/location inventory aggregate, then reservation, then order/payment as applicable. Add database uniqueness/check constraints so duplicate idempotency keys or negative projections cannot commit.
 - Add reasoned opening, receive, adjust, damage, return, consume, and transfer physical entries, plus separate reserve/release/expire/consume reservation entries, each with actor, source, and idempotency key.
 - Add inbound receipt/line/lot evidence with expected versus received quantities, supplier/reference when known, partial receipt, quarantine-to-available release, cycle count, and approved opening balance. Procurement remains excluded.
+- Keep receiving, release, count, adjustment, damage, and transfer fully operable through guarded manual commands. Any later scanner, file-import, supplier, warehouse, or ERP adapter must call those commands rather than write ledger state directly.
+- The completed PR 4/5 guarded inventory commands are the accepted manual baseline. Adapter conformance and manual-to-automated continuation are prospective PR 13A/16/21 work and use additive forward migrations; do not alter PR 1–6 migrations or claim the historical gates covered adapter behavior.
 - Add reservation rows tied to order/line/SKU/location with status and `expires_at`.
 - Reserve atomically at checkout, consume on the confirmed business point, release idempotently on cancellation/failure/expiry, and define late-payment handling.
 - Add a leased, authenticated expiry/recovery job using the repository's confirmed production scheduling mechanism; document overlap protection and secret rotation. An endpoint alone is not sufficient. Add reconciliation against reconstructed physical and reservation entries.
 - Remove direct inventory editing from routine Payload admin use; expose guarded actions instead.
 
-**Tests first:** Two buyers competing for the last unit, duplicate reserve/release/consume, expiry race with payment confirmation, late provider event, partial inbound receipt, quarantine release, cycle count, proof that quarantined/damaged/inspection-pending/returned-before-release units cannot be reserved, negative balance rejection, deterministic lock order, transaction rollback, and reconstruction from append-only entries.
+**Tests first:** Two buyers competing for the last unit, duplicate reserve/release/consume, expiry race with payment confirmation, late provider event, manual receipt/count/adjustment/transfer, partial inbound receipt, quarantine release, cycle count, proof that quarantined/damaged/inspection-pending/returned-before-release units cannot be reserved, negative balance rejection, deterministic lock order, transaction rollback, and reconstruction from append-only entries.
 
 **Migration/types:** Add tables, unique constraints, check constraints, locks/indexes, and guarded backfill from verified SKU balances. Make every operation idempotent. Regenerate types/schema.
 
@@ -403,6 +429,28 @@ rtk pnpm build
 
 **Blockers/non-goals:** Reservation duration, backorder, safety stock, allocation, and consume timing require owner decisions. Do not model made-to-order as unlimited or negative inventory.
 
+### Reservation operator surface (PR 6A)
+
+**Objective:** Make the completed reservation subsystem operable during job failure, stuck state, and manual review without exposing direct collection edits or weakening payment/inventory invariants.
+
+**Tasks:**
+
+- Add authorized inspect, release, expire, and reconcile commands plus a guarded command to run eligible expiry work. Each command requires reason/evidence, idempotency, expected state/version, and an audit event.
+- Do not expose a generic force-status command. Reservation consumption remains part of authoritative payment/order reconciliation; an operator resolves payment evidence through that command, not by marking a reservation consumed.
+- Add active, expiring, stuck, and `paid_inventory_review` queues with links to order, payment, reservation history, physical inventory evidence, and the permitted commands.
+- Serialize manual commands against checkout, payment, cancellation, and the expiry worker using the existing lock order and transaction boundary.
+- Keep PR 6 collection and migration history unchanged. Any command/evidence schema additions start in Payload configuration and use a new additive Payload-generated migration.
+
+**Tests first:** Unauthorized action, missing reason/evidence, duplicate command, manual release versus payment, manual expiry versus worker, stuck-state reconciliation, payment-review resolution, rollback, queue visibility, and expiry-job outage with full manual recovery.
+
+**Exit criteria:** An authorized operator can inspect and safely resolve every nonterminal reservation path without direct field edits; automated expiry can stop and resume without losing or duplicating work; payment and inventory invariants still hold.
+
+**Rollback:** Disable mutating operator actions while retaining read-only queues and evidence. Automated PR 6 behavior remains intact; do not remove reservation history.
+
+**Branch/PR:** Use PR 6A from the work-package table.
+
+**Blockers/non-goals:** Operator roles, acceptable evidence, and which terminal outcomes may be initiated manually require owner approval. No command may fabricate payment or physical stock.
+
 ---
 
 ## Capability phase 5 — Shipping eligibility, rates, promotions, tax, and totals
@@ -422,6 +470,7 @@ rtk pnpm build
 - Write table-driven failing tests for all confirmed pricing and eligibility rules.
 - Add destination eligibility and shipping-method selection from structured address plus SKU physical data.
 - Add a carrier-neutral shipping quote interface with a configured manual/table-rate implementation. Disable checkout where required owner configuration or physical data is missing.
+- Keep manual/table rates fully operable. Any optional read-only quote provider uses the same quote contract outside database transactions, with strict timeouts, immutable response evidence, and configured fallback or explicit rejection.
 - Compute integer-money subtotal, discount, shipping, tax, and total on the server with a versioned/expiring quote.
 - Add commerce promotions and atomic redemption records with eligibility, usage limits, date windows, and order snapshot. Do not reuse membership coupons without an explicit migration.
 - Snapshot rate inputs, method label, charge, tax treatment, promotion effects, currency, and any verified dispatch/delivery estimate on the order.
@@ -448,7 +497,7 @@ rtk pnpm build
 
 **Branch/PR:** Not authoritative here; use the PR work-package table.
 
-**Blockers/non-goals:** Regions, rates, carrier, packaging, tax/VAT, promotion policy, and estimates are owner inputs. International duty calculation is excluded.
+**Blockers/non-goals:** Regions, methods, manual rates, packaging, tax/VAT, promotion policy, and estimates are owner inputs. Carrier/provider selection blocks only that automation, not the manual/table implementation. International duty calculation is excluded.
 
 ---
 
@@ -545,6 +594,32 @@ rtk pnpm build
 
 **Blockers/non-goals:** Notification channels and event set require approval. Do not add marketing messages, promises, or live-chat/support tooling.
 
+### Provider interoperability foundation (PR 13A)
+
+**Objective:** Provide one durable, provider-neutral boundary through which manual records, provider observations, and optional automation can coexist without parallel state machines.
+
+**Tasks:**
+
+- Generalize the PR 2 provider inbox through an additive forward Payload-generated migration. Preserve existing evidence and permanent provider-event uniqueness.
+- Store immutable observations keyed by unique `(provider, account, capability, providerEventId)` where an event ID exists. When it does not, use a documented provider-specific hash fallback. Record transport, `occurredAt`, `receivedAt`, payload hash/evidence, adapter and schema version, attempts, and immutable outcome: applied, duplicate, stale, unmatched, conflict, rejected, or retryable error.
+- Add external references keyed by provider, account, object type, and external object ID; associate them with one canonical aggregate through guarded attach/correct commands. Human references such as tracking numbers are match inputs, not globally unique identities.
+- Add provider-account/capability configuration with `disabled`, `observe`, `assist`, and `execute` modes. A disabled or test configuration must require no live provider account.
+- Add synchronization checkpoints/cursors and conflict queues as single sources of truth. Add guarded attach, ignore-with-reason, correct, and replay commands for unmatched or conflicting observations.
+- Add transactional automation requests for side-effecting or asynchronously retried work. Provider calls run outside domain transactions and immutable results re-enter through the observation path.
+- Publish adapter conformance fixtures for manual-to-automated continuation, automated-to-manual recovery, duplicate channels, mixed-origin concurrency, outage, disablement, and replacement.
+
+**Tests first:** Duplicate/stale observations, webhook and polling duplicate, event before manual association, ambiguous match, guarded attach/replay, manual/provider race, illegal regression, conflict preservation, all four capability modes, outage/manual continuation, catch-up without duplicates, and adapter/account authorization.
+
+**Migration/types:** Add ProviderObservations, CommerceExternalReferences, ProviderCapabilities, AutomationRequests, SyncCheckpoints, and conflict records through Payload configuration and `rtk pnpm micreate`. Do not alter PR 1–6 migrations. Regenerate types/schema.
+
+**Exit criteria:** Provider inputs cannot bypass domain guards; manual records can acquire provider references without recreation; modes and adapter replacement do not disable manual operation; unmatched/conflicting evidence remains recoverable; no live provider is required to complete the foundation.
+
+**Rollback:** Disable provider capability execution and workers independently. Preserve observations, external references, requests, checkpoints, and conflicts; manual commands remain available.
+
+**Branch/PR:** Use PR 13A from the work-package table.
+
+**Blockers/non-goals:** A real provider, carrier, or provider account is not required. Provider-specific authority rules gate that adapter's `execute` mode only.
+
 ---
 
 ## Capability phase 8 — Fulfillment, shipments, tracking, and operational admin
@@ -566,13 +641,17 @@ rtk pnpm build
 - Add fulfillment, package, and shipment records with carrier, service, tracking, dispatch/delivery timestamps, and exception events.
 - Implement guarded allocate/pick/pack/dispatch/deliver/exception/cancel commands and address-freeze/correction checks.
 - Consume or reclassify inventory at the confirmed operational point and support idempotent rollback before dispatch.
-- Define a carrier interface plus manual tracking fallback; add provider polling/webhooks only after a carrier is selected.
+- Define provider-neutral carrier, shipment, and tracking commands with a complete manual adapter first. Manual carrier/service/tracking entry must be enough to operate and display a shipment without any provider integration.
+- In PR 15A, store only the shipment's provider-neutral external-reference association and read-only synchronization summary/projection. PR 13A records remain the single source of truth for capability mode, cursors, leases, attempts, errors, and immutable provider evidence.
+- In PR 16, add the focused staff queues, manual adapter, adapter registry, disabled/test configurations, and conformance fixtures. No live carrier or provider account is required.
+- In optional PR 16A, when staff records a carrier and tracking number, enqueue synchronization only if a compatible approved adapter is configured. Polling and webhooks normalize into the same shipment-event contract and idempotency rules used by manual events.
+- In PRs 16 and 16A, allow guarded manual continuation while automation is unavailable or unsupported. Provider/manual conflicts and unknown outcomes enter an exception queue instead of overwriting history.
 - Build focused Payload queues for paid-unfulfilled, reserved, packing, dispatch, and delivery exceptions. Remove routine direct state editing.
 - Show customer-safe fulfillment and tracking progress derived from shipment events.
 
-**Tests first:** Over-fulfillment rejection, partial shipment, duplicate dispatch event, mixed SKU allocation, cancellation before/after dispatch, address correction cutoff, carrier event reordering, failed delivery, inventory consumption, staff permissions, and customer visibility.
+**Tests first:** PRs 15/15A cover over-fulfillment rejection, partial shipment, duplicate dispatch event, mixed SKU allocation, cancellation before/after dispatch, address correction cutoff, manual-only tracking, normalized-observation fixtures, duplicate/reordered observation input, failed delivery, inventory consumption, staff permissions, and customer visibility. PR 16 adds manual staff-queue E2E plus fixture-based handoff, outage, disablement, replacement, conflict, and recovery. Optional PR 16A repeats those cases against the approved provider sandbox and real adapter boundary.
 
-**Migration/types:** Add normalized records, quantity checks, uniqueness for carrier events/tracking where appropriate, and immutable shipment address/parcel snapshots. Regenerate types/schema.
+**Migration/types:** Add normalized records, quantity checks, provider/account/external-object uniqueness where appropriate, and immutable shipment address/parcel snapshots. Do not make a tracking number globally unique. Regenerate types/schema.
 
 **Verification:**
 
@@ -585,13 +664,13 @@ rtk pnpm exec eslint src/lib/lost-commerce 'src/payload/collections/(consumption
 rtk pnpm build
 ```
 
-**Exit criteria:** Staff can fulfill through guarded actions; order-line quantities always balance; inventory and shipment transitions are auditable; customers see accurate shipment information; exceptions appear in an operator queue.
+**Exit criteria:** PR 16 lets staff complete fulfillment and tracking through guarded manual actions with no provider configured; order-line quantities always balance; inventory and shipment transitions are auditable; customers see accurate shipment information; exceptions appear in an operator queue. If PR 16A is enabled, the approved provider adapter can continue from manually entered shipment data without changing history.
 
 **Rollback:** Disable carrier automation and use the manual adapter. Stop new dispatch commands if reconciliation fails; retain shipment evidence and do not rewrite delivered history.
 
-**Branch/PR:** Not authoritative here; use the PR work-package table.
+**Branch/PR:** Not authoritative here; use PRs 15, 15A, 16, and optional 16A from the work-package table.
 
-**Blockers/non-goals:** Carrier, split-shipment policy, label purchasing, dispatch point, delivery confirmation source, and address cutoff require decisions. No carrier is implied.
+**Blockers/non-goals:** Split-shipment policy, manual label/reference rules, dispatch point, manual delivery-confirmation authority, and address cutoff are required for PRs 15–16. Carrier/account/provider authority and synchronization choices block only optional PR 16A. No carrier is implied.
 
 ---
 
@@ -613,12 +692,13 @@ rtk pnpm build
 - Represent campaign commitments by ordered units and SKU; enforce open/deadline/min/max under the same lock at confirmed-payment transition.
 - Add idempotent deadline finalization for met, failed, and canceled campaigns, with explicit refund work for failed paid commitments.
 - Add production batches, allocation, confirmed milestones, responsible actor, and estimate snapshots. Do not create buyer dates from generic campaign copy.
+- Make production batches and milestones fully operable through guarded manual commands. Any later workshop, ERP, or logistics adapter must invoke the same commands and append the same normalized evidence.
 - Add versioned private quotes with validated SKU/options/specification, itemized totals, expiry, staff issue/revise, buyer accept/decline, and immutable accepted snapshot.
 - Add deposit/balance schedules only if confirmed; otherwise require one ordinary payment through payment-operations PR 11.
 - Add specification approval and post-approval change/cancellation commands only when policy is confirmed.
 - Expose compact customer campaign/quote/production progress and focused staff queues.
 
-**Tests first:** Concurrent final units, payment after deadline, duplicate paid event, quantity decrement/refund, failed campaign replay, quote tampering, stale quote acceptance, unauthorized revision, deposit overpayment, milestone reordering, cancellation cutoff, and notification deduplication.
+**Tests first:** Concurrent final units, payment after deadline, duplicate paid event, quantity decrement/refund, failed campaign replay, quote tampering, stale quote acceptance, unauthorized revision, deposit overpayment, complete manual batch/milestone operation, normalized production observation after manual creation when enabled, provider outage/manual continuation, mixed-origin milestone conflict, milestone reordering, cancellation cutoff, and notification deduplication.
 
 **Migration/types:** Normalize campaign commitments and quote/production evidence. Backfill only provable existing campaign counts; flag mismatches for manual review. Regenerate types/schema.
 
@@ -633,7 +713,7 @@ rtk pnpm exec eslint src/lib/lost-commerce src/app/api/lost/private-quotes
 rtk pnpm build
 ```
 
-**Exit criteria:** Campaigns close without manual state edits; unit capacity cannot overrun; failed commitments enter an auditable refund path; private quotes can be revised and accepted exactly once; production progress contains only verified data.
+**Exit criteria:** Campaigns close without direct state edits; unit capacity cannot overrun; failed commitments enter an auditable refund path; private quotes can be revised and accepted exactly once; staff can operate production through guarded manual commands with no adapter configured; any enabled adapter uses the same commands and conflict rules; production progress contains only verified data.
 
 **Rollback:** Stop new campaigns/quotes and scheduled transitions. Preserve commitments, accepted quotes, payments, and production evidence; resolve existing obligations through operator queues.
 
@@ -660,6 +740,7 @@ rtk pnpm build
 - Write failing refund-bound, eligibility-snapshot, and restock tests before provider integration.
 - Add buyer return request with order-line quantities, reason, optional evidence, policy/version snapshot, and eligibility result.
 - Add approve/reject, inbound shipment, receive, inspect, and disposition commands with role checks and audit events.
+- Keep return shipment, receipt, inspection, and disposition fully operable through guarded manual commands; optional carrier/provider data may continue those records through the same normalized event contracts.
 - Add refund records separate from payment state. Before any provider call, lock the payment/refund aggregate and reserve refundable balance transactionally using `available_refund = captured - succeeded - in_flight_reserved`. Successful plus in-flight reserved amounts may never exceed captured money.
 - Implement durable command/provider idempotency for PortOne V2 full/partial refunds. Release an in-flight reservation only after authoritative failure or cancellation; retain an `unknown` outcome for reconciliation instead of guessing. Keep provider evidence immutable.
 - When manual payment is enabled, implement a provider-neutral manual-refund adapter and guarded staff commands with bank reference/evidence, submitted/succeeded/failed/unknown states, the same refundable-balance reservation, and finance reconciliation. A staff note alone is not proof of refund.
@@ -668,7 +749,7 @@ rtk pnpm build
 - Add product receipt documents with immutable seller, buyer, line, totals, tax treatment, payment, refund, and numbering snapshots. Treat Korean cash receipt/e-tax invoice as separate integrations.
 - Add customer status/actions and staff return/refund queues.
 
-**Tests first:** Return-window boundaries, partial quantities, repeat request, concurrent campaign/customer partial refunds, crash after provider success before local commit, duplicate provider response, unknown provider outcome, authoritative failure release, manual-refund authorization/evidence/reconciliation when enabled, webhook/command ordering, damaged disposition, exchange stock failure, receipt after partial refund, permissions, and PII exposure.
+**Tests first:** Return-window boundaries, partial quantities, repeat request, complete manual return-shipment/receive/inspect/disposition operation, normalized carrier observation after manual creation when enabled, provider outage/manual continuation, provider/manual conflict and replay, concurrent campaign/customer partial refunds, crash after provider success before local commit, duplicate provider response, unknown provider outcome, authoritative failure release, manual-refund authorization/evidence/reconciliation when enabled, webhook/command ordering, damaged disposition, exchange stock failure, receipt after partial refund, permissions, and PII exposure.
 
 **Migration/types:** Add normalized return/refund/receipt records, sum/bounds enforcement through transactional locks and checks, provider uniqueness, and document numbering. Regenerate types/schema.
 
@@ -714,11 +795,12 @@ rtk pnpm build
 - Import or query immutable PortOne settlement/payout evidence and reconcile gross, fee, refund, and net to orders/payments/refunds. Add manual bank-receipt matching, refund-liability reporting, immutable finance export, period-close evidence, and exception queues.
 - Add structured logs and metrics without contact/address/provider secrets; define alert thresholds only after operational ownership is assigned.
 - Add safe replay/reconcile commands for commands, webhooks, outbox events, carrier events, payments, refunds, and jobs.
+- Add manual evidence/import and correction commands beside automated reconciliation sources so provider outages or unsupported providers do not make any queue inoperable.
 - Implement confirmed retention, export, redaction, and deletion behavior. Preserve statutory/accounting facts while minimizing unnecessary PII.
 - Write operator runbooks for provider outage, late payment, stock mismatch, campaign failure, lost shipment, refund failure, and outbox backlog.
 - Add backup/restore and reconciliation drills against a disposable environment.
 
-**Tests first:** Induced mismatches, repeated reaper, job overlap, replay after partial failure, unknown/in-flight refund reconciliation, settlement gross-fee-refund-net mismatch, duplicate settlement import, manual bank match, support note visibility/action authorization, redaction authorization, PII-free logs, alert deduplication, restore then reconcile, and queue permission checks.
+**Tests first:** Induced mismatches, repeated reaper, job overlap, replay after partial failure, manual evidence/import followed by provider synchronization, automated import followed by manual recovery, mixed-origin conflict resolution, provider outage/manual continuation, unknown/in-flight refund reconciliation, settlement gross-fee-refund-net mismatch, duplicate settlement import, manual bank match, support note visibility/action authorization, redaction authorization, PII-free logs, alert deduplication, restore then reconcile, and queue permission checks.
 
 **Migration/types:** Add job leases/checkpoints and any report indexes. Prefer derived reports over duplicate mutable counters. Regenerate types/schema when collections change.
 
@@ -734,7 +816,7 @@ rtk pnpm build
 rtk pnpm release:check
 ```
 
-**Exit criteria:** Every material mismatch produces a report or queue; operators can safely replay or resolve failures; logs do not leak PII; recovery drills end with all invariants restored.
+**Exit criteria:** Every material mismatch produces a report or queue; operators can import evidence, attach observations, and safely replay or resolve failures without provider automation; automated sources can resume without duplicating records; logs do not leak PII; recovery drills end with all invariants restored.
 
 **Rollback:** Stop scheduled jobs and alert consumers independently. Preserve checkpoints/evidence. Use read-only reports when mutation commands are disabled.
 
@@ -754,12 +836,12 @@ rtk pnpm release:check
 
 **Model tier:** Strongest for final security/data/payment review; default for repetitive browser matrices.
 
-**Target areas:** Playwright commerce suite, provider/carrier sandbox harnesses, accessibility checks, security review, bilingual messages and legal pages, release checklist, deployment/runbook docs.
+**Target areas:** Playwright commerce suite, mandatory provider-neutral interoperability fixtures, provider/carrier sandbox harnesses for enabled adapters, accessibility checks, security review, bilingual messages and legal pages, release checklist, deployment/runbook docs.
 
 **Tasks:**
 
-- Create an environment matrix covering stocked purchase, payment abandonment/expiry, last-unit concurrency, manual payment if enabled, request-to-order, private quote, partial fulfillment if enabled, delivery exception, cancellation, return, partial refund, exchange, and recovery replay.
-- Run real PostgreSQL transaction tests and provider sandbox tests; do not mock the only evidence for money or concurrency behavior.
+- Create an environment matrix covering stocked purchase, payment abandonment/expiry, last-unit concurrency, manual payment if enabled, request-to-order, private quote, partial fulfillment if enabled, delivery exception, cancellation, return, partial refund, exchange, recovery replay, manual-to-automated handoff, automated-to-manual recovery, and mixed-origin concurrency.
+- Run real PostgreSQL transaction tests and mandatory provider-neutral interoperability fixtures. Run provider sandbox tests for every enabled adapter; skipped optional adapters do not create a sandbox requirement. Do not mock the only evidence for money or concurrency behavior.
 - Run authenticated browser flows for customer, staff, and unauthorized roles in English and Korean.
 - Verify accessibility, keyboard operation, error recovery, mobile layout, and no raw enum/PII/provider leakage.
 - Audit all commerce copy against configured facts. Remove unsupported rates, timelines, reasons, promises, tax statements, and return assertions.
@@ -796,21 +878,22 @@ rtk git diff --check
 
 ## Cross-step acceptance matrix
 
-| Capability    | Required proof                                                                                                                         |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Catalog       | Stable active SKU, unique constraint, immutable line snapshot                                                                          |
-| Address       | Ownership, validation, explicit save choice, immutable original plus audited fulfillment-version pointer                               |
-| Inventory     | Physical-entry on-hand, separate reservation entries, deterministic locks, expiry, inbound provenance, reconstruction                  |
-| Pricing       | Server quote reproduces subtotal, discount, shipping, tax, total                                                                       |
-| Payment       | Durable command/event evidence, authoritative card reconciliation, and guarded manual payment/refund evidence when enabled             |
-| Order         | Guarded transitions, durable audit, customer-safe state mapping                                                                        |
-| Fulfillment   | Line quantities balance across allocated/shipped/delivered/canceled                                                                    |
-| Made-to-order | Capacity/deadline/quote/production/refund obligations are explicit                                                                     |
-| Returns       | Eligibility snapshot, inspection, in-flight refundable-balance reservation, authoritative refund reconciliation, explained disposition |
-| Finance       | Gross, fee, refund, net, payout, manual receipt, liability, and immutable close export reconcile                                       |
-| Operations    | Every invariant drift becomes a queue/report with safe recovery and support actions call guarded commands                              |
-| Localization  | English/Korean key parity and no unsupported promises                                                                                  |
-| Security      | Customer ownership, staff roles, webhook authenticity, PII-safe logs                                                                   |
+| Capability     | Required proof                                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Catalog        | Stable active SKU, unique constraint, immutable line snapshot                                                                                                            |
+| Address        | Ownership, validation, explicit save choice, immutable original plus audited fulfillment-version pointer                                                                 |
+| Inventory      | Physical-entry on-hand, separate reservation entries, deterministic locks, expiry, inbound provenance, reconstruction                                                    |
+| Pricing        | Server quote reproduces subtotal, discount, shipping, tax, total                                                                                                         |
+| Payment        | Durable command/event evidence, authoritative card reconciliation, and guarded manual payment/refund evidence when enabled                                               |
+| Order          | Guarded transitions, durable audit, customer-safe state mapping                                                                                                          |
+| Fulfillment    | Line quantities balance across allocated/shipped/delivered/canceled                                                                                                      |
+| Made-to-order  | Capacity/deadline/quote/production/refund obligations are explicit                                                                                                       |
+| Returns        | Eligibility snapshot, inspection, in-flight refundable-balance reservation, authoritative refund reconciliation, explained disposition                                   |
+| Finance        | Gross, fee, refund, net, payout, manual receipt, liability, and immutable close export reconcile                                                                         |
+| Operations     | Every invariant drift becomes a queue/report with safe recovery and support actions call guarded commands                                                                |
+| Interoperation | Every supply-chain capability passes manual-only, manual-to-automated, automated-to-manual recovery, mixed-origin concurrency, and adapter disable/replacement scenarios |
+| Localization   | English/Korean key parity and no unsupported promises                                                                                                                    |
+| Security       | Customer ownership, staff roles, webhook authenticity, PII-safe logs                                                                                                     |
 
 ## Anti-patterns prohibited during execution
 
@@ -827,6 +910,18 @@ rtk git diff --check
 - Refund represented only by changing payment status.
 - Guessed carrier/rate/timeline/legal policy embedded in code or copy.
 - Generic Payload field editing as the primary operational workflow.
+- A provider SDK, webhook, polling job, or scheduled worker as the only path for a supply-chain transition.
+- Separate manual and automated state machines, validations, or event formats for the same business operation.
+- Treating manual operation as a global mode switch that disables compatible automation on unrelated records.
+- Letting provider synchronization overwrite manual history or resolve a conflict without an audited operator decision.
+- Provider SDK imports inside domain command handlers or Payload hooks.
+- Direct provider calls inside a domain database transaction.
+- Process-local polling cursors, deduplication, retry state, or unmatched-event storage.
+- Separate manual/provider aggregates, shadow shipments, or duplicated inventory records.
+- Using a tracking number alone as global identity.
+- Disabling guarded manual commands when automation is enabled.
+- Treating an operator note as operational evidence.
+- Silently discarding stale, unmatched, contradictory, or illegal provider observations.
 
 ## Plan mutation protocol
 
