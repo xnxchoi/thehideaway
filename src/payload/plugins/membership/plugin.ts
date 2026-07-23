@@ -26,6 +26,8 @@ import { InventoryReceiptLines } from "@/payload/collections/(consumption)/Inven
 import { InventoryLots } from "@/payload/collections/(consumption)/InventoryLots";
 import { InventoryCycleCounts } from "@/payload/collections/(consumption)/InventoryCycleCounts";
 import { InventoryCycleCountLines } from "@/payload/collections/(consumption)/InventoryCycleCountLines";
+import { InventoryReservationEntries } from "@/payload/collections/(consumption)/InventoryReservationEntries";
+import { InventoryReservations } from "@/payload/collections/(consumption)/InventoryReservations";
 
 export interface MembershipPluginConfig {
   enabled: boolean;
@@ -65,7 +67,9 @@ export const MembershipPlugin =
       InventoryReceiptLines,
       InventoryLots,
       InventoryCycleCounts,
-      InventoryCycleCountLines
+      InventoryCycleCountLines,
+      InventoryReservations,
+      InventoryReservationEntries
     );
 
     return config;
