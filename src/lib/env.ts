@@ -497,7 +497,7 @@ const schema = z.object({
       d(
         "optional",
         "external-api",
-        'Master gate for card checkout. Card options stay hidden and card routes reject unless this is exactly "true", even when PortOne keys are present. Keep unset/false until a sandbox card payment has round-tripped successfully — see readmes/PORTONE_APPLICATION.md.'
+        'Master gate for card checkout. Card options stay hidden and card routes reject unless this is exactly "true", even when PortOne keys are present. Keep unset/false until a sandbox card payment has round-tripped successfully — see plans/commerce/operations.md.'
       )
     ),
   LOST_INVENTORY_RESERVATIONS_LIVE: z
