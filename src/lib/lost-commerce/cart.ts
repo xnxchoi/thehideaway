@@ -52,36 +52,17 @@ async function resolveSku(
   line: LostCartLineInput,
   req?: Record<string, unknown>
 ): Promise<ProductSkuForSnapshot & AnyDoc> {
-  if (!line.skuId && !line.variantId) throw new Error("sku-required");
+  if (!line.skuId) throw new Error("sku-required");
 
-  let sku: AnyDoc | null | undefined;
-  if (line.skuId) {
-    sku = (await payload.findByID({
-      collection: "product-variants",
-      id: line.skuId,
-      depth: 0,
-      disableErrors: true,
-      req: req as never,
-      overrideAccess: true
-    })) as AnyDoc | null;
-    if (!sku) throw new Error("sku-not-found");
-  } else {
-    const result = await payload.find({
-      collection: "product-variants",
-      depth: 0,
-      limit: 2,
-      req: req as never,
-      overrideAccess: true,
-      where: {
-        and: [
-          { product: { equals: line.productId } },
-          { legacy_variant_ref: { equals: line.variantId } }
-        ]
-      }
-    });
-    if (result.docs.length !== 1) throw new Error("sku-not-found");
-    sku = result.docs[0] as AnyDoc;
-  }
+  const sku = (await payload.findByID({
+    collection: "product-variants",
+    id: line.skuId,
+    depth: 0,
+    disableErrors: true,
+    req: req as never,
+    overrideAccess: true
+  })) as AnyDoc | null;
+  if (!sku) throw new Error("sku-not-found");
 
   if (!sku?.active) throw new Error("sku-inactive");
   if (productIdOfSku(sku.product) !== line.productId) {
@@ -97,7 +78,7 @@ function aggregateCheckoutLines(
   for (const line of lines) {
     const key = [
       line.productId,
-      line.skuId ?? line.variantId ?? "",
+      line.skuId,
       line.mode,
       line.campaignId ?? ""
     ].join(":");

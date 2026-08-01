@@ -79,10 +79,9 @@ describe("normalizeProductVariantData", () => {
     ).toThrow("duplicate-sku-option");
   });
 
-  it("rejects unsafe money, inventory, and physical values", () => {
+  it("rejects unsafe money and physical values", () => {
     for (const [field, value] of [
       ["price_override_amount", 1.5],
-      ["inventory", -1],
       ["weight_grams", Number.MAX_SAFE_INTEGER + 1],
       ["length_mm", Number.NaN]
     ] as const) {
@@ -95,7 +94,7 @@ describe("normalizeProductVariantData", () => {
     }
   });
 
-  it("rejects zero physical values while allowing zero inventory", () => {
+  it("rejects zero physical values", () => {
     for (const field of [
       "weight_grams",
       "length_mm",
@@ -110,12 +109,6 @@ describe("normalizeProductVariantData", () => {
       ).toThrow("invalid-sku-number");
     }
 
-    expect(
-      normalizeProductVariantData({
-        operation: "create",
-        data: { product: "product-1", inventory: 0 }
-      })
-    ).toMatchObject({ inventory: 0 });
   });
 
   it("requires a positive price override while preserving an unknown price", () => {
@@ -143,21 +136,18 @@ describe("normalizeProductVariantData", () => {
           active: false,
           identity_locked: false,
           sku: "DRAFT-1",
-          options: [{ key: "size", value: "50 ml" }],
-          legacy_variant_ref: "draft-50"
+          options: [{ key: "size", value: "50 ml" }]
         },
         data: {
           product: "product-2",
           sku: "DRAFT-2",
-          options: [{ key: "size", value: "100 ml" }],
-          legacy_variant_ref: "draft-100"
+          options: [{ key: "size", value: "100 ml" }]
         }
       })
     ).toMatchObject({
       product: "product-2",
       sku: "DRAFT-2",
-      identity_locked: false,
-      legacy_variant_ref: "draft-100"
+      identity_locked: false
     });
   });
 
@@ -167,8 +157,7 @@ describe("normalizeProductVariantData", () => {
       active: false,
       identity_locked: true,
       sku: "LIS-50",
-      options: [{ key: "size", value: "50 ml" }],
-      legacy_variant_ref: "50ml"
+      options: [{ key: "size", value: "50 ml" }]
     };
 
     expect(() =>
@@ -200,22 +189,6 @@ describe("normalizeProductVariantData", () => {
           options: [{ key: "size", value: "50 ml" }]
         },
         data: { options: [{ key: "size", value: "100 ml" }] }
-      })
-    ).toThrow("sku-identity-immutable");
-  });
-
-  it("keeps the legacy variant reference immutable after activation", () => {
-    expect(() =>
-      normalizeProductVariantData({
-        operation: "update",
-        originalDoc: {
-          product: "product-1",
-          active: false,
-          identity_locked: true,
-          sku: "LIS-50",
-          legacy_variant_ref: "50ml"
-        },
-        data: { legacy_variant_ref: "100ml" }
       })
     ).toThrow("sku-identity-immutable");
   });

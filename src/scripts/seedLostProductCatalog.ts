@@ -1,24 +1,14 @@
-export const LEGACY_SEED_PRODUCT_SLUGS = [
-  "parasol-0230",
-  "memory-tee",
-  "window-study-01",
-  "private-room-bench"
-] as const;
-
 const unavailableDraft = {
   active: false,
   currency: "KRW" as const,
   unit_amount: 0,
-  inventory: 0,
-  stock_state: "on_request" as const,
   standard_enabled: false,
   request_to_order_enabled: false,
   private_order_enabled: false,
   private_preset_price_enabled: false,
   private_tier_gate: "anyone" as const,
   min_order_quantity: 1,
-  max_order_quantity: 1,
-  variant_source: "relational" as const
+  max_order_quantity: 1
 };
 
 export const LOST_FRAGRANCE_SEED_PRODUCTS = [

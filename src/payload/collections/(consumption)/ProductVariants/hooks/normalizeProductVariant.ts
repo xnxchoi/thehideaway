@@ -38,8 +38,6 @@ function identityChanged(
   return (
     originalProduct !== relationshipId(normalized.product) ||
     nullableText(originalDoc.sku)?.toUpperCase() !== normalized.sku ||
-    nullableText(originalDoc.legacy_variant_ref) !==
-      normalized.legacy_variant_ref ||
     JSON.stringify(originalOptions) !== JSON.stringify(nextOptions)
   );
 }
@@ -65,7 +63,6 @@ export function normalizeProductVariantData(input: {
     (originalDoc.identity_locked === true || originalDoc.active === true);
   const identityLocked = wasIdentityLocked || active;
 
-  const legacyVariantRef = nullableText(merged.legacy_variant_ref);
   const normalized: VariantData = {
     ...incoming,
     product: merged.product,
@@ -81,11 +78,7 @@ export function normalizeProductVariantData(input: {
     length_mm: nullableInteger(merged.length_mm, 1),
     width_mm: nullableInteger(merged.width_mm, 1),
     height_mm: nullableInteger(merged.height_mm, 1),
-    tax_category: nullableText(merged.tax_category),
-    legacy_variant_ref: legacyVariantRef,
-    legacy_key: legacyVariantRef ? `${productId}:${legacyVariantRef}` : null,
-    inventory: nullableInteger(merged.inventory),
-    stock_state: nullableText(merged.stock_state)
+    tax_category: nullableText(merged.tax_category)
   };
 
   if (wasIdentityLocked && identityChanged(originalDoc, normalized)) {

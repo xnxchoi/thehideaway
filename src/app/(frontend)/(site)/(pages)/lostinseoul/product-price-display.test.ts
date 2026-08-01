@@ -14,7 +14,6 @@ const availableSku = {
   sku: "LIS-1",
   label: "One",
   amount: 150000,
-  inventory: 1,
   stockState: "in_stock",
   actionableModes: [
     "standard_purchase",
@@ -135,12 +134,10 @@ describe("LOSTINSEOUL product price display", () => {
     ).toBe(false);
   });
 
-  it("uses server ATP actionability instead of stale legacy stock fields", () => {
+  it("uses server ATP actionability", () => {
     for (const selectedSku of [
       { ...availableSku, stockState: "on_request" },
-      { ...availableSku, stockState: null },
-      { ...availableSku, inventory: 0 },
-      { ...availableSku, inventory: null }
+      { ...availableSku, stockState: null }
     ]) {
       expect(
         canUseLostProductActions({
@@ -183,7 +180,7 @@ describe("LOSTINSEOUL product price display", () => {
         modes: ["private_order"],
         privatePresetPriceEnabled: true,
         privateUnitAmount: 150000,
-        selectedSku: { ...availableSku, amount: null, inventory: null }
+        selectedSku: { ...availableSku, amount: null }
       })
     ).toBe(true);
     expect(
@@ -192,7 +189,7 @@ describe("LOSTINSEOUL product price display", () => {
         modes: ["private_order"],
         privatePresetPriceEnabled: true,
         privateUnitAmount: null,
-        selectedSku: { ...availableSku, amount: null, inventory: null }
+        selectedSku: { ...availableSku, amount: null }
       })
     ).toBe(false);
     expect(
@@ -204,7 +201,6 @@ describe("LOSTINSEOUL product price display", () => {
         selectedSku: {
           ...availableSku,
           amount: null,
-          inventory: null,
           stockState: null
         }
       })

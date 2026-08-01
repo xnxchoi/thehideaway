@@ -78,9 +78,7 @@ const sku = Object.freeze({
   length_mm: 55,
   width_mm: 55,
   height_mm: 145,
-  tax_category: "fragrance",
-  stock_state: "in_stock",
-  inventory: 5
+  tax_category: "fragrance"
 });
 
 function request(body: unknown) {
@@ -132,7 +130,7 @@ describe("GET and PATCH /api/lost/cart", () => {
     const persisted = {
       id: "cart-1",
       currency: "KRW",
-      line_schema_version: 2,
+      line_schema_version: 3,
       lines: [{ skuId: "sku-1" }]
     };
     mocks.find.mockResolvedValue({ docs: [persisted] });
@@ -141,24 +139,6 @@ describe("GET and PATCH /api/lost/cart", () => {
     const response = await GET();
 
     expect(await response.json()).toEqual({ ok: true, cart: persisted });
-  });
-
-  it("does not return a legacy persisted cart as canonical", async () => {
-    mocks.find.mockResolvedValue({
-      docs: [
-        {
-          id: "cart-legacy",
-          line_schema_version: 1,
-          lines: [{ variantId: "legacy-variant" }]
-        }
-      ]
-    });
-
-    const { GET } = await import("./route");
-    const response = await GET();
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ ok: true, cart: null });
   });
 
   it("requires authentication before reading a persisted cart", async () => {
@@ -171,7 +151,28 @@ describe("GET and PATCH /api/lost/cart", () => {
     expect(mocks.find).not.toHaveBeenCalled();
   });
 
-  it("canonicalizes stale client snapshot fields and persists relational SKU facts", async () => {
+  it("rejects a retired variant-only request before opening a transaction", async () => {
+    const { PATCH } = await import("./route");
+
+    const response = await PATCH(
+      request({
+        lines: [
+          {
+            productId: product.id,
+            variantId: "retired-variant",
+            mode: "standard_purchase",
+            quantity: 1
+          }
+        ]
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ ok: false, error: "bad-request" });
+    expect(mocks.beginTransaction).not.toHaveBeenCalled();
+  });
+
+  it("persists authoritative SKU facts", async () => {
     const { PATCH } = await import("./route");
 
     const response = await PATCH(
@@ -180,14 +181,8 @@ describe("GET and PATCH /api/lost/cart", () => {
           {
             productId: product.id,
             skuId: sku.id,
-            variantId: "stale-legacy-variant",
             mode: "standard_purchase",
             quantity: 2,
-            productName: "Forged name",
-            sku: "STALE-SKU",
-            unitAmount: 1,
-            lineAmount: 2,
-            currency: "USD"
           }
         ]
       })
@@ -204,15 +199,14 @@ describe("GET and PATCH /api/lost/cart", () => {
           storefront: "lostinseoul",
           status: "active",
           currency: "KRW",
-          line_schema_version: 2,
+          line_schema_version: 3,
           lines: [
             {
-              schemaVersion: 2,
+              schemaVersion: 3,
               productId: "product-1",
               productName: "CATALYST 01",
               productSlug: "catalyst-01",
               skuId: "sku-1",
-              variantId: "sku-1",
               sku: "LIS-CATALYST-01-50",
               skuLabel: "50 ml",
               options: [{ key: "Size", value: "50 ml" }],
@@ -421,7 +415,7 @@ describe("GET and PATCH /api/lost/cart", () => {
     expect(mocks.rollbackTransaction).toHaveBeenCalledWith("tx-1");
   });
 
-  it("persists an empty version-2 cart when clearing an existing cart", async () => {
+  it("persists an empty version-3 cart when clearing an existing cart", async () => {
     mocks.find.mockResolvedValue({ docs: [{ id: "cart-1", lines: [] }] });
     mocks.update.mockImplementation(async ({ data }) => ({
       id: "cart-1",
@@ -442,7 +436,7 @@ describe("GET and PATCH /api/lost/cart", () => {
         storefront: "lostinseoul",
         status: "active",
         currency: "KRW",
-        line_schema_version: 2,
+        line_schema_version: 3,
         lines: []
       }
     });

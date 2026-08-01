@@ -1,18 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  LEGACY_SEED_PRODUCT_SLUGS,
   LOST_FRAGRANCE_SEED_PRODUCTS
 } from "./seedLostProductCatalog";
 
 describe("LOSTINSEOUL fragrance seed catalog", () => {
-  it("replaces the four fictional fixtures with three product drafts", () => {
-    expect(LEGACY_SEED_PRODUCT_SLUGS).toEqual([
-      "parasol-0230",
-      "memory-tee",
-      "window-study-01",
-      "private-room-bench"
-    ]);
+  it("defines three product drafts", () => {
     expect(LOST_FRAGRANCE_SEED_PRODUCTS.map(({ slug }) => slug)).toEqual([
       "catalyst-50ml",
       "catalyst-100ml-limited",
@@ -26,13 +19,13 @@ describe("LOSTINSEOUL fragrance seed catalog", () => {
         active: false,
         currency: "KRW",
         unit_amount: 0,
-        inventory: 0,
-        stock_state: "on_request",
         standard_enabled: false,
         request_to_order_enabled: false,
-        private_order_enabled: false,
-        variant_source: "relational"
+        private_order_enabled: false
       });
+      expect(product).not.toHaveProperty("inventory");
+      expect(product).not.toHaveProperty("stock_state");
+      expect(product).not.toHaveProperty("variant_source");
       expect(product).not.toHaveProperty("variants");
       expect(product).not.toHaveProperty("sku");
     }

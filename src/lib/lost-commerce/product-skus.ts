@@ -35,12 +35,11 @@ export type ProductSkuForSnapshot = {
 };
 
 export type CommerceSkuSnapshot = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   productId: string;
   productName: string;
   productSlug: string;
   skuId: string;
-  variantId: string;
   sku: string;
   skuLabel: string | null;
   options: readonly Readonly<CommerceSkuOption>[];
@@ -175,7 +174,7 @@ export function resolveSkuUnitAmount(input: {
     input.product.unit_amount,
     "invalid-sku-price"
   );
-  if (input.mode !== "private_order" && productAmount === 0) {
+  if (productAmount === 0) {
     throw new Error("invalid-sku-price");
   }
   return productAmount;
@@ -216,12 +215,11 @@ export function buildCommerceSkuSnapshot(input: {
       : Object.freeze({ lengthMm, widthMm, heightMm });
 
   return Object.freeze({
-    schemaVersion: 2 as const,
+    schemaVersion: 3 as const,
     productId: input.product.id,
     productName: input.product.name,
     productSlug: input.product.slug,
     skuId: input.sku.id,
-    variantId: input.sku.id,
     sku: skuCode,
     skuLabel: input.sku.label?.trim() || null,
     options,

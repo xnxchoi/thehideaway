@@ -703,7 +703,7 @@ function LostBagPanel({
             <div className="grid max-h-[48svh] gap-6 overflow-y-auto pr-2">
               {lines.map((line) => (
                 <LostBagLine
-                  key={`${line.productId}:${line.skuId ?? line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
+                  key={`${line.productId}:${line.skuId}:${line.mode}:${line.campaignId ?? ""}`}
                   line={line}
                   onRemove={onRemove}
                   removeLabel={removeLabel}

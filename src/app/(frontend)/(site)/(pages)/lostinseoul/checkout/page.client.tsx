@@ -504,7 +504,7 @@ export function LostCheckoutPageClient({
                 {lines.map((line) => (
                   <div
                     className="grid gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start sm:gap-4"
-                    key={`${line.productId}:${line.skuId ?? line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
+                    key={`${line.productId}:${line.skuId}:${line.mode}:${line.campaignId ?? ""}`}
                   >
                     <span className="min-w-0 text-sm leading-snug text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)]">
                       {line.productName}

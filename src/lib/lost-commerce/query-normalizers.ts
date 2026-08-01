@@ -7,8 +7,6 @@ export type LostProductVariant = {
   size?: string | null;
   color?: string | null;
   amount?: number | null;
-  inventory?: number | null;
-  stockState?: string | null;
 };
 
 export type LostDropCard = {
@@ -66,41 +64,10 @@ export function normalizeLostProductSkus(
         label: stringValue(sku.label) || skuCode || id,
         size: optionValue("size"),
         color: optionValue("color"),
-        amount,
-        inventory: typeof sku.inventory === "number" ? sku.inventory : null,
-        stockState: nullableString(sku.stock_state)
+        amount
       };
     })
     .filter((sku) => sku.id && sku.label);
-}
-
-export function normalizeLostProductVariants(
-  product: AnyDoc
-): LostProductVariant[] {
-  if (!Array.isArray(product.variants)) return [];
-
-  return product.variants
-    .filter((variant): variant is AnyDoc => Boolean(variant))
-    .map((variant) => {
-      const label =
-        stringValue(variant.label) ||
-        stringValue(variant.size) ||
-        stringValue(variant.color) ||
-        stringValue(variant.id);
-
-      return {
-        id: stringValue(variant.id),
-        sku: nullableString(variant.sku),
-        label,
-        size: nullableString(variant.size),
-        color: nullableString(variant.color),
-        amount: typeof variant.amount === "number" ? variant.amount : null,
-        inventory:
-          typeof variant.inventory === "number" ? variant.inventory : null,
-        stockState: nullableString(variant.stock_state)
-      };
-    })
-    .filter((variant) => variant.id && variant.label);
 }
 
 export function normalizeLostDropCard(drop: AnyDoc): LostDropCard {

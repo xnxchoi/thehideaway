@@ -71,12 +71,11 @@ describe("commerce totals snapshots", () => {
 
 describe("private quote line snapshots", () => {
   const privateCheckoutLine = {
-    schemaVersion: 2 as const,
+    schemaVersion: 3 as const,
     productId: "product-1",
     productName: "CATALYST 01",
     productSlug: "catalyst-01",
     skuId: "sku-1",
-    variantId: "sku-1",
     sku: "LIS-CATALYST-01",
     skuLabel: null,
     options: Object.freeze([{ key: "Size", value: "50 ml" }]),

@@ -34,6 +34,7 @@ export type { LostDropCard };
 
 export type LostProductVariant = NormalizedLostProductVariant & {
   actionableModes: LostOrderMode[];
+  stockState: "in_stock" | "out_of_stock" | "on_request" | null;
 };
 
 export type LostCampaignView = {
@@ -167,7 +168,7 @@ function annotateActionableModes(
 
   return variants.map((variant) => {
     if (!hasActiveSkuIdentity(variant)) {
-      return { ...variant, actionableModes: [] };
+      return { ...variant, actionableModes: [], stockState: null };
     }
     const actionableModes = [
       product.standard_enabled &&
@@ -184,7 +185,23 @@ function annotateActionableModes(
         : null
     ].filter(Boolean) as LostOrderMode[];
 
-    return { ...variant, actionableModes };
+    const availableToPromise = availableToPromiseBySku.get(variant.id);
+    const hasStandardAvailability =
+      product.standard_enabled &&
+      Number.isSafeInteger(availableToPromise) &&
+      Number(availableToPromise) >= 1;
+    const hasRequestAvailability =
+      actionableModes.includes("request_to_order") ||
+      actionableModes.includes("private_order");
+    const stockState = hasStandardAvailability
+      ? "in_stock"
+      : hasRequestAvailability
+        ? "on_request"
+        : product.standard_enabled
+          ? "out_of_stock"
+          : null;
+
+    return { ...variant, actionableModes, stockState };
   });
 }
 

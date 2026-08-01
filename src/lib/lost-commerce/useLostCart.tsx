@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { LostCartLineInput } from "./types";
 
-const STORAGE_KEY = "lostinseoul.cart.v1";
+const STORAGE_KEY = "lostinseoul.cart.v2";
 
 export type LostCartLineClient = LostCartLineInput & {
   productName: string;
@@ -18,7 +18,7 @@ export type LostCartLineClient = LostCartLineInput & {
 function keyFor(line: LostCartLineInput): string {
   return [
     line.productId,
-    line.skuId ?? line.variantId ?? "",
+    line.skuId,
     line.mode,
     line.campaignId ?? ""
   ].join(":");
@@ -45,7 +45,6 @@ export function serializeLostCartLines(
   return lines.map((line) => ({
     productId: line.productId,
     skuId: line.skuId,
-    variantId: line.variantId,
     mode: line.mode,
     quantity: line.quantity,
     campaignId: line.campaignId

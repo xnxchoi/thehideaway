@@ -3,7 +3,8 @@ import {
   buildCommerceSkuSnapshot,
   buildSkuOptionKey,
   canonicalizeSkuOptions,
-  resolveSkuUnitAmount
+  resolveSkuUnitAmount,
+  type ProductSkuForSnapshot
 } from "./product-skus";
 
 describe("canonicalizeSkuOptions", () => {
@@ -89,7 +90,6 @@ describe("buildCommerceSkuSnapshot", () => {
         ],
         price_override_amount: 135000,
         weight_grams: null,
-        dimensions: null,
         tax_category: null
       },
       quantity: 2,
@@ -97,12 +97,11 @@ describe("buildCommerceSkuSnapshot", () => {
     });
 
     expect(snapshot).toEqual({
-      schemaVersion: 2,
+      schemaVersion: 3,
       productId: "product_1",
       productName: "Jacket",
       productSlug: "jacket",
       skuId: "sku_1",
-      variantId: "sku_1",
       sku: "LIS-JACKET-BLACK-02",
       skuLabel: "Black / 02",
       options: [
@@ -197,11 +196,20 @@ describe("buildCommerceSkuSnapshot", () => {
     expect(() =>
       resolveSkuUnitAmount({
         product: {
+          id: "product_1",
+          name: "Jacket",
+          slug: "jacket",
+          currency: "KRW",
           unit_amount: 180_000,
           private_preset_price_enabled: true,
           private_unit_amount: null
         },
-        sku: { price_override_amount: null },
+        sku: {
+          id: "sku_1",
+          product: "product_1",
+          sku: "LIS-JACKET-01",
+          price_override_amount: null
+        },
         mode: "private_order",
         allowUnpricedPrivateOrder: true
       })
@@ -322,7 +330,7 @@ describe("buildCommerceSkuSnapshot", () => {
 
   it("deep-copies nested options and keeps unknown catalog facts null", () => {
     const options = [{ key: "size", value: "02" }];
-    const sku = {
+    const sku: ProductSkuForSnapshot = {
       id: "sku_1",
       product: "product_1",
       sku: "LIS-JACKET-02",
@@ -330,7 +338,6 @@ describe("buildCommerceSkuSnapshot", () => {
       options,
       price_override_amount: null,
       weight_grams: null,
-      dimensions: null,
       tax_category: null
     };
     const snapshot = buildCommerceSkuSnapshot({

@@ -21,7 +21,6 @@ import { up as applySkuMigration } from "@/lib/migrations/20260721_091634";
 import { up as applySkuIdentityMigration } from "@/lib/migrations/20260721_094720";
 import { claimRequestOrderCapacity } from "./campaigns";
 import { buildCommerceSkuSnapshot } from "./product-skus";
-import { applySkuBackfill } from "./sku-backfill";
 
 const testDatabaseUri = process.env.COMMERCE_TEST_DATABASE_URI;
 const describeWithPostgres = testDatabaseUri ? describe : describe.skip;
@@ -77,8 +76,7 @@ const TestProducts: CollectionConfig = {
       type: "checkbox",
       required: true,
       defaultValue: true
-    },
-    { name: "variants", type: "json" }
+    }
   ]
 };
 
@@ -122,7 +120,6 @@ describeWithPostgres.sequential(
     }, 60_000);
 
     async function createProduct(input?: {
-      variants?: unknown;
       unitAmount?: number;
     }): Promise<CreatedProduct> {
       const suffix = randomUUID();
@@ -133,10 +130,9 @@ describeWithPostgres.sequential(
           name: `SKU test ${suffix}`,
           slug: `sku-test-${suffix}`,
           currency: "KRW",
-          unit_amount: input?.unitAmount ?? 120_000,
-          variants: input?.variants
+          unit_amount: input?.unitAmount ?? 120_000
         }
-      })) as CreatedProduct;
+      } as never)) as CreatedProduct;
     }
 
     async function createTestUser(): Promise<string> {
@@ -583,7 +579,7 @@ describeWithPostgres.sequential(
             subtotal_amount: 120_000,
             total_amount: 120_000,
             campaign: campaignId,
-            line_snapshot_version: 2,
+            line_snapshot_version: 3,
             lines: []
           }
         });
@@ -823,7 +819,7 @@ describeWithPostgres.sequential(
       ) VALUES (
         ${orderRef},
         ${userId},
-        2,
+        3,
         ${JSON.stringify([snapshot])}::jsonb
       )
     `);
@@ -841,34 +837,6 @@ describeWithPostgres.sequential(
       WHERE order_ref = ${orderRef}
     `);
       expect(stored.rows[0]?.lines).toEqual([snapshot]);
-    });
-
-    it("applies a reviewed legacy backfill idempotently", async () => {
-      const legacyVariantRef = `legacy-${randomUUID()}`;
-      const product = await createProduct({
-        variants: [{ id: legacyVariantRef, inventory: 99, amount: 999 }]
-      });
-      const input = {
-        payload,
-        products: [{ id: product.id, variants: [{ id: legacyVariantRef }] }],
-        reviewed: [
-          {
-            productId: product.id,
-            legacyVariantRef,
-            sku: `LIS-${randomUUID()}`,
-            options: [{ key: "size", value: "confirmed-test-size" }]
-          }
-        ]
-      };
-
-      await expect(applySkuBackfill(input)).resolves.toEqual({
-        created: 1,
-        existing: 0
-      });
-      await expect(applySkuBackfill(input)).resolves.toEqual({
-        created: 0,
-        existing: 1
-      });
     });
 
     it("re-enters the generated SKU migration safely", async () => {

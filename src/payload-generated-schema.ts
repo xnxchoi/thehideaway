@@ -549,23 +549,9 @@ export const enum_products_currency = pgEnum("enum_products_currency", [
   "JPY",
   "EUR"
 ]);
-export const enum_products_stock_state = pgEnum("enum_products_stock_state", [
-  "in_stock",
-  "out_of_stock",
-  "pre_order",
-  "on_request"
-]);
-export const enum_products_variant_source = pgEnum(
-  "enum_products_variant_source",
-  ["legacy", "relational"]
-);
 export const enum_products_private_tier_gate = pgEnum(
   "enum_products_private_tier_gate",
   ["anyone", "resident", "patron", "cofounder", "staff"]
-);
-export const enum_product_variants_stock_state = pgEnum(
-  "enum_product_variants_stock_state",
-  ["in_stock", "out_of_stock", "pre_order", "on_request"]
 );
 export const enum_product_order_campaigns_state = pgEnum(
   "enum_product_order_campaigns_state",
@@ -6655,20 +6641,12 @@ export const products = pgTable(
       .notNull()
       .default(0),
     compare_at_amount: numeric("compare_at_amount", { mode: "number" }),
-    stock_state: enum_products_stock_state("stock_state")
-      .notNull()
-      .default("on_request"),
-    inventory: numeric("inventory", { mode: "number" }).default(0),
     max_order_quantity: numeric("max_order_quantity", { mode: "number" })
       .notNull()
       .default(1),
     min_order_quantity: numeric("min_order_quantity", { mode: "number" })
       .notNull()
       .default(1),
-    variant_source: enum_products_variant_source("variant_source")
-      .notNull()
-      .default("legacy"),
-    variants: jsonb("variants"),
     standard_enabled: boolean("standard_enabled").notNull().default(true),
     request_to_order_enabled: boolean("request_to_order_enabled")
       .notNull()
@@ -6709,11 +6687,8 @@ export const products = pgTable(
     index("products_hero_media_idx").on(columns.hero_media),
     index("products_currency_idx").on(columns.currency),
     index("products_unit_amount_idx").on(columns.unit_amount),
-    index("products_stock_state_idx").on(columns.stock_state),
-    index("products_inventory_idx").on(columns.inventory),
     index("products_max_order_quantity_idx").on(columns.max_order_quantity),
     index("products_min_order_quantity_idx").on(columns.min_order_quantity),
-    index("products_variant_source_idx").on(columns.variant_source),
     index("products_standard_enabled_idx").on(columns.standard_enabled),
     index("products_request_to_order_enabled_idx").on(
       columns.request_to_order_enabled
@@ -6796,10 +6771,6 @@ export const product_variants = pgTable(
     width_mm: numeric("width_mm", { mode: "number" }),
     height_mm: numeric("height_mm", { mode: "number" }),
     tax_category: varchar("tax_category"),
-    legacy_variant_ref: varchar("legacy_variant_ref"),
-    legacy_key: varchar("legacy_key"),
-    inventory: numeric("inventory", { mode: "number" }),
-    stock_state: enum_product_variants_stock_state("stock_state"),
     sort: numeric("sort", { mode: "number" }).default(0),
     updatedAt: timestamp("updated_at", {
       mode: "string",
@@ -6822,12 +6793,6 @@ export const product_variants = pgTable(
     uniqueIndex("product_variants_sku_idx").on(columns.sku),
     uniqueIndex("product_variants_option_key_idx").on(columns.option_key),
     uniqueIndex("product_variants_barcode_idx").on(columns.barcode),
-    index("product_variants_legacy_variant_ref_idx").on(
-      columns.legacy_variant_ref
-    ),
-    uniqueIndex("product_variants_legacy_key_idx").on(columns.legacy_key),
-    index("product_variants_inventory_idx").on(columns.inventory),
-    index("product_variants_stock_state_idx").on(columns.stock_state),
     index("product_variants_sort_idx").on(columns.sort),
     index("product_variants_updated_at_idx").on(columns.updatedAt),
     index("product_variants_created_at_idx").on(columns.createdAt)
@@ -12604,10 +12569,7 @@ type DatabaseSchema = {
   enum_subscriptions_request_method: typeof enum_subscriptions_request_method;
   enum_subscriptions_provider: typeof enum_subscriptions_provider;
   enum_products_currency: typeof enum_products_currency;
-  enum_products_stock_state: typeof enum_products_stock_state;
-  enum_products_variant_source: typeof enum_products_variant_source;
   enum_products_private_tier_gate: typeof enum_products_private_tier_gate;
-  enum_product_variants_stock_state: typeof enum_product_variants_stock_state;
   enum_product_order_campaigns_state: typeof enum_product_order_campaigns_state;
   enum_product_order_campaigns_progress_visibility: typeof enum_product_order_campaigns_progress_visibility;
   enum_product_carts_status: typeof enum_product_carts_status;

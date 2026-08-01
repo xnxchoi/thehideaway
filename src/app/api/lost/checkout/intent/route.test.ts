@@ -51,9 +51,7 @@ vi.mock("payload", () => ({
         active: doc.active,
         sku: "LIS-SKU-1",
         label: null,
-        options: [],
-        stock_state: doc.stock_state,
-        inventory: doc.inventory
+        options: []
       };
     },
     update: mocks.update,
@@ -373,9 +371,7 @@ describe("POST /api/lost/checkout/intent", () => {
       unit_amount: 120000,
       min_order_quantity: 1,
       max_order_quantity: 5,
-      standard_enabled: true,
-      stock_state: "in_stock",
-      inventory: 3
+      standard_enabled: true
     });
 
     const { POST } = await import("./route");
@@ -455,9 +451,7 @@ describe("POST /api/lost/checkout/intent", () => {
         return {
           id,
           product: id === "sku-a" ? "product-a" : "product-b",
-          active: true,
-          stock_state: "in_stock",
-          inventory: 3
+          active: true
         };
       }
       return {
@@ -469,9 +463,7 @@ describe("POST /api/lost/checkout/intent", () => {
         unit_amount: 120000,
         min_order_quantity: 1,
         max_order_quantity: 5,
-        standard_enabled: true,
-        stock_state: "in_stock",
-        inventory: 3
+        standard_enabled: true
       };
     });
 
@@ -531,9 +523,7 @@ describe("POST /api/lost/checkout/intent", () => {
         return {
           id,
           product: "product-1",
-          active: true,
-          stock_state: "pre_order",
-          inventory: null
+          active: true
         };
       }
       return {
@@ -620,9 +610,7 @@ describe("POST /api/lost/checkout/intent", () => {
         return {
           id,
           product: "product-1",
-          active: true,
-          stock_state: "pre_order",
-          inventory: null
+          active: true
         };
       }
       return {
@@ -662,52 +650,7 @@ describe("POST /api/lost/checkout/intent", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
-  it("locks a canonical SKU discovered from a legacy variant reference before final resolution", async () => {
-    mocks.findByID.mockImplementation(async ({ collection, id }) => {
-      if (collection === "products") {
-        return {
-          id,
-          active: true,
-          name: "Legacy product",
-          slug: "legacy-product",
-          currency: "KRW",
-          unit_amount: 120000,
-          min_order_quantity: 1,
-          max_order_quantity: 5,
-          standard_enabled: true,
-          stock_state: "in_stock",
-          inventory: 3
-        };
-      }
-      return {
-        id,
-        product: "product-1",
-        active: true,
-        stock_state: "in_stock",
-        inventory: 3
-      };
-    });
-    mocks.find.mockResolvedValue({
-      docs: [
-        {
-          id: "sku-canonical",
-          product: "product-1",
-          active: true,
-          sku: "LIS-CANONICAL",
-          label: null,
-          options: [],
-          legacy_variant_ref: "legacy-small",
-          stock_state: "in_stock",
-          inventory: 3
-        }
-      ],
-      hasNextPage: false,
-      limit: 2,
-      page: 1,
-      totalDocs: 1,
-      totalPages: 1
-    });
-
+  it("rejects a retired variant-only request before opening a transaction", async () => {
     const { POST } = await import("./route");
     const res = await POST(
       request({
@@ -716,7 +659,7 @@ describe("POST /api/lost/checkout/intent", () => {
           {
             productId: "product-1",
             skuId: undefined,
-            variantId: "legacy-small",
+            variantId: "retired-variant",
             mode: "standard_purchase",
             quantity: 1
           }
@@ -724,23 +667,11 @@ describe("POST /api/lost/checkout/intent", () => {
       })
     );
 
-    expect(res.status).toBe(200);
-    expect(mocks.productSkuMutationLock).toHaveBeenCalledWith(
-      expect.anything(),
-      "tx-1",
-      "sku-canonical"
-    );
-    const firstDiscovery = mocks.lockEvents.indexOf("find:product-variants");
-    const skuLock = mocks.lockEvents.indexOf("sku:sku-canonical");
-    const finalResolution = mocks.lockEvents.indexOf(
-      "find:product-variants",
-      firstDiscovery + 1
-    );
-    expect(firstDiscovery).toBeGreaterThan(
-      mocks.lockEvents.indexOf("product:product-1")
-    );
-    expect(skuLock).toBeGreaterThan(firstDiscovery);
-    expect(finalResolution).toBeGreaterThan(skuLock);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ ok: false, error: "bad-request" });
+    expect(mocks.beginTransaction).not.toHaveBeenCalled();
+    expect(mocks.claimCommerceCommand).not.toHaveBeenCalled();
+    expect(mocks.productSkuMutationLock).not.toHaveBeenCalled();
   });
 
   it("rejects non-integer server totals before creating commerce records", async () => {
@@ -753,9 +684,7 @@ describe("POST /api/lost/checkout/intent", () => {
       unit_amount: 1000.5,
       min_order_quantity: 1,
       max_order_quantity: 5,
-      standard_enabled: true,
-      stock_state: "in_stock",
-      inventory: 3
+      standard_enabled: true
     });
 
     const { POST } = await import("./route");
@@ -824,9 +753,7 @@ describe("POST /api/lost/checkout/intent", () => {
       unit_amount: 120000,
       min_order_quantity: 1,
       max_order_quantity: 5,
-      standard_enabled: true,
-      stock_state: "in_stock",
-      inventory: 5
+      standard_enabled: true
     });
 
     const { POST } = await import("./route");
@@ -863,9 +790,7 @@ describe("POST /api/lost/checkout/intent", () => {
       unit_amount: 120000,
       min_order_quantity: 1,
       max_order_quantity: 5,
-      standard_enabled: true,
-      stock_state: "in_stock",
-      inventory: 5
+      standard_enabled: true
     });
 
     const { POST } = await import("./route");
@@ -913,9 +838,7 @@ describe("POST /api/lost/checkout/intent", () => {
       unit_amount: 120000,
       min_order_quantity: 1,
       max_order_quantity: 5,
-      standard_enabled: true,
-      stock_state: "in_stock",
-      inventory: 2
+      standard_enabled: true
     });
     mocks.findByID.mockResolvedValueOnce({
       id: "product-1",
@@ -926,9 +849,7 @@ describe("POST /api/lost/checkout/intent", () => {
       unit_amount: 120000,
       min_order_quantity: 1,
       max_order_quantity: 5,
-      standard_enabled: true,
-      stock_state: "in_stock",
-      inventory: 2
+      standard_enabled: true
     });
     const { POST } = await import("./route");
     const res = await POST(
@@ -1033,9 +954,7 @@ describe("POST /api/lost/checkout/intent", () => {
         unit_amount: 120000,
         min_order_quantity: 1,
         max_order_quantity: 5,
-        standard_enabled: true,
-        stock_state: "in_stock",
-        inventory: 3
+        standard_enabled: true
       });
 
       const { POST } = await import("./route");
@@ -1150,9 +1069,7 @@ describe("POST /api/lost/checkout/intent", () => {
         unit_amount: 120000,
         min_order_quantity: 1,
         max_order_quantity: 5,
-        standard_enabled: true,
-        stock_state: "in_stock",
-        inventory: 3
+        standard_enabled: true
       });
 
       const { POST } = await import("./route");
@@ -1205,9 +1122,7 @@ describe("POST /api/lost/checkout/intent", () => {
         unit_amount: 120000,
         min_order_quantity: 1,
         max_order_quantity: 5,
-        standard_enabled: true,
-        stock_state: "in_stock",
-        inventory: 3
+        standard_enabled: true
       });
 
       const { POST } = await import("./route");

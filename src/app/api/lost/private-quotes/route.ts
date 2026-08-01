@@ -22,15 +22,16 @@ import { hasPositivePrivateOrderPreset } from "@/lib/lost-commerce/product-skus"
 
 export const runtime = "nodejs";
 
-const BodySchema = z.object({
-  productId: z.string().min(1),
-  skuId: z.string().min(1).optional(),
-  variantId: z.string().min(1).optional(),
-  quantity: z.number().int().min(1).max(99),
-  note: z.string().max(1000).optional(),
-  shipping: z.record(z.string(), z.unknown()).optional(),
-  contact: z.record(z.string(), z.unknown()).optional()
-});
+const BodySchema = z
+  .object({
+    productId: z.string().min(1),
+    skuId: z.string().min(1),
+    quantity: z.number().int().min(1).max(99),
+    note: z.string().max(1000).optional(),
+    shipping: z.record(z.string(), z.unknown()).optional(),
+    contact: z.record(z.string(), z.unknown()).optional()
+  })
+  .strict();
 
 const CLIENT_QUOTE_ERRORS = new Set([
   "active-sku-required",
@@ -189,7 +190,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const line = {
       productId: parsed.data.productId,
       skuId: parsed.data.skuId,
-      variantId: parsed.data.variantId,
       mode: "private_order" as const,
       quantity: parsed.data.quantity
     };
@@ -200,20 +200,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       transactionID
     });
 
-    let canonicalSkuIds = line.skuId ? [line.skuId] : [];
-    if (canonicalSkuIds.length === 0) {
-      const discovery = await resolveLostCheckout({
-        payload,
-        user: auth.user,
-        lines: [line],
-        req: txReq as never,
-        allowUnpricedPrivateOrder: true
-      });
-      const discoveredSkuId = discovery.lines[0]?.skuId;
-      if (!discoveredSkuId) throw new Error("sku-not-found");
-      canonicalSkuIds = [discoveredSkuId];
-    }
-    await lockQuoteSkus({ payload, skuIds: canonicalSkuIds, transactionID });
+    await lockQuoteSkus({
+      payload,
+      skuIds: [line.skuId],
+      transactionID
+    });
 
     const product = (await payload.findByID({
       collection: "products" as never,
@@ -248,7 +239,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
     const snapshot = resolved.lines[0];
-    if (!snapshot || !canonicalSkuIds.includes(snapshot.skuId)) {
+    if (!snapshot || snapshot.skuId !== line.skuId) {
       throw new Error("sku-not-found");
     }
     const quoteLine = createPrivateQuoteLineSnapshot(snapshot);
@@ -269,7 +260,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         currency: resolved.currency,
         subtotal_amount: hasPresetPrice ? resolved.subtotalAmount : 0,
         total_amount: hasPresetPrice ? resolved.totalAmount : 0,
-        line_snapshot_version: 2,
+        line_snapshot_version: 3,
         lines: [quoteLine],
         shipping: parsed.data.shipping,
         contact: parsed.data.contact,

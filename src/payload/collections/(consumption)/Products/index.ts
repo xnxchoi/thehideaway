@@ -28,7 +28,6 @@ export const Products: CollectionConfig = {
       "name",
       "slug",
       "active",
-      "stock_state",
       "standard_enabled",
       "request_to_order_enabled",
       "private_order_enabled"
@@ -165,23 +164,6 @@ export const Products: CollectionConfig = {
       min: 0
     },
     {
-      name: "stock_state",
-      type: "select",
-      options: ["in_stock", "out_of_stock", "pre_order", "on_request"],
-      required: true,
-      index: true,
-      defaultValue: "on_request",
-      admin: { readOnly: true, description: "Legacy catalog value." }
-    },
-    {
-      name: "inventory",
-      type: "number",
-      index: true,
-      min: 0,
-      defaultValue: 0,
-      admin: { readOnly: true, description: "Legacy catalog value." }
-    },
-    {
       name: "max_order_quantity",
       type: "number",
       required: true,
@@ -196,23 +178,6 @@ export const Products: CollectionConfig = {
       index: true,
       min: 1,
       defaultValue: 1
-    },
-    {
-      name: "variant_source",
-      type: "select",
-      required: true,
-      defaultValue: "legacy",
-      options: ["legacy", "relational"],
-      index: true,
-      admin: { readOnly: true }
-    },
-    {
-      name: "variants",
-      type: "json",
-      admin: {
-        readOnly: true,
-        description: "Legacy catalog data retained during the SKU transition."
-      }
     },
     {
       name: "skus",

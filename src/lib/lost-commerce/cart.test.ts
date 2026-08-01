@@ -21,13 +21,6 @@ function payloadWith(docs: Record<string, any>) {
         ? { storefront: "lostinseoul", ...doc }
         : doc;
     },
-    async find() {
-      return {
-        docs: Object.values(docs).filter(
-          (doc) => doc?.legacy_variant_ref === "legacy_variant_1"
-        )
-      };
-    }
   } as any;
 }
 
@@ -38,8 +31,6 @@ function activeSku(overrides: Record<string, unknown> = {}) {
     active: true,
     sku: "LIS-SKU-1",
     options: [],
-    stock_state: "in_stock",
-    inventory: 5,
     ...overrides
   };
 }
@@ -80,7 +71,11 @@ describe("resolveLostCheckout", () => {
         }),
         user: { role: "user" },
         lines: [
-          { productId: "product_1", mode: "standard_purchase", quantity: 1 }
+          {
+            productId: "product_1",
+            mode: "standard_purchase",
+            quantity: 1
+          } as never
         ]
       })
     ).rejects.toThrow("sku-required");
@@ -255,14 +250,13 @@ describe("resolveLostCheckout", () => {
     ).rejects.toThrow("product-unavailable");
   });
 
-  it("rejects a legacy SKU reference for a product outside LOSTINSEOUL", async () => {
+  it("rejects a variant reference without a SKU identity", async () => {
     await expect(
       resolveLostCheckout({
         payload: payloadWith({
           product_1: {
             id: "product_1",
             active: true,
-            storefront: "hideaway",
             name: "Jacket",
             slug: "jacket",
             currency: "KRW",
@@ -270,20 +264,19 @@ describe("resolveLostCheckout", () => {
             min_order_quantity: 1,
             max_order_quantity: 2,
             standard_enabled: true
-          },
-          sku_1: activeSku({ legacy_variant_ref: "legacy_variant_1" })
+          }
         }),
         user: { role: "user" },
         lines: [
           {
             productId: "product_1",
-            variantId: "legacy_variant_1",
+            variantId: "retired-variant-1",
             mode: "standard_purchase",
             quantity: 1
-          }
+          } as never
         ]
       })
-    ).rejects.toThrow("product-unavailable");
+    ).rejects.toThrow("sku-required");
   });
 
   it("uses the active SKU price override in an immutable line snapshot", async () => {
@@ -301,9 +294,7 @@ describe("resolveLostCheckout", () => {
       price_override_amount: 135000,
       weight_grams: null,
       dimensions: null,
-      tax_category: null,
-      stock_state: "in_stock",
-      inventory: 2
+      tax_category: null
     };
     const result = await resolveLostCheckout({
       payload: payloadWith({
@@ -336,7 +327,7 @@ describe("resolveLostCheckout", () => {
 
     expect(result.totalAmount).toBe(270000);
     expect(result.lines[0]).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       productId: "product_1",
       productName: "Jacket",
       productSlug: "jacket",
@@ -372,7 +363,7 @@ describe("resolveLostCheckout", () => {
           max_order_quantity: 2,
           standard_enabled: true
         },
-        sku_1: activeSku({ inventory: 2 })
+        sku_1: activeSku()
       }),
       user: { role: "user" },
       lines: [
@@ -392,68 +383,6 @@ describe("resolveLostCheckout", () => {
     });
   });
 
-  it("does not treat legacy stock state as checkout availability", async () => {
-    const result = await resolveLostCheckout({
-        payload: payloadWith({
-          product_1: {
-            id: "product_1",
-            active: true,
-            name: "Sold out jacket",
-            slug: "sold-out-jacket",
-            currency: "KRW",
-            unit_amount: 120000,
-            min_order_quantity: 1,
-            max_order_quantity: 2,
-            standard_enabled: true,
-            stock_state: "out_of_stock",
-            inventory: 8
-          },
-          sku_1: activeSku({ stock_state: "out_of_stock", inventory: 8 })
-        }),
-        user: { role: "user" },
-        lines: [
-          {
-            productId: "product_1",
-            skuId: "sku_1",
-            mode: "standard_purchase",
-            quantity: 1
-          }
-        ]
-      });
-    expect(result.totalAmount).toBe(120000);
-  });
-
-  it("does not treat the legacy SKU inventory scalar as a quantity cap", async () => {
-    const result = await resolveLostCheckout({
-        payload: payloadWith({
-          product_1: {
-            id: "product_1",
-            active: true,
-            name: "Limited jacket",
-            slug: "limited-jacket",
-            currency: "KRW",
-            unit_amount: 120000,
-            min_order_quantity: 1,
-            max_order_quantity: 5,
-            standard_enabled: true,
-            stock_state: "in_stock",
-            inventory: 1
-          },
-          sku_1: activeSku({ inventory: 1 })
-        }),
-        user: { role: "user" },
-        lines: [
-          {
-            productId: "product_1",
-            skuId: "sku_1",
-            mode: "standard_purchase",
-            quantity: 2
-          }
-        ]
-      });
-    expect(result.totalAmount).toBe(240000);
-  });
-
   it("aggregates duplicate raw lines before enforcing max order quantity", async () => {
     await expect(
       resolveLostCheckout({
@@ -467,11 +396,9 @@ describe("resolveLostCheckout", () => {
             unit_amount: 120000,
             min_order_quantity: 1,
             max_order_quantity: 2,
-            standard_enabled: true,
-            stock_state: "in_stock",
-            inventory: 5
+            standard_enabled: true
           },
-          sku_1: activeSku({ inventory: 5 })
+          sku_1: activeSku()
         }),
         user: { role: "user" },
         lines: [
@@ -522,7 +449,7 @@ describe("resolveLostCheckout", () => {
               max_order_quantity: 2,
               ...product
             },
-            sku_1: activeSku({ inventory: 5 })
+            sku_1: activeSku()
           }),
           user: { role: "patron" },
           lines: [
@@ -572,7 +499,7 @@ describe("resolveLostCheckout", () => {
     }
   );
 
-  it("uses the standard-enabled mode flag instead of legacy SKU stock state", async () => {
+  it("uses the standard-enabled mode flag", async () => {
     const result = await resolveLostCheckout({
         payload: payloadWith({
           product_1: {
@@ -584,11 +511,9 @@ describe("resolveLostCheckout", () => {
             unit_amount: 120000,
             min_order_quantity: 1,
             max_order_quantity: 2,
-            standard_enabled: true,
-            stock_state: "on_request",
-            inventory: 2
+            standard_enabled: true
           },
-          sku_1: activeSku({ stock_state: "on_request", inventory: 2 })
+          sku_1: activeSku()
         }),
         user: { role: "user" },
         lines: [
@@ -616,9 +541,7 @@ describe("resolveLostCheckout", () => {
             unit_amount: 120000,
             min_order_quantity: 1,
             max_order_quantity: 2,
-            standard_enabled: true,
-            stock_state: "in_stock",
-            inventory: 2
+            standard_enabled: true
           }
         }),
         user: { role: "user" },
@@ -646,11 +569,9 @@ describe("resolveLostCheckout", () => {
             unit_amount: 120000,
             min_order_quantity: 1,
             max_order_quantity: 5,
-            standard_enabled: true,
-            stock_state: "in_stock",
-            inventory: 5
+            standard_enabled: true
           },
-          sku_1: activeSku({ label: "Small", inventory: 1 })
+          sku_1: activeSku({ label: "Small" })
         }),
         user: { role: "user" },
         lines: [
@@ -662,38 +583,6 @@ describe("resolveLostCheckout", () => {
           }
         ]
       });
-    expect(result.totalAmount).toBe(240000);
-  });
-
-  it("ignores divergent product and SKU inventory scalars", async () => {
-    const result = await resolveLostCheckout({
-      payload: payloadWith({
-        product_1: {
-          id: "product_1",
-          active: true,
-          name: "Variant jacket",
-          slug: "variant-jacket",
-          currency: "KRW",
-          unit_amount: 120000,
-          min_order_quantity: 1,
-          max_order_quantity: 5,
-          standard_enabled: true,
-          stock_state: "in_stock",
-          inventory: 1
-        },
-        sku_1: activeSku({ label: "Small", inventory: 2 })
-      }),
-      user: { role: "user" },
-      lines: [
-        {
-          productId: "product_1",
-          skuId: "sku_1",
-          mode: "standard_purchase",
-          quantity: 2
-        }
-      ]
-    });
-
     expect(result.totalAmount).toBe(240000);
   });
 
@@ -718,7 +607,7 @@ describe("resolveLostCheckout", () => {
             state: "draft",
             deadline: new Date(Date.now() + 86_400_000).toISOString()
           },
-          sku_1: activeSku({ stock_state: "pre_order", inventory: null })
+          sku_1: activeSku()
         }),
         user: { role: "user" },
         lines: [
@@ -749,7 +638,7 @@ describe("resolveLostCheckout", () => {
             max_order_quantity: 1,
             request_to_order_enabled: true
           },
-          sku_1: activeSku({ stock_state: "pre_order", inventory: null })
+          sku_1: activeSku()
         }),
         user: { role: "user" },
         lines: [
@@ -789,7 +678,7 @@ describe("resolveLostCheckout", () => {
             paid_commitments: 0,
             eligible_skus: ["sku_1"]
           },
-          sku_1: activeSku({ stock_state: "pre_order", inventory: null })
+          sku_1: activeSku()
         }),
         user: { role: "user" },
         lines: [
@@ -823,7 +712,13 @@ describe("resolveLostCheckout", () => {
           }
         }),
         user: { role: "resident" },
-        lines: [{ productId: "product_1", mode: "private_order", quantity: 1 }]
+        lines: [
+          {
+            productId: "product_1",
+            mode: "private_order",
+            quantity: 1
+          } as never
+        ]
       })
     ).rejects.toThrow("private-order-forbidden");
   });

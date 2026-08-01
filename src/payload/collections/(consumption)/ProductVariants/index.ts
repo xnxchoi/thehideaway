@@ -26,14 +26,12 @@ export const ProductVariants: CollectionConfig = {
     width_mm: true,
     height_mm: true,
     tax_category: true,
-    inventory: true,
-    stock_state: true,
     sort: true
   },
   admin: {
     useAsTitle: "sku",
     disableBulkEdit: true,
-    defaultColumns: ["sku", "product", "active", "inventory", "stock_state"],
+    defaultColumns: ["sku", "product", "active", "label", "sort"],
     description: "Stable product SKUs used by checkout.",
     hidden: ({ user }) => !["admin", "editor"].includes(user?.role ?? "")
   },
@@ -98,40 +96,6 @@ export const ProductVariants: CollectionConfig = {
     { name: "width_mm", type: "number", min: 1 },
     { name: "height_mm", type: "number", min: 1 },
     { name: "tax_category", type: "text" },
-    {
-      name: "legacy_variant_ref",
-      type: "text",
-      index: true,
-      admin: { description: "Temporary legacy cart identifier." }
-    },
-    {
-      name: "legacy_key",
-      type: "text",
-      unique: true,
-      index: true,
-      admin: { hidden: true, readOnly: true }
-    },
-    {
-      name: "inventory",
-      type: "number",
-      min: 0,
-      index: true,
-      access: { update: () => false },
-      admin: {
-        hidden: true,
-        readOnly: true,
-        description:
-          "Historical scalar. Inventory availability comes from the ledger."
-      }
-    },
-    {
-      name: "stock_state",
-      type: "select",
-      options: ["in_stock", "out_of_stock", "pre_order", "on_request"],
-      index: true,
-      access: { update: () => false },
-      admin: { hidden: true, readOnly: true }
-    },
     {
       name: "sort",
       type: "number",

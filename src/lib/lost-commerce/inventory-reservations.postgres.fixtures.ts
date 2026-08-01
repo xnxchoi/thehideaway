@@ -140,7 +140,7 @@ const TestProductOrders: CollectionConfig = {
     { name: "currency", type: "text", defaultValue: "KRW" },
     { name: "subtotal_amount", type: "number", defaultValue: 0 },
     { name: "total_amount", type: "number", defaultValue: 0 },
-    { name: "line_snapshot_version", type: "number", defaultValue: 2 },
+    { name: "line_snapshot_version", type: "number", defaultValue: 3 },
     { name: "lines", type: "json", required: true, defaultValue: [] },
     { name: "expires_at", type: "date", index: true }
   ]
@@ -322,9 +322,9 @@ export async function createReservationPostgresHarness(databaseUri: string) {
           0
         ),
         total_amount: lines.reduce((total, line) => total + line.quantity, 0),
-        line_snapshot_version: 2,
+        line_snapshot_version: 3,
         lines: lines.map((line) => ({
-          schemaVersion: 2,
+          schemaVersion: 3,
           mode: "standard_purchase",
           productId: fixture.productId,
           skuId: line.skuId,

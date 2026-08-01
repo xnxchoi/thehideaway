@@ -5,19 +5,17 @@ export type LostCurrency = "KRW" | "USD" | "JPY" | "EUR";
 
 export type LostCartLineInput = {
   productId: string;
-  skuId?: string;
-  variantId?: string;
+  skuId: string;
   mode: LostOrderMode;
   quantity: number;
   campaignId?: string;
 };
 
 export type LostCartLineSnapshot = LostCartLineInput & {
-  schemaVersion: 2;
+  schemaVersion: 3;
   productName: string;
   productSlug: string;
   skuId: string;
-  variantId: string;
   sku: string;
   skuLabel: string | null;
   options: readonly Readonly<{ key: string; value: string }>[];
@@ -58,8 +56,7 @@ export type LostCheckoutInput = {
 
 export type LostPrivateQuoteInput = {
   productId: string;
-  skuId?: string;
-  variantId?: string;
+  skuId: string;
   quantity: number;
   note?: string;
   shipping?: Record<string, unknown>;

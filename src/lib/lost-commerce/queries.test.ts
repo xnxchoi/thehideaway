@@ -2,8 +2,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getPayload } from "payload";
 import {
   normalizeLostDropCard,
-  normalizeLostProductSkus,
-  normalizeLostProductVariants
+  normalizeLostProductSkus
 } from "./query-normalizers";
 import {
   getLostCollectionBySlug,
@@ -84,11 +83,7 @@ function mockProductQuery(
       if (collection === "product-order-campaigns") {
         return { docs: campaignDocs, hasNextPage: false, nextPage: null };
       }
-      const docs = (skuPages[page] ?? []).map((sku) => ({
-        inventory: 1,
-        stock_state: "in_stock",
-        ...sku
-      }));
+      const docs = (skuPages[page] ?? []).map((sku) => ({ ...sku }));
       const nextPage = skuPages[page + 1] ? page + 1 : null;
       return { docs, hasNextPage: nextPage !== null, nextPage };
     }
@@ -114,10 +109,10 @@ afterAll(() => {
 });
 
 describe("lost commerce query normalization", () => {
-  it("normalizes active relational SKUs and ignores legacy product JSON", () => {
+  it("normalizes active SKUs without scalar stock compatibility fields", () => {
     expect(
       normalizeLostProductSkus(
-        { unit_amount: 120000, variants: [{ id: "legacy" }] },
+        { unit_amount: 120000 },
         [
           {
             id: "sku-1",
@@ -128,9 +123,7 @@ describe("lost commerce query normalization", () => {
               { key: "size", value: "02" },
               { key: "color", value: "Black" }
             ],
-            price_override_amount: 135000,
-            inventory: 2,
-            stock_state: "in_stock"
+            price_override_amount: 135000
           },
           { id: "sku-2", active: false, sku: "LIS-2", options: [] }
         ]
@@ -142,58 +135,7 @@ describe("lost commerce query normalization", () => {
         label: "Black / 02",
         size: "02",
         color: "Black",
-        amount: 135000,
-        inventory: 2,
-        stockState: "in_stock"
-      }
-    ]);
-  });
-
-  it("normalizes product variants from Payload json fields", () => {
-    expect(
-      normalizeLostProductVariants({
-        variants: [
-          {
-            id: "black-milk",
-            sku: "LIS-PSL-0230-BM",
-            label: "Black / Milk",
-            color: "Black / Milk",
-            amount: 118000,
-            inventory: 5,
-            stock_state: "in_stock"
-          },
-          {
-            id: "size-2",
-            size: "2",
-            stock_state: "pre_order"
-          },
-          {
-            id: "",
-            label: "Broken"
-          },
-          null
-        ]
-      })
-    ).toEqual([
-      {
-        id: "black-milk",
-        sku: "LIS-PSL-0230-BM",
-        label: "Black / Milk",
-        size: null,
-        color: "Black / Milk",
-        amount: 118000,
-        inventory: 5,
-        stockState: "in_stock"
-      },
-      {
-        id: "size-2",
-        sku: null,
-        label: "2",
-        size: "2",
-        color: null,
-        amount: null,
-        inventory: null,
-        stockState: "pre_order"
+        amount: 135000
       }
     ]);
   });
@@ -263,27 +205,6 @@ describe("lost commerce relational SKU queries", () => {
     );
   });
 
-  it("never turns legacy JSON variants into sellable SKUs", async () => {
-    mockProductQuery(
-      product({
-        variant_source: "legacy_json",
-        variants: [
-          {
-            id: "legacy-sku",
-            active: true,
-            inventory: 10,
-            stock_state: "in_stock"
-          }
-        ]
-      }),
-      { 1: [] }
-    );
-
-    const result = await getLostProductBySlug("catalyst");
-
-    expect(result?.variants).toEqual([]);
-  });
-
   it("exposes no purchasable mode without an active relational SKU", async () => {
     mockProductQuery(product(), {
       1: [
@@ -304,7 +225,7 @@ describe("lost commerce relational SKU queries", () => {
     expect(result?.variants).toEqual([]);
   });
 
-  it("ignores legacy variant inventory fields when batched ATP is positive", async () => {
+  it("enables standard purchase when batched ATP is positive", async () => {
     mockProductQuery(
       product({
         request_to_order_enabled: false,
@@ -317,8 +238,6 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-INCOMPLETE",
-            inventory: null,
-            stock_state: null,
             options: []
           }
         ]
@@ -346,8 +265,6 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-INCOMPLETE",
-            inventory: 999,
-            stock_state: "in_stock",
             options: []
           }
         ]
@@ -361,7 +278,7 @@ describe("lost commerce relational SKU queries", () => {
     expect(execute).not.toHaveBeenCalled();
   });
 
-  it("uses ATP rather than positive legacy stock fields for standard purchase", async () => {
+  it("disables standard purchase when ATP is zero", async () => {
     mockProductQuery(
       product({
         request_to_order_enabled: false,
@@ -374,8 +291,6 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-INCOMPLETE",
-            inventory: 999,
-            stock_state: "in_stock",
             options: []
           }
         ]
@@ -408,8 +323,6 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-ELIGIBLE",
-            inventory: 999,
-            stock_state: "in_stock",
             options: []
           }
         ]
@@ -433,6 +346,7 @@ describe("lost commerce relational SKU queries", () => {
       "request_to_order",
       "private_order"
     ]);
+    expect(result?.variants[0]?.stockState).toBe("on_request");
     expect(execute).not.toHaveBeenCalled();
   });
 
@@ -453,8 +367,6 @@ describe("lost commerce relational SKU queries", () => {
             active: true,
             sku: "LIS-PRIVATE-QUOTE",
             price_override_amount: null,
-            inventory: null,
-            stock_state: null,
             options: []
           }
         ]
@@ -485,8 +397,6 @@ describe("lost commerce relational SKU queries", () => {
             active: true,
             sku: "LIS-PRIVATE-INCOMPLETE",
             price_override_amount: null,
-            inventory: null,
-            stock_state: null,
             options: []
           }
         ]
@@ -520,8 +430,6 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-ELIGIBLE",
-            inventory: null,
-            stock_state: "out_of_stock",
             options: []
           }
         ]
@@ -569,8 +477,6 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-ELIGIBLE",
-            inventory: null,
-            stock_state: "out_of_stock",
             options: []
           }
         ]
@@ -818,8 +724,6 @@ describe("lost commerce storefront queries", () => {
               active: true,
               sku: "LIS-OVERRIDE",
               price_override_amount: 135000,
-              inventory: 1,
-              stock_state: "in_stock",
               options: []
             }
           ],
@@ -865,8 +769,6 @@ describe("lost commerce storefront queries", () => {
               active: true,
               sku: "LIS-HIGH",
               price_override_amount: 150000,
-              inventory: 1,
-              stock_state: "in_stock",
               options: []
             },
             {
@@ -875,8 +777,6 @@ describe("lost commerce storefront queries", () => {
               active: true,
               sku: "LIS-LOW",
               price_override_amount: 125000,
-              inventory: 1,
-              stock_state: "in_stock",
               options: []
             }
           ],
@@ -942,8 +842,6 @@ describe("lost commerce storefront queries", () => {
               product: { id: "product-1" },
               active: true,
               sku: "LIS-1",
-              inventory: 4,
-              stock_state: "in_stock",
               options: []
             }
           ],

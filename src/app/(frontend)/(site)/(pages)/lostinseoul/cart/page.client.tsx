@@ -102,7 +102,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                 {lines.map((line) => (
                   <div
                     className="grid gap-5 py-6 md:grid-cols-[116px_1fr_auto]"
-                    key={`${line.productId}:${line.skuId ?? line.variantId ?? ""}:${line.mode}:${line.campaignId ?? ""}`}
+                    key={`${line.productId}:${line.skuId}:${line.mode}:${line.campaignId ?? ""}`}
                   >
                     <Link
                       className="aspect-square w-28 overflow-hidden rounded-[3px] bg-[oklch(from_var(--n-s-fg)_l_c_h_/_0.06)]"

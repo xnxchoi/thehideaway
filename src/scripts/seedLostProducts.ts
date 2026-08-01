@@ -7,10 +7,7 @@
 import config from "@payload-config";
 import { getPayload, type Payload } from "payload";
 
-import {
-  LEGACY_SEED_PRODUCT_SLUGS,
-  LOST_FRAGRANCE_SEED_PRODUCTS
-} from "./seedLostProductCatalog";
+import { LOST_FRAGRANCE_SEED_PRODUCTS } from "./seedLostProductCatalog";
 
 async function ensureFragranceCategory(payload: Payload): Promise<string> {
   const found = await payload.find({
@@ -29,25 +26,6 @@ async function ensureFragranceCategory(payload: Payload): Promise<string> {
   return created.id;
 }
 
-async function removeLegacyFixtures(payload: Payload): Promise<void> {
-  for (const slug of LEGACY_SEED_PRODUCT_SLUGS) {
-    const found = await payload.find({
-      collection: "products",
-      depth: 0,
-      limit: 1,
-      overrideAccess: true,
-      where: { slug: { equals: slug } }
-    });
-    if (found.docs[0]) {
-      await payload.delete({
-        collection: "products",
-        id: found.docs[0].id,
-        overrideAccess: true
-      });
-    }
-  }
-}
-
 async function ensureProductDrafts(
   payload: Payload,
   categoryId: string
@@ -62,8 +40,6 @@ async function ensureProductDrafts(
       active: product.active,
       currency: product.currency,
       unit_amount: product.unit_amount,
-      inventory: product.inventory,
-      stock_state: product.stock_state,
       standard_enabled: product.standard_enabled,
       request_to_order_enabled: product.request_to_order_enabled,
       private_order_enabled: product.private_order_enabled,
@@ -71,7 +47,6 @@ async function ensureProductDrafts(
       private_tier_gate: product.private_tier_gate,
       min_order_quantity: product.min_order_quantity,
       max_order_quantity: product.max_order_quantity,
-      variant_source: product.variant_source,
       sort: product.sort
     } as const;
     const found = await payload.find({
@@ -104,7 +79,6 @@ async function main(): Promise<void> {
   }
   const payload = await getPayload({ config });
   const categoryId = await ensureFragranceCategory(payload);
-  await removeLegacyFixtures(payload);
   await ensureProductDrafts(payload, categoryId);
   payload.logger.info("[seed:lost-products] done");
 }

@@ -2965,29 +2965,8 @@ export interface Product {
   currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
   unit_amount: number;
   compare_at_amount?: number | null;
-  /**
-   * Legacy catalog value.
-   */
-  stock_state: 'in_stock' | 'out_of_stock' | 'pre_order' | 'on_request';
-  /**
-   * Legacy catalog value.
-   */
-  inventory?: number | null;
   max_order_quantity: number;
   min_order_quantity: number;
-  variant_source: 'legacy' | 'relational';
-  /**
-   * Legacy catalog data retained during the SKU transition.
-   */
-  variants?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
   skus?: {
     docs?: (string | ProductVariant)[];
     hasNextPage?: boolean;
@@ -3034,16 +3013,6 @@ export interface ProductVariant {
   width_mm?: number | null;
   height_mm?: number | null;
   tax_category?: string | null;
-  /**
-   * Temporary legacy cart identifier.
-   */
-  legacy_variant_ref?: string | null;
-  legacy_key?: string | null;
-  /**
-   * Historical scalar. Inventory availability comes from the ledger.
-   */
-  inventory?: number | null;
-  stock_state?: ('in_stock' | 'out_of_stock' | 'pre_order' | 'on_request') | null;
   sort?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -5583,12 +5552,8 @@ export interface ProductsSelect<T extends boolean = true> {
   currency?: T;
   unit_amount?: T;
   compare_at_amount?: T;
-  stock_state?: T;
-  inventory?: T;
   max_order_quantity?: T;
   min_order_quantity?: T;
-  variant_source?: T;
-  variants?: T;
   skus?: T;
   standard_enabled?: T;
   request_to_order_enabled?: T;
@@ -5625,10 +5590,6 @@ export interface ProductVariantsSelect<T extends boolean = true> {
   width_mm?: T;
   height_mm?: T;
   tax_category?: T;
-  legacy_variant_ref?: T;
-  legacy_key?: T;
-  inventory?: T;
-  stock_state?: T;
   sort?: T;
   updatedAt?: T;
   createdAt?: T;

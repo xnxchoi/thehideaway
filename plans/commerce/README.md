@@ -6,6 +6,8 @@ This directory is the canonical planning and operating reference for the
 LOSTINSEOUL physical-goods shopping system. Shared PortOne infrastructure is
 included only where it affects this system or the production payment gate.
 
+Temporary launch-state rules: [pre-first-launch.md](pre-first-launch.md).
+
 ## Status labels
 
 - **Committed** — present in `main` at the named commit.

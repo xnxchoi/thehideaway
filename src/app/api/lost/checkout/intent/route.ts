@@ -33,14 +33,15 @@ import type { ReservationTransactionRequest } from "@/lib/lost-commerce/inventor
 
 export const runtime = "nodejs";
 
-const LineSchema = z.object({
-  productId: z.string().min(1),
-  skuId: z.string().min(1).optional(),
-  variantId: z.string().min(1).optional(),
-  mode: z.enum(["standard_purchase", "request_to_order", "private_order"]),
-  quantity: z.number().int().min(1).max(99),
-  campaignId: z.string().min(1).optional()
-});
+const LineSchema = z
+  .object({
+    productId: z.string().min(1),
+    skuId: z.string().min(1),
+    mode: z.enum(["standard_purchase", "request_to_order", "private_order"]),
+    quantity: z.number().int().min(1).max(99),
+    campaignId: z.string().min(1).optional()
+  })
+  .strict();
 
 const BodySchema = z.object({
   lines: z.array(LineSchema).min(1).max(50),
@@ -395,7 +396,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         subtotal_amount: totals.subtotalAmount,
         total_amount: totals.totalAmount,
         campaign: resolved.campaignId,
-        line_snapshot_version: 2,
+        line_snapshot_version: 3,
         lines: resolved.lines,
         shipping: parsed.data.shipping,
         contact: parsed.data.contact,

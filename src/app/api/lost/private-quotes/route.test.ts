@@ -86,12 +86,11 @@ function request(
 }
 
 const skuSnapshot = Object.freeze({
-  schemaVersion: 2 as const,
+  schemaVersion: 3 as const,
   productId: "product-1",
   productName: "CATALYST 01",
   productSlug: "catalyst-01",
   skuId: "sku-1",
-  variantId: "sku-1",
   sku: "LIS-CATALYST-01",
   skuLabel: null,
   options: Object.freeze([{ key: "Size", value: "50 ml" }]),
@@ -352,7 +351,6 @@ describe("POST /api/lost/private-quotes", () => {
       request({
         productId: "product-1",
         skuId: "sku-1",
-        variantId: "legacy-variant",
         quantity: 2,
         note: "Gift packaging",
         shipping: { country: "KR" },
@@ -370,7 +368,6 @@ describe("POST /api/lost/private-quotes", () => {
         {
           productId: "product-1",
           skuId: "sku-1",
-          variantId: "legacy-variant",
           mode: "private_order",
           quantity: 2
         }
@@ -381,7 +378,7 @@ describe("POST /api/lost/private-quotes", () => {
         collection: "product-orders",
         overrideAccess: true,
         data: expect.objectContaining({
-          line_snapshot_version: 2,
+          line_snapshot_version: 3,
           lines: [skuSnapshot],
           shipping: { country: "KR" },
           contact: { email: "buyer@example.com" },
@@ -433,51 +430,22 @@ describe("POST /api/lost/private-quotes", () => {
     expect(mocks.rollbackTransaction).not.toHaveBeenCalled();
   });
 
-  it("discovers a legacy variant then locks and re-resolves its canonical SKU", async () => {
-    let resolveCount = 0;
-    mocks.resolveLostCheckout.mockImplementation(async () => {
-      resolveCount += 1;
-      mocks.lockEvents.push(`resolve:${resolveCount}`);
-      return {
-        mode: "private_order",
-        currency: "KRW",
-        subtotalAmount: 360000,
-        totalAmount: 360000,
-        lines: [skuSnapshot]
-      };
-    });
+  it("rejects a retired variant-only request before opening a transaction", async () => {
     const { POST } = await import("./route");
 
     const response = await POST(
       request({
         productId: "product-1",
-        variantId: "legacy-variant",
+        variantId: "retired-variant",
         quantity: 2
       })
     );
 
-    expect(response.status).toBe(200);
-    expect(mocks.lockEvents).toEqual([
-      "product:product-1",
-      "resolve:1",
-      "sku:sku-1",
-      "read:product",
-      "resolve:2"
-    ]);
-    expect(mocks.resolveLostCheckout).toHaveBeenCalledTimes(2);
-    expect(mocks.resolveLostCheckout).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        req: expect.objectContaining({ transactionID: "tx-1" }),
-        lines: [
-          expect.objectContaining({
-            productId: "product-1",
-            skuId: undefined,
-            variantId: "legacy-variant"
-          })
-        ]
-      })
-    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ ok: false, error: "bad-request" });
+    expect(mocks.beginTransaction).not.toHaveBeenCalled();
+    expect(mocks.claimCommerceCommand).not.toHaveBeenCalled();
+    expect(mocks.resolveLostCheckout).not.toHaveBeenCalled();
   });
 
   it("rolls back when locked product eligibility has changed", async () => {
@@ -551,28 +519,20 @@ describe("POST /api/lost/private-quotes", () => {
     expect(mocks.rollbackTransaction).toHaveBeenCalledWith("tx-1");
   });
 
-  it("rejects a legacy variant that re-resolves to an unlocked SKU", async () => {
-    mocks.resolveLostCheckout
-      .mockResolvedValueOnce({
-        mode: "private_order",
-        currency: "KRW",
-        subtotalAmount: 360000,
-        totalAmount: 360000,
-        lines: [skuSnapshot]
-      })
-      .mockResolvedValueOnce({
-        mode: "private_order",
-        currency: "KRW",
-        subtotalAmount: 360000,
-        totalAmount: 360000,
-        lines: [{ ...skuSnapshot, skuId: "sku-2", variantId: "sku-2" }]
-      });
+  it("rejects resolution to a SKU other than the locked SKU", async () => {
+    mocks.resolveLostCheckout.mockResolvedValue({
+      mode: "private_order",
+      currency: "KRW",
+      subtotalAmount: 360000,
+      totalAmount: 360000,
+      lines: [{ ...skuSnapshot, skuId: "sku-2" }]
+    });
     const { POST } = await import("./route");
 
     const response = await POST(
       request({
         productId: "product-1",
-        variantId: "legacy-variant",
+        skuId: "sku-1",
         quantity: 2
       })
     );
@@ -612,7 +572,7 @@ describe("POST /api/lost/private-quotes", () => {
           total_amount: 360000,
           lines: [
             expect.objectContaining({
-              schemaVersion: 2,
+              schemaVersion: 3,
               skuId: "sku-1",
               unitAmount: 180000,
               lineAmount: 360000

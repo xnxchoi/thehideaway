@@ -10,14 +10,15 @@ import { resolveLostCheckout } from "@/lib/lost-commerce/cart";
 
 export const runtime = "nodejs";
 
-const LineSchema = z.object({
-  productId: z.string().min(1),
-  skuId: z.string().min(1).optional(),
-  variantId: z.string().min(1).optional(),
-  mode: z.enum(["standard_purchase", "request_to_order", "private_order"]),
-  quantity: z.number().int().min(1).max(99),
-  campaignId: z.string().min(1).optional()
-});
+const LineSchema = z
+  .object({
+    productId: z.string().min(1),
+    skuId: z.string().min(1),
+    mode: z.enum(["standard_purchase", "request_to_order", "private_order"]),
+    quantity: z.number().int().min(1).max(99),
+    campaignId: z.string().min(1).optional()
+  })
+  .strict();
 
 const BodySchema = z.object({
   lines: z.array(LineSchema).max(50)
@@ -103,7 +104,7 @@ export async function GET(): Promise<NextResponse> {
   const cart = await findActiveCart(payload, String(user.id));
   return NextResponse.json({
     ok: true,
-    cart: cart?.line_schema_version === 2 ? cart : null
+    cart: cart?.line_schema_version === 3 ? cart : null
   });
 }
 
@@ -160,7 +161,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       storefront: "lostinseoul",
       status: "active",
       currency: resolved.currency,
-      line_schema_version: 2,
+      line_schema_version: 3,
       lines: resolved.lines
     };
 
