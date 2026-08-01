@@ -67,6 +67,7 @@ import {
   resolveLostCursorTheme,
   type LostCursorTheme
 } from "./cursor-theme";
+import { getLostProductListingPrice } from "./product-price-display";
 import {
   getLostEntryElementState,
   getLostEntryTransition,
@@ -1098,6 +1099,7 @@ type LostProductSectionProps = {
   privateModeLabel: string;
   products: LostProductCard[];
   productsLabel: string;
+  requestQuoteLabel: string;
   requestModeLabel: string;
   searchLabel: string;
   searchNoResultsLabel: string;
@@ -1116,6 +1118,7 @@ export function LostProductSection({
   privateModeLabel,
   products,
   productsLabel,
+  requestQuoteLabel,
   requestModeLabel,
   searchLabel,
   searchNoResultsLabel,
@@ -1204,6 +1207,7 @@ export function LostProductSection({
                 <LostProductTile
                   modeLabels={modeLabels}
                   product={product}
+                  requestQuoteLabel={requestQuoteLabel}
                   viewProductLabel={viewProductLabel}
                 />
               </div>
@@ -1214,7 +1218,11 @@ export function LostProductSection({
                   href={`/lostinseoul/products/${gridPushProduct.slug}`}
                   imageUrl={gridPushProduct.imageUrl}
                   incomingLabel={incomingLabel}
-                  price={gridPushProduct.price}
+                  price={getLostProductListingPrice(
+                    gridPushProduct.displayPrice,
+                    requestQuoteLabel,
+                    gridPushProduct.modes
+                  )}
                   productsLabel={productsLabel}
                   title={gridPushProduct.name}
                   viewProductLabel={viewProductLabel}
@@ -1340,15 +1348,22 @@ function LostEmptyProductCard({
 function LostProductTile({
   modeLabels,
   product,
+  requestQuoteLabel,
   viewProductLabel
 }: {
   modeLabels: Record<LostOrderMode, string>;
   product: LostProductCard;
+  requestQuoteLabel: string;
   viewProductLabel: string;
 }) {
   const href = `/lostinseoul/products/${product.slug}`;
   const storyImages = getLostProductStoryImages(product);
   const evidenceSummary = getLostProductEvidenceSummary(product.summary);
+  const displayPrice = getLostProductListingPrice(
+    product.displayPrice,
+    requestQuoteLabel,
+    product.modes
+  );
   const fallbackMark = getLostProductFallbackMark(product.name);
   const progressCount = Math.max(storyImages.length, 1);
   const [storyActiveIndex, setStoryActiveIndex] = useState(0);
@@ -1575,11 +1590,11 @@ function LostProductTile({
             </p>
           ) : null}
           <p
-            aria-label={product.price}
+            aria-label={displayPrice}
             className="font-sans text-[2rem] leading-none text-[var(--lost-paper-muted)] tabular-nums"
             role="status"
           >
-            {product.price}
+            {displayPrice}
           </p>
         </div>
         <div className="grid content-start gap-y-2">
@@ -1724,12 +1739,14 @@ export function LostFocusProductSection({
   imageUrl,
   products,
   productsLabel,
+  requestQuoteLabel,
   viewProductLabel
 }: {
   focusTitleLabel: string;
   imageUrl?: string | null;
   products: LostProductCard[];
   productsLabel: string;
+  requestQuoteLabel: string;
   viewProductLabel: string;
 }) {
   const focusProducts = products.slice(0, 5);
@@ -1821,7 +1838,11 @@ export function LostFocusProductSection({
                   </Link>
                 </div>
                 <p className="mt-2 font-mono text-[1.2rem] leading-none text-[oklch(from_var(--black)_l_c_h_/_0.6)]">
-                  {product.price}
+                  {getLostProductListingPrice(
+                    product.displayPrice,
+                    requestQuoteLabel,
+                    product.modes
+                  )}
                 </p>
               </article>
             </div>
@@ -1837,7 +1858,13 @@ export function LostFocusProductSection({
               key={`${product.id}-mobile-focus`}
             >
               <span>{product.name}</span>
-              <span>{product.price}</span>
+              <span>
+                {getLostProductListingPrice(
+                  product.displayPrice,
+                  requestQuoteLabel,
+                  product.modes
+                )}
+              </span>
             </Link>
           ))}
         </div>

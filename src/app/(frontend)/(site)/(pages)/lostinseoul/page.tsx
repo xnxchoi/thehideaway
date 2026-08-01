@@ -60,6 +60,7 @@ export default async function LOSTINSEOULPage() {
         standardModeLabel={t("modes.standard")}
         requestModeLabel={t("modes.request")}
         privateModeLabel={t("modes.private")}
+        requestQuoteLabel={t("actions.requestQuote")}
         {...businessFooterProps}
         footerInfoLabel={t("footer.info")}
         footerContactLabel={t("footer.contact")}
