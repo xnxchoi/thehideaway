@@ -1,6 +1,6 @@
 # Commerce planning
 
-Last consolidated: 2026-07-30
+Last consolidated: 2026-08-01
 
 This directory is the canonical planning and operating reference for the
 LOSTINSEOUL physical-goods shopping system. Shared PortOne infrastructure is
@@ -17,25 +17,25 @@ included only where it affects this system or the production payment gate.
 
 ## Current status
 
-| Area                                                                     | Status                  | Evidence                                                |
-| ------------------------------------------------------------------------ | ----------------------- | ------------------------------------------------------- |
-| Commerce contracts, durable commands, provider evidence, relational SKUs | Committed               | `b9aa62e1`, hardened by `5b1b85dc`                      |
-| Append-only inventory ledger                                             | Committed               | `a3b5ef55`                                              |
-| Receipts, lots, quarantine, adjustments, cycle counts                    | Committed               | `cba6b4ae`                                              |
-| Expiring inventory reservations and payment-time consumption/review      | Committed               | `0607ba0a`, collection registration fixed by `0f1e7001` |
-| Manual-operation requirement for every supply-chain capability           | Committed plan decision | `3fe9ea13`                                              |
-| Guarded reservation operator commands and queues, PR 6A                  | Uncommitted and blocked | Final review findings in [validation.md](validation.md) |
-| Saved addresses and PR 7 onward                                          | Planned, not started    | [roadmap.md](roadmap.md)                                |
+| Area                                                                     | Status                      | Evidence                                                |
+| ------------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------- |
+| Commerce contracts, durable commands, provider evidence, relational SKUs | Committed                   | `b9aa62e1`, hardened by `5b1b85dc`                      |
+| Append-only inventory ledger                                             | Committed                   | `a3b5ef55`                                              |
+| Receipts, lots, quarantine, adjustments, cycle counts                    | Committed                   | `cba6b4ae`                                              |
+| Expiring inventory reservations and payment-time consumption/review      | Committed                   | `0607ba0a`, collection registration fixed by `0f1e7001` |
+| Manual-operation requirement for every supply-chain capability           | Committed plan decision     | `3fe9ea13`                                              |
+| Guarded reservation operator commands and queues, PR 6A                  | Committed in this changeset | Final gate in [validation.md](validation.md)            |
+| Saved addresses and PR 7 onward                                          | Planned, not started        | [roadmap.md](roadmap.md)                                |
 
-Do not start PR 7 in this serial worktree until PR 6A passes its gate and is
-committed separately.
+PR 6A passed its gate and is committed in this changeset. PR 7 remains planned
+and was not started.
 
 ## Documents
 
 - [system.md](system.md) — boundaries, state ownership, invariants, manual
   operation, automation, and decision gates.
-- [roadmap.md](roadmap.md) — dependency order, completed commits, active PR 6A,
-  and future reversible work packages.
+- [roadmap.md](roadmap.md) — dependency order, completed work, and future
+  reversible work packages.
 - [operations.md](operations.md) — current controls, PortOne readiness, manual
   operating paths, owner tasks, and rollback procedures.
 - [validation.md](validation.md) — common test gate, commit evidence, current

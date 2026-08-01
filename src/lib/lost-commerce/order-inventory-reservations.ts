@@ -56,7 +56,7 @@ export async function releaseOrderInventoryReservationsInTransaction(input: {
     results.push(
       await releaseOrderInventoryInTransaction({
         payload: input.payload,
-        req: input.req,
+        req,
         locksHeld: true,
         request: {
           idempotencyKey: inventoryReservationTerminalCommandKey({

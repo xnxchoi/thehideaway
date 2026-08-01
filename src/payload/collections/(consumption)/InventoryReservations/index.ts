@@ -186,11 +186,14 @@ export const InventoryReservations: CollectionConfig = {
       access: immutableFieldAccess,
       admin: { readOnly: true }
     },
+    // WHY-OVERRIDE-PAYLOAD: the generated migration adds the recovery-key
+    // check Payload cannot express. The relationship remains schema-owned here.
     {
       name: "recovery_of",
       type: "relationship",
       relationTo: "inventory-reservations",
       index: true,
+      unique: true,
       access: immutableFieldAccess,
       admin: { readOnly: true }
     }

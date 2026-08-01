@@ -745,6 +745,14 @@ export const enum_inventory_reservations_backorder_mode = pgEnum(
   "enum_inventory_reservations_backorder_mode",
   ["disabled"]
 );
+export const enum_inventory_reservation_operator_events_source = pgEnum(
+  "enum_inventory_reservation_operator_events_source",
+  ["manual_operator"]
+);
+export const enum_inventory_reservation_operator_events_action = pgEnum(
+  "enum_inventory_reservation_operator_events_action",
+  ["release", "expire", "reconcile", "run_expiry"]
+);
 export const enum_inventory_reservation_entries_operation = pgEnum(
   "enum_inventory_reservation_entries_operation",
   ["reserve", "consume", "release", "expire", "late_payment_detected"]
@@ -7827,7 +7835,9 @@ export const inventory_reservations = pgTable(
     index("inventory_reservations_status_idx").on(columns.status),
     index("inventory_reservations_expires_at_idx").on(columns.expires_at),
     index("inventory_reservations_terminal_at_idx").on(columns.terminal_at),
-    index("inventory_reservations_recovery_of_idx").on(columns.recovery_of),
+    uniqueIndex("inventory_reservations_recovery_of_idx").on(
+      columns.recovery_of
+    ),
     index("inventory_reservations_updated_at_idx").on(columns.updatedAt),
     index("inventory_reservations_created_at_idx").on(columns.createdAt),
     index("sku_location_status_idx").on(
@@ -7836,6 +7846,100 @@ export const inventory_reservations = pgTable(
       columns.status
     ),
     index("status_expires_at_idx").on(columns.status, columns.expires_at)
+  ]
+);
+
+export const inventory_reservation_operator_events = pgTable(
+  "inventory_reservation_operator_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    event_key: varchar("event_key").notNull(),
+    command_key: varchar("command_key").notNull(),
+    source:
+      enum_inventory_reservation_operator_events_source("source").notNull(),
+    correlation_key: varchar("correlation_key").notNull(),
+    causation_key: varchar("causation_key").notNull(),
+    action:
+      enum_inventory_reservation_operator_events_action("action").notNull(),
+    outcome_code: varchar("outcome_code").notNull(),
+    actor: uuid("actor_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    order: uuid("order_id").references(() => product_orders.id, {
+      onDelete: "set null"
+    }),
+    payment: uuid("payment_id").references(() => product_payments.id, {
+      onDelete: "set null"
+    }),
+    reservation: uuid("reservation_id").references(
+      () => inventory_reservations.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    reason_code: varchar("reason_code").notNull(),
+    evidence_reference: varchar("evidence_reference").notNull(),
+    expected_state_hash: varchar("expected_state_hash").notNull(),
+    observed_state_hash: varchar("observed_state_hash").notNull(),
+    affected_count: numeric("affected_count", { mode: "number" }).notNull(),
+    effective_at: timestamp("effective_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("inventory_reservation_operator_events_event_key_idx").on(
+      columns.event_key
+    ),
+    index("inventory_reservation_operator_events_command_key_idx").on(
+      columns.command_key
+    ),
+    index("inventory_reservation_operator_events_correlation_key_idx").on(
+      columns.correlation_key
+    ),
+    index("inventory_reservation_operator_events_causation_key_idx").on(
+      columns.causation_key
+    ),
+    index("inventory_reservation_operator_events_outcome_code_idx").on(
+      columns.outcome_code
+    ),
+    index("inventory_reservation_operator_events_actor_idx").on(columns.actor),
+    index("inventory_reservation_operator_events_order_idx").on(columns.order),
+    index("inventory_reservation_operator_events_payment_idx").on(
+      columns.payment
+    ),
+    index("inventory_reservation_operator_events_reservation_idx").on(
+      columns.reservation
+    ),
+    index("inventory_reservation_operator_events_reason_code_idx").on(
+      columns.reason_code
+    ),
+    index("inventory_reservation_operator_events_effective_at_idx").on(
+      columns.effective_at
+    ),
+    index("inventory_reservation_operator_events_updated_at_idx").on(
+      columns.updatedAt
+    ),
+    index("inventory_reservation_operator_events_created_at_idx").on(
+      columns.createdAt
+    )
   ]
 );
 
@@ -11695,6 +11799,31 @@ export const relations_inventory_reservations = relations(
     })
   })
 );
+export const relations_inventory_reservation_operator_events = relations(
+  inventory_reservation_operator_events,
+  ({ one }) => ({
+    actor: one(users, {
+      fields: [inventory_reservation_operator_events.actor],
+      references: [users.id],
+      relationName: "actor"
+    }),
+    order: one(product_orders, {
+      fields: [inventory_reservation_operator_events.order],
+      references: [product_orders.id],
+      relationName: "order"
+    }),
+    payment: one(product_payments, {
+      fields: [inventory_reservation_operator_events.payment],
+      references: [product_payments.id],
+      relationName: "payment"
+    }),
+    reservation: one(inventory_reservations, {
+      fields: [inventory_reservation_operator_events.reservation],
+      references: [inventory_reservations.id],
+      relationName: "reservation"
+    })
+  })
+);
 export const relations_inventory_reservation_entries = relations(
   inventory_reservation_entries,
   ({ one }) => ({
@@ -12508,6 +12637,8 @@ type DatabaseSchema = {
   enum_inventory_reservations_payment_time_source: typeof enum_inventory_reservations_payment_time_source;
   enum_inventory_reservations_late_payment_policy: typeof enum_inventory_reservations_late_payment_policy;
   enum_inventory_reservations_backorder_mode: typeof enum_inventory_reservations_backorder_mode;
+  enum_inventory_reservation_operator_events_source: typeof enum_inventory_reservation_operator_events_source;
+  enum_inventory_reservation_operator_events_action: typeof enum_inventory_reservation_operator_events_action;
   enum_inventory_reservation_entries_operation: typeof enum_inventory_reservation_entries_operation;
   enum_inventory_reservation_entries_evidence_code: typeof enum_inventory_reservation_entries_evidence_code;
   enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
@@ -12674,6 +12805,7 @@ type DatabaseSchema = {
   inventory_cycle_counts: typeof inventory_cycle_counts;
   inventory_cycle_count_lines: typeof inventory_cycle_count_lines;
   inventory_reservations: typeof inventory_reservations;
+  inventory_reservation_operator_events: typeof inventory_reservation_operator_events;
   inventory_reservation_entries: typeof inventory_reservation_entries;
   events_exclusive_links: typeof events_exclusive_links;
   events: typeof events;
@@ -12847,6 +12979,7 @@ type DatabaseSchema = {
   relations_inventory_cycle_counts: typeof relations_inventory_cycle_counts;
   relations_inventory_cycle_count_lines: typeof relations_inventory_cycle_count_lines;
   relations_inventory_reservations: typeof relations_inventory_reservations;
+  relations_inventory_reservation_operator_events: typeof relations_inventory_reservation_operator_events;
   relations_inventory_reservation_entries: typeof relations_inventory_reservation_entries;
   relations_events_exclusive_links: typeof relations_events_exclusive_links;
   relations_events: typeof relations_events;

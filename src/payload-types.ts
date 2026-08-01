@@ -133,6 +133,7 @@ export interface Config {
     'inventory-cycle-counts': InventoryCycleCount;
     'inventory-cycle-count-lines': InventoryCycleCountLine;
     'inventory-reservations': InventoryReservation;
+    'inventory-reservation-operator-events': InventoryReservationOperatorEvent;
     'inventory-reservation-entries': InventoryReservationEntry;
     events: Event;
     'ticket-orders': TicketOrder;
@@ -259,6 +260,7 @@ export interface Config {
     'inventory-cycle-counts': InventoryCycleCountsSelect<false> | InventoryCycleCountsSelect<true>;
     'inventory-cycle-count-lines': InventoryCycleCountLinesSelect<false> | InventoryCycleCountLinesSelect<true>;
     'inventory-reservations': InventoryReservationsSelect<false> | InventoryReservationsSelect<true>;
+    'inventory-reservation-operator-events': InventoryReservationOperatorEventsSelect<false> | InventoryReservationOperatorEventsSelect<true>;
     'inventory-reservation-entries': InventoryReservationEntriesSelect<false> | InventoryReservationEntriesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     'ticket-orders': TicketOrdersSelect<false> | TicketOrdersSelect<true>;
@@ -3467,6 +3469,32 @@ export interface InventoryReservation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservation-operator-events".
+ */
+export interface InventoryReservationOperatorEvent {
+  id: string;
+  event_key: string;
+  command_key: string;
+  source: 'manual_operator';
+  correlation_key: string;
+  causation_key: string;
+  action: 'release' | 'expire' | 'reconcile' | 'run_expiry';
+  outcome_code: string;
+  actor: string | User;
+  order?: (string | null) | ProductOrder;
+  payment?: (string | null) | ProductPayment;
+  reservation?: (string | null) | InventoryReservation;
+  reason_code: string;
+  evidence_reference: string;
+  expected_state_hash: string;
+  observed_state_hash: string;
+  affected_count: number;
+  effective_at: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inventory-reservation-entries".
  */
 export interface InventoryReservationEntry {
@@ -5886,6 +5914,31 @@ export interface InventoryReservationsSelect<T extends boolean = true> {
   late_payment_policy?: T;
   backorder_mode?: T;
   recovery_of?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservation-operator-events_select".
+ */
+export interface InventoryReservationOperatorEventsSelect<T extends boolean = true> {
+  event_key?: T;
+  command_key?: T;
+  source?: T;
+  correlation_key?: T;
+  causation_key?: T;
+  action?: T;
+  outcome_code?: T;
+  actor?: T;
+  order?: T;
+  payment?: T;
+  reservation?: T;
+  reason_code?: T;
+  evidence_reference?: T;
+  expected_state_hash?: T;
+  observed_state_hash?: T;
+  affected_count?: T;
+  effective_at?: T;
   updatedAt?: T;
   createdAt?: T;
 }

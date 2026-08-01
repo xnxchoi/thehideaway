@@ -4,13 +4,13 @@ Last external verification: 2026-07-30
 
 ## Current operating state
 
-| Capability                                                                | Status                  | Operating rule                                                           |
-| ------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------ |
-| Physical inventory movements and reconstruction                           | Committed               | Use guarded inventory commands; never edit balances directly             |
-| Receipts, lots, quarantine, adjustments, cycle counts                     | Committed               | Operate through the PR 5 command surface with reason and evidence        |
-| Reservation creation, consumption, cancellation release, automated expiry | Committed               | Domain services and scheduled job share transaction and lock rules       |
-| Reservation inspection and manual remediation                             | Uncommitted and blocked | Read-only and mutation routes are not available until PR 6A is committed |
-| Address, shipping, fulfillment, tracking, returns, finance                | Planned                 | No current operational claim; direct field edits are prohibited          |
+| Capability                                                                | Status    | Operating rule                                                            |
+| ------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------- |
+| Physical inventory movements and reconstruction                           | Committed | Use guarded inventory commands; never edit balances directly              |
+| Receipts, lots, quarantine, adjustments, cycle counts                     | Committed | Operate through the PR 5 command surface with reason and evidence         |
+| Reservation creation, consumption, cancellation release, automated expiry | Committed | Domain services and scheduled job share transaction and lock rules        |
+| Reservation inspection and manual remediation                             | Committed | Admin-only queues and guarded commands; mutations are disabled by default |
+| Address, shipping, fulfillment, tracking, returns, finance                | Planned   | No current operational claim; direct field edits are prohibited           |
 
 ## Feature gates
 
@@ -21,8 +21,9 @@ Last external verification: 2026-07-30
 - `PORTONE_WEBHOOK_REQUIRE_SIGNATURE` — committed signature enforcement
   control. Production/live mode requires Standard-Webhooks signatures;
   unsigned compatibility is sandbox-only and must be explicitly enabled.
-- `LOST_INVENTORY_RESERVATION_OPERATOR_MUTATIONS_LIVE` — uncommitted PR 6A
-  gate. It must have no internal production override.
+- `LOST_INVENTORY_RESERVATION_OPERATOR_MUTATIONS_LIVE` — PR 6A mutation gate.
+  Only the exact value `true` enables admin-only commands. Read-only queues,
+  evidence, and automated PR 6 behavior remain available when disabled.
 
 Provider credentials and secrets stay in environment or secret storage. Do not
 copy them into plans, Payload records, logs, or evidence captures.
@@ -103,6 +104,11 @@ billing keys and renewal charging are outside this plan.
 
 ## Manual and automated operation
 
+- Reservation operators inspect queues through
+  `/api/lost/inventory/reservations` and submit guarded `release`, `expire`,
+  `reconcile`, or `run_expiry` commands through
+  `/api/lost/inventory/reservations/commands` with a reason code, evidence
+  reference, idempotency key, and expected state hash.
 - Manual actions use the same domain commands as jobs and provider adapters.
 - A manual record may acquire a provider reference and continue automatically
   without recreation or history replacement.

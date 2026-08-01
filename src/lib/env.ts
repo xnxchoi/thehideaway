@@ -510,6 +510,16 @@ const schema = z.object({
         'Master gate for stocked checkout reservations. Enabled only when exactly "true".'
       )
     ),
+  LOST_INVENTORY_RESERVATION_OPERATOR_MUTATIONS_LIVE: z
+    .string()
+    .optional()
+    .describe(
+      d(
+        "optional",
+        "external-api",
+        'Gate for manual reservation mutations. Enabled only when exactly "true".'
+      )
+    ),
   LOST_INVENTORY_RESERVATION_TTL_MINUTES: z
     .string()
     .regex(/^[1-9]\d*$/)

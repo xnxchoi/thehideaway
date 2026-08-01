@@ -29,6 +29,7 @@ export type InventoryReservationRequest = {
   locationId: string;
   quantity: number;
   reservationId?: string;
+  recoveryOf?: string;
   expiresAt?: string;
   effectiveAt: string;
 };
@@ -160,6 +161,16 @@ export function validateInventoryReservationRequest(
   ) {
     throw new Error("invalid-inventory-reservation-id");
   }
+  const recoveryOf =
+    request.recoveryOf === undefined
+      ? undefined
+      : validateReference(
+          request.recoveryOf,
+          "invalid-inventory-reservation-recovery"
+        );
+  if (operation !== "reserve" && recoveryOf !== undefined) {
+    throw new Error("invalid-inventory-reservation-recovery");
+  }
 
   const effectiveAt = validateTimestamp(
     request.effectiveAt,
@@ -189,6 +200,7 @@ export function validateInventoryReservationRequest(
     ),
     quantity: request.quantity,
     ...(reservationId ? { reservationId } : {}),
+    ...(recoveryOf ? { recoveryOf } : {}),
     ...(expiresAt ? { expiresAt } : {}),
     effectiveAt
   };

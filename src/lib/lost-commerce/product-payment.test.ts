@@ -27,8 +27,10 @@ vi.mock("./campaigns", () => ({
 
 vi.mock("./orders", () => ({ cancelUnpaidProductOrder }));
 vi.mock("./inventory-reservations", () => ({
-  finalizePaidOrderInventoryInTransaction,
   lockOrderInventoryReservationsInTransaction
+}));
+vi.mock("./inventory-reservation-payment-finalization", () => ({
+  finalizePaidOrderInventoryInTransaction
 }));
 vi.mock("./provider-events", () => ({ recordCommerceProviderEventStandalone }));
 
@@ -643,6 +645,37 @@ describe("syncProductPayment", () => {
     });
     expect(payload.update).not.toHaveBeenCalled();
     expect(payload.db.rollbackTransaction).toHaveBeenCalledWith("tx-1");
+  });
+
+  it("records an authoritative payment for a canceled stocked order as inventory review", async () => {
+    finalizePaidOrderInventoryInTransaction.mockResolvedValueOnce({
+      kind: "created",
+      results: [
+        {
+          kind: "created",
+          reservation: { id: "reservation-1" },
+          entry: { id: "reservation-entry-1" }
+        }
+      ]
+    });
+    const payload = sequencedPayload({
+      preOrder: { ...baseOrder, status: "canceled" },
+      lockedOrder: { ...baseOrder, status: "canceled" }
+    });
+
+    const { syncProductPayment } = await import("./product-payment");
+    await expect(
+      syncProductPayment({ payload, paymentId: "lis_1" })
+    ).resolves.toMatchObject({ ok: true, status: "paid" });
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: "product-orders",
+        data: expect.objectContaining({
+          payment_status: "paid",
+          status: "paid_inventory_review"
+        })
+      })
+    );
   });
 
   it("revalidates locked money values before committing payment", async () => {

@@ -18,27 +18,29 @@
 all domains → 21 reconciliation → 21A privacy → 21B recovery → 22 launch
 ```
 
-PR 6A is the active serial boundary. PR 7 is independent by dependency but
-must not start in this worktree until PR 6A is committed.
+PR 6A is completed in this changeset. PR 7 is the next planned package and was
+not started in this worktree.
 
 ## Completed work
 
-| Package               | Result                                                                                                     | Commit     |
-| --------------------- | ---------------------------------------------------------------------------------------------------------- | ---------- |
-| PRs 1–3               | Contracts, durable commands/provider events, transitions, relational SKUs, snapshots                       | `b9aa62e1` |
-| PR 4                  | Append-only physical inventory and reconstructible projections                                             | `a3b5ef55` |
-| PRs 1–4 hardening     | Access, retry, replay, concurrency, and recovery scenarios                                                 | `5b1b85dc` |
-| PR 5                  | Receipts, lots, quarantine, adjustments, cycle counts, operator commands                                   | `cba6b4ae` |
-| PR 6                  | Expiring reservations, ATP, checkout reservation, payment consume/review, cancellation and expiry recovery | `0607ba0a` |
-| PR 6 registration fix | Reservation collections registered with Payload                                                            | `0f1e7001` |
-| Supply-chain policy   | Complete manual operation and automation interoperability required                                         | `3fe9ea13` |
+| Package               | Result                                                                                                     | Commit         |
+| --------------------- | ---------------------------------------------------------------------------------------------------------- | -------------- |
+| PRs 1–3               | Contracts, durable commands/provider events, transitions, relational SKUs, snapshots                       | `b9aa62e1`     |
+| PR 4                  | Append-only physical inventory and reconstructible projections                                             | `a3b5ef55`     |
+| PRs 1–4 hardening     | Access, retry, replay, concurrency, and recovery scenarios                                                 | `5b1b85dc`     |
+| PR 5                  | Receipts, lots, quarantine, adjustments, cycle counts, operator commands                                   | `cba6b4ae`     |
+| PR 6                  | Expiring reservations, ATP, checkout reservation, payment consume/review, cancellation and expiry recovery | `0607ba0a`     |
+| PR 6 registration fix | Reservation collections registered with Payload                                                            | `0f1e7001`     |
+| PR 6A                 | Admin-only reservation inspection, guarded manual commands, queues, and immutable attempt evidence         | This changeset |
+| Supply-chain policy   | Complete manual operation and automation interoperability required                                         | `3fe9ea13`     |
 
 `80397ebb` restores product price helpers required by the storefront but is not
 a separate roadmap package.
 
-## Active package: PR 6A
+## Completed package: PR 6A
 
-**Status:** Uncommitted and blocked.
+**Status:** Committed in this changeset. The final evidence is recorded in
+[validation.md](validation.md).
 
 **Purpose:** Add admin-only inspection and guarded manual `release`, `expire`,
 `reconcile`, and `run_expiry` commands without allowing direct reservation
@@ -61,26 +63,10 @@ and expected state hash. Mutations remain disabled unless
   durable rejection-ledger expansion is deferred to the shared audit/outbox
   design unless separately approved.
 
-**Required remediation before commit:**
-
-1. Remove every internal mutation-gate override; production code consults only
-   the environment gate and tests set the environment explicitly.
-2. Use one deterministic authoritative-payment selector for queue inspection,
-   state hashing, locking, and reconciliation, including multiple payments.
-3. Include the relevant inventory availability/version in reconciliation's
-   guarded state and business identity so replenishment permits a new attempt
-   after `review_remaining`.
-4. Reject a release that affects zero reservations.
-5. Finish structured rejection logging without logging evidence, request body,
-   contact data, or raw provider data.
-6. Add the missing PostgreSQL scenarios listed in
-   [validation.md](validation.md).
-7. Repeat code, database, security, and TypeScript review and resolve every
-   critical or high finding.
-
-**Exit:** The focused, PostgreSQL scenario, migration, coverage, lint,
-typecheck, diff, and build gates in [validation.md](validation.md) pass. Stage
-only PR 6A paths and commit as one reversible package. Do not push.
+**Exit:** The focused, PostgreSQL scenario, migration, coverage, lint, scoped
+typecheck, diff, build, and independent-review gates passed. All critical and
+high findings were resolved. The repository-wide exceptions are recorded in
+[validation.md](validation.md).
 
 **Rollback:** Disable operator mutations while retaining read-only queues and
 evidence. Existing automated PR 6 behavior remains available. Do not remove

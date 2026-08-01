@@ -238,6 +238,24 @@ describe("inventory reservation request contracts", () => {
     ).toThrow("invalid-inventory-reservation-expiry");
   });
 
+  it("accepts a linked recovery only on a reserve request", () => {
+    expect(
+      validateInventoryReservationRequest({
+        ...reserveRequest,
+        recoveryOf: "reservation-original"
+      })
+    ).toEqual({ ...reserveRequest, recoveryOf: "reservation-original" });
+    expect(() =>
+      validateInventoryReservationRequest({
+        ...reserveRequest,
+        operation: "consume",
+        reservationId: "reservation-1",
+        expiresAt: undefined,
+        recoveryOf: "reservation-original"
+      })
+    ).toThrow("invalid-inventory-reservation-recovery");
+  });
+
   it("hashes canonical content independently of object key order", () => {
     const reordered = {
       effectiveAt: reserveRequest.effectiveAt,

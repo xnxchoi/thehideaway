@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { hashInventoryReservationRequest } from "./inventory-reservation-contracts";
+import { finalizePaidOrderInventoryInTransaction } from "./inventory-reservation-payment-finalization";
 import {
   expireInventoryReservationInTransaction,
-  finalizePaidOrderInventoryInTransaction,
   releaseOrderInventoryInTransaction,
   reserveOrderInventoryInTransaction
 } from "./inventory-reservations";

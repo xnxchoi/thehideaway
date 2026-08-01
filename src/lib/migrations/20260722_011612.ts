@@ -464,7 +464,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   CREATE UNIQUE INDEX IF NOT EXISTS "inventory_reservation_entries_reserve_once_idx" ON "inventory_reservation_entries" USING btree ("reservation_id") WHERE "operation" = 'reserve';
   CREATE UNIQUE INDEX IF NOT EXISTS "inventory_reservation_entries_terminal_once_idx" ON "inventory_reservation_entries" USING btree ("reservation_id") WHERE "operation" IN ('consume', 'release', 'expire');
   CREATE UNIQUE INDEX IF NOT EXISTS "inventory_reservation_entries_review_evidence_once_idx" ON "inventory_reservation_entries" USING btree ("reservation_id", "payment_id", "evidence_code") WHERE "operation" = 'late_payment_detected';
-  CREATE UNIQUE INDEX IF NOT EXISTS "inventory_movements_reservation_source_ref_once_idx" ON "inventory_movements" USING btree ("source_ref") WHERE "source_type" = 'inventory_reservation';
   `);
 }
 
@@ -474,7 +473,7 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
   -- fixed-order write barrier, preventing evidence from racing the rollback.
   DO $$ DECLARE target text; evidence boolean := false; BEGIN
     FOREACH target IN ARRAY ARRAY[
-      'inventory_reservation_entries', 'inventory_reservations',
+      'inventory_reservations', 'inventory_reservation_entries',
       'inventory_movements', 'product_orders', 'payload_jobs',
       'payload_jobs_log', 'payload_jobs_stats'
     ] LOOP

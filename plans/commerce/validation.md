@@ -35,75 +35,113 @@ were not rerun during the documentation consolidation.
 The test files and CI configuration are the executable suite manifest. Do not
 copy full console output into this directory.
 
-## PR 6A checkpoint
+## PR 6A final gate
 
-**Last complete checkpoint before final-review findings:**
+**Status, 2026-08-01:** Passed and committed in this changeset. The earlier
+170-test green checkpoint and the subsequent incomplete edits are historical;
+neither is the completion basis. The current source, generated schema,
+migrations, tests, and results below are the completion basis.
 
-- 11 focused unit, API, and access files passed 170 tests.
-- PostgreSQL operator scenarios passed 6 tests.
-- PostgreSQL migration scenarios passed 4 tests.
-- Focused coverage recorded 86.84% statements, 74.92% branches, 98.11%
-  functions, and 88.59% lines. Production operator modules individually
-  exceeded 80% statements and lines.
-- Focused ESLint, scoped TypeScript diagnostics, `git diff --check`, and the
-  production build passed.
+All previously blocking findings were resolved:
 
-**Current status:** Uncommitted and not green. A fail-closed mutation-gate test
-and structured rejection-logging tests were added, and production changes were
-started. The complete suite was not rerun after those edits. Do not report PR
-6A as passing or complete.
+- reconciliation state and business identity include the inventory versions
+  needed to retry after replenishment;
+- queue inspection and command execution share complete, deterministic
+  authoritative-payment selection; scans are capped at 5,000 and fail closed
+  if Payload reports omitted rows;
+- release rejects a zero-effect mutation;
+- the mutation gate has no request or internal override;
+- authenticated rejection logs use fixed codes and exclude request, evidence,
+  contact, and provider data;
+- every claimed failed attempt appends immutable evidence in a separate
+  transaction after rollback, including missing-order failures without a
+  dangling relationship;
+- command mutation, success evidence, and durable completion commit together;
+- all required concurrency, recovery, migration, and rollback scenarios pass.
 
-## PR 6A blocking findings
+### Reproducible results
 
-1. A `review_remaining` reconciliation may become permanently unretryable
-   after stock replenishment because the guarded identity omits relevant
-   inventory state.
-2. Queue inspection and command execution can select different payments when
-   an order has multiple payment records.
-3. Required end-to-end concurrency and recovery scenarios are missing.
-4. Release can record success while changing zero reservations.
-5. The mutation gate previously accepted an internal override. The fix is
-   incomplete until all tests use explicit environment setup and no production
-   bypass remains.
-6. Rejected authenticated operations need fixed-code, PII-safe structured
-   security records. Transactionally committed operator events remain the
-   immutable outcome ledger; a separate durable rejection ledger is deferred
-   to the shared audit/outbox design unless approved.
+| Gate                                                              | Result                                                     |
+| ----------------------------------------------------------------- | ---------------------------------------------------------- |
+| Focused unit, API, access, and domain tests                       | 16 files, 225 tests passed                                 |
+| Operator PostgreSQL scenarios on `pr6a_scenario_019fb0f0_r2`      | 14 tests passed                                            |
+| PR 6A migration scenarios on `pr6a_migration_019fb0f0_r2`         | 6 tests passed                                             |
+| PR 6 boundary migration scenarios on `pr6a_migration_019fb0f0_r2` | 8 tests passed                                             |
+| Clean full migration chain on `pr6a_fresh_019fb0f0_r2`            | `migrate:fresh` passed; guarded `migrate` re-entry passed  |
+| Direct ESLint                                                     | Production PR 6A paths passed with zero errors or warnings |
+| Scoped TypeScript diagnostics                                     | No PR 6A-path errors                                       |
+| Production build                                                  | Passed with nonsecret placeholder Kakao values             |
+| Diff validation                                                   | Formatting and `git diff --check` passed                   |
 
-## Required PR 6A PostgreSQL scenarios
+The focused coverage run reported the following changed production modules at
+or above 80% statements and lines:
 
-- Manual release racing authoritative payment confirmation: either payment
-  prevents release or the payment path creates/reconciles linked recovery;
-  stock and evidence remain balanced.
-- Operator `reconcile` through state load, locks, inventory recovery, immutable
-  event, and durable command completion.
-- `review_remaining`, inventory replenishment, refreshed state, and successful
-  retry under a new idempotency key.
-- Multiple payments on one order with deterministic authoritative selection in
-  the queue and command.
-- Zero-effect release rejection with no success event or completed command.
-- Audit write failure rolls back the mutation and leaves a retryable lease.
-- Operator expiry overlapping the automated worker expires once.
-- Multi-SKU recovery remains all-or-nothing under insufficient ATP.
+| Module                     | Statements | Lines  |
+| -------------------------- | ---------- | ------ |
+| Operator command route     | 98.76%     | 98.75% |
+| Operator operations        | 85.00%     | 85.71% |
+| Operator failure evidence  | 90.90%     | 90.90% |
+| Operator payment selection | 94.28%     | 96.15% |
+| Operator policy            | 89.65%     | 89.65% |
+| Operator queries           | 85.62%     | 91.15% |
+| Paid review                | 81.57%     | 85.29% |
+| Payment finalization       | 91.42%     | 91.17% |
+| Reservation queues         | 89.28%     | 91.66% |
+| Reservation recovery       | 84.78%     | 86.20% |
+| Reservations               | 90.00%     | 90.64% |
+| Product payment            | 85.34%     | 86.72% |
 
-## PR 6A commands
+The Vitest and coverage packages are currently mixed at `4.1.10` and `4.1.9`;
+the runner warns that mixed versions are unsupported. The passing coverage
+results remain reproducible, but dependency alignment is a separate package
+maintenance task.
 
-Use environment-specific disposable database URIs; never put credentials in
-this file or shell history committed to Git.
+### PostgreSQL scenarios
+
+The 14 operator scenarios include every required case:
+
+- manual release racing authoritative payment confirmation;
+- guarded reconcile through recovery, immutable event, and command completion;
+- `review_remaining`, replenishment, refreshed state, and retry;
+- competing paid payments, a fifth older authoritative payment, and
+  cross-order payment skew;
+- zero-effect release rejection;
+- audit write failure rollback with a retryable lease;
+- manual expiry overlapping automated expiry;
+- multi-SKU all-or-nothing recovery under insufficient ATP;
+- missing-order failure evidence without a dangling relationship.
+
+Migration scenarios prove guarded apply, re-entry, rollback, constraint
+enforcement, immutable event behavior, and refusal to weaken command-key
+uniqueness after evidence exists. The PR 6 enum and unique-index boundary is
+split between generated enum migration `20260722_011612` and the documented
+manual unique-index migration `20260722_011613`, because Payload cannot express
+the required generated-schema boundary as one safely reversible step.
+
+### Independent reviews
+
+- Code: approved; no critical or high findings. The final documentation medium
+  was resolved in this update.
+- TypeScript: approved; no critical, high, or medium findings.
+- PostgreSQL: approved; no critical or high findings.
+- Security: approved; no critical, high, or medium PR 6A findings.
+
+Two PostgreSQL medium risks remain accepted and explicit:
+
+1. Generated foreign keys specify `ON DELETE SET NULL`, while the immutable
+   event trigger makes parent deletion effectively restrictive. This preserves
+   evidence; add a focused parent-deletion contract test before any workflow
+   depends on deleting referenced operator, order, or payment rows.
+2. `20260722_011613` creates an ordinary unique index. Assess table size and a
+   change window before production deployment because index creation can block
+   writes.
+
+### Commands
+
+Use environment-specific disposable database URIs. Do not commit credentials.
 
 ```bash
-rtk pnpm exec vitest run \
-  'src/payload/collections/(consumption)/inventory-reservation-operator-access.test.ts' \
-  'src/app/api/lost/inventory/reservations/commands/route.test.ts' \
-  'src/app/api/lost/inventory/reservations/route.test.ts' \
-  src/lib/lost-commerce/inventory-reservation-operator-operations.test.ts \
-  src/lib/lost-commerce/inventory-reservation-operator-queries.test.ts \
-  src/lib/lost-commerce/inventory-reservation-paid-review.test.ts \
-  src/lib/lost-commerce/inventory-reservation-contracts.test.ts \
-  src/lib/lost-commerce/inventory-reservation-queues.test.ts \
-  src/lib/lost-commerce/inventory-reservation-operator-policy.test.ts \
-  src/lib/lost-commerce/inventory-reservation-expiry.test.ts \
-  src/lib/lost-commerce/inventory-reservations.test.ts
+rtk pnpm exec vitest run <the 16 focused files above> --coverage
 
 PR6A_SCENARIO_TEST_DATABASE_URI='<disposable-uri>' \
   rtk pnpm exec vitest run \
@@ -112,18 +150,27 @@ PR6A_SCENARIO_TEST_DATABASE_URI='<disposable-uri>' \
 PR6A_MIGRATION_TEST_DATABASE_URI='<disposable-uri>' \
   rtk pnpm exec vitest run \
   src/lib/lost-commerce/inventory-pr6a-migration.postgres.test.ts
+
+PR6_MIGRATION_TEST_DATABASE_URI='<disposable-uri>' \
+  rtk pnpm exec vitest run \
+  src/lib/lost-commerce/inventory-pr6-migration.postgres.test.ts
 ```
 
-After production changes, rerun focused coverage, direct ESLint, scoped
-TypeScript diagnostics, generated migration checks, build, and reviews.
+## Known unrelated observations, 2026-08-01
 
-## Known unrelated observations
-
-At the last PR 6A checkpoint, the full Vitest run still had unrelated failures
-in ticket RSVP width, fragrance reduced-motion tiering, and fragrance light
-tuning. Dependency audit also reported pre-existing advisories. These notes are
-dated observations, not current exemptions. Recheck them before using them in
-a later gate.
+- Full Vitest: 3 failures, 1,500 passes, 138 skips. The failures remain in the
+  ticket RSVP width contract, fragrance reduced-motion tier, and fragrance
+  light tuning; none intersects PR 6A.
+- Full TypeScript: 215 errors in 97 files; scoped matching found no PR 6A-path
+  errors.
+- `pnpm lint` invokes the removed Next.js lint command and fails before linting.
+  Direct ESLint is the PR 6A lint gate.
+- Dependency audit: 14 advisories — 2 critical, 10 high, 1 moderate, and 1 low
+  — in pre-existing Better Auth, Nodemailer, Sharp/libvips, and transitive
+  brace-expansion dependencies. PR 6A does not change package manifests.
+- The successful production build reported development fixture users in the
+  connected database. Audit and remove them separately before treating that
+  database as production.
 
 ## Evidence policy
 

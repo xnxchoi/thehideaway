@@ -9,12 +9,14 @@ import {
 
 import { InventoryCycleCountLines } from "@/payload/collections/(consumption)/InventoryCycleCountLines";
 import { InventoryCycleCounts } from "@/payload/collections/(consumption)/InventoryCycleCounts";
+import { CommerceCommands } from "@/payload/collections/(consumption)/CommerceCommands";
 import { InventoryLevels } from "@/payload/collections/(consumption)/InventoryLevels";
 import { InventoryLots } from "@/payload/collections/(consumption)/InventoryLots";
 import { InventoryMovements } from "@/payload/collections/(consumption)/InventoryMovements";
 import { InventoryReceiptLines } from "@/payload/collections/(consumption)/InventoryReceiptLines";
 import { InventoryReceipts } from "@/payload/collections/(consumption)/InventoryReceipts";
 import { InventoryReservationEntries } from "@/payload/collections/(consumption)/InventoryReservationEntries";
+import { InventoryReservationOperatorEvents } from "@/payload/collections/(consumption)/InventoryReservationOperatorEvents";
 import { InventoryReservations } from "@/payload/collections/(consumption)/InventoryReservations";
 import { ProductVariants } from "@/payload/collections/(consumption)/ProductVariants";
 import { StockLocations } from "@/payload/collections/(consumption)/StockLocations";
@@ -112,14 +114,21 @@ const TestProductOrders: CollectionConfig = {
       type: "select",
       required: true,
       defaultValue: "pending_payment",
-      options: ["pending_payment", "paid", "failed", "canceled"]
+      options: [
+        "pending_payment",
+        "paid",
+        "confirmed",
+        "failed",
+        "canceled",
+        "paid_inventory_review"
+      ]
     },
     {
       name: "payment_status",
       type: "select",
       required: true,
       defaultValue: "pending",
-      options: ["pending", "paid", "failed"]
+      options: ["unpaid", "pending", "paid", "failed"]
     },
     {
       name: "fulfillment_status",
@@ -140,6 +149,7 @@ const TestProductOrders: CollectionConfig = {
 const TestProductPayments: CollectionConfig = {
   slug: "product-payments",
   fields: [
+    { name: "payment_ref", type: "text", required: true, unique: true },
     {
       name: "order",
       type: "relationship",
@@ -158,16 +168,26 @@ const TestProductPayments: CollectionConfig = {
       name: "provider",
       type: "select",
       required: true,
-      options: ["portone"]
+      options: ["portone", "manual"]
     },
     {
       name: "status",
       type: "select",
       required: true,
-      options: ["initiated", "pending", "paid", "failed"]
+      options: [
+        "initiated",
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+        "partially_refunded",
+        "manual_pending"
+      ]
     },
     { name: "amount", type: "number", required: true },
     { name: "currency", type: "text", required: true },
+    { name: "portone_order_ref", type: "text" },
+    { name: "portone_transaction_ref", type: "text" },
     { name: "paid_at", type: "date" }
   ]
 };
@@ -198,7 +218,9 @@ export async function createReservationPostgresHarness(databaseUri: string) {
       InventoryCycleCounts,
       InventoryCycleCountLines,
       InventoryReservations,
-      InventoryReservationEntries
+      InventoryReservationEntries,
+      InventoryReservationOperatorEvents,
+      CommerceCommands
     ]
   });
   const payload = await getPayload({ config });
@@ -497,7 +519,21 @@ export async function createReservationPostgresHarness(databaseUri: string) {
       await session.db.execute(
         sql`SET LOCAL session_replication_role = replica`
       );
+      const operatorEventsTable = (await session.db.execute(sql`
+        SELECT to_regclass('public.inventory_reservation_operator_events') IS NOT NULL AS present
+      `)) as { rows?: Array<{ present?: boolean }> };
+      const hasOperatorEventsTable =
+        operatorEventsTable.rows?.[0]?.present === true;
       for (const fixture of [...fixtures].reverse()) {
+        if (hasOperatorEventsTable) {
+          await session.db.execute(sql`
+            DELETE FROM inventory_reservation_operator_events
+            WHERE order_id IN (${sql.join(
+              fixture.orderIds.map((orderId) => sql`${orderId}`),
+              sql`, `
+            )}) OR actor_id = ${fixture.actorId}
+          `);
+        }
         await session.db.execute(sql`
           DELETE FROM inventory_reservation_entries
           WHERE reservation_id IN (
@@ -538,6 +574,13 @@ export async function createReservationPostgresHarness(databaseUri: string) {
         `);
         await session.db.execute(sql`
           DELETE FROM inventory_cycle_counts WHERE location_id = ${fixture.locationId}
+        `);
+        await session.db.execute(sql`
+          DELETE FROM product_payments
+          WHERE order_id IN (${sql.join(
+            fixture.orderIds.map((orderId) => sql`${orderId}`),
+            sql`, `
+          )})
         `);
         await session.db.execute(sql`
           DELETE FROM product_orders WHERE user_id = ${fixture.userId}

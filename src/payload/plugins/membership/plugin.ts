@@ -28,6 +28,7 @@ import { InventoryCycleCounts } from "@/payload/collections/(consumption)/Invent
 import { InventoryCycleCountLines } from "@/payload/collections/(consumption)/InventoryCycleCountLines";
 import { InventoryReservationEntries } from "@/payload/collections/(consumption)/InventoryReservationEntries";
 import { InventoryReservations } from "@/payload/collections/(consumption)/InventoryReservations";
+import { InventoryReservationOperatorEvents } from "@/payload/collections/(consumption)/InventoryReservationOperatorEvents";
 
 export interface MembershipPluginConfig {
   enabled: boolean;
@@ -69,6 +70,7 @@ export const MembershipPlugin =
       InventoryCycleCounts,
       InventoryCycleCountLines,
       InventoryReservations,
+      InventoryReservationOperatorEvents,
       InventoryReservationEntries
     );
 

@@ -264,65 +264,91 @@ async function expirePreparedReservations(input: {
   }
 }
 
-async function expireOrder(input: {
+async function expireOrderInTransaction(input: {
+  payload: Payload;
+  req: ReservationTransactionRequest;
+  orderId: string;
+}): Promise<number> {
+  const req = input.req;
+  await lockOrderInventoryReservationsInTransaction({
+    payload: input.payload,
+    req,
+    orderId: input.orderId
+  });
+
+  // The lock helper discovers rows before taking their canonical locks.
+  // Re-read after locking so a concurrent terminal operation cannot leave
+  // this worker acting on its pre-lock snapshot.
+  const reservations = await findReservationDocs(
+    input.payload,
+    req,
+    "inventory-reservations",
+    { order: { equals: input.orderId } },
+    "id"
+  );
+  if (reservations.length >= ORDER_RESERVATION_READ_LIMIT) {
+    throw new Error("inventory-reservation-expiry-order-too-large");
+  }
+
+  const transactionNow = await reservationTransactionTimestamp(
+    input.payload,
+    req
+  );
+  const prepared = await prepareActiveReservationExpiries({
+    payload: input.payload,
+    req,
+    reservations
+  });
+  if (prepared.length === 0) return 0;
+
+  // Orders are checkout aggregates. Expire all active siblings together,
+  // or wait until the latest sibling reaches its exact database-time bound.
+  if (
+    prepared.some(
+      ({ expiresAt }) => Date.parse(transactionNow) < Date.parse(expiresAt)
+    )
+  ) {
+    return 0;
+  }
+
+  await expirePreparedReservations({
+    payload: input.payload,
+    req,
+    orderId: input.orderId,
+    prepared
+  });
+  return prepared.length;
+}
+
+export async function expireInventoryReservationOrder(input: {
   payload: Payload;
   req?: PayloadRequest;
   orderId: string;
+  locksHeld?: boolean;
 }): Promise<number> {
+  if (input.locksHeld) {
+    if (
+      input.req?.transactionID === undefined ||
+      input.req.transactionID === null
+    ) {
+      throw new Error("inventory-reservation-expiry-transaction-required");
+    }
+    return expireOrderInTransaction({
+      payload: input.payload,
+      req: input.req as ReservationTransactionRequest,
+      orderId: input.orderId
+    });
+  }
   return inTransaction({
     payload: input.payload,
     req: input.req,
     transactionError: "inventory-reservation-expiry-transaction-failed",
-    run: async (req) => {
-      await lockOrderInventoryReservationsInTransaction({
+    run: async (req) =>
+      expireOrderInTransaction({
         payload: input.payload,
         req,
         orderId: input.orderId
-      });
-
-      // The lock helper discovers rows before taking their canonical locks.
-      // Re-read after locking so a concurrent terminal operation cannot leave
-      // this worker acting on its pre-lock snapshot.
-      const reservations = await findReservationDocs(
-        input.payload,
-        req,
-        "inventory-reservations",
-        { order: { equals: input.orderId } },
-        "id"
-      );
-      if (reservations.length >= ORDER_RESERVATION_READ_LIMIT) {
-        throw new Error("inventory-reservation-expiry-order-too-large");
-      }
-
-      const transactionNow = await reservationTransactionTimestamp(
-        input.payload,
-        req
-      );
-      const prepared = await prepareActiveReservationExpiries({
-        payload: input.payload,
-        req,
-        reservations
-      });
-      if (prepared.length === 0) return 0;
-
-      // Orders are checkout aggregates. Expire all active siblings together,
-      // or wait until the latest sibling reaches its exact database-time bound.
-      if (
-        prepared.some(
-          ({ expiresAt }) => Date.parse(transactionNow) < Date.parse(expiresAt)
-        )
-      ) {
-        return 0;
-      }
-
-      await expirePreparedReservations({
-        payload: input.payload,
-        req,
-        orderId: input.orderId,
-        prepared
-      });
-      return prepared.length;
-    }
+      })
   });
 }
 
@@ -345,7 +371,7 @@ export async function expireDueInventoryReservationOrders(input: {
     if (ordersExpired >= batchSize) break;
     ordersExamined += 1;
     try {
-      const expired = await expireOrder({
+      const expired = await expireInventoryReservationOrder({
         payload: input.payload,
         req: input.req,
         orderId

@@ -53,7 +53,11 @@ describe("release order inventory reservations", () => {
       await import("./order-inventory-reservations");
     const result = await releaseOrderInventoryReservationsInTransaction({
       payload: {} as any,
-      req: { payload: {} as any, context: {}, transactionID: "tx-1" },
+      req: {
+        payload: {} as any,
+        context: { user: { role: "admin" } },
+        transactionID: "tx-1"
+      },
       orderId: "order-1",
       idempotencyKey: "cancel-command-1",
       effectiveAt: "2026-07-22T03:00:00.000Z",
@@ -95,7 +99,11 @@ describe("release order inventory reservations", () => {
     await expect(
       releaseOrderInventoryReservationsInTransaction({
         payload: {} as any,
-        req: { payload: {} as any, context: {}, transactionID: "tx-1" },
+        req: {
+          payload: {} as any,
+          context: { user: { role: "admin" } },
+          transactionID: "tx-1"
+        },
         orderId: "order-1",
         idempotencyKey: "cancel-command-1",
         effectiveAt: "2026-07-22T03:00:00.000Z"

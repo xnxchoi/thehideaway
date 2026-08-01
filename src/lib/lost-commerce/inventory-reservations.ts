@@ -11,7 +11,6 @@ import {
   productSkuMutationLock
 } from "@/lib/db/sequences";
 import { authorizeInventoryReservationRequest } from "@/payload/collections/(consumption)/InventoryReservations/authorizeInventoryReservation";
-import { validateCommerceCommandKey } from "./commerce-commands";
 import {
   calculateAvailableToPromise,
   hashInventoryReservationRequest,
@@ -24,11 +23,7 @@ import {
   revokeInventoryReservationLedgerAuthorization
 } from "./inventory-reservation-ledger-authorization";
 import { lockOrderInventoryReservationsInTransaction } from "./inventory-reservation-locks";
-import {
-  inventoryReservationMovementKey,
-  inventoryReservationTerminalCommandKey
-} from "./inventory-reservation-idempotency";
-import { recordInventoryReservationReviewEvidence } from "./inventory-reservation-review-evidence";
+import { inventoryReservationMovementKey } from "./inventory-reservation-idempotency";
 import {
   activeReservedForAggregate,
   reconstructInventoryReservations,
@@ -40,10 +35,7 @@ import {
   findReservationDocs as findDocs,
   findReservationEntry as findEntry,
   immutableReservationCopy as immutableCopy,
-  reservationPositiveQuantity as positiveQuantity,
-  reservationReference as reference,
   reservationRelationshipId as relationshipId,
-  reservationTimestamp as timestamp,
   reservationTransactionTimestamp as transactionTimestamp,
   requireReservationTransaction as transactionID,
   type ReservationStored as Stored,
@@ -120,7 +112,8 @@ async function replayFor(
 }
 
 function reservationKey(request: InventoryReservationRequest): string {
-  return `${request.orderId}:${request.skuId}:${request.locationId}`;
+  const base = `${request.orderId}:${request.skuId}:${request.locationId}`;
+  return request.recoveryOf ? `${base}:recovery:${request.recoveryOf}` : base;
 }
 
 function physicalAggregateKey(request: InventoryReservationRequest): string {
@@ -247,7 +240,8 @@ async function createReservation(
       expiry_boundary: policy.expiryBoundary,
       payment_time_source: policy.paymentTimeSource,
       late_payment_policy: policy.latePaymentPolicy,
-      backorder_mode: policy.backorderMode
+      backorder_mode: policy.backorderMode,
+      recovery_of: request.recoveryOf
     } as never
   })) as unknown as Stored;
   const id = relationshipId(reservation.id);
@@ -659,150 +653,13 @@ export function expireInventoryReservationInTransaction(input: {
   return applyTerminal({ ...input, expected: "expire" });
 }
 
-export async function finalizePaidOrderInventoryInTransaction(input: {
+export function consumeInventoryReservationInTransaction(input: {
   payload: Payload;
   req: TransactionRequest;
-  orderId: unknown;
-  paymentId: unknown;
-  idempotencyKey: unknown;
-  providerEventRef?: unknown;
-  providerPaidAt: unknown;
+  request: unknown;
+  paymentId: string;
+  providerEventRef?: string;
   locksHeld?: boolean;
-}): Promise<
-  Readonly<{
-    kind: "created" | "replay" | "paid_inventory_review";
-    results: readonly InventoryReservationResult[];
-  }>
-> {
-  const tx = transactionID(input.req);
-  void tx;
-  const req = input.req as TransactionRequest;
-  const orderId = reference(input.orderId, "invalid-inventory-order");
-  const paymentId = reference(input.paymentId, "invalid-inventory-payment");
-  const providerEventRef =
-    input.providerEventRef === undefined || input.providerEventRef === null
-      ? undefined
-      : reference(
-          input.providerEventRef,
-          "invalid-inventory-provider-event-ref"
-        );
-  const providerPaidAt =
-    input.providerPaidAt === undefined || input.providerPaidAt === null
-      ? undefined
-      : timestamp(input.providerPaidAt, "invalid-inventory-provider-paid-at");
-  const baseKey = validateCommerceCommandKey(input.idempotencyKey);
-  const payment = await findById(
-    input.payload,
-    req,
-    "product-payments",
-    paymentId
-  );
-  if (
-    relationshipId(payment.order) !== orderId ||
-    payment.status !== "paid" ||
-    payment.provider !== "portone"
-  ) {
-    throw new Error("inventory-reservation-payment-not-confirmed");
-  }
-  await findById(input.payload, req, "product-orders", orderId);
-  const reservations = await findDocs(
-    input.payload,
-    req,
-    "inventory-reservations",
-    { order: { equals: orderId } },
-    "id"
-  );
-  if (reservations.length === 0) {
-    throw new Error("inventory-reservation-order-missing");
-  }
-
-  const results: InventoryReservationResult[] = [];
-  for (const reservation of reservations) {
-    const reservationId = relationshipId(reservation.id);
-    const skuId = relationshipId(reservation.sku);
-    const locationId = relationshipId(reservation.location);
-    if (!reservationId || !skuId || !locationId) {
-      throw new Error("inventory-reservation-history-corrupt");
-    }
-    const history = await reservationHistory(input.payload, req, reservation);
-    const reservedAt = timestamp(
-      reservation.reserved_at,
-      "inventory-reservation-history-corrupt"
-    );
-    const evidenceCode = !providerPaidAt
-      ? "provider_timestamp_missing"
-      : Date.parse(providerPaidAt) < Date.parse(reservedAt)
-        ? "provider_timestamp_before_reservation"
-        : history.status !== "consumed" &&
-            (history.status !== "active" ||
-              Date.parse(providerPaidAt) >=
-                Date.parse(String(reservation.expires_at)))
-          ? "provider_payment_late"
-          : undefined;
-    if (evidenceCode) {
-      await recordInventoryReservationReviewEvidence({
-        payload: input.payload,
-        req,
-        reservation,
-        reservationId,
-        paymentId,
-        providerEventRef,
-        quantity: positiveQuantity(reservation.quantity),
-        baseKey,
-        providerPaidAt,
-        evidenceCode
-      });
-      results.push(
-        immutableCopy({
-          kind: "paid_inventory_review",
-          reason: "late_payment",
-          reservation
-        })
-      );
-      continue;
-    }
-    const result = await applyTerminal({
-      payload: input.payload,
-      req,
-      expected: "consume",
-      paymentId,
-      providerEventRef,
-      locksHeld: input.locksHeld,
-      request: {
-        idempotencyKey: inventoryReservationTerminalCommandKey({
-          baseKey,
-          reservationId,
-          operation: "consume"
-        }),
-        operation: "consume",
-        orderId,
-        reservationId,
-        skuId,
-        locationId,
-        quantity: positiveQuantity(reservation.quantity),
-        effectiveAt: providerPaidAt
-      }
-    });
-    results.push(result);
-    if (result.kind === "paid_inventory_review") {
-      await recordInventoryReservationReviewEvidence({
-        payload: input.payload,
-        req,
-        reservation,
-        reservationId,
-        paymentId,
-        providerEventRef,
-        quantity: positiveQuantity(reservation.quantity),
-        baseKey,
-        providerPaidAt,
-        evidenceCode: "physical_inventory_unavailable"
-      });
-    }
-  }
-  const kind = results.some((result) => result.kind === "paid_inventory_review")
-    ? "paid_inventory_review"
-    : results.some((result) => result.kind === "created")
-      ? "created"
-      : "replay";
-  return immutableCopy({ kind, results });
+}): Promise<InventoryReservationResult> {
+  return applyTerminal({ ...input, expected: "consume" });
 }

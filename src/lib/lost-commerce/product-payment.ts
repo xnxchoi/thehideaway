@@ -3,11 +3,9 @@ import type { ProductOrder, ProductPayment } from "@/payload-types";
 
 import { paymentWebhookLock } from "@/lib/db/sequences";
 import { hashCommerceCommandInput } from "./commerce-commands";
+import { finalizePaidOrderInventoryInTransaction } from "./inventory-reservation-payment-finalization";
 import type { ReservationTransactionRequest } from "./inventory-reservation-store";
-import {
-  finalizePaidOrderInventoryInTransaction,
-  lockOrderInventoryReservationsInTransaction
-} from "./inventory-reservations";
+import { lockOrderInventoryReservationsInTransaction } from "./inventory-reservations";
 import { markRequestOrderPaid } from "./campaigns";
 import { authorizeCommerceLifecycleRequest } from "./lifecycle-authorization";
 import { recordCommerceProviderEventStandalone } from "./provider-events";
@@ -335,12 +333,11 @@ export async function syncProductPayment(input: {
             locksHeld: true
           })
         : undefined;
-    const nonStockedPaymentNeedsReview =
-      order.order_mode !== "standard_purchase" &&
-      (order.status === "failed" || order.status === "canceled");
+    const terminalOrderNeedsReview =
+      order.status === "failed" || order.status === "canceled";
     const nextOrderStatus =
       inventoryResult?.kind === "paid_inventory_review" ||
-      nonStockedPaymentNeedsReview
+      terminalOrderNeedsReview
         ? "paid_inventory_review"
         : paidOrderStatus(order.order_mode);
     assertOrderTransition({

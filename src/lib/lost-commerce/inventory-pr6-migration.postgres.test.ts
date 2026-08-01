@@ -7,6 +7,10 @@ import {
   down as revertPr6Migration,
   up as applyPr6Migration
 } from "@/lib/migrations/20260722_011612";
+import {
+  down as revertPr6IndexMigration,
+  up as applyPr6IndexMigration
+} from "@/lib/migrations/20260722_011613";
 
 import {
   createReservationPostgresHarness,
@@ -147,10 +151,13 @@ describeWithPostgres.sequential(
 
         await applyPr6Migration(migrationArgs(db));
         await applyPr6Migration(migrationArgs(db));
+        await applyPr6IndexMigration(migrationArgs(db));
+        await applyPr6IndexMigration(migrationArgs(db));
 
         const evidence = await db.execute<{
           entry_trigger: boolean;
           jobs_stats_kept: boolean;
+          movement_reservation_once: boolean;
           options_id_type: string;
           provenance_check: boolean;
           reserve_once: boolean;
@@ -170,6 +177,10 @@ describeWithPostgres.sequential(
             WHERE conname = 'inventory_movements_provenance_shape_check'
               AND conrelid = 'public.inventory_movements'::regclass)
             AS provenance_check,
+          EXISTS (SELECT 1 FROM pg_class c
+            JOIN pg_index i ON i.indexrelid = c.oid
+            WHERE c.relname = 'inventory_movements_reservation_source_ref_once_idx'
+              AND i.indisunique) AS movement_reservation_once,
           (SELECT data_type FROM information_schema.columns
             WHERE table_schema = 'public' AND table_name = 'product_variants_options'
               AND column_name = 'id') AS options_id_type,
@@ -179,6 +190,7 @@ describeWithPostgres.sequential(
         expect(evidence.rows[0]).toEqual({
           entry_trigger: true,
           jobs_stats_kept: true,
+          movement_reservation_once: true,
           options_id_type: "character varying",
           provenance_check: true,
           reserve_once: true,
@@ -495,7 +507,9 @@ describeWithPostgres.sequential(
           has_pr6_branch: false
         });
         await applyPr6Migration(migrationArgs(db));
+        await applyPr6IndexMigration(migrationArgs(db));
         await applyPr6Migration(migrationArgs(db));
+        await applyPr6IndexMigration(migrationArgs(db));
         const evidence = await db.execute<{
           pr5_branch_count: string;
           pr6_branch_count: string;
@@ -521,5 +535,23 @@ describeWithPostgres.sequential(
         });
       });
     }, 30_000);
+
+    it("re-enters the enum-dependent index and rolls it back before PR6", async () => {
+      await expectRollback(async (db) => {
+        await applyPr6Migration(migrationArgs(db));
+        await applyPr6IndexMigration(migrationArgs(db));
+        await applyPr6IndexMigration(migrationArgs(db));
+        await revertPr6IndexMigration(migrationArgs(db));
+        expect(
+          (
+            await db.execute<{ present: boolean }>(sql`
+              SELECT to_regclass(
+                'public.inventory_movements_reservation_source_ref_once_idx'
+              ) IS NOT NULL AS present
+            `)
+          ).rows[0]
+        ).toEqual({ present: false });
+      });
+    });
   }
 );

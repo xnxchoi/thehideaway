@@ -35,11 +35,10 @@ and provider events; guarded order/payment transitions; stock locations;
 append-only physical inventory; reconstructible projections; receipts, lots,
 quarantine, adjustments, and cycle counts; atomic expiring reservations;
 available-to-promise calculation; payment-time consume or review; cancellation
-release; recurring expiry recovery; and storefront availability.
-
-**Uncommitted:** PR 6A adds reservation inspection, operator commands, queues,
-and immutable outcome evidence. It is blocked by the findings in
-[validation.md](validation.md).
+release; recurring expiry recovery; storefront availability; and PR 6A
+admin-only reservation inspection, guarded manual commands, queues, and
+immutable attempt evidence. Operator mutations remain disabled unless the
+environment gate is exactly `true`.
 
 **Planned:** address normalization, shipping quotes, authoritative totals,
 complete checkout, outbox processing, fulfillment, tracking, made-to-order,
@@ -113,23 +112,23 @@ The complete repository procedure is [readmes/MIGRATIONS.md](../../readmes/MIGRA
 
 ## Decision gates
 
-| Decision                                                                                   | Needed by          | Current status                                                                      |
-| ------------------------------------------------------------------------------------------ | ------------------ | ----------------------------------------------------------------------------------- |
-| Countries, regions, remote areas, address fields, save/default behavior, correction cutoff | PRs 7–8            | Owner-controlled                                                                    |
-| Shipping methods, rates, free-shipping rule, package data, dispatch target                 | PR 8               | Owner-controlled                                                                    |
-| Carrier adapter, account, authority, matching, polling/webhook, conflict owner             | Optional PR 16A    | Owner-controlled; manual shipment remains baseline                                  |
-| VAT treatment, promotions, receipt and Korean tax-document scope                           | PRs 9 and 19B      | Owner-controlled                                                                    |
-| Reservation duration, oversell/backorder, split shipment                                   | PRs 6A, 8, 15      | Owner-controlled; unapproved capabilities remain disabled                           |
-| Reservation operator authority, reason/evidence, allowed terminal actions                  | PR 6A              | Admin-only release, expire, reconcile, and expiry-run selected for current worktree |
-| Manual-payment instructions, reference, evidence, expiry, approval owner                   | PR 11A             | Owner-controlled; capability remains disabled otherwise                             |
-| Card authorization/capture timing, cancellation authority, fees, late capture              | PRs 11–11B         | Owner-controlled                                                                    |
-| Request-to-order capacity, deadline, failure/refund, production owner                      | PR 17              | Owner-controlled                                                                    |
-| Private quote validity, deposit/balance, specifications, milestones, changes, cancellation | PR 18              | Owner-controlled                                                                    |
-| Return window, fees, exclusions, inspection, disposition, exchange                         | PRs 19–19A         | Owner-controlled                                                                    |
-| Opening balances, receiving/count roles, seller identity, numbering                        | Operational launch | Owner-controlled                                                                    |
-| PII retention, export, redaction, statutory preservation                                   | PR 21A             | Owner-controlled                                                                    |
-| Settlement owner, bank matching, export, close process                                     | PR 20              | Owner-controlled                                                                    |
-| Alert destination and on-call ownership                                                    | PR 21B             | Owner-controlled                                                                    |
+| Decision                                                                                   | Needed by          | Current status                                                    |
+| ------------------------------------------------------------------------------------------ | ------------------ | ----------------------------------------------------------------- |
+| Countries, regions, remote areas, address fields, save/default behavior, correction cutoff | PRs 7–8            | Owner-controlled                                                  |
+| Shipping methods, rates, free-shipping rule, package data, dispatch target                 | PR 8               | Owner-controlled                                                  |
+| Carrier adapter, account, authority, matching, polling/webhook, conflict owner             | Optional PR 16A    | Owner-controlled; manual shipment remains baseline                |
+| VAT treatment, promotions, receipt and Korean tax-document scope                           | PRs 9 and 19B      | Owner-controlled                                                  |
+| Reservation duration, oversell/backorder, split shipment                                   | PRs 6A, 8, 15      | Owner-controlled; unapproved capabilities remain disabled         |
+| Reservation operator authority, reason/evidence, allowed terminal actions                  | PR 6A              | Admin-only release, expire, reconcile, and expiry-run implemented |
+| Manual-payment instructions, reference, evidence, expiry, approval owner                   | PR 11A             | Owner-controlled; capability remains disabled otherwise           |
+| Card authorization/capture timing, cancellation authority, fees, late capture              | PRs 11–11B         | Owner-controlled                                                  |
+| Request-to-order capacity, deadline, failure/refund, production owner                      | PR 17              | Owner-controlled                                                  |
+| Private quote validity, deposit/balance, specifications, milestones, changes, cancellation | PR 18              | Owner-controlled                                                  |
+| Return window, fees, exclusions, inspection, disposition, exchange                         | PRs 19–19A         | Owner-controlled                                                  |
+| Opening balances, receiving/count roles, seller identity, numbering                        | Operational launch | Owner-controlled                                                  |
+| PII retention, export, redaction, statutory preservation                                   | PR 21A             | Owner-controlled                                                  |
+| Settlement owner, bank matching, export, close process                                     | PR 20              | Owner-controlled                                                  |
+| Alert destination and on-call ownership                                                    | PR 21B             | Owner-controlled                                                  |
 
 Unknown decisions remain disabled configuration or explicit blockers. They are
 not implementation defaults.
