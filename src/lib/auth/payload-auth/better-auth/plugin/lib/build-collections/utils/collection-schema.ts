@@ -37,7 +37,11 @@ export function assertAllSchemaFields(
   collection: CollectionConfig,
   schema: BuiltBetterAuthSchema
 ): void {
-  const schemaFieldKeys = Object.keys(schema.fields);
+  // Payload owns the primary id field and derives its database type from the
+  // configured adapter. Treat Better Auth's logical id as that implicit field.
+  const schemaFieldKeys = Object.keys(schema.fields).filter(
+    (key) => key !== "id"
+  );
   const collectionConfigBetterAuthKeys = new Set(
     flattenAllFields(collection)
       .map((field) => field.custom?.betterAuthFieldKey)

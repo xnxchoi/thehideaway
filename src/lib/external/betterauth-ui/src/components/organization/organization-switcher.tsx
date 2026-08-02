@@ -22,7 +22,6 @@ import { useCurrentOrganization } from "../../hooks/use-current-organization";
 import { AuthUIContext } from "../../lib/auth-ui-provider";
 import { getLocalizedError } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
-import type { User } from "../../types/auth-client";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -41,6 +40,14 @@ import {
 } from "./organization-cell-view";
 import { OrganizationLogo } from "./organization-logo";
 import { PersonalAccountView } from "./personal-account-view";
+
+const isAnonymousUser = (user: unknown) =>
+  Boolean(
+    user &&
+      typeof user === "object" &&
+      "isAnonymous" in user &&
+      (user as { isAnonymous?: boolean }).isAnonymous
+  );
 
 export interface OrganizationSwitcherClassNames {
   base?: string;
@@ -143,6 +150,14 @@ export function OrganizationSwitcher({
 
   const { data: sessionData, isPending: sessionPending } = useSession();
   const user = sessionData?.user;
+  const cellSize =
+    size === "icon-sm"
+      ? "sm"
+      : size === "icon-lg"
+        ? "lg"
+        : size === "icon"
+          ? "default"
+          : size;
 
   const { data: organizations, isPending: organizationsPending } =
     useListOrganizations();
@@ -269,7 +284,7 @@ export function OrganizationSwitcher({
                 {isPending ||
                 activeOrganization ||
                 !sessionData ||
-                (user as User)?.isAnonymous ||
+                isAnonymousUser(user) ||
                 hidePersonal ? (
                   <OrganizationLogo
                     key={activeOrganization?.logo}
@@ -304,20 +319,20 @@ export function OrganizationSwitcher({
                 {isPending ||
                 activeOrganization ||
                 !sessionData ||
-                (user as User)?.isAnonymous ||
+                isAnonymousUser(user) ||
                 hidePersonal ? (
                   <OrganizationCellView
                     classNames={classNames?.trigger?.organization}
                     isPending={isPending}
                     localization={localization}
                     organization={activeOrganization}
-                    size={size}
+                    size={cellSize}
                   />
                 ) : (
                   <PersonalAccountView
                     classNames={classNames?.trigger?.user}
                     localization={localization}
-                    size={size}
+                    size={cellSize}
                     user={user}
                   />
                 )}
@@ -344,7 +359,7 @@ export function OrganizationSwitcher({
               classNames?.content?.menuItem
             )}
           >
-            {(user && !(user as User).isAnonymous) || isPending ? (
+            {(user && !isAnonymousUser(user)) || isPending ? (
               <>
                 {activeOrganizationPending ||
                 activeOrganization ||
@@ -458,7 +473,7 @@ export function OrganizationSwitcher({
               />
             )}
 
-          {!isPending && sessionData && !(user as User).isAnonymous ? (
+          {!isPending && sessionData && !isAnonymousUser(user) ? (
             <DropdownMenuItem
               className={cn(classNames?.content?.menuItem)}
               onClick={() => setIsCreateOrgDialogOpen(true)}

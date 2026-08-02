@@ -4,6 +4,7 @@ import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
 import { roleToAuthority } from "@/payload/plugins/locker/fields/authority/utils";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { generateName } from "@/utilities/names";
+import { canUpdateUserRoleField } from "./user-role-access";
 import { DateTime } from "luxon";
 import type {
   CheckboxField,
@@ -190,11 +191,7 @@ export const userFieldOrganizerPlugin =
         access: {
           ...role.access,
           read: () => true,
-          update: ({ req }) => {
-            if (req.context.overrideAccess === true) return true;
-            if (req.user?.role === "admin") return true;
-            return false;
-          }
+          update: canUpdateUserRoleField
         }
       } as SelectField;
 

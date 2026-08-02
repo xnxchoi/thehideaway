@@ -8,6 +8,7 @@ import { ForgotPasswordForm } from "./client";
 import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
 import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 import { MinimalTemplate } from "@payloadcms/next/templates";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 type ForgotPasswordProps = AdminViewServerProps & {
   pluginOptions: PayloadAuthOptions;
@@ -67,7 +68,10 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
   return (
     <MinimalTemplate>
       <ForgotPasswordForm
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          initPageResult.req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
       <Link

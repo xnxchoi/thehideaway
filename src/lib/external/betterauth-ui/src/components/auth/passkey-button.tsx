@@ -8,7 +8,6 @@ import { getLocalizedError } from "../../lib/utils";
 import type { AuthLocalization } from "../../localization/auth-localization";
 import { Button } from "../ui/button";
 import type { AuthViewClassNames } from "./auth-view";
-import { useTransitionRouter } from "next-transition-router";
 
 interface PasskeyButtonProps {
   classNames?: AuthViewClassNames;
@@ -30,7 +29,6 @@ export function PasskeyButton({
     localization: contextLocalization,
     toast
   } = useContext(AuthUIContext);
-  const router = useTransitionRouter();
   localization = { ...contextLocalization, ...localization };
 
   const { onSuccess } = useOnSuccessTransition({ redirectTo });
@@ -55,8 +53,7 @@ export function PasskeyButton({
 
         setIsSubmitting?.(false);
       } else {
-        onSuccess();
-        router.push(redirectTo || "/me");
+        await onSuccess();
       }
     } catch (error) {
       toast({

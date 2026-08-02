@@ -11,6 +11,7 @@ import {
 } from "@payload-auth/better-auth/plugin/constants";
 import { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
 import { MinimalTemplate } from "@payloadcms/next/templates";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 interface TwoFactorVerifyProps extends AdminViewServerProps {
   pluginOptions: PayloadAuthOptions;
@@ -74,7 +75,10 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = async ({
       <TwoFactorVerifyForm
         redirect={redirectUrl}
         twoFactorDigits={twoFactorOptions?.totpOptions?.digits}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
     </MinimalTemplate>

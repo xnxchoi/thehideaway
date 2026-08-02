@@ -1,37 +1,15 @@
-import {passkeyClient} from "@better-auth/passkey/client"
-import {
-    anonymousClient,
-    apiKeyClient,
-    emailOTPClient,
-    genericOAuthClient,
-    magicLinkClient,
-    multiSessionClient,
-    oneTapClient,
-    organizationClient,
-    twoFactorClient,
-    usernameClient
-} from "better-auth/client/plugins"
-import {createAuthClient} from "better-auth/react"
+import type { authClient as applicationAuthClient } from "@/lib/auth/client";
+import type { apiKeyClient } from "@better-auth/api-key/client";
+import type { ReactAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient({
-    plugins: [
-        apiKeyClient(),
-        multiSessionClient(),
-        passkeyClient(),
-        oneTapClient({
-            clientId: ""
-        }),
-        genericOAuthClient(),
-        anonymousClient(),
-        usernameClient(),
-        magicLinkClient(),
-        emailOTPClient(),
-        twoFactorClient(),
-        organizationClient()
-    ]
-})
+type ApiKeyAuthClient = ReactAuthClient<{
+  plugins: [ReturnType<typeof apiKeyClient>];
+}>;
 
-export type AuthClient = typeof authClient
+export type AuthClient = typeof applicationAuthClient &
+  Partial<Pick<ApiKeyAuthClient, "apiKey">> & {
+    oneTap?: (options: Record<string, unknown>) => Promise<unknown>;
+  };
 
-export type Session = AuthClient["$Infer"]["Session"]["session"]
-export type User = AuthClient["$Infer"]["Session"]["user"]
+export type Session = AuthClient["$Infer"]["Session"]["session"];
+export type User = AuthClient["$Infer"]["Session"]["user"];

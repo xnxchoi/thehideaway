@@ -50,6 +50,16 @@ describe("auth options", () => {
     expect(source).toContain("Kakao did not return an email address");
   });
 
+  it("does not mark OAuth email verified when the provider omits assurance", () => {
+    expect(source).toContain("account.is_email_verified === true");
+    expect(source).not.toContain(
+      "account.is_email_verified ?? account.email_verified ?? true"
+    );
+    expect(
+      source.match(/emailVerified: false/g)?.length
+    ).toBeGreaterThanOrEqual(2);
+  });
+
   it("disables account linking on the vulnerable Better Auth version", () => {
     expect(source).toContain("accountLinking: {");
     expect(source).toContain("enabled: false");

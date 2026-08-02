@@ -1,9 +1,23 @@
 // import { openAPI } from "better-auth/plugins/open-api";
-import { BetterAuthEmailService } from "@/lib/email/better-auth-integration";
-import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
+import {
+  BetterAuthEmailService,
+  sendAdminInviteWithEmailService
+} from "@/lib/email/better-auth-integration";
+import { formatUserHandle } from "@/payload/fields/handle/handleFormat";
 import { generateName } from "@/utilities/names";
+import { accessControl } from "@/lib/auth/permissions";
+import {
+  admin,
+  author,
+  cofounder,
+  editor,
+  patron,
+  resident,
+  user
+} from "@/lib/auth/roles";
 import { passkey } from "@better-auth/passkey";
 import type { PayloadAuthOptions } from "@payload-auth/index";
+import { BETTER_AUTH_CONTEXT_KEY } from "@payload-auth/better-auth/adapter";
 import type { BetterAuthOptions as BetterAuthOptionsType } from "better-auth";
 import { emailHarmony } from "better-auth-harmony";
 import { nextCookies } from "better-auth/next-js";
@@ -17,6 +31,53 @@ import { twoFactor } from "better-auth/plugins/two-factor";
 import { username } from "better-auth/plugins/username";
 
 const emailService = new BetterAuthEmailService();
+
+const USER_MANAGER_ROLES = new Set(["cofounder", "editor"]);
+const ADMIN_USER_ROLES = new Set(["admin"]);
+const MANAGEABLE_USER_ROLES = ["author", "patron", "resident", "user"] as const;
+const MANAGEABLE_USER_ROLE_SET = new Set<string>(MANAGEABLE_USER_ROLES);
+const MANAGER_WRITABLE_USER_FIELDS = new Set([
+  "name",
+  "image",
+  "portrait",
+  "bio",
+  "displayUsername",
+  "slug",
+  "location",
+  "link",
+  "firstName",
+  "lastName",
+  "role"
+]);
+
+const hasRole = (user: unknown, roles: ReadonlySet<string>) => {
+  if (!user || typeof user !== "object" || !("role" in user)) return false;
+  const role = (user as { role?: string | string[] }).role;
+  const values = Array.isArray(role)
+    ? role
+    : typeof role === "string"
+      ? role.split(",").map((value) => value.trim())
+      : [];
+  return values.some((value) => roles.has(value));
+};
+
+const isBanned = (user: unknown) =>
+  Boolean(
+    user &&
+    typeof user === "object" &&
+    "banned" in user &&
+    (user as { banned?: boolean }).banned
+  );
+
+const isBetterAuthAdapterRequest = (req: unknown) =>
+  Boolean(
+    req &&
+    typeof req === "object" &&
+    "context" in req &&
+    req.context &&
+    typeof req.context === "object" &&
+    BETTER_AUTH_CONTEXT_KEY in req.context
+  );
 
 const appURL = process.env.NEXT_PUBLIC_BETTER_AUTH_URL!;
 const appHost = new URL(appURL).hostname;
@@ -51,7 +112,8 @@ function mapKakaoProfileToUser(profile: any) {
     name: displayName,
     username,
     displayUsername: displayName,
-    emailVerified: account.is_email_verified ?? account.email_verified ?? true,
+    emailVerified:
+      account.is_email_verified === true && account.is_email_valid !== false,
     slug: formatUserHandle(username),
     firstName: nameParts[0] || displayName,
     lastName: nameParts[1] || generateName("last"),
@@ -60,7 +122,7 @@ function mapKakaoProfileToUser(profile: any) {
   };
 }
 
-const options: BetterAuthOptionsType = {
+const options = {
   appName: "hideaway-validator",
   // Drives whether Better Auth issues the `__Secure-` prefixed cookie
   // (only when baseURL is https). Hardcoding localhost shipped the
@@ -123,7 +185,7 @@ const options: BetterAuthOptionsType = {
           name: p.name || p.nickname || username,
           username,
           displayUsername: p.nickname || p.name || username,
-          emailVerified: true,
+          emailVerified: false,
           slug: formatUserHandle(username),
           firstName: p.name.split(" ")[0],
           lastName: p.name.split(" ")[1] || generateName("last"),
@@ -151,9 +213,13 @@ const options: BetterAuthOptionsType = {
   user: {
     changeEmail: {
       enabled: true,
-      sendChangeEmailVerification: async ({ user, newEmail, url, token }) => {
+      sendChangeEmailConfirmation: async ({ user, newEmail, url }) => {
         try {
-          await emailService.sendOTP(newEmail, token, "email-verification");
+          await emailService.sendEmailChangeConfirmation(
+            user.email,
+            newEmail,
+            url
+          );
         } catch (error) {
           console.error("Failed to send change email verification:", error);
         }
@@ -174,7 +240,47 @@ const options: BetterAuthOptionsType = {
     additionalFields: {
       role: {
         type: "string",
-        defaultValue: "author",
+        defaultValue: "user",
+        input: false
+      },
+      firstName: {
+        type: "string",
+        required: false
+      },
+      lastName: {
+        type: "string",
+        required: false
+      },
+      bio: {
+        type: "string",
+        required: false
+      },
+      location: {
+        type: "string",
+        required: false
+      },
+      link: {
+        type: "string",
+        required: false
+      },
+      portrait: {
+        type: "string",
+        required: false
+      },
+      slug: {
+        type: "string",
+        required: false
+      },
+      onboarded: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+        input: false
+      },
+      verified: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
         input: false
       }
     }
@@ -246,7 +352,10 @@ export const betterAuthPlugins = [
     origin: appURL
   }),
 
-  adminPlugin(),
+  adminPlugin({
+    ac: accessControl,
+    roles: { admin, author, cofounder, editor, patron, resident, user }
+  }),
 
   organization({
     teams: {
@@ -281,7 +390,7 @@ export const betterAuthPlugins = [
             name: p.name || p.nickname || username,
             username,
             displayUsername: p.nickname || p.name || username,
-            emailVerified: true,
+            emailVerified: false,
             slug: formatUserHandle(username),
             firstName: p.name?.split(" ")[0],
             image: p.profile_image,
@@ -344,6 +453,7 @@ export const betterAuthPluginOptions = {
       "displayUsername",
       "slug",
       "location",
+      "link",
       "firstName",
       "lastName",
       "collections",
@@ -351,55 +461,83 @@ export const betterAuthPluginOptions = {
     ],
     collectionOverrides: (options) => {
       const collection = { ...options.collection };
+      const createAccess = collection.access?.create;
+      const readAccess = collection.access?.read;
+      const updateAccess = collection.access?.update;
       collection.access = {
         ...collection.access,
         admin: ({ req }) => {
           const user = req?.user;
           if (!user) return false;
           if (user.collection === "admins") return true;
-          if (
-            user &&
-            typeof user === "object" &&
-            "banned" in user &&
-            (user as any).banned
-          )
-            return false;
+          if (isBanned(user)) return false;
           return true;
         },
-
-        update: ({ req }) => {
-          const user = req?.user;
-          if (!user) return false;
+        create: (args) => {
+          const user = args.req?.user;
+          if (!user || isBanned(user)) return false;
           if (user.collection === "admins") return true;
-          if (user.role === "admin") {
-            return true;
-          }
-          if (
-            user &&
-            typeof user === "object" &&
-            "banned" in user &&
-            (user as any).banned
-          ) {
-            return false;
-          }
-          return {
-            id: {
-              equals: user.id
-            }
-          };
+          return typeof createAccess === "function"
+            ? createAccess(args)
+            : (createAccess ?? false);
         },
-        delete: ({ req }) => {
-          const user = req.user;
-          if (user?.collection === "admins") return true;
-          if (user && user.role === "admin") {
-            return true;
+        read: (args) => {
+          const user = args.req?.user;
+          if (!user || isBanned(user)) return false;
+          if (user.collection === "admins") return true;
+          if (hasRole(user, USER_MANAGER_ROLES)) {
+            return {
+              or: [
+                { id: { equals: user.id } },
+                { role: { in: [...MANAGEABLE_USER_ROLES] } }
+              ]
+            };
+          }
+          return typeof readAccess === "function"
+            ? readAccess(args)
+            : (readAccess ?? false);
+        },
+        update: (args) => {
+          const user = args.req?.user;
+          if (!user) return false;
+          if (isBanned(user)) return false;
+          if (user.collection === "admins") return true;
+
+          if (hasRole(user, USER_MANAGER_ROLES) && args.id !== user.id) {
+            if (!args.id || !args.data) return false;
+            const dataKeys = Object.keys(args.data);
+            if (
+              dataKeys.some((key) => !MANAGER_WRITABLE_USER_FIELDS.has(key))
+            ) {
+              return false;
+            }
+            if (
+              "role" in args.data &&
+              (typeof args.data.role !== "string" ||
+                !MANAGEABLE_USER_ROLE_SET.has(args.data.role))
+            ) {
+              return false;
+            }
+
+            return {
+              and: [
+                { id: { equals: args.id } },
+                { role: { in: [...MANAGEABLE_USER_ROLES] } }
+              ]
+            };
           }
 
-          return {
-            id: {
-              equals: user?.id
-            }
-          };
+          return typeof updateAccess === "function"
+            ? updateAccess(args)
+            : (updateAccess ?? false);
+        },
+        delete: (args) => {
+          if (isBetterAuthAdapterRequest(args.req)) return true;
+          const user = args.req?.user;
+          if (!user) return false;
+          if (isBanned(user)) return false;
+          if (user.collection === "admins") return true;
+          return hasRole(user, ADMIN_USER_ROLES);
         }
       };
       collection.admin = {
@@ -409,6 +547,7 @@ export const betterAuthPluginOptions = {
 
           if (user?.role === "admin") return false;
           if (user?.role === "editor") return false;
+          if (user?.role === "cofounder") return false;
           return true;
         }
       };
@@ -460,16 +599,7 @@ export const betterAuthPluginOptions = {
     }
   },
   adminInvitations: {
-    sendInviteEmail: async ({ payload, email, url }) => {
-      // TODO(admin-invites): plumb through emailService. Don't log
-      // the invite URL — it's a single-use join token.
-      void email;
-      void url;
-      void payload;
-      return {
-        success: true
-      };
-    }
+    sendInviteEmail: sendAdminInviteWithEmailService
   },
   betterAuthOptions
 } satisfies PayloadAuthOptions;

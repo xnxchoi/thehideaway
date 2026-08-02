@@ -9,7 +9,8 @@ import { getAdditionalFieldProperties } from "./model-field-transformations";
 export function getCollectionFields({
   schema,
   fieldRules = [],
-  additionalProperties = {}
+  additionalProperties = {},
+  protectedFieldKeys = []
 }: {
   schema: BuiltBetterAuthSchema;
   fieldRules?: FieldRule[];
@@ -17,17 +18,19 @@ export function getCollectionFields({
     string,
     (field: DBFieldAttribute) => Partial<Field>
   >;
+  protectedFieldKeys?: readonly string[];
 }): Field[] | null {
-  const payloadFields = Object.entries(schema.fields).map(
-    ([fieldKey, field]) => {
+  const payloadFields = Object.entries(schema.fields)
+    .filter(([fieldKey]) => fieldKey !== "id")
+    .map(([fieldKey, field]) => {
       return convertSchemaFieldToPayload({
         field,
         fieldKey,
         fieldRules,
-        additionalProperties
+        additionalProperties,
+        protectRead: protectedFieldKeys.includes(fieldKey)
       });
-    }
-  );
+    });
 
   return payloadFields;
 }
@@ -36,7 +39,8 @@ export function convertSchemaFieldToPayload({
   field,
   fieldKey,
   fieldRules = [],
-  additionalProperties = {}
+  additionalProperties = {},
+  protectRead = false
 }: {
   field: DBFieldAttribute;
   fieldKey: string;
@@ -45,6 +49,7 @@ export function convertSchemaFieldToPayload({
     string,
     (field: DBFieldAttribute) => Partial<Field>
   >;
+  protectRead?: boolean;
 }): Field {
   const { type, hasMany } = getPayloadFieldProperties({ field });
   const additionalFieldProperties = getAdditionalFieldProperties({
@@ -53,13 +58,17 @@ export function convertSchemaFieldToPayload({
     fieldRules,
     additionalProperties
   });
+  const shouldProtectRead = field.returned === false || protectRead;
+  const protectedFieldProperties = shouldProtectRead
+    ? applyReadProtection(additionalFieldProperties)
+    : additionalFieldProperties;
   const baseField = {
     name: field.fieldName ?? fieldKey,
     type,
     ...(hasMany && { hasMany }),
     ...(field.required && { required: true }),
     ...(field.unique && { unique: true }),
-    ...additionalFieldProperties,
+    ...protectedFieldProperties,
     custom: {
       betterAuthFieldKey: fieldKey
     }
@@ -75,6 +84,24 @@ export function convertSchemaFieldToPayload({
   }
 
   return baseField;
+}
+
+function applyReadProtection(fieldProperties: Partial<Field>): Partial<Field> {
+  const access =
+    "access" in fieldProperties ? fieldProperties.access : undefined;
+  const admin = "admin" in fieldProperties ? fieldProperties.admin : undefined;
+  return {
+    ...fieldProperties,
+    access: {
+      ...access,
+      read: () => false
+    },
+    admin: {
+      ...admin,
+      hidden: true,
+      readOnly: true
+    }
+  } as Partial<Field>;
 }
 
 export function getPayloadFieldProperties({

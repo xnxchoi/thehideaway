@@ -8,6 +8,8 @@ import { MinimalTemplate } from "@payloadcms/next/templates";
 import type { AdminViewServerProps, CollectionSlug } from "payload";
 import type { PayloadAuthOptions } from "../../../types";
 import { checkPluginExists } from "@payload-auth/better-auth/plugin/helpers/check-plugin-exists";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
+import { hashAdminInviteToken } from "../../../lib/admin-invite-security";
 
 //  Avoid the need for custom styles
 const baseClass = "login";
@@ -52,7 +54,12 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
   } else {
     const { totalDocs: isValidInvite } = await req.payload.count({
       collection: adminInvitationsSlug as CollectionSlug,
-      where: { token: { equals: data.token } }
+      where: {
+        and: [
+          { token: { equals: hashAdminInviteToken(data.token) } },
+          { expiresAt: { greater_than: new Date().toISOString() } }
+        ]
+      }
     });
     if (!isValidInvite) {
       hasInvalidToken = true;
@@ -120,7 +127,10 @@ const AdminSignup: React.FC<AdminSignupProps> = async ({
               passkey: hasPasskeyPlugin,
               magicLink: hasMagicLinkPlugin
             }}
-            baseURL={pluginOptions.betterAuthOptions?.baseURL}
+            baseURL={resolveBaseURL(
+              pluginOptions.betterAuthOptions?.baseURL,
+              req.headers
+            )}
             basePath={pluginOptions.betterAuthOptions?.basePath}
           />
         )

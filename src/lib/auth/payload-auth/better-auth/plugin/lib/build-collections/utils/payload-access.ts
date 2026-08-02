@@ -14,10 +14,19 @@ export type AdminOrCurrentUserUpdateConfig = AdminOrCurrentUserConfig & {
   userSlug: string;
 };
 
+const isBannedPayloadUser = (user: PayloadRequest["user"]) =>
+  Boolean(
+    user &&
+      typeof user === "object" &&
+      "banned" in user &&
+      user.banned === true
+  );
+
 export const isAdminWithRoles =
   (config: AdminRolesConfig = {}): FieldAccess =>
   ({ req }) => {
     const { adminRoles = ["admin"] } = config;
+    if (isBannedPayloadUser(req?.user)) return false;
     if (!req?.user || !req.user.role || !hasAdminRoles(adminRoles)({ req }))
       return false;
     return true;
@@ -27,6 +36,7 @@ export const isAdminOrCurrentUserWithRoles =
   (config: AdminOrCurrentUserConfig = {}): Access =>
   ({ req }) => {
     const { adminRoles = ["admin"], idField = "id" } = config;
+    if (isBannedPayloadUser(req?.user)) return false;
     if (isAdminWithRoles({ adminRoles })({ req })) return true;
     if (!req?.user) return false;
     return {
@@ -38,6 +48,7 @@ export const isAdminOrCurrentUserWithRoles =
 
 export const hasAdminRoles = (adminRoles: string[]) => {
   return ({ req }: { req: PayloadRequest }): boolean => {
+    if (isBannedPayloadUser(req.user)) return false;
     let userRoles: string[] = [];
     if (Array.isArray(req.user?.role)) {
       userRoles = req.user.role;
@@ -68,12 +79,15 @@ export const isAdminOrCurrentUserUpdateWithAllowedFields = (
     } = config;
     const user = req.user;
 
+    if (isBannedPayloadUser(user)) return false;
+
     if (isAdminWithRoles({ adminRoles })({ req })) return true;
 
     if (!user) return false;
 
     if ((user as User | Admin)["id"] === id && data) {
       const dataKeys = Object.keys(data);
+      const permittedFields = new Set(allowedFields);
 
       const hasCurrentPassword = dataKeys.includes("currentPassword");
       const hasPassword = dataKeys.includes("password");
@@ -93,14 +107,15 @@ export const isAdminOrCurrentUserUpdateWithAllowedFields = (
 
           if (!result) return false;
 
-          allowedFields.push("password", "currentPassword");
+        permittedFields.add("password");
+        permittedFields.add("currentPassword");
         } catch (error) {
           return false;
         }
       }
 
       const hasDisallowedField = dataKeys.some(
-        (key) => !allowedFields.includes(key)
+        (key) => !permittedFields.has(key)
       );
 
       return !hasDisallowedField;

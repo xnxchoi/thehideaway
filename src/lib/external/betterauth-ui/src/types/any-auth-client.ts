@@ -1,6 +1,6 @@
-import type { createAuthClient } from "better-auth/react"
+import type { authClient as applicationAuthClient } from "@/lib/auth/client";
 
 export type AnyAuthClient = Omit<
-    ReturnType<typeof createAuthClient>,
-    "signUp" | "getSession"
->
+  typeof applicationAuthClient,
+  "signUp" | "getSession"
+>;

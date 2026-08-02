@@ -27,6 +27,7 @@ export function OneTap({ localization, redirectTo }: OneTapProps) {
 
   useEffect(() => {
     if (oneTapFetched.current) return;
+    if (!authClient.oneTap) return;
     oneTapFetched.current = true;
 
     try {

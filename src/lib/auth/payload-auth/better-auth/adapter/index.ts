@@ -1,15 +1,25 @@
-//@ts-nocheck
+import { AsyncLocalStorage } from "node:async_hooks";
 import { BetterAuthError } from "better-auth";
 import type { BetterAuthOptions, Where } from "better-auth";
+import type { PayloadRequest, RequestContext } from "payload";
 import { generateSchema } from "./generate-schema";
 import { createTransform } from "./transform";
 import type { PayloadAdapter } from "./types";
 import { ModelKey } from "../generated-types";
 import { DBAdapter } from "@better-auth/core/db/adapter";
+import { buildQuery } from "@payloadcms/drizzle";
+import { eq, sql } from "@payloadcms/db-postgres/drizzle";
 
 export const BETTER_AUTH_CONTEXT_KEY = "payload-db-adapter";
 const PAYLOAD_QUERY_DEPTH = 1;
 const CREATE_QUERY_DEPTH = 0;
+
+type PayloadTransactionContext = {
+  transactionID: number | string;
+};
+
+const payloadTransactionStorage =
+  new AsyncLocalStorage<PayloadTransactionContext>();
 
 /** Better Auth join option type (not exported from better-auth yet) */
 type JoinOption = {
@@ -83,9 +93,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
    * @param data - Data to include in the context
    * @returns The context object with Better Auth metadata
    */
-  const createAdapterContext = (data: Record<string, any>) => ({
-    [BETTER_AUTH_CONTEXT_KEY]: { ...data }
-  });
+  const createAdapterContext = (data: Record<string, any>): RequestContext =>
+    ({
+      [BETTER_AUTH_CONTEXT_KEY]: { ...data }
+    }) as unknown as RequestContext;
 
   /**
    * Resolves the Payload client, handling both function and direct references
@@ -165,12 +176,149 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       return Object.keys(joins).length ? joins : undefined;
     }
 
-    return {
+    function toTableMapKey(value: string): string {
+      return value
+        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+        .replace(/[-\s]+/g, "_")
+        .toLowerCase();
+    }
+
+    function getAtomicMutationContext({
+      payload,
+      collectionSlug,
+      payloadWhere
+    }: {
+      payload: any;
+      collectionSlug: string;
+      payloadWhere: Record<string, unknown>;
+    }) {
+      const database = payload.db;
+      const collection = payload.collections[collectionSlug]?.config;
+      const tableName = database?.tableNameMap?.get(
+        toTableMapKey(collection?.slug ?? collectionSlug)
+      );
+      const table = tableName ? database?.tables?.[tableName] : undefined;
+      const activeTransaction = payloadTransactionStorage.getStore();
+      const transactionDatabase = activeTransaction
+        ? database?.sessions?.[activeTransaction.transactionID]?.db
+        : undefined;
+
+      if (!database?.drizzle || !collection || !tableName || !table) {
+        throw new BetterAuthError(
+          `Atomic Better Auth operations require the Payload Postgres adapter for ${collectionSlug}`
+        );
+      }
+
+      if (activeTransaction && !transactionDatabase) {
+        throw new BetterAuthError(
+          `Payload transaction ${activeTransaction.transactionID} is unavailable for ${collectionSlug}`
+        );
+      }
+
+      const query = buildQuery({
+        adapter: database,
+        fields: collection.flattenedFields,
+        tableName,
+        where: payloadWhere as never
+      });
+
+      if (query.joins?.length) {
+        throw new BetterAuthError(
+          `Atomic Better Auth operations do not support joined predicates for ${collectionSlug}`
+        );
+      }
+
+      return {
+        database,
+        drizzle: transactionDatabase ?? database.drizzle,
+        table,
+        where: query.where
+      };
+    }
+
+    function getTransactionRequest(
+      payload: any
+    ): Partial<PayloadRequest> | undefined {
+      const activeTransaction = payloadTransactionStorage.getStore();
+      if (!activeTransaction) return undefined;
+      return {
+        payload,
+        transactionID: activeTransaction.transactionID,
+        context: {} as RequestContext
+      };
+    }
+
+    function buildAtomicUpdateValues({
+      table,
+      increment,
+      set
+    }: {
+      table: Record<string, unknown>;
+      increment: Record<string, number>;
+      set: Record<string, unknown>;
+    }) {
+      const values: Record<string, unknown> = { ...set };
+
+      Object.entries(increment).forEach(([field, delta]) => {
+        const column = table[field];
+        if (!column || !Number.isFinite(delta)) {
+          throw new BetterAuthError(
+            `Cannot atomically increment unknown or non-numeric field ${field}`
+          );
+        }
+        values[field] = sql`COALESCE(${column}, 0) + ${delta}`;
+      });
+
+      Object.keys(values).forEach((field) => {
+        if (!table[field]) {
+          throw new BetterAuthError(
+            `Cannot atomically update unknown field ${field}`
+          );
+        }
+      });
+
+      return values;
+    }
+
+    const adapter: DBAdapter = {
       id: "payload-adapter",
       async transaction<R>(
         callback: (tx: Omit<DBAdapter, "transaction">) => Promise<R>
       ): Promise<R> {
-        return await callback(this);
+        const activeTransaction = payloadTransactionStorage.getStore();
+        const { transaction: _transaction, ...transactionAdapter } = adapter;
+        if (activeTransaction) {
+          return callback(transactionAdapter);
+        }
+
+        const payload = await resolvePayloadClient();
+        const transactionID = await payload.db.beginTransaction();
+        if (transactionID == null) {
+          throw new BetterAuthError(
+            "Payload database adapter could not start a transaction"
+          );
+        }
+
+        try {
+          const result = await payloadTransactionStorage.run(
+            { transactionID },
+            () => callback(transactionAdapter)
+          );
+          await payload.db.commitTransaction(transactionID);
+          return result;
+        } catch (error) {
+          if (payload.db.sessions?.[transactionID]) {
+            try {
+              await payload.db.rollbackTransaction(transactionID);
+            } catch (rollbackError) {
+              throw new AggregateError(
+                [error, rollbackError],
+                "Better Auth transaction and rollback both failed"
+              );
+            }
+          }
+          throw error;
+        }
       },
       async create<T extends Record<string, any>, R = T>({
         model,
@@ -206,6 +354,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             data: transformedInput,
             select: convertSelect(model as ModelKey, select),
             context: createAdapterContext({ model, operation: "create" }),
+            req: getTransactionRequest(payload),
             depth: CREATE_QUERY_DEPTH
           });
 
@@ -227,7 +376,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           return transformedResult as R;
         } catch (error) {
           errorLog(["Error in creating:", model, error]);
-          return null as R;
+          throw error;
         }
       },
       async findOne<R>({
@@ -264,7 +413,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
 
           if (singleId) {
             debugLog(["findOneByID", { collectionSlug, id: singleId }]);
-            result = await payload.findByID({
+            result = (await payload.findByID({
               collection: collectionSlug,
               id: singleId,
               select: convertSelect(model as ModelKey, select),
@@ -276,11 +425,12 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 model,
                 operation: "findOneByID"
               }),
+              req: getTransactionRequest(payload),
               depth: PAYLOAD_QUERY_DEPTH
-            });
+            } as never)) as unknown as Record<string, any>;
           } else {
             debugLog(["findOneByWhere", { collectionSlug, payloadWhere }]);
-            const docs = await payload.find({
+            const docs = (await payload.find({
               collection: collectionSlug,
               where: payloadWhere,
               select: convertSelect(model as ModelKey, select),
@@ -292,9 +442,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 model,
                 operation: "findOneByWhere"
               }),
+              req: getTransactionRequest(payload),
               depth: PAYLOAD_QUERY_DEPTH,
               limit: 1
-            });
+            } as never)) as unknown as { docs: Record<string, any>[] };
             result = docs.docs[0];
           }
 
@@ -323,7 +474,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return null;
           }
           errorLog(["Error in findOne: ", error]);
-          return null;
+          throw error;
         }
       },
       async findMany<R>({
@@ -370,7 +521,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const payloadJoins = buildPayloadJoins(join, payload, collectionSlug);
           if (singleId) {
             debugLog(["findManyBySingleID", { collectionSlug, id: singleId }]);
-            const doc = await payload.findByID({
+            const doc = (await payload.findByID({
               collection: collectionSlug,
               id: singleId,
               ...(payloadJoins &&
@@ -381,8 +532,9 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               context: createAdapterContext({
                 model,
                 operation: "findManyBySingleID"
-              })
-            });
+              }),
+              req: getTransactionRequest(payload)
+            } as never)) as unknown as Record<string, any> | null;
             result = { docs: doc ? [doc] : [], totalDocs: doc ? 1 : 0 };
           } else {
             debugLog(["findManyByWhere", { collectionSlug, payloadWhere }]);
@@ -390,7 +542,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             const page = Math.floor(offset / limit) + 1;
             const fetchLimit = spill ? limit + spill : limit;
 
-            const res = await payload.find({
+            const res = (await payload.find({
               collection: collectionSlug,
               where: payloadWhere,
               limit: fetchLimit,
@@ -404,8 +556,12 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               context: createAdapterContext({
                 model,
                 operation: "findManyByWhere"
-              })
-            });
+              }),
+              req: getTransactionRequest(payload)
+            } as never)) as unknown as {
+              docs: Record<string, any>[];
+              totalDocs: number;
+            };
             result = {
               docs: res.docs.slice(spill, spill + limit),
               totalDocs: res.totalDocs
@@ -440,7 +596,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return [] as R[];
           }
           errorLog(["Error in findMany: ", error]);
-          return [] as R[];
+          throw error;
         }
       },
       async update<R>({
@@ -481,16 +637,17 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
 
           if (id) {
             debugLog(["updateByID", { collectionSlug, id }]);
-            result = await payload.update({
+            result = (await payload.update({
               collection: collectionSlug,
               id,
               data: transformedInput,
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: "updateByID" })
-            });
+              context: createAdapterContext({ model, operation: "updateByID" }),
+              req: getTransactionRequest(payload)
+            } as never)) as unknown as Record<string, any>;
           } else {
             debugLog(["updateByWhere", { collectionSlug, payloadWhere }]);
-            const doc = await payload.update({
+            const doc = (await payload.update({
               collection: collectionSlug,
               where: payloadWhere,
               data: transformedInput,
@@ -498,8 +655,9 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               context: createAdapterContext({
                 model,
                 operation: "updateByWhere"
-              })
-            });
+              }),
+              req: getTransactionRequest(payload)
+            } as never)) as unknown as { docs: Record<string, any>[] };
             result = doc.docs[0];
           }
 
@@ -528,7 +686,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return null;
           }
           errorLog(["Error in update: ", error]);
-          return null;
+          throw error;
         }
       },
       async updateMany({
@@ -564,13 +722,14 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         debugLog(["updateMany", { collectionSlug, payloadWhere, update }]);
 
         try {
-          const { docs: updateResult } = await payload.update({
+          const { docs: updateResult } = (await payload.update({
             collection: collectionSlug,
             where: payloadWhere,
             data: transformedInput,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: "updateMany" })
-          });
+            context: createAdapterContext({ model, operation: "updateMany" }),
+            req: getTransactionRequest(payload)
+          } as never)) as unknown as { docs: Record<string, any>[] };
 
           debugLog([
             "updateMany result",
@@ -591,8 +750,118 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return 0;
           }
           errorLog(["Error in updateMany: ", error]);
-          return 0;
+          throw error;
         }
+      },
+      async incrementOne<R>({
+        model,
+        where,
+        increment,
+        set = {}
+      }: {
+        model: string;
+        where: Where[];
+        increment: Record<string, number>;
+        set?: Record<string, unknown>;
+      }): Promise<R | null> {
+        if (!where.length) return null;
+
+        const payload = await resolvePayloadClient();
+        const collectionSlug = getCollectionSlug(model as ModelKey);
+        await validateCollection(payload, collectionSlug, model);
+
+        const payloadWhere = convertWhereClause({
+          idType: adapterConfig.idType,
+          model: model as ModelKey,
+          where,
+          payload
+        });
+        const transformedIncrement = transformInput({
+          data: increment,
+          model: model as ModelKey,
+          idType: adapterConfig.idType,
+          payload
+        });
+        const transformedSet = transformInput({
+          data: set,
+          model: model as ModelKey,
+          idType: adapterConfig.idType,
+          payload
+        });
+        const atomic = getAtomicMutationContext({
+          payload,
+          collectionSlug,
+          payloadWhere
+        });
+        const updateValues = buildAtomicUpdateValues({
+          table: atomic.table,
+          increment: transformedIncrement,
+          set: transformedSet
+        });
+
+        const [updated] = await atomic.drizzle
+          .update(atomic.table)
+          .set(updateValues)
+          .where(atomic.where)
+          .returning();
+
+        if (!updated) return null;
+        return transformOutput({
+          doc: updated,
+          model: model as ModelKey,
+          payload
+        }) as R;
+      },
+      async consumeOne<R>({
+        model,
+        where
+      }: {
+        model: string;
+        where: Where[];
+      }): Promise<R | null> {
+        if (!where.length) return null;
+
+        const payload = await resolvePayloadClient();
+        const collectionSlug = getCollectionSlug(model as ModelKey);
+        await validateCollection(payload, collectionSlug, model);
+
+        const payloadWhere = convertWhereClause({
+          idType: adapterConfig.idType,
+          model: model as ModelKey,
+          where,
+          payload
+        });
+        const atomic = getAtomicMutationContext({
+          payload,
+          collectionSlug,
+          payloadWhere
+        });
+
+        const consume = async (transaction: any) => {
+          const [target] = await transaction
+            .select({ id: atomic.table.id })
+            .from(atomic.table)
+            .where(atomic.where)
+            .limit(1)
+            .for("update", { skipLocked: true });
+          if (!target) return null;
+
+          const [result] = await transaction
+            .delete(atomic.table)
+            .where(eq(atomic.table.id, target.id))
+            .returning();
+          return result ?? null;
+        };
+        const deleted = payloadTransactionStorage.getStore()
+          ? await consume(atomic.drizzle)
+          : await atomic.drizzle.transaction(consume);
+
+        if (!deleted) return null;
+        return transformOutput({
+          doc: deleted,
+          model: model as ModelKey,
+          payload
+        }) as R;
       },
       async delete({
         model,
@@ -626,24 +895,26 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const singleId = singleIdQuery(payloadWhere);
           if (singleId) {
             debugLog(["deleteByID", { collectionSlug, id: singleId }]);
-            const doc = await payload.delete({
+            const doc = (await payload.delete({
               collection: collectionSlug,
               id: singleId,
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: "deleteByID" })
-            });
+              context: createAdapterContext({ model, operation: "deleteByID" }),
+              req: getTransactionRequest(payload)
+            } as never)) as unknown as Record<string, any>;
             deleteResult = { doc, errors: [] };
           } else {
             debugLog(["deleteByWhere", { collectionSlug, payloadWhere }]);
-            const doc = await payload.delete({
+            const doc = (await payload.delete({
               collection: collectionSlug,
               where: payloadWhere,
               depth: PAYLOAD_QUERY_DEPTH,
               context: createAdapterContext({
                 model,
                 operation: "deleteByWhere"
-              })
-            });
+              }),
+              req: getTransactionRequest(payload)
+            } as never)) as unknown as { docs: Record<string, any>[] };
             deleteResult = { doc: doc.docs[0], errors: [] };
           }
 
@@ -664,6 +935,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return;
           }
           errorLog(["Error in delete: ", error]);
+          throw error;
         }
       },
       async deleteMany({
@@ -690,12 +962,13 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         debugLog(["deleteMany", { collectionSlug, payloadWhere }]);
 
         try {
-          const deleteResult = await payload.delete({
+          const deleteResult = (await payload.delete({
             collection: collectionSlug,
             where: payloadWhere,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: "deleteMany" })
-          });
+            context: createAdapterContext({ model, operation: "deleteMany" }),
+            req: getTransactionRequest(payload)
+          } as never)) as unknown as { docs: Record<string, any>[] };
 
           debugLog([
             "deleteMany result",
@@ -716,7 +989,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return 0;
           }
           errorLog(["Error in deleteMany: ", error]);
-          return 0;
+          throw error;
         }
       },
       async count({
@@ -746,8 +1019,8 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const result = await payload.count({
             collection: collectionSlug,
             where: payloadWhere,
-            depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: "count" })
+            context: createAdapterContext({ model, operation: "count" }),
+            req: getTransactionRequest(payload)
           });
 
           debugLog([
@@ -769,7 +1042,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             return 0;
           }
           errorLog(["Error in count: ", error]);
-          return 0;
+          throw error;
         }
       },
       createSchema: async (options, file) => {
@@ -786,6 +1059,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
         ...adapterConfig
       }
     };
+    return adapter;
   };
 };
 

@@ -106,6 +106,9 @@ export function CreateApiKeyDialog({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      if (!authClient.apiKey) {
+        throw new Error("API key client plugin is not configured");
+      }
       const expiresIn =
         values.expiresInDays && values.expiresInDays !== "none"
           ? Number.parseInt(values.expiresInDays) * 60 * 60 * 24

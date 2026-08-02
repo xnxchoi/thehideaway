@@ -6,10 +6,7 @@ export const getSession = async () => {
 	try {
 		const payload = await getPayload()
 		const headers = await requestHeaders()
-		type Session = (typeof payload.betterAuth.$Infer)["Session"]
-
-		const session = (await payload.betterAuth.api.getSession({headers})) as Session
-		return session
+		return await payload.betterAuth.api.getSession({headers})
 	} catch {
 		return null
 	}

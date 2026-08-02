@@ -125,7 +125,8 @@ export function buildSessionsCollection({
   const collectionFields = getCollectionFields({
     schema: sessionSchema,
     fieldRules: sessionFieldRules,
-    additionalProperties: fieldOverrides
+    additionalProperties: fieldOverrides,
+    protectedFieldKeys: ["token"]
   });
 
   let sessionCollection: CollectionConfig = {

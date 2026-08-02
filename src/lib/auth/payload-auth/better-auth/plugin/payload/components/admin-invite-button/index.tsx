@@ -50,6 +50,10 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({
       toast.error("Please select a role first");
       return null;
     }
+    if (!email) {
+      toast.error("Please enter an email address");
+      return null;
+    }
 
     try {
       const url = `${serverURL}${apiRoute}/${userSlug}${adminEndpoints.generateInviteUrl}`;
@@ -58,7 +62,7 @@ export const AdminInviteButton: React.FC<AdminInviteButtonProps> = ({
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ role }),
+        body: JSON.stringify({ email, role }),
         credentials: "include"
       });
       if (!response.ok) throw new Error("Failed to generate invite");

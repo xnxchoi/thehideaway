@@ -71,7 +71,8 @@ export function buildVerificationsCollection({
   const collectionFields = getCollectionFields({
     schema: verificationSchema,
     fieldRules: verificationFieldRules,
-    additionalProperties: fieldOverrides
+    additionalProperties: fieldOverrides,
+    protectedFieldKeys: ["value"]
   });
 
   let verificationCollection: CollectionConfig = {

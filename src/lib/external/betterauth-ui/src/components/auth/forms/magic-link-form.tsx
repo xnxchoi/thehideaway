@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { normalizeLocalReturnTo } from "@/lib/routes/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { BetterFetchOption } from "better-auth/react";
 import { CircleNotchIcon as Loader2 } from "@phosphor-icons/react";
@@ -63,13 +64,17 @@ export function MagicLinkForm({
   localization = { ...contextLocalization, ...localization };
 
   const getRedirectTo = useCallback(
-    () => redirectToProp || getSearchParam("redirectTo") || contextRedirectTo,
+    () =>
+      normalizeLocalReturnTo(
+        redirectToProp || getSearchParam("redirectTo") || contextRedirectTo,
+        normalizeLocalReturnTo(contextRedirectTo, "/")
+      ),
     [redirectToProp, contextRedirectTo]
   );
 
   const getCallbackURL = useCallback(
     () =>
-      `${baseURL}${callbackURLProp || (persistClient ? `${basePath}/${viewPaths.CALLBACK}?redirectTo=${getRedirectTo()}` : getRedirectTo())}`,
+      `${baseURL}${callbackURLProp || (persistClient ? `${basePath}/${viewPaths.CALLBACK}?redirectTo=${encodeURIComponent(getRedirectTo())}` : getRedirectTo())}`,
     [
       callbackURLProp,
       persistClient,

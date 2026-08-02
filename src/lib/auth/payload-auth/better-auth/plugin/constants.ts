@@ -145,7 +145,7 @@ export const baModelFieldKeysToFieldNames = {
     organizationId: "organization"
   },
   apikey: {
-    userId: "user"
+    referenceId: "referenceId"
   },
   twoFactor: {
     userId: "user"
@@ -200,7 +200,7 @@ export const baModelFieldKeys = {
     organizationId: "organizationId"
   },
   apikey: {
-    userId: "userId"
+    referenceId: "referenceId"
   },
   twoFactor: {
     userId: "userId"

@@ -8,6 +8,7 @@ import { FormHeader } from "@payload-auth/shared/form/ui/header";
 import { PasswordResetForm } from "./client";
 import { adminRoutes } from "@payload-auth/better-auth/plugin/constants";
 import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 const resetPasswordParamsSchema = z.object({
   token: z.string()
@@ -82,7 +83,10 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({
       <FormHeader heading={t("authentication:resetPassword")} />
       <PasswordResetForm
         token={token}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          initPageResult.req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
       <Link

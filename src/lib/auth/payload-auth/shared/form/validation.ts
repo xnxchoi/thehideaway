@@ -133,39 +133,51 @@ export const createLoginSchema = ({
   usernameSettings?: UsernameSettings;
 }) =>
   z.object({
-    login: z.string().refine(
-      (val: string) => {
-        if (!val) return false;
-        if (loginType === "email") return isValidEmail(val);
-        if (loginType === "username")
-          return isValidUsername(val, usernameSettings);
-        return isValidEmail(val) || isValidUsername(val, usernameSettings);
-      },
-      (val: string) => {
-        if (!val) return { message: t("validation:required") };
+    login: z.string().superRefine((val: string, context) => {
+      const valid =
+        !!val &&
+        (loginType === "email"
+          ? isValidEmail(val)
+          : loginType === "username"
+            ? isValidUsername(val, usernameSettings)
+            : isValidEmail(val) || isValidUsername(val, usernameSettings));
 
-        const isProbablyEmail = val.includes("@") || !canLoginWithUsername;
+      if (valid) return;
 
-        if (loginType === "email") {
-          return {
-            message: t("authentication:emailNotValid") || "Email is not valid"
-          };
-        }
+      if (!val) {
+        context.addIssue({
+          code: "custom",
+          message: t("validation:required")
+        });
+        return;
+      }
 
-        if (loginType === "username") {
-          return {
-            message:
-              t("authentication:usernameNotValid") || "Username is not valid"
-          };
-        }
+      const isProbablyEmail = val.includes("@") || !canLoginWithUsername;
 
-        return {
-          message: isProbablyEmail
+      if (loginType === "email") {
+        context.addIssue({
+          code: "custom",
+          message: t("authentication:emailNotValid") || "Email is not valid"
+        });
+        return;
+      }
+
+      if (loginType === "username") {
+        context.addIssue({
+          code: "custom",
+          message:
+            t("authentication:usernameNotValid") || "Username is not valid"
+        });
+        return;
+      }
+
+      context.addIssue({
+        code: "custom",
+        message: isProbablyEmail
             ? t("authentication:emailNotValid") || "Email is not valid"
             : t("authentication:usernameNotValid") || "Username is not valid"
-        };
-      }
-    ),
+      });
+    }),
     password: passwordField({ t })
   });
 

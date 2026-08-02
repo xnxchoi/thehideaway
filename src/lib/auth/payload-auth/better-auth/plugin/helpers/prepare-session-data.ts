@@ -1,4 +1,4 @@
-import { formatUserHandle } from "@/payload/fields/handle/formatUserHandle";
+import { formatUserHandle } from "@/payload/fields/handle/handleFormat";
 import { generateName } from "@/utilities/names";
 import type { Session, User } from "better-auth";
 import type { CollectionConfig } from "payload";

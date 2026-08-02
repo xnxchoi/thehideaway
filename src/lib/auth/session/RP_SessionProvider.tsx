@@ -94,6 +94,7 @@ const createSessionStore = (
     name: null!,
     role: null!,
     twoFactorEnabled: false,
+    verified: false,
     bookmarks: {
       posts: [],
       surf: [],
@@ -119,6 +120,8 @@ const createSessionStore = (
     followers: { count: 0, docs: [] },
     portrait: null!,
     bio: "",
+    location: "",
+    link: "",
     username: null!,
     slug: null!
   }

@@ -57,12 +57,15 @@ export function InviteMemberCard({
           </CardContent>
         )}
       </SettingsCard>
-      <InviteMemberDialog
-        open={inviteDialogOpen}
-        onOpenChange={setInviteDialogOpen}
-        classNames={classNames}
-        localization={localization}
-      />
+      {activeOrganization && (
+        <InviteMemberDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          classNames={classNames}
+          localization={localization}
+          organization={activeOrganization}
+        />
+      )}
     </>
   );
 }

@@ -1,7 +1,4 @@
 import { isAdminWithRoles } from "../utils/payload-access";
-import { generateAdminInviteUrl } from "../../../payload/utils/generate-admin-invite-url";
-import { getUrlBeforeChangeHook } from "./hooks/get-url-before-change";
-import { getAdminInviteUrlAfterReadHook } from "./hooks/get-url-after-read";
 import {
   baseSlugs,
   defaults
@@ -16,8 +13,6 @@ export function buildAdminInvitationsCollection({
   incomingCollections: CollectionConfig[];
   pluginOptions: PayloadAuthOptions;
 }): CollectionConfig {
-  const generateAdminInviteUrlFn =
-    pluginOptions.adminInvitations?.generateInviteUrl ?? generateAdminInviteUrl;
   const adminInvitationSlug =
     pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations;
   const adminRoles = pluginOptions.users?.adminRoles ?? [defaults.adminRole];
@@ -39,8 +34,8 @@ export function buildAdminInvitationsCollection({
     ...existingAdminInvitationCollection,
     slug: adminInvitationSlug,
     admin: {
-      defaultColumns: ["role", "token", "url"],
-      useAsTitle: "token",
+      defaultColumns: ["email", "role", "expiresAt"],
+      useAsTitle: "email",
       group: pluginOptions?.collectionAdminGroup ?? "Auth",
       hidden: pluginOptions.adminInvitations?.hidden,
       ...existingAdminInvitationCollection?.admin
@@ -64,45 +59,33 @@ export function buildAdminInvitationsCollection({
           pluginOptions.users?.defaultAdminRole ?? defaults.adminRole
       },
       {
+        name: "email",
+        label: "Email",
+        type: "email",
+        index: true,
+        required: true
+      },
+      {
         name: "token",
-        label: "Token",
+        label: "Token hash",
         index: true,
         type: "text",
+        access: {
+          read: () => false
+        },
         admin: {
-          readOnly: true,
-          components: {
-            afterInput: [
-              {
-                path: "@payload-auth/shared/payload/fields#GenerateUuidButton"
-              }
-            ]
-          }
+          hidden: true,
+          readOnly: true
         },
         required: true
       },
       {
-        name: "url",
-        label: "URL",
-        type: "text",
-        hooks: {
-          beforeChange: [getUrlBeforeChangeHook()],
-          afterRead: [
-            getAdminInviteUrlAfterReadHook({
-              generateAdminInviteUrlFn
-            })
-          ]
-        },
-        admin: {
-          readOnly: true,
-          components: {
-            afterInput: [
-              {
-                path: "@payload-auth/shared/payload/fields#FieldCopyButton"
-              }
-            ]
-          }
-        },
-        virtual: true
+        name: "expiresAt",
+        label: "Expires at",
+        type: "date",
+        index: true,
+        required: true,
+        admin: { readOnly: true }
       }
     ]
   };

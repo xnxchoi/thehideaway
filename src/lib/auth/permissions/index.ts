@@ -1,6 +1,6 @@
-import type {Config} from "@/payload-types";
-import {createAccessControl} from "better-auth/plugins/access";
-import {defaultStatements} from "better-auth/plugins/admin/access";
+import type { Config } from "@/payload-types";
+import { createAccessControl } from "better-auth/plugins/access";
+import { defaultStatements } from "better-auth/plugins/admin/access";
 
 type MyCollections = Config["collections"];
 type MyCollectionSlug = keyof MyCollections;
@@ -37,6 +37,7 @@ const authCollection: {
   accounts: ["update", "read", "delete", "create"],
   passkeys: ["update", "read", "delete", "create"],
   organizations: ["update", "read", "delete", "create"],
+  teams: ["update", "read", "delete", "create"],
   "admin-invitations": ["update", "read", "delete", "create"],
   members: ["update", "read", "delete", "create"],
   invitations: ["update", "read", "delete", "create"],
@@ -129,11 +130,52 @@ const userCreatedContent: {
 export const userContentCollections = Object.keys(
   userCreatedContent
 ) as UserContentCollection[];
-const collectionPermissions: {
-  [x in keyof MyCollections]: (AccessOperations | LockedContentOperations)[];
-} & {
-  self: AccessOperations[];
-} = {
+
+type PermissionResource =
+  MyCollectionSlug | keyof typeof defaultStatements | "self";
+
+// These collections use their own Payload access controls rather than Better Auth
+// role statements. Keeping the list exhaustive makes a newly added collection a
+// compile error until its authorization owner is chosen explicitly.
+const _payloadAccessControlledCollections = [
+  "teamMembers",
+  "imports",
+  "search",
+  "plans",
+  "invoices",
+  "prices",
+  "subscriptions",
+  "exchange-rate",
+  "currency",
+  "holidays",
+  "product-category",
+  "product-sub",
+  "product-drops",
+  "products",
+  "product-variants",
+  "product-order-campaigns",
+  "product-carts",
+  "product-orders",
+  "product-payments",
+  "commerce-commands",
+  "commerce-provider-events",
+  "stock-locations",
+  "inventory-levels",
+  "inventory-movements",
+  "inventory-receipts",
+  "inventory-receipt-lines",
+  "inventory-lots",
+  "inventory-cycle-counts",
+  "inventory-cycle-count-lines",
+  "inventory-reservations",
+  "inventory-reservation-operator-events",
+  "inventory-reservation-entries",
+  "events",
+  "ticket-orders",
+  "tickets"
+] as const satisfies readonly MyCollectionSlug[];
+
+const collectionPermissions = {
   ...defaultStatements,
   ...providedContent,
   ...uploads,
@@ -143,13 +185,35 @@ const collectionPermissions: {
   ...authCollection,
   // series: ["read", "update", "create", "delete"],
   userViews: ["read", "update", "delete", "create"],
-	compilations: ["read"],
-	"payload-kv": [],
+  compilations: ["read", "update", "delete", "create"],
+  "payload-kv": ["read", "update", "delete", "create"],
   citations: ["read", "update", "delete", "create"],
   bookmarks: ["read", "update", "delete", "create"],
   profile: ["read", "update", "delete", "create", "lock", "readLocked"],
   self: ["read", "update", "delete"],
   tags: ["read", "update", "delete", "create"],
   follows: ["read", "update", "delete", "create"]
-} as const;
+};
+
+type UnknownPermissionResource = Exclude<
+  keyof typeof collectionPermissions,
+  PermissionResource
+>;
+const collectionPermissionResourcesAreValid: [
+  UnknownPermissionResource
+] extends [never]
+  ? true
+  : never = true;
+void collectionPermissionResourcesAreValid;
+
+type UnmappedCollection = Exclude<
+  MyCollectionSlug,
+  | keyof typeof collectionPermissions
+  | (typeof _payloadAccessControlledCollections)[number]
+>;
+const collectionPermissionMapIsExhaustive: [UnmappedCollection] extends [never]
+  ? true
+  : never = true;
+void collectionPermissionMapIsExhaustive;
+
 export const accessControl = createAccessControl(collectionPermissions);

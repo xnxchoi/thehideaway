@@ -12,12 +12,12 @@ import {
   index,
   uniqueIndex,
   foreignKey,
+  uuid,
   varchar,
   boolean,
   jsonb,
   timestamp,
   serial,
-  uuid,
   numeric,
   integer,
   text,
@@ -842,7 +842,7 @@ export const enum_footer_column3_links_link_type = pgEnum(
 export const users = pgTable(
   "users",
   {
-    id: varchar("id").primaryKey(),
+    id: uuid("id").defaultRandom().primaryKey(),
     slug: varchar("slug"),
     firstName: varchar("first_name"),
     lastName: varchar("last_name"),
@@ -917,7 +917,7 @@ export const users_locales = pgTable(
     meta_description: varchar("meta_description"),
     id: serial("id").primaryKey(),
     _locale: enum__locales("_locale").notNull(),
-    _parentID: varchar("_parent_id").notNull()
+    _parentID: uuid("_parent_id").notNull()
   },
   (columns) => [
     index("users_meta_meta_image_idx").on(columns.meta_image, columns._locale),
@@ -1229,6 +1229,15 @@ export const two_factors = pgTable(
       .references(() => users.id, {
         onDelete: "set null"
       }),
+    verified: boolean("verified").default(true),
+    failedVerificationCount: numeric("failed_verification_count", {
+      mode: "number"
+    }).default(0),
+    lockedUntil: timestamp("locked_until", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -1477,7 +1486,13 @@ export const admin_invitations = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     role: enum_admin_invitations_role("role").notNull().default("admin"),
+    email: varchar("email").notNull(),
     token: varchar("token").notNull(),
+    expiresAt: timestamp("expires_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -1494,7 +1509,9 @@ export const admin_invitations = pgTable(
       .notNull()
   },
   (columns) => [
+    index("admin_invitations_email_idx").on(columns.email),
     index("admin_invitations_token_idx").on(columns.token),
+    index("admin_invitations_expires_at_idx").on(columns.expiresAt),
     index("admin_invitations_updated_at_idx").on(columns.updatedAt),
     index("admin_invitations_created_at_idx").on(columns.createdAt)
   ]
@@ -1615,7 +1632,7 @@ export const assets_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("assets_rels_order_idx").on(columns.order),
@@ -1821,7 +1838,7 @@ export const media_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("media_rels_order_idx").on(columns.order),
@@ -1953,7 +1970,7 @@ export const notifications_rels = pgTable(
     path: varchar("path").notNull(),
     postsID: varchar("posts_id"),
     surfID: varchar("surf_id"),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     profileID: uuid("profile_id"),
     bookmarksID: varchar("bookmarks_id"),
     followsID: uuid("follows_id"),
@@ -2403,7 +2420,7 @@ export const pages_rels = pgTable(
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     surfID: varchar("surf_id"),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),
@@ -2916,7 +2933,7 @@ export const _pages_v_rels = pgTable(
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     surfID: varchar("surf_id"),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),
@@ -3123,7 +3140,7 @@ export const posts_rels = pgTable(
     mediaID: varchar("media_id"),
     tagsID: varchar("tags_id"),
     postsID: varchar("posts_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("posts_rels_order_idx").on(columns.order),
@@ -3330,7 +3347,7 @@ export const _posts_v_rels = pgTable(
     mediaID: varchar("media_id"),
     tagsID: varchar("tags_id"),
     postsID: varchar("posts_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("_posts_v_rels_order_idx").on(columns.order),
@@ -3507,7 +3524,7 @@ export const user_media_rels = pgTable(
     order: integer("order"),
     parent: varchar("parent_id").notNull(),
     path: varchar("path").notNull(),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("user_media_rels_order_idx").on(columns.order),
@@ -3629,7 +3646,7 @@ export const profile_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("profile_rels_order_idx").on(columns.order),
@@ -3804,7 +3821,7 @@ export const _profile_v_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("_profile_v_rels_order_idx").on(columns.order),
@@ -3897,7 +3914,7 @@ export const albums_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("albums_rels_order_idx").on(columns.order),
@@ -4025,7 +4042,7 @@ export const _albums_v_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("_albums_v_rels_order_idx").on(columns.order),
@@ -4128,7 +4145,7 @@ export const tracks_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("tracks_rels_order_idx").on(columns.order),
@@ -4270,7 +4287,7 @@ export const _tracks_v_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("_tracks_v_rels_order_idx").on(columns.order),
@@ -4354,7 +4371,7 @@ export const playlists_rels = pgTable(
     path: varchar("path").notNull(),
     tracksID: uuid("tracks_id"),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("playlists_rels_order_idx").on(columns.order),
@@ -4485,7 +4502,7 @@ export const _playlists_v_rels = pgTable(
     path: varchar("path").notNull(),
     tracksID: uuid("tracks_id"),
     tagsID: varchar("tags_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("_playlists_v_rels_order_idx").on(columns.order),
@@ -4595,7 +4612,7 @@ export const bookmarks_rels = pgTable(
     postsID: varchar("posts_id"),
     surfID: varchar("surf_id"),
     profileID: uuid("profile_id"),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     albumsID: uuid("albums_id"),
     playlistsID: uuid("playlists_id"),
     tracksID: uuid("tracks_id"),
@@ -4857,7 +4874,7 @@ export const surf_rels = pgTable(
     tagsID: varchar("tags_id"),
     surfID: varchar("surf_id"),
     postsID: varchar("posts_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("surf_rels_order_idx").on(columns.order),
@@ -5032,7 +5049,7 @@ export const _surf_v_rels = pgTable(
     tagsID: varchar("tags_id"),
     surfID: varchar("surf_id"),
     postsID: varchar("posts_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("_surf_v_rels_order_idx").on(columns.order),
@@ -5201,7 +5218,7 @@ export const responses_rels = pgTable(
     surfID: varchar("surf_id"),
     responsesID: varchar("responses_id"),
     citationsID: uuid("citations_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("responses_rels_order_idx").on(columns.order),
@@ -5326,7 +5343,7 @@ export const _responses_v_rels = pgTable(
     surfID: varchar("surf_id"),
     responsesID: varchar("responses_id"),
     citationsID: uuid("citations_id"),
-    usersID: varchar("users_id")
+    usersID: uuid("users_id")
   },
   (columns) => [
     index("_responses_v_rels_order_idx").on(columns.order),
@@ -8411,7 +8428,7 @@ export const payload_locked_documents_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     sessionsID: uuid("sessions_id"),
     accountsID: uuid("accounts_id"),
     verificationsID: uuid("verifications_id"),
@@ -8944,7 +8961,7 @@ export const payload_preferences_rels = pgTable(
     order: integer("order"),
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     adminsID: varchar("admins_id")
   },
   (columns) => [
@@ -9069,7 +9086,7 @@ export const header_rels = pgTable(
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     surfID: varchar("surf_id"),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
     organizationsID: uuid("organizations_id"),
@@ -9298,7 +9315,7 @@ export const footer_rels = pgTable(
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     surfID: varchar("surf_id"),
-    usersID: varchar("users_id"),
+    usersID: uuid("users_id"),
     albumsID: uuid("albums_id"),
     tracksID: uuid("tracks_id"),
     playlistsID: uuid("playlists_id"),

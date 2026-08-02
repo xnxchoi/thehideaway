@@ -1,11 +1,11 @@
 import { stripe } from "@better-auth/stripe";
+import { apiKey } from "@better-auth/api-key";
 import { emailHarmony, phoneHarmony } from "better-auth-harmony";
 import { getSchema } from "better-auth/db";
 import type { DBFieldAttribute } from "better-auth/db";
 import {
   admin,
   anonymous,
-  apiKey,
   bearer,
   emailOTP,
   genericOAuth,
@@ -27,7 +27,6 @@ import {
 } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { passkey } from "@better-auth/passkey";
-import { scim } from "@better-auth/scim";
 import { sso } from "@better-auth/sso";
 import { polar, checkout } from "@polar-sh/better-auth";
 import { Polar } from "@polar-sh/sdk";
@@ -48,6 +47,22 @@ const ac = createAccessControl({
 const client = new Polar({
   accessToken: "pk_test_1234567890",
   server: "sandbox"
+});
+
+// The application does not enable SCIM. Keep its schema represented in the
+// fork's generated types without installing or executing the vulnerable SCIM
+// runtime package merely for this development-time generator.
+const scimSchemaOnly = () => ({
+  id: "scim",
+  schema: {
+    scimProvider: {
+      fields: {
+        providerId: { type: "string" as const, required: true, unique: true },
+        scimToken: { type: "string" as const, required: true, unique: true },
+        organizationId: { type: "string" as const, required: false }
+      }
+    }
+  }
 });
 
 const plugins = [
@@ -89,7 +104,7 @@ const plugins = [
   phoneNumber(),
   nextCookies(),
   customSession(async () => ({})),
-  scim(),
+  scimSchemaOnly(),
   mcp({ loginPage: "" }),
   deviceAuthorization(),
   lastLoginMethod({ storeInDatabase: true }),

@@ -21,7 +21,11 @@ export function configureApiKeyPlugin(
   );
   set(
     plugin,
-    `schema.${model}.fields.userId.fieldName`,
-    getSchemaFieldName(resolvedSchemas, model, baModelFieldKeys.apikey.userId)
+    `schema.${model}.fields.referenceId.fieldName`,
+    getSchemaFieldName(
+      resolvedSchemas,
+      model,
+      baModelFieldKeys.apikey.referenceId
+    )
   );
 }

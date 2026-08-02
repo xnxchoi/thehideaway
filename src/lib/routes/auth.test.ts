@@ -43,4 +43,21 @@ describe("auth route helpers", () => {
     expect(normalizeLocalReturnTo("https://evil.test")).toBe("/me");
     expect(normalizeLocalReturnTo("//evil.test")).toBe("/me");
   });
+
+  it.each([
+    "javascript:alert(1)",
+    "/\\evil.test/path",
+    "/%5C%5Cevil.test/path",
+    "/%2F%2Fevil.test/path",
+    "/safe\u0000path",
+    "/%0Ajavascript:alert(1)"
+  ])("rejects hostile return target %s", (target) => {
+    expect(normalizeLocalReturnTo(target)).toBe("/me");
+  });
+
+  it("preserves query parameters and fragments on safe local targets", () => {
+    expect(normalizeLocalReturnTo("/me?tab=security&from=email#sessions")).toBe(
+      "/me?tab=security&from=email#sessions"
+    );
+  });
 });

@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { BasePayload } from "payload";
+import type { BasePayload } from "payload";
 
 export enum EmailCategory {
   NOTIFICATIONS = "notifications",
@@ -244,6 +244,62 @@ export class BetterAuthEmailService {
     });
   }
 
+  async sendAdminInvite(email: string, url: string): Promise<void> {
+    const quotaCheck = this.canSendEmail(EmailCategory.AUTHENTICATORS, true);
+
+    if (!quotaCheck.canSend) {
+      if (this.payload) {
+        this.payload.logger.warn(
+          `Admin invitation blocked: ${quotaCheck.reason}`
+        );
+      }
+      throw new Error(`Admin invitation unavailable: ${quotaCheck.reason}`);
+    }
+
+    await this.sendEmailInternal({
+      to: email,
+      subject: "Your invitation to The Hideaway",
+      text: [
+        "You have been invited to The Hideaway.",
+        "",
+        url,
+        "",
+        "This invitation expires in 24 hours."
+      ].join("\n")
+    });
+  }
+
+  async sendEmailChangeConfirmation(
+    currentEmail: string,
+    newEmail: string,
+    url: string
+  ): Promise<void> {
+    const quotaCheck = this.canSendEmail(EmailCategory.VALIDATORS, true);
+
+    if (!quotaCheck.canSend) {
+      throw new Error(`Email change unavailable: ${quotaCheck.reason}`);
+    }
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Confirm your email change</h2>
+        <p>Confirm the change to ${newEmail}:</p>
+        <a href="${url}" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0;">
+          Confirm email change
+        </a>
+        <p>Or copy and paste this link in your browser:</p>
+        <p style="word-break: break-all; color: #666;">${url}</p>
+      </div>
+    `;
+
+    await this.sendEmailInternal({
+      to: currentEmail,
+      subject: "Confirm your email change - The Hideaway",
+      html,
+      text: `Confirm the change to ${newEmail}: ${url}`
+    });
+  }
+
   /**
    * Send Two-Factor Authentication code
    */
@@ -339,3 +395,17 @@ export class BetterAuthEmailService {
     };
   }
 }
+
+export const sendAdminInviteWithEmailService = async ({
+  payload,
+  email,
+  url
+}: {
+  payload: BasePayload;
+  email: string;
+  url: string;
+}) => {
+  const service = new BetterAuthEmailService(payload);
+  await service.sendAdminInvite(email, url);
+  return { success: true as const };
+};

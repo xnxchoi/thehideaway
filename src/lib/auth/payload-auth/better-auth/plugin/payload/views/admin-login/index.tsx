@@ -1,4 +1,4 @@
-import { AdminInvitation, User } from "@payload-types";
+import { User } from "@payload-types";
 import React from "react";
 import { AdminLoginClient } from "./client";
 import { redirect } from "next/navigation";
@@ -18,6 +18,12 @@ import {
   type ServerProps
 } from "payload";
 import type { PayloadAuthOptions } from "@payload-auth/better-auth/plugin/types";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
+import {
+  ADMIN_INVITE_TTL_MS,
+  hashAdminInviteToken,
+  normalizeAdminInviteEmail
+} from "../../../lib/admin-invite-security";
 
 export const loginBaseClass = "login";
 
@@ -63,32 +69,22 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
   });
 
   if (adminCount.totalDocs === 0) {
-    // Check if we already have an admin invitation
-    const existingInvitations = await req.payload.find({
-      collection: "admin-invitations",
-      where: {
-        role: {
-          equals: adminRole
-        }
+    const bootstrapEmail = process.env.ADMIN_EMAIL;
+    if (!bootstrapEmail) {
+      throw new Error(
+        "ADMIN_EMAIL is required to bootstrap the first administrator"
+      );
+    }
+    const token = crypto.randomUUID();
+    await req.payload.create({
+      collection: adminInvitationsSlug as "admin-invitations",
+      data: {
+        email: normalizeAdminInviteEmail(bootstrapEmail),
+        role: adminRole as User["role"],
+        token: hashAdminInviteToken(token),
+        expiresAt: new Date(Date.now() + ADMIN_INVITE_TTL_MS).toISOString()
       }
     });
-
-    let token;
-
-    if (existingInvitations.totalDocs > 0) {
-      // Use existing token
-      token = existingInvitations.docs[0].token;
-    } else {
-      // Generate a new secure invite token
-      token = crypto.randomUUID();
-      await req.payload.create({
-        collection: "admin-invitations",
-        data: {
-          role: adminRole as User["role"],
-          token
-        }
-      });
-    }
 
     redirect(`${adminRoute}${adminRoutes.adminSignup}?token=${token}`);
   }
@@ -180,7 +176,10 @@ const AdminLogin: React.FC<AdminLoginProps> = async ({
           username: prefillUsername
         }}
         searchParams={searchParams ?? {}}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
       {RenderServerComponent({

@@ -103,19 +103,20 @@ export type BaseVerificationFields = {
 export type Verification = BaseVerificationFields;
 
 export type BaseRateLimitFields = {
-  key?: string;
-  count?: number;
-  lastRequest?: number;
+  key: string;
+  count: number;
+  lastRequest: number;
 };
 
 export type RateLimit = BaseRateLimitFields;
 
 export type ApikeyFields = {
+  configId: string;
   name?: string;
   start?: string;
+  referenceId: string;
   prefix?: string;
   key: string;
-  userId: string;
   refillInterval?: number;
   refillAmount?: number;
   lastRefillAt?: Date;
@@ -151,7 +152,7 @@ export type PasskeyFields = {
 export type Passkey = PasskeyFields;
 
 export type OauthApplicationPluginFields = {
-  oidc: {
+  "oidc-provider": {
     name?: string;
     icon?: string;
     metadata?: string;
@@ -179,11 +180,11 @@ export type OauthApplicationPluginFields = {
   };
 };
 
-export type OauthApplication = OauthApplicationPluginFields["oidc"] &
+export type OauthApplication = OauthApplicationPluginFields["oidc-provider"] &
   OauthApplicationPluginFields["mcp"];
 
 export type OauthAccessTokenPluginFields = {
-  oidc: {
+  "oidc-provider": {
     accessToken?: string;
     refreshToken?: string;
     accessTokenExpiresAt?: Date;
@@ -207,11 +208,11 @@ export type OauthAccessTokenPluginFields = {
   };
 };
 
-export type OauthAccessToken = OauthAccessTokenPluginFields["oidc"] &
+export type OauthAccessToken = OauthAccessTokenPluginFields["oidc-provider"] &
   OauthAccessTokenPluginFields["mcp"];
 
 export type OauthConsentPluginFields = {
-  oidc: {
+  "oidc-provider": {
     clientId?: string;
     userId?: string;
     scopes?: string;
@@ -229,7 +230,7 @@ export type OauthConsentPluginFields = {
   };
 };
 
-export type OauthConsent = OauthConsentPluginFields["oidc"] &
+export type OauthConsent = OauthConsentPluginFields["oidc-provider"] &
   OauthConsentPluginFields["mcp"];
 
 export type SsoProviderFields = {
@@ -316,6 +317,9 @@ export type TwoFactorFields = {
   secret: string;
   backupCodes: string;
   userId: string;
+  verified?: boolean;
+  failedVerificationCount?: number;
+  lockedUntil?: Date;
 };
 
 export type TwoFactor = TwoFactorFields;
@@ -353,7 +357,12 @@ export type SubscriptionFields = {
   trialStart?: Date;
   trialEnd?: Date;
   cancelAtPeriodEnd?: boolean;
+  cancelAt?: Date;
+  canceledAt?: Date;
+  endedAt?: Date;
   seats?: number;
+  billingInterval?: string;
+  stripeScheduleId?: string;
 };
 
 export type Subscription = SubscriptionFields;
@@ -373,7 +382,7 @@ export type PluginId =
   | "anonymous"
   | "multi-session"
   | "one-time-token"
-  | "oidc"
+  | "oidc-provider"
   | "sso"
   | "generic-oauth"
   | "open-api"

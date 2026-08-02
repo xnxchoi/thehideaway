@@ -1,10 +1,10 @@
 import { baseSlugs } from "@payload-auth/better-auth/plugin/constants";
 import { PayloadAuthOptions } from "@payload-auth/better-auth/types";
 import { createAuthMiddleware } from "better-auth/api";
-import type { Where } from "better-auth";
 import type { SanitizedBetterAuthOptions } from "@payload-auth/better-auth/plugin/types";
 import { APIError } from "better-auth/api";
 import { z } from "zod";
+import { buildAdminInviteWhere } from "../../admin-invite-security";
 
 const throwUnauthorizedError = () => {
   throw new APIError("UNAUTHORIZED", {
@@ -39,14 +39,16 @@ export const requireAdminInviteForSignUpMiddleware = async ({
       throwUnauthorizedError();
       return;
     }
-    const query: Where = {
-      field: "token",
-      value: adminInviteToken,
-      operator: "eq"
-    };
+    if (typeof ctx.body?.email !== "string") {
+      throwUnauthorizedError();
+      return;
+    }
     const isValidAdminInvitation = await ctx.context.adapter.count({
       model: pluginOptions.adminInvitations?.slug ?? baseSlugs.adminInvitations,
-      where: [query]
+      where: buildAdminInviteWhere({
+        token: adminInviteToken,
+        email: ctx.body.email
+      })
     });
     if (isValidAdminInvitation) {
       if (originalBefore) return originalBefore(ctx);

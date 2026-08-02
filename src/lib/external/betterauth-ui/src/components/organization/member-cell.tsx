@@ -81,7 +81,7 @@ export function MemberCell({
 
   const { data: hasPermissionToUpdateMember } = useHasPermission({
     organizationId: member.organizationId,
-    permission: { member: ["update"] }
+    permissions: { member: ["update"] }
   });
 
   return (

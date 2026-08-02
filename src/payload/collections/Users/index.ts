@@ -1,19 +1,18 @@
 import type { User } from "@/payload-types";
 import { getUserBookmarks } from "@/payload/collections/Bookmarks/getUserBookmarks";
 import { hideIfNotAdmin } from "@/payload/collections/helpers";
-import { SyncedNotification } from "@/payload/collections/Notifications/hooks/types";
 import { createProfileHook } from "@/payload/collections/Profile/operations/createProfile";
 import { getUserFollowers } from "@/payload/collections/Users/endpoints/getUserFollowers";
 import { getUserFollowing } from "@/payload/collections/Users/endpoints/getUserFollows";
+import { getUserDetails } from "@/payload/collections/Users/endpoints/getUserDetails";
 import { onboardingHandler } from "@/payload/collections/Users/endpoints/onboardingHandler";
-import { GotUser } from "@/payload/collections/Users/endpoints/userFieldSelect";
 import { userOverviewHandler } from "@/payload/collections/Users/endpoints/userOverview";
 import {
   revalidateDelete as afterDeleteUser,
   revalidateUser
 } from "@/payload/collections/Users/hooks/revalidateUser";
+import { beforeChangeUsers } from "@/payload/collections/Users/hooks/beforeChange";
 import { userHandleField } from "@/payload/fields/handle";
-import type { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { enforceUserFields } from "@/types/collections/users";
 import { generatePreviewPath } from "@/utilities/generatePreviewPath";
 import { getServerSideURL } from "@/utilities/getURL";
@@ -25,7 +24,6 @@ import {
   OverviewField
 } from "@payloadcms/plugin-seo/fields";
 import { CollectionConfig, Where } from "payload";
-import { uuidv7 } from "uuidv7";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -72,20 +70,6 @@ export const Users: CollectionConfig = {
     }
   },
   fields: [
-    {
-      name: "id",
-      type: "text",
-      required: true,
-      unique: true,
-      defaultValue: () => uuidv7(),
-      admin: {
-        hidden: true
-      },
-      access: {
-        read: () => true,
-        update: () => false
-      }
-    },
     {
       name: "portrait",
       type: "text",
@@ -328,6 +312,7 @@ export const Users: CollectionConfig = {
       }
     ],
     beforeChange: [
+      beforeChangeUsers,
       ({ data, req, operation, originalDoc, context }) => {
         const state = data?.banned ? "draft" : "published";
         data._status = state;
@@ -378,103 +363,7 @@ export const Users: CollectionConfig = {
     {
       path: "/:id/details",
       method: "get",
-      handler: async (req) => {
-        const { payload, routeParams } = req;
-        const rid = routeParams?.id;
-        if (!rid || typeof rid !== "string") {
-          return Response.json(
-            {
-              error: "Invalid param provided"
-            },
-            { status: 404 }
-          );
-        }
-        const id = `${rid}`;
-
-        const res = await payload
-          .findByID({
-            collection: "users",
-            overrideAccess: true,
-            id: id,
-            select: {
-              firstName: true,
-              lastName: true,
-              displayUsername: true,
-              portrait: true,
-              slug: true,
-              username: true,
-              name: true,
-              onboarded: true,
-              role: true,
-              bio: true,
-              following: true,
-              followers: true,
-              notifications: true
-            }
-          })
-          .catch((e) => {
-            console.error(`Error fetching user ${id}`, e);
-            return null;
-          });
-        if (!res) {
-          const message = `User ${id} not found`;
-          console.error(message);
-          return Response.json(
-            {
-              error: message
-            },
-            { status: 404 }
-          );
-        }
-
-        const { portrait, ...rest } = res;
-        const user: GotUser = {
-          ...rest,
-          following: {
-            count: rest.following?.totalDocs ?? 0,
-            docs: (rest.following?.docs || ([] as string[])).map((r) =>
-              typeof r === "string"
-                ? r
-                : typeof r.target === "string"
-                  ? r.target
-                  : r.target.id
-            )
-          },
-          followers: {
-            count: rest.followers?.totalDocs ?? 0,
-            docs: (rest.followers?.docs || ([] as string[])).map((r) =>
-              typeof r === "string"
-                ? r
-                : typeof r.user === "string"
-                  ? r.user
-                  : r.user.id
-            )
-          },
-          portrait: portrait ?? null,
-          id: `${rest.id}`,
-          role: rest.role as RP_Roles,
-          onboarded: rest.onboarded ?? false,
-          slug: rest.slug ?? rest.username,
-          username: rest.username ?? rest.slug ?? rest.name,
-          displayUsername:
-            rest.displayUsername ??
-            `@${rest.username ?? rest.slug ?? rest.name}`,
-          collection: "users",
-          notifications:
-            (rest.notifications?.docs as SyncedNotification[]) ?? [],
-          bio: rest.bio ?? ""
-        };
-
-        // const notifications: SyncedNotification[] = await queryNotifications({
-        //   id: user.id,
-        //   payload,
-        // }).catch((e) => {
-        //   console.error(`Error fetching notifications for user ${user.id}`, e)
-        //   return []
-        // })
-        // user.notifications = notifications
-        return Response.json({ user }, { status: user ? 200 : 400 });
-      }
+      handler: getUserDetails
     }
   ],
   versions: {

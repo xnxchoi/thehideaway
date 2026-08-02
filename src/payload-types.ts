@@ -364,6 +364,7 @@ export interface AdminAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
+  id: string;
   slug: string;
   firstName: string;
   lastName: string;
@@ -405,7 +406,6 @@ export interface User {
    * Users chosen display name
    */
   name: string;
-  id: string;
   portrait?: string | null;
   bookmarks?: {
     docs?: (string | Bookmark)[];
@@ -2161,6 +2161,9 @@ export interface TwoFactor {
    * The user that the two factor authentication secret belongs to
    */
   user: string | User;
+  verified?: boolean | null;
+  failedVerificationCount?: number | null;
+  lockedUntil?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2234,8 +2237,9 @@ export interface TeamMember {
 export interface AdminInvitation {
   id: string;
   role: 'admin' | 'cofounder' | 'editor' | 'author' | 'patron' | 'resident' | 'user';
+  email: string;
   token: string;
-  url?: string | null;
+  expiresAt: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -4175,7 +4179,6 @@ export interface UsersSelect<T extends boolean = true> {
   twoFactorEnabled?: T;
   emailVerified?: T;
   name?: T;
-  id?: T;
   portrait?: T;
   bookmarks?: T;
   followers?: T;
@@ -4253,6 +4256,9 @@ export interface TwoFactorsSelect<T extends boolean = true> {
   secret?: T;
   backupCodes?: T;
   user?: T;
+  verified?: T;
+  failedVerificationCount?: T;
+  lockedUntil?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4340,8 +4346,9 @@ export interface InvitationsSelect<T extends boolean = true> {
  */
 export interface AdminInvitationsSelect<T extends boolean = true> {
   role?: T;
+  email?: T;
   token?: T;
-  url?: T;
+  expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

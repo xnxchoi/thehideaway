@@ -554,11 +554,17 @@ export const AuthUIProvider = ({
 
   const defaultMutators = useMemo(() => {
     return {
-      deleteApiKey: (params) =>
-        authClient.apiKey.delete({
+      deleteApiKey: (params) => {
+        if (!authClient.apiKey) {
+          return Promise.reject(
+            new Error("API key client plugin is not configured")
+          );
+        }
+        return authClient.apiKey.delete({
           ...params,
           fetchOptions: { throw: true }
-        }),
+        });
+      },
       deletePasskey: (params) =>
         authClient.passkey.deletePasskey({
           ...params,
@@ -627,11 +633,17 @@ export const AuthUIProvider = ({
           cacheKey: "listSessions"
         }),
       useListPasskeys: authClient.useListPasskeys,
-      useListApiKeys: () =>
-        useAuthData({
-          queryFn: authClient.apiKey.list,
+      useListApiKeys: () => {
+        const apiKeyClient = authClient.apiKey;
+        return useAuthData({
+          queryFn: apiKeyClient
+            ? apiKeyClient.list
+            : async () => {
+                throw new Error("API key client plugin is not configured");
+              },
           cacheKey: "listApiKeys"
-        }),
+        });
+      },
       useActiveOrganization: authClient.useActiveOrganization,
       useListOrganizations: authClient.useListOrganizations,
       useHasPermission: (params) =>
@@ -757,7 +769,9 @@ export const AuthUIProvider = ({
         replace: replace || navigate || defaultReplace,
         viewPaths,
         Link,
-        ...props
+        ...props,
+        apiKey: props.apiKey && authClient.apiKey ? props.apiKey : undefined,
+        oneTap: Boolean(props.oneTap && authClient.oneTap)
       }}
     >
       {sessionData && organization && <OrganizationRefetcher />}

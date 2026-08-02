@@ -47,6 +47,23 @@ export function buildTwoFactorsCollection({
         description:
           "The backup codes used to recover access to the account if the user loses access to their phone or email"
       }
+    }),
+    verified: () => ({
+      defaultValue: true,
+      admin: {
+        readOnly: true
+      }
+    }),
+    failedVerificationCount: () => ({
+      defaultValue: 0,
+      admin: {
+        readOnly: true
+      }
+    }),
+    lockedUntil: () => ({
+      admin: {
+        readOnly: true
+      }
     })
   };
 

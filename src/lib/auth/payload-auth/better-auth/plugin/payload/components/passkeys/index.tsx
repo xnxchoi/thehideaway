@@ -1,7 +1,9 @@
 import React from "react";
+import type { CollectionSlug } from "payload";
 import { PasskeysClient } from "./client";
 import "./index.scss";
 import type { PasskeysServerComponentProps, PasskeyWithId } from "./types";
+import { resolveBaseURL } from "../../utils/resolve-base-url";
 
 export const Passkeys: React.FC<PasskeysServerComponentProps> = async (
   props
@@ -19,7 +21,7 @@ export const Passkeys: React.FC<PasskeysServerComponentProps> = async (
   if (!id || !passkeySlug || !passkeyUserIdFieldName) return null;
 
   const { docs: userPasskeys } = (await payload.find({
-    collection: passkeySlug,
+    collection: passkeySlug as CollectionSlug,
     where: {
       [passkeyUserIdFieldName]: { equals: id }
     },
@@ -39,7 +41,10 @@ export const Passkeys: React.FC<PasskeysServerComponentProps> = async (
         currentUserId={user?.id}
         passkeySlug={passkeySlug}
         passkeyUserIdFieldName={passkeyUserIdFieldName}
-        baseURL={pluginOptions.betterAuthOptions?.baseURL}
+        baseURL={resolveBaseURL(
+          pluginOptions.betterAuthOptions?.baseURL,
+          req.headers
+        )}
         basePath={pluginOptions.betterAuthOptions?.basePath}
       />
     </div>

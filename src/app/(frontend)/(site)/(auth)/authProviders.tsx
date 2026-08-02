@@ -2,14 +2,14 @@
 import { AuthUIProvider } from "@/lib/external/betterauth-ui/src";
 import { authClient } from "@/lib/auth/client";
 import { Link } from "@/components/core/Link/Link";
-import { useTransitionRouter } from "next-transition-router";
+import { useRouter } from "next/navigation";
 import {
   KakaoIcon,
   NaverIcon
 } from "@/lib/external/betterauth-ui/src/components/provider-icons";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
-  const router = useTransitionRouter();
+  const router = useRouter();
   const hidePasskeys =
     typeof window !== "undefined" &&
     ["lostinseoul.com", "www.lostinseoul.com"].includes(
@@ -21,7 +21,6 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       authClient={authClient}
       navigate={router.push}
       replace={router.replace}
-      onSessionChange={router.refresh}
       signUp={{
         fields: ["name", "email", "password", "location", "bio", "link"]
       }}

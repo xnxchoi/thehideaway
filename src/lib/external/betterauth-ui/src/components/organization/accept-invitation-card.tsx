@@ -9,6 +9,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { normalizeLocalReturnTo } from "@/lib/routes/auth";
 import { CheckIcon, Loader2, XIcon } from "lucide-react";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuthenticate } from "../../hooks/use-authenticate";
@@ -41,6 +42,10 @@ export function AcceptInvitationCard({
     () => ({ ...contextLocalization, ...localizationProp }),
     [contextLocalization, localizationProp]
   );
+  const safeRedirectTo = useMemo(
+    () => normalizeLocalReturnTo(redirectTo, "/"),
+    [redirectTo]
+  );
 
   const { data: sessionData } = useAuthenticate();
   const [invitationId, setInvitationId] = useState<string | null>(null);
@@ -54,12 +59,12 @@ export function AcceptInvitationCard({
         message: localization.INVITATION_NOT_FOUND
       });
 
-      replace(redirectTo);
+      replace(safeRedirectTo);
       return;
     }
 
     setInvitationId(invitationIdParam);
-  }, [localization.INVITATION_NOT_FOUND, toast, replace, redirectTo]);
+  }, [localization.INVITATION_NOT_FOUND, toast, replace, safeRedirectTo]);
 
   if (!sessionData || !invitationId) {
     return (
@@ -109,7 +114,11 @@ function AcceptInvitationContent({
   });
 
   const getRedirectTo = useCallback(
-    () => getSearchParam("redirectTo") || redirectTo,
+    () =>
+      normalizeLocalReturnTo(
+        getSearchParam("redirectTo") || redirectTo,
+        normalizeLocalReturnTo(redirectTo, "/")
+      ),
     [redirectTo]
   );
 
@@ -122,7 +131,7 @@ function AcceptInvitationContent({
         message: localization.INVITATION_NOT_FOUND
       });
 
-      replace(redirectTo);
+      replace(getRedirectTo());
       return;
     }
 
@@ -138,7 +147,7 @@ function AcceptInvitationContent({
             : localization.INVITATION_NOT_FOUND
       });
 
-      replace(redirectTo);
+      replace(getRedirectTo());
     }
   }, [
     invitation,
@@ -147,7 +156,7 @@ function AcceptInvitationContent({
     localization,
     toast,
     replace,
-    redirectTo
+    getRedirectTo
   ]);
 
   const acceptInvitation = async () => {
@@ -193,7 +202,7 @@ function AcceptInvitationContent({
         message: localization.INVITATION_REJECTED
       });
 
-      replace(redirectTo);
+      replace(getRedirectTo());
     } catch (error) {
       toast({
         variant: "error",

@@ -4,7 +4,9 @@ import type {
   BetterAuthOptions as BetterAuthOptionsType,
   BetterAuthPlugin as BetterAuthPluginType,
   InferAPI,
-  InferPluginTypes
+  InferPluginTypes,
+  Session,
+  User
 } from "better-auth/types";
 import type {
   BasePayload,
@@ -22,7 +24,6 @@ import {
   loginMethods,
   socialProviders
 } from "./constants";
-import type { InferSession, InferUser } from "better-auth/types";
 import { BASE_ERROR_CODES } from "@better-auth/core/error";
 import { router } from "better-auth/api";
 import { defaults } from "./constants";
@@ -508,9 +509,16 @@ export type BetterAuthReturn<
     ? InferPluginTypes<ExtractBA<O>>
     : {
         Session: {
-          session: PrettifyDeep<InferSession<ExtractBA<O>>>;
+          session: PrettifyDeep<
+            Session<
+              ExtractBA<O>["session"],
+              ExtractBA<O>["plugins"]
+            >
+          >;
           user: OverrideRole<
-            PrettifyDeep<InferUser<ExtractBA<O>>>,
+            PrettifyDeep<
+              User<ExtractBA<O>["user"], ExtractBA<O>["plugins"]>
+            >,
             ExtractRoles<O>
           >;
         };

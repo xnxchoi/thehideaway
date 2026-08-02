@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
+import { normalizeLocalReturnTo } from "@/lib/routes/auth";
 import type { SocialProvider } from "better-auth/social-providers";
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 import { AuthUIContext } from "../../lib/auth-ui-provider";
 import type { Provider } from "../../lib/social-providers";
@@ -34,6 +35,40 @@ export function ProviderButton({
   socialLayout,
   setIsSubmitting
 }: ProviderButtonProps) {
+  const [isProviderSubmitting, setIsProviderSubmitting] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
+  const mountedRef = useRef(true);
+  const attemptRef = useRef(0);
+
+  const clearResetTimer = () => {
+    if (resetTimerRef.current === undefined) return;
+    clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = undefined;
+  };
+
+  const scheduleReset = () => {
+    clearResetTimer();
+    resetTimerRef.current = setTimeout(() => {
+      resetTimerRef.current = undefined;
+      setIsSubmitting(false);
+      setIsProviderSubmitting(false);
+    }, 10000);
+  };
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      attemptRef.current += 1;
+      if (resetTimerRef.current !== undefined) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
+
   const {
     authClient,
     basePath,
@@ -47,7 +82,11 @@ export function ProviderButton({
   } = useContext(AuthUIContext);
 
   const getRedirectTo = useCallback(
-    () => redirectToProp || getSearchParam("redirectTo") || contextRedirectTo,
+    () =>
+      normalizeLocalReturnTo(
+        redirectToProp || getSearchParam("redirectTo") || contextRedirectTo,
+        normalizeLocalReturnTo(contextRedirectTo, "/")
+      ),
     [redirectToProp, contextRedirectTo]
   );
 
@@ -56,7 +95,7 @@ export function ProviderButton({
       `${baseURL}${
         callbackURLProp ||
         (persistClient
-          ? `${basePath}/${viewPaths.CALLBACK}?redirectTo=${getRedirectTo()}`
+          ? `${basePath}/${viewPaths.CALLBACK}?redirectTo=${encodeURIComponent(getRedirectTo())}`
           : getRedirectTo())
       }`,
     [
@@ -70,7 +109,10 @@ export function ProviderButton({
   );
 
   const doSignInSocial = async () => {
+    const attempt = ++attemptRef.current;
+    clearResetTimer();
     setIsSubmitting(true);
+    setIsProviderSubmitting(true);
 
     try {
       if (other) {
@@ -83,9 +125,9 @@ export function ProviderButton({
         if (genericOAuth?.signIn) {
           await genericOAuth.signIn(oauth2Params);
 
-          setTimeout(() => {
-            setIsSubmitting(false);
-          }, 10000);
+          if (!mountedRef.current || attempt !== attemptRef.current) return;
+
+          scheduleReset();
         } else {
           await authClient.signIn.oauth2(oauth2Params);
         }
@@ -99,14 +141,17 @@ export function ProviderButton({
         if (social?.signIn) {
           await social.signIn(socialParams);
 
-          setTimeout(() => {
-            setIsSubmitting(false);
-          }, 10000);
+          if (!mountedRef.current || attempt !== attemptRef.current) return;
+
+          scheduleReset();
         } else {
           await authClient.signIn.social(socialParams);
         }
       }
     } catch (error) {
+      if (!mountedRef.current || attempt !== attemptRef.current) return;
+
+      clearResetTimer();
       toast({
         variant: "error",
         message: getLocalizedError({
@@ -117,25 +162,33 @@ export function ProviderButton({
       });
 
       setIsSubmitting(false);
+      setIsProviderSubmitting(false);
     }
   };
+
+  const signInWith = localization.SIGN_IN_WITH?.trim();
+  const providerLabel = signInWith
+    ? `${signInWith} ${provider.name}`
+    : provider.name;
 
   return (
     <Button
       variant="outline"
       className="*:ease text-md ease border-faded-foreground/65)] inline-flex h-14 min-h-[35px] w-full items-center justify-center gap-[8px] rounded-md border bg-off-background/30 px-4 py-3 font-medium whitespace-nowrap text-foreground shadow-sm transition-colors duration-300 *:transition-colors *:duration-300 hover:bg-faded-background/65 hover:*:text-off-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0"
-      disabled={isSubmitting}
+      disabled={isSubmitting || isProviderSubmitting}
+      aria-busy={isProviderSubmitting}
+      aria-label={providerLabel}
       onClick={doSignInSocial}
       data-themed={"background-color,color"}
     >
-      {isSubmitting && <Loader2 className="animate-spin" />}
-      {!isSubmitting && provider.icon && (
+      {isProviderSubmitting && <Loader2 className="animate-spin" />}
+      {!isProviderSubmitting && provider.icon && (
         <provider.icon className={classNames?.form?.icon} />
       )}
-      {!isSubmitting && socialLayout === "grid" && provider.name}
-      {!isSubmitting &&
+      {!isProviderSubmitting && socialLayout === "grid" && provider.name}
+      {!isProviderSubmitting &&
         socialLayout === "vertical" &&
-        `${localization.SIGN_IN_WITH} ${provider.name}`}
+        providerLabel}
     </Button>
   );
 }

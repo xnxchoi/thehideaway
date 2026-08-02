@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(root, "src"),
+      "@payload-auth": path.resolve(root, "src/lib/auth/payload-auth"),
       "@payload-types": path.resolve(root, "src/payload-types.ts")
     }
   },

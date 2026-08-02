@@ -50,6 +50,8 @@ import * as migration_20260723_061618 from "./20260723_061618";
 import * as migration_20260723_061720 from "./20260723_061720";
 import * as migration_20260801_102548 from "./20260801_102548";
 import * as migration_20260801_165327 from "./20260801_165327";
+import * as migration_20260802_071126 from "./20260802_071126";
+import * as migration_20260802_210000_secure_admin_invitations from "./20260802_210000_secure_admin_invitations";
 import * as migration_99999999_000000_initial_seed from "./99999999_000000_initial_seed";
 
 export const migrations = [
@@ -312,6 +314,16 @@ export const migrations = [
     up: migration_20260801_165327.up,
     down: migration_20260801_165327.down,
     name: "20260801_165327"
+  },
+  {
+    up: migration_20260802_071126.up,
+    down: migration_20260802_071126.down,
+    name: "20260802_071126"
+  },
+  {
+    up: migration_20260802_210000_secure_admin_invitations.up,
+    down: migration_20260802_210000_secure_admin_invitations.down,
+    name: "20260802_210000_secure_admin_invitations"
   },
   {
     up: migration_99999999_000000_initial_seed.up,

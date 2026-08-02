@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { normalizeLocalReturnTo } from "@/lib/routes/auth";
 import { Textarea } from "@/lib/external/betterauth-ui/src/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { BetterFetchOption } from "better-auth/react";
@@ -116,7 +117,11 @@ export function SignUpForm({
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const getRedirectTo = useCallback(
-    () => redirectTo || getSearchParam("redirectTo") || contextRedirectTo,
+    () =>
+      normalizeLocalReturnTo(
+        redirectTo || getSearchParam("redirectTo") || contextRedirectTo,
+        normalizeLocalReturnTo(contextRedirectTo, "/")
+      ),
     [redirectTo, contextRedirectTo]
   );
 

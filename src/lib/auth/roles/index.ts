@@ -38,6 +38,13 @@ type OneOf<
 						? UploadCollection
 						: never;
 
+type OperationsFor<T> = T extends
+	| UserContentCollection
+	| ProvidedContent
+	| UploadCollection
+	? AccessOperations | LockedContentOperations
+	: AccessOperations;
+
 export function accessToObject<
 	T extends | UserContentCollection
 		| ProvidedContent
@@ -45,14 +52,15 @@ export function accessToObject<
 		| UserType
 		| AuthCollections
 		| UploadCollection,
-	U extends | (AccessOperations | LockedContentOperations)
-		| (AccessOperations | LockedContentOperations)[]
-		| ((arg: T) => (AccessOperations | LockedContentOperations)[]),
+	U extends
+		| OperationsFor<T>
+		| OperationsFor<T>[]
+		| ((arg: T) => OperationsFor<T>[]),
 >(
 	obj: Array<T>,
 	access: U,
 ): {
-	[K in OneOf<T>]: (AccessOperations | LockedContentOperations)[];
+	[K in OneOf<T>]: OperationsFor<T>[];
 } {
 	return obj.reduce(
 		(previousValue, cur) => {
@@ -68,7 +76,7 @@ export function accessToObject<
 				},
 			};
 		},
-		{} as { [props in OneOf<T>]: AccessOperations[] },
+		{} as { [props in OneOf<T>]: OperationsFor<T>[] },
 	);
 }
 
@@ -290,4 +298,7 @@ const patron = accessControl.newRole({
 	follows: ["read"],
 	compilations: ["read", "create", "update", "delete"],
 });
-export {author, admin, user, editor, patron};
+const cofounder = editor;
+const resident = user;
+
+export { author, admin, user, editor, patron, cofounder, resident };

@@ -1,4 +1,5 @@
 import { checkPluginExists } from "@payload-auth/better-auth/plugin/helpers/check-plugin-exists";
+import { BETTER_AUTH_CONTEXT_KEY } from "@payload-auth/better-auth/adapter";
 import {
   baModelFieldKeys,
   baModelKey,
@@ -18,6 +19,7 @@ import {
   isAdminWithRoles
 } from "../utils/payload-access";
 import { getCollectionFields } from "../utils/transform-schema-fields-to-payload";
+import { mergeCollectionFields } from "../utils/merge-collection-fields";
 import { betterAuthStrategy } from "./better-auth-strategy";
 import {
   getGenerateInviteUrlEndpoint,
@@ -184,6 +186,10 @@ export function buildUsersCollection({
     fieldRules: userFieldRules,
     additionalProperties: fieldOverrides
   });
+  const mergedUserFields = mergeCollectionFields(
+    existingUserCollection?.fields ?? [],
+    collectionFields ?? []
+  );
 
   const joinFields: JoinField[] = [
     // Better Auth’s internal adapter renames `account` => `accounts` via
@@ -266,7 +272,12 @@ export function buildUsersCollection({
       admin: hasAdminRoles(adminRoles),
       read: isAdminOrCurrentUserWithRoles({ adminRoles, idField: "id" }),
       create: isAdminWithRoles({ adminRoles }),
-      delete: isAdminOrCurrentUserWithRoles({ adminRoles, idField: "id" }),
+      delete: (args) => {
+        if (args.req.context && BETTER_AUTH_CONTEXT_KEY in args.req.context) {
+          return true;
+        }
+        return isAdminWithRoles({ adminRoles })(args);
+      },
       update: isAdminOrCurrentUserUpdateWithAllowedFields({
         allowedFields,
         adminRoles,
@@ -342,8 +353,7 @@ export function buildUsersCollection({
       strategies: [betterAuthStrategy(userSlug)]
     },
     fields: [
-      ...(existingUserCollection?.fields ?? []),
-      ...(collectionFields ?? []),
+      ...mergedUserFields,
       ...joinFields,
       ...(checkPluginExists(
         pluginOptions.betterAuthOptions ?? {},
