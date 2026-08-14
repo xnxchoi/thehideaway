@@ -3,13 +3,11 @@ import {
   TaggedCollection,
   TaggedCollectionSlug
 } from "@/payload/collections/Tags";
+import type { CollectionHookArgs } from "@/payload/collections/helpers";
 import { arraysEqualContents } from "@/utilities/compareArrays";
-import { Flatten } from "@/utilities/typeUtilities";
 import {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
-  CollectionConfig,
-  CollectionSlug,
   Operation,
   PayloadRequest
 } from "payload";
@@ -70,12 +68,6 @@ export const updateCategoryAfterChange: CollectionAfterChangeHook = async ({
   return doc;
 };
 
-export type CollectionHookArgs<
-  T extends keyof NonNullable<CollectionConfig["hooks"]> = "beforeChange",
-  F extends CollectionSlug = CollectionSlug
-> = Parameters<
-  NonNullable<Flatten<NonNullable<CollectionConfig<F>["hooks"]>[T]>>
->[0];
 export const tagsDidChange = <
   T extends TaggedCollectionSlug,
   E extends Extract<Operation, "create" | "update">

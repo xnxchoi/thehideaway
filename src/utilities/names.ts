@@ -1766,7 +1766,6 @@ export const NOUNS = Object.freeze([
   "debt",
   "description",
   "memory",
-  "patience",
   "secretary",
   "solution",
   "administration",

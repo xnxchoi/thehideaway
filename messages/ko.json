@@ -172,45 +172,45 @@
       "total": "합계"
     },
     "fragrance": {
-      "metaTitle": "향 — LOSTINSEOUL",
-      "metaDescription": "LOSTINSEOUL의 첫 향. 빛과 공기, 그리고 피부에 남는 것.",
-      "eyebrow": "첫 번째 향",
-      "titleDisplay": "공기 속에서",
-      "titleReading": "빛과 공기, 그리고 피부에 남는 것.",
+      "metaTitle": "CATALYST — LOSTINSEOUL",
+      "metaDescription": "LOSTINSEOUL의 CATALYST 향수입니다.",
+      "eyebrow": "향수",
+      "titleDisplay": "CATALYST",
+      "titleReading": "LOSTINSEOUL의 향수입니다.",
       "enter": "스크롤",
-      "placeholderName": "№ 01",
-      "placeholderNote": "출시를 준비하고 있다. 오브제는 이곳에 공개된다.",
+      "placeholderName": "CATALYST",
+      "placeholderNote": "제품 정보를 이용할 수 없습니다.",
       "phases": {
         "open": {
-          "display": "빛",
-          "reading": "하나의 빛이 어둠을 찾는다."
+          "display": "1단계",
+          "reading": ""
         },
         "bloom": {
-          "display": "피어남",
-          "reading": "공기가 짙어지며 빛을 머금는다."
+          "display": "2단계",
+          "reading": ""
         },
         "suspend": {
-          "display": "머무름",
-          "reading": "무게 없이, 거의 아무것도 아닌 채 떠 있다."
+          "display": "3단계",
+          "reading": ""
         }
       },
       "reveal": {
-        "eyebrow": "남는 것",
-        "editionNote": "한정 수량, 서울에서 발송.",
-        "viewObject": "오브제 보기"
+        "eyebrow": "제품",
+        "editionNote": "",
+        "viewObject": "제품 보기"
       }
     },
     "gate": {
       "metaTitle": "Access — LOSTINSEOUL",
-      "metaDescription": "LOSTINSEOUL - Early Access",
-      "eyebrow": "Private",
-      "status": "Locked",
-      "label": "Access",
-      "lede": "Opening Soon...",
-      "passwordLabel": "Password",
-      "passwordPlaceholder": "Enter password",
-      "invalid": "Wrong passcode.",
-      "submit": "Enter",
+      "metaDescription": "LOSTINSEOUL 접근 페이지입니다.",
+      "eyebrow": "접근",
+      "status": "잠김",
+      "label": "접근",
+      "lede": "비밀번호를 입력하십시오.",
+      "passwordLabel": "비밀번호",
+      "passwordPlaceholder": "비밀번호 입력",
+      "invalid": "비밀번호가 올바르지 않습니다.",
+      "submit": "계속",
       "footer": ""
     },
     "legal": {
@@ -440,87 +440,63 @@
     }
   },
   "ComingSoon": {
-    "eyebrow": "작업 중",
+    "label": "상태",
     "chips": {
-      "default": "출간 예정",
-      "draft": "원고 단계",
-      "soon": "머지않아",
-      "queued": "대기열",
-      "wetInk": "잉크 젖음",
-      "backstage": "무대 뒤",
-      "nearly": "거의",
-      "patience": "인내"
+      "default": "준비 중",
+      "draft": "초안",
+      "soon": "준비 중",
+      "queued": "대기 중",
+      "inProgress": "작업 중"
     },
     "dispatches": {
-      "default": "Coming soon.",
-      "backstage": "Not ready for company. The furniture is still arriving.",
-      "composing": "Currently being written in a room you aren't in. We'll open the door in due course.",
-      "argued": "Being argued about by adults. Leave an address and we'll tell you who won.",
-      "honest": "We started this before we should have. Come back after we finish."
+      "default": "준비 중입니다."
     },
     "tooltips": {
-      "composition": {
-        "line1": "Under composition.",
-        "line2": "Do not disturb."
-      },
-      "wetInk": {
-        "line1": "Wet ink.",
-        "line2": "Hands off."
-      },
-      "editor": {
-        "line1": "In the editor's stack.",
-        "line2": "Kindly wait."
-      }
+      "draft": { "line1": "초안", "line2": "준비 중" },
+      "inProgress": { "line1": "작업 중", "line2": "준비 중" }
     },
     "toasts": {
-      "notYet": "Not yet. — Ed.",
-      "nearly": "Nearly. Not nearly enough.",
-      "tryLater": "Try the door again next week.",
-      "locked": "The door is locked. On purpose."
+      "unavailable": "아직 이용할 수 없습니다.",
+      "locked": "이용할 수 없습니다."
     },
     "notify": {
-      "cta": "TELL ME WHEN",
-      "placeholder": "your address",
-      "ack": "Logged. We'll write."
+      "cta": "알림 신청",
+      "placeholder": "이메일 주소",
+      "ack": "알림 기능은 아직 이용할 수 없습니다."
     },
-    "sectionCopy": "Commentary — forthcoming. The margins are still being ruled.",
-    "cardCopy": "Something here, eventually."
+    "sectionCopy": "준비 중입니다.",
+    "cardCopy": "준비 중입니다."
   },
   "Gate": {
-    "eyebrow": "The Hideaway",
+    "label": "The Hideaway",
     "wordmark": "The Hideaway",
-    "title": "곧 다시 문을 엽니다.",
-    "lede": "We are still ruling the margins. The room opens in stages.",
-    "footnote": "What is ready to read, you can find at home.",
-    "ctaPrimary": "Home",
+    "title": "준비 중입니다.",
+    "subtitle": "",
+    "footnote": "",
+    "ctaPrimary": "홈",
     "ctaPrimaryHref": "/home",
-    "ctaSecondary": "Sign in",
+    "ctaSecondary": "로그인",
     "ctaSecondaryHref": "/sign-in",
-    "colophon": "An editorial house, in private rehearsal."
+    "footer": ""
   },
   "Settings": {
     "navAria": "설정",
     "back": "설정",
     "sections": {
       "general": {
-        "label": "일반",
-        "blurb": "Language, theme, and other interface preferences."
+        "label": "일반"
       },
       "profile": {
-        "label": "프로필",
-        "blurb": "Your public face — name, bio, location, link."
+        "label": "프로필"
       },
       "account": {
-        "label": "계정",
-        "blurb": "핸들, 로그인 이메일, 비밀번호, 주소, 구독."
+        "label": "계정"
       },
       "security": {
-        "label": "보안",
-        "blurb": "2단계 인증, 세션, 제공자, 패스키, 계정 폐쇄."
+        "label": "보안"
       },
       "notifications": {
-        "label": "알림",
-        "blurb": "What you hear from us — and how often."
+        "label": "알림"
       }
     },
     "providers": {
@@ -532,10 +508,10 @@
         "passkey": "패스키",
         "credential-2fa": "2단계 인증"
       },
-      "blurbs": {
+      "descriptions": {
         "google": "Google 계정으로 로그인합니다.",
         "naver": "네이버 계정으로 로그인합니다.",
-        "kakao": "카카오 계정으로 로그인합니다.",
+        "kakao": "Kakao 계정으로 로그인합니다.",
         "credential": "이메일과 비밀번호로 로그인합니다.",
         "passkey": "패스키로 기기 기반 로그인을 사용합니다.",
         "credential-2fa": "비밀번호 로그인 후 일회용 코드를 입력합니다."
@@ -556,21 +532,20 @@
     },
     "general": {
       "title": "일반",
-      "blurb": "인터페이스 환경설정 — 언어, 테마, OS 설정에 따른 동작.",
-      "interfaceEyebrow": "인터페이스",
+      "description": "언어, 테마 및 동작 설정입니다.",
+      "interfaceLabel": "인터페이스",
       "themeLabel": "테마",
       "themeOptions": {
         "light": "라이트",
         "dark": "다크"
       },
-      "motionEyebrow": "모션",
-      "motionBlurb": "앱 내부 설정은 따로 두지 않습니다 — OS 접근성 설정을 그대로 따릅니다. 그쪽에서 켜고 끄시면 그대로 반영됩니다.",
+      "motionLabel": "동작",
       "reduceMotionLabel": "모션 줄이기",
-      "reduceMotionDescription": "OS 접근성 설정에서 가져옵니다.",
+      "reduceMotionDescription": "운영 체제 설정을 사용합니다.",
       "reduceMotionDetected": {
-        "loading": "Detecting…",
-        "on": "On — animations minimised",
-        "off": "Off — full motion"
+        "loading": "확인 중…",
+        "on": "켜짐",
+        "off": "꺼짐"
       }
     }
   },
@@ -808,7 +783,6 @@
             "eyebrow": "yang min woo",
             "name": "YM.FM",
             "role": "Barber. Musician. Friend of the house.",
-            "blurb": "He carries the room once daylight gives way.",
             "handle": "@yangminwoo__",
             "listenTitle": "YM.FM 듣기",
             "listenLabel": "재생",

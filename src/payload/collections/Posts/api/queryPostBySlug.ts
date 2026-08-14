@@ -324,7 +324,12 @@ export const queryPostBySlug = async ({
       slug: {
         equals: slug
       }
-    }, draft, overrideAccess: true, select, user: sessionUser ?? null, context: { disableLockerRedact: true }
+    },
+    draft,
+    overrideAccess: true,
+    select,
+    user: sessionUser ?? null,
+    context: { disableLockerRedact: true, user: { role: "guest" } }
   }).then((r) => r.docs[0] || null).catch((e) => {
     console.error({
       message: `Error while retrieving post by slug ${slug}`, error: e

@@ -57,12 +57,7 @@ export const Admins: CollectionConfig = {
       type: "select",
       options: [
         "admin",
-        "cofounder",
-        "editor",
-        "author",
-        "patron",
-        "resident",
-        "user"
+
       ],
       defaultValue: "admin",
       required: true,

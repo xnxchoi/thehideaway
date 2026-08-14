@@ -245,12 +245,10 @@ function cardDisplayPrice(
   const pricedMode = productModes.find(
     (mode) => mode === "standard_purchase" || mode === "request_to_order"
   );
-  if (pricedMode) {
-    const amounts = variants
-      .filter((variant) => variant.actionableModes.includes(pricedMode))
-      .flatMap((variant) =>
-        isPositiveAmount(variant.amount) ? [variant.amount] : []
-      );
+  const pricedVariants = pricedMode ? variants.filter((variant) => variant.actionableModes.includes(
+    pricedMode)) : productModes.length === 0 && product.request_to_order_enabled === true ? variants : [];
+  if (pricedVariants.length > 0) {
+    const amounts = pricedVariants.flatMap((variant) => isPositiveAmount(variant.amount) ? [variant.amount] : []);
     const distinctAmounts = [...new Set(amounts)].sort((a, b) => a - b);
     if (distinctAmounts.length === 0) return null;
     if (distinctAmounts.length === 1) {

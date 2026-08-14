@@ -51,7 +51,7 @@ export type AuthorCollections = Extract<
   CollectionMap[keyof CollectionMap],
   | { author: User | string }
   | {
-      author: User[] | string[];
+  author: (User | string)[];
     }
 >;
 export type AuthorCollectionsSlug = KeysOfValue<

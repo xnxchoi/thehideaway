@@ -720,8 +720,7 @@ const schema = z.object({
 
 const isProduction = process.env.NODE_ENV === "production";
 const skipValidation =
-  process.env.SKIP_ENV_VALIDATION === "1" ||
-  process.env.NODE_ENV === "test" ||
+  process.env.SKIP_ENV_VALIDATION === "1" || process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development" ||
   // Type generation, schema generation, etc. — Payload CLI loads payload.config
   // without a real prod env, and we don't want to refuse those operations.
   process.env.PAYLOAD_GENERATE === "1";

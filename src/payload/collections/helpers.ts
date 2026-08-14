@@ -1,4 +1,5 @@
-import { BaseFilter, ClientUser } from "payload";
+import { BaseFilter, ClientUser, CollectionConfig, CollectionSlug } from "payload";
+import { Flatten } from "@/utilities/typeUtilities";
 
 export const hideIfNotAdmin: (args: { user: ClientUser }) => boolean = ({
   user
@@ -22,3 +23,4 @@ export const filterByCurrentUser: BaseFilter = ({ req, sort, locale }) => {
     }
   };
 };
+export type CollectionHookArgs<T extends keyof NonNullable<CollectionConfig["hooks"]> = "beforeChange", F extends CollectionSlug = CollectionSlug> = Parameters<NonNullable<Flatten<NonNullable<CollectionConfig<F>["hooks"]>[T]>>>[0];
