@@ -1,0 +1,4509 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "id": "asset_04040ffb47a882d68c3e",
+      "path": "public/android-chrome-192x192.png",
+      "sha256": "a92815a483efc36fe6abc61dcb3ef890e96b560db99b83fc3e95f6b1f7416398",
+      "bytes": 6358,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_fa465c96193eb213af88",
+      "path": "public/android-chrome-512x512.png",
+      "sha256": "9d104fb69bd5d19d8e18f8fd997982b79e342cfb6cb4477f3f7a32dac59f7a83",
+      "bytes": 13887,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_427ca3c215be60a6d8a8",
+      "path": "public/apple-touch-icon.png",
+      "sha256": "657d7e7d60c506824ae2a11ad79123c7b2b78e3c0b17b9c9847301c89fd015ff",
+      "bytes": 5770,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d082d053de1c24b00823",
+      "path": "public/assets/_signage.css",
+      "sha256": "7f1c59f88904a0331544ae847ba384a1ae9837b8d5dfc366dbeab34d6d1a0b09",
+      "bytes": 7601,
+      "mimeType": "text/css",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2bf4f781c3aff7f47b77",
+      "path": "public/assets/audio/tape_pause.ogg",
+      "sha256": "6009dc3b1ce277d2bef4e3a9c7dc957afbe05adc707a08f557e45600b91d9f6f",
+      "bytes": 15572,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_db98047e0f734145af25",
+      "path": "public/assets/audio/tape_play.ogg",
+      "sha256": "eafca3e53e86d06af95f76fe3dcaad929debf9d4253b874cf06544d71ca97ac3",
+      "bytes": 17797,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5d753d8440814b6d3b09",
+      "path": "public/assets/audio/tape_playing.ogg",
+      "sha256": "90425de45e78db30b0fa5cd966c8eff3f8dcfbd28f02b558f6e29291fd711822",
+      "bytes": 19751,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7cf7d1154397769af594",
+      "path": "public/assets/audio/tape_press.ogg",
+      "sha256": "8dbcf5119d8ee0dc2c0e076cb4d9f6b2566c52d69f01dc749e1aad107e59cdaf",
+      "bytes": 11028,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_14e5a609b5f268d5da33",
+      "path": "public/assets/corner-ll.svg",
+      "sha256": "078b0b91c370a1fd47987921d9ff2a6d1ea93113600d79f751d6c891f86ee921",
+      "bytes": 177,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_63557991d5ada97b47b3",
+      "path": "public/assets/corner-lr.svg",
+      "sha256": "aa5deee37ac894f12e506d214a0bc25b18f12a8b6319d60d635da151f8bf526a",
+      "bytes": 171,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d68be4cf31bd3a471cf7",
+      "path": "public/assets/day-n-night/hosts/ingyu.jpeg",
+      "sha256": "f2f5ec2c6ae3d35ebe3113f01e9e9fcabf002ec91b896a5608e9e7570c7e136c",
+      "bytes": 517015,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f39fe02ee7b9602524a7",
+      "path": "public/assets/day-n-night/hosts/sean.png",
+      "sha256": "7f1a0f72157eef73c50278a5cb5024131fe81c4c060e78d273908c737b3b05a7",
+      "bytes": 9989620,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_78b3f93daed1fb723b5b",
+      "path": "public/assets/day-n-night/IMG_5282.png",
+      "sha256": "d37894f79c4a2770f06e7da60748f7fbf397463c4beca59a7e84b435b8e16c4c",
+      "bytes": 4080872,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d43f6837c880afb6d5e3",
+      "path": "public/assets/day-n-night/IMG_6339.png",
+      "sha256": "d61f290ade0dc540cd91b1df5605e0cd86bd3aa410fe3120df51da3aed971337",
+      "bytes": 3962634,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c1e808ad1193326cd812",
+      "path": "public/assets/day-n-night/IMG_8543.png",
+      "sha256": "5b03c3f59a61f8c23a89297ff2aeae128a135905bd3df4a476317e6324e31cc7",
+      "bytes": 3641013,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_95faf7461a71ba7ba9b5",
+      "path": "public/assets/day-n-night/IMG_9520.png",
+      "sha256": "f95ec46800dda022eb6c357b1cf07dac4a533fd03c318b0d00a35fea190d4b7f",
+      "bytes": 4044952,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e92b1f7d726b0405a882",
+      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-19_001.jpeg",
+      "sha256": "da5ab27ba850939c19eb0e7edd792965e5807b7b5c39c0fb8dfd21f7f2b3139c",
+      "bytes": 589602,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_216b7dc8eda41113b9aa",
+      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-19_002.jpeg",
+      "sha256": "95a538a0c75edf979ce3653451b89cc92c54bb755414edbc115231a219d38cce",
+      "bytes": 585037,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5316f16400a90d199a8a",
+      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-19_003.jpeg",
+      "sha256": "68c376c0977417cba065cef33e093835852f92fe2ee09209b8de26b9b680d52b",
+      "bytes": 632340,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b7310fade9df46821b33",
+      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-20_004.jpeg",
+      "sha256": "0b856aee6587493d1de4570dabd23007ba9cdcad8ccb9c5f6f9e70dab2373c6e",
+      "bytes": 564246,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0e3fa212ae917534cd86",
+      "path": "public/assets/day-n-night/past-events/partypic - 1.png",
+      "sha256": "e45bd6194256a780ef67b700c382751f61da57eb94c3bbf12a6e26e75af246a4",
+      "bytes": 11153902,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b6e8c9ee845eb20b7d42",
+      "path": "public/assets/day-n-night/past-events/partypic - 10.png",
+      "sha256": "8257209eddd24d5d4927b7618e5efa99c9ea8291903dc7a1dc76dac751eab1db",
+      "bytes": 19485852,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c465467a201b491c5a4c",
+      "path": "public/assets/day-n-night/past-events/partypic - 11.png",
+      "sha256": "439e42776dd5171299dc93f8d84a6f0ba2f10e841b676fdc65ba5d128add6a82",
+      "bytes": 8244173,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_62d381c421e48d8ba793",
+      "path": "public/assets/day-n-night/past-events/partypic - 12.png",
+      "sha256": "fedc19085386a8e578924bd93d81042d64baddaeb8539433ee8a41e0c1d17aa0",
+      "bytes": 1690570,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ba79278d52179a9ce6df",
+      "path": "public/assets/day-n-night/past-events/partypic - 13.png",
+      "sha256": "4ef337714d83a3ad42617102cc2ebbac55b71da4ba7e77b5f4ed20a3971e013a",
+      "bytes": 24817612,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4ab6cf6baae1c9012506",
+      "path": "public/assets/day-n-night/past-events/partypic - 2.png",
+      "sha256": "8861fba37f9f501b5296aee3eeffbb11ac5149f52fb7faf39cfb3f337dbb0870",
+      "bytes": 915353,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5f3ff1cdefc87db5483b",
+      "path": "public/assets/day-n-night/past-events/partypic - 3.png",
+      "sha256": "df4ffc0ff59a0a71bb437f4593464c0f1f679c8309432dc08b5a0596858ee8e6",
+      "bytes": 8287348,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_01a4005effda2ca667e9",
+      "path": "public/assets/day-n-night/past-events/partypic - 4.png",
+      "sha256": "868eb240c43e68b9bdcf359ad94e2625334e3ec7e185f7163c200483afc0dfd8",
+      "bytes": 14772407,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8b72fc8869ed76c84666",
+      "path": "public/assets/day-n-night/past-events/partypic - 5.mov",
+      "sha256": "f51e20a61952abdd56b7ab85d6027d6ae96e3ea38499a6282214a3308f7dbd2f",
+      "bytes": 8746279,
+      "mimeType": "video/quicktime",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_61f79b52ebcda32aea21",
+      "path": "public/assets/day-n-night/past-events/partypic - 6.png",
+      "sha256": "628485197e3c2e7ea18d960813fcd99e3a3a990353e4c585795c670d58af2409",
+      "bytes": 18878183,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b2546567f87e84d0e503",
+      "path": "public/assets/day-n-night/past-events/partypic - 7.png",
+      "sha256": "6a1f9fac0f2aab75f914a5aa5427950c38b25185aea6846fca2d4b784905ce53",
+      "bytes": 14544746,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4d0d4cf2584a8e3e536b",
+      "path": "public/assets/day-n-night/past-events/partypic - 8.png",
+      "sha256": "a9f5ca7cc48a211e4cbbd488db1233920ff54c0ffe9ef5ffd126abee65062374",
+      "bytes": 18783262,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7938070f96f0b5fc18fb",
+      "path": "public/assets/day-n-night/past-events/partypic - 9.png",
+      "sha256": "53741c99b77f29a5608e6584264fc7557e84068e82f05bd893559eeee3f6b649",
+      "bytes": 19793794,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_53967f8a67a6c4d50c4f",
+      "path": "public/assets/day-n-night/past-events/partypica - 1.mov",
+      "sha256": "a9f2b798ed7338700c536db5156fa78fbc29604346003b914019aa2011dce89b",
+      "bytes": 2959446,
+      "mimeType": "video/quicktime",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_945f18fdce32a0007034",
+      "path": "public/assets/day-n-night/past-events/partypica - 2.png",
+      "sha256": "77afb32028dc70da822ef709265d1af3c19e73d9a48997d389e7ae5a874f8d3d",
+      "bytes": 3358108,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d321588f700ab44c5ffc",
+      "path": "public/assets/day-n-night/past-events/partypica - 3.png",
+      "sha256": "9f4e10a2939fe635b8dc7b369f2bf2376e02de1787ae3ec86f71b9b489a20c3f",
+      "bytes": 848559,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_282dedded07eeedce00b",
+      "path": "public/assets/day-n-night/past-events/partypica - 4.png",
+      "sha256": "6557d40197fa7c939bbcfd3848f6e767e62ff283060bc964b150a4a1df6beca5",
+      "bytes": 1874604,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_07782254b6d213d7ae85",
+      "path": "public/assets/day-n-night/past-events/partypica - 5.png",
+      "sha256": "446e9f4413b4e273b843ca256aac88974d1f4cf1b49c4e79fc2b0a087856cbd4",
+      "bytes": 10182870,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ee4852170d75473d03bf",
+      "path": "public/assets/env_hdr1-gainmap.webp",
+      "sha256": "fb0b71b96264e0dd6eedd92d9e966ba48655d8ea2c1824b84b7d127489f2e59e",
+      "bytes": 131540,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b0def785a1d5d7353f7a",
+      "path": "public/assets/env_hdr1.json",
+      "sha256": "1761e091ffa4e054efa3f788e40c63af3295435e216f646ad3814548d3bdaa58",
+      "bytes": 363,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ce0ecdaeee1a2fb6b55c",
+      "path": "public/assets/env_hdr1.webp",
+      "sha256": "8faa7ac140ac7bcd176737097376631fb2d90a38eacf8d6463cdf696d677da76",
+      "bytes": 545298,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_749a91df8eb3be0603d2",
+      "path": "public/assets/favicon.svg",
+      "sha256": "ceac9e37f3c503db048f7cd40b21885b9ac605d822df72fc1255a9e771886fbf",
+      "bytes": 1018,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_eb99b9db0cc24091c7be",
+      "path": "public/assets/fonts/BitcountGrid.json",
+      "sha256": "49f691eb31b4eb5d9b4b963c26e1c9e5c57c89041bedd71ea12353edc06b3e18",
+      "bytes": 4947560,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e35402eddaa527b13b9e",
+      "path": "public/assets/fonts/BitcountGrid.ttf",
+      "sha256": "a11a7b4e913202f3862e7bd54c446f4f6d643354be3e35421c1fa82deb556067",
+      "bytes": 156560,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e1bcb768468371ff4b74",
+      "path": "public/assets/fonts/Blase/BlaseBold.otf",
+      "sha256": "43ec453ad5850157173a1e4ca2f6830f437e014bb26be15708557c9d0d1d3ef5",
+      "bytes": 506904,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_59452f867566761ffe90",
+      "path": "public/assets/fonts/Blase/BlaseExtraBold.otf",
+      "sha256": "3598829fec69a313b5bff866fa477508452f55717dd02784c551c42209b6dbe3",
+      "bytes": 494260,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7f16555ea1f10c4f2918",
+      "path": "public/assets/fonts/Blase/BlaseLight.otf",
+      "sha256": "6c53c3519e81bc92b6e1d6055dd321cd72e43c47a4f4ee5941ffd44fb70ba786",
+      "bytes": 461628,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7bc04f78199ced518fb3",
+      "path": "public/assets/fonts/Blase/BlaseMedium.otf",
+      "sha256": "42dacec402258ed13c55d098c41e46041c8d19ffe52fc0a98fa72d419e03dbd6",
+      "bytes": 531036,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_960d30ef6df22ead0f93",
+      "path": "public/assets/fonts/Blase/BlaseRegular.otf",
+      "sha256": "230f0d3dd5bf2971b5f14998db7c4cf8acd434cc366011a963f731c559713d74",
+      "bytes": 518528,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_92db183b0aaf7198d8df",
+      "path": "public/assets/fonts/Blase/BlaseSemiBold.otf",
+      "sha256": "7048a3ac6e1b3d40c796444404dc6d9bb22905f139b1854647c121fc7ccd04d2",
+      "bytes": 487992,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f7e0a960662819a55be4",
+      "path": "public/assets/fonts/Blase/BlattSemiLight.otf",
+      "sha256": "cb1265c7ee341b75ea82daabdb951a57b9047032b106f99ed891e36615206aa3",
+      "bytes": 499024,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f0aca53f192b9073ed45",
+      "path": "public/assets/fonts/Bricolage Grotesque 36pt SemiCondensed SemiBold_Regular.json",
+      "sha256": "76bb6dad48d92f96e3bbeb07d6d013f36dbf8e11eb2861ef91738a1af2ee0a4c",
+      "bytes": 271310,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ec3b57757a8d92e5d95e",
+      "path": "public/assets/fonts/BricolageGrotesque/Bricolage Grotesque 24pt Condensed SemiBold_Regular.json",
+      "sha256": "a89063dc9a05910463a6e090c7a410eee254222bed96421a163df5c464312aed",
+      "bytes": 270648,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4891b7a292ededafac9d",
+      "path": "public/assets/fonts/BricolageGrotesque/BricolageGrotesque_24pt_SemiCondensed-Bold.ttf",
+      "sha256": "a6fdb482ddad0fb1a1e1410b4a781abfeabf31ca15ecd3982436bbac5002b0c7",
+      "bytes": 91036,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3ae9e498c757b9bc40b3",
+      "path": "public/assets/fonts/BricolageGrotesque/BricolageGrotesque_24pt_SemiCondensed-SemiBold.ttf",
+      "sha256": "9cd5c7f1d3118fb3a274139e3210690a930b3401ce71e646717cbbc4f5818d4d",
+      "bytes": 91020,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c175f4ffd98e708acc22",
+      "path": "public/assets/fonts/Caveat/Caveat-VariableFont_wght.ttf",
+      "sha256": "2849e2b28ab6c60e7fe090c759285a5a823acda2abee69c762b419117568752a",
+      "bytes": 394064,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b2341d5610bf26a51a30",
+      "path": "public/assets/fonts/Caveat/OFL.txt",
+      "sha256": "106a1fea143a76b93974b82d15ab2cfca509913a667b56eb55c6ff162802b1a8",
+      "bytes": 4479,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_05e80cd923faca824b0a",
+      "path": "public/assets/fonts/Caveat/README.txt",
+      "sha256": "6561f053887154e3171afa814aa7a52685e517f6ce9d45dbd0b86f88e2edc6f9",
+      "bytes": 2118,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_85c5f79895136111560a",
+      "path": "public/assets/fonts/Caveat/static/Caveat-Bold.ttf",
+      "sha256": "b42cc772f3528d9150c29d6051e2ed3fd472ad4e584c73fe1500ee628d6b1ac0",
+      "bytes": 257316,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_56816a25e0df86c1fb68",
+      "path": "public/assets/fonts/Caveat/static/Caveat-Medium.ttf",
+      "sha256": "2003781246d27c3ea281fb2e7dbd98e9d6ce22baae7ee5e60f35d5969e918a4a",
+      "bytes": 257840,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d5dcfcf69c560f766351",
+      "path": "public/assets/fonts/Caveat/static/Caveat-Regular.ttf",
+      "sha256": "271ee7c4a60b1be2ba13a66990e7475c76c982ac6e906c9db25139976282f6b8",
+      "bytes": 256968,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3d4f89856bb0a58d3657",
+      "path": "public/assets/fonts/Caveat/static/Caveat-SemiBold.ttf",
+      "sha256": "1f44700f4362468de6f8b4d87fed36ad101d14696272dd1b5eceaa5d64b5baa8",
+      "bytes": 257920,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f669b3824ab2c9bbc455",
+      "path": "public/assets/fonts/Copperplate/Copperplate CC_Bold.json",
+      "sha256": "88a175cebc64327acdeda6f9d1e4b18c4b83a157975e05a66dc7877193f2ff57",
+      "bytes": 168620,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_941c214d5fdbf0f25234",
+      "path": "public/assets/fonts/Copperplate/Copperplate CC_Regular.json",
+      "sha256": "b7932d999d0108a407f9e9a5df00f0f4be4b018ea2d37a0c38f270ea26b0fb5a",
+      "bytes": 168810,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b1da09e14f358251a44a",
+      "path": "public/assets/fonts/HA/H-A-Reg.otf",
+      "sha256": "03926a1fc75dfcc24ef930599975da0a1d94d0c51170be8e3e2fb2a7c6fce696",
+      "bytes": 718252,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b9b6e65bbb9224aec773",
+      "path": "public/assets/fonts/HA/H-A-Reg.woff2",
+      "sha256": "5e3ddb14c5af16d4f4752901b3d96b1170b8c7483522102a52250bb5a92a8f6f",
+      "bytes": 432100,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7b644330acce9a03be4e",
+      "path": "public/assets/fonts/Inconsolata/Inconsolata-VariableFont_wdth,wght.ttf",
+      "sha256": "b11525c821e37e8d7ec967dd3fe6554e57b8f4c5b3f50b33d0c2ddadc89e52de",
+      "bytes": 343368,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c0666c51e33d995b08a0",
+      "path": "public/assets/fonts/Inconsolata/InconsolataRegular.json",
+      "sha256": "ae291b7b32209d64aab84b19022d77a21f78f4cc93f1068efacef38ced9a2270",
+      "bytes": 364348,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_42db3dc407f8e5b038c0",
+      "path": "public/assets/fonts/LICENSE",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "bytes": 4380,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_71c198fd0533026f47ff",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Bold.otf",
+      "sha256": "77ef14a88edb8b3a528e235f344cf4db667aec1fcd42b9cc71fbd4479b33a504",
+      "bytes": 102160,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6b4b67aef7c7d1b40e29",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Bold.woff2",
+      "sha256": "dc172bbd868b2c8207a5ab7f1210da6206e1bbd58818340b4534b884cadca4b5",
+      "bytes": 53424,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f8552ade568f078702aa",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-BoldItalic.otf",
+      "sha256": "3dd01e794573a3aa1952b5f9611abdfbdd738b643095fcef741fee3affdcf1f8",
+      "bytes": 111312,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e7557df9802629ed452b",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-BoldItalic.woff2",
+      "sha256": "ff1522e809fc4db08730d47949b05c9fc9d3f55e131885066af60ff22b459a3c",
+      "bytes": 59268,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9586144deba30c4636c1",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Italic.otf",
+      "sha256": "10de06e7024179a670f900768aec6cc5f73cddf7407a0386418a0e0660b01e97",
+      "bytes": 110728,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_080d28d9295d0b651b7f",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Italic.woff2",
+      "sha256": "bb65561e167715e2b0fef2394ceee13341f011119566a0ec5cbd08d55443bfda",
+      "bytes": 58764,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_03f81fb2733edba8c0aa",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Medium.otf",
+      "sha256": "0e2b625f5d971382766e64a6dc0d4487a273a8fcb4d33e6435f5cb5c59b3e213",
+      "bytes": 104076,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_333e47a5980ea8bedde3",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Medium.woff2",
+      "sha256": "5ce5c2976e1bf325e9839b6e626fe25e25129731450a0845a47742e770f3f227",
+      "bytes": 54628,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_466b9be90b7597aa9d45",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-MediumItalic.otf",
+      "sha256": "229674180787698512b980d1432e7a36ba730ef561b85b4a7e8cdfcc177f6d68",
+      "bytes": 113724,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_882febae14b53de8b0da",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-MediumItalic.woff2",
+      "sha256": "a2a12c3880f04ac5f67c740a44532df55a3992281e2f291d674561c40cdef331",
+      "bytes": 60752,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_42155a1f3a6180bc7509",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Regular.otf",
+      "sha256": "1ad5507e320c8ea687e3cfc767dc4a1c0756d7c7322b9f859675d9527c346877",
+      "bytes": 101472,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_25331fd5057eb7d019b3",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-Regular.woff2",
+      "sha256": "f6b777053fdd05177b3ebab4269b54c715dbccffa9a742d07cba3d9f80163e68",
+      "bytes": 52752,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_eecb7e5a064877ab75fb",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-SemiBold.otf",
+      "sha256": "a9344e21f2224c870f6269ab717f63ce0d075a68069f4e438a3c00edb3fe0739",
+      "bytes": 104480,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4aa8326ece0fa8038df7",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-SemiBold.woff2",
+      "sha256": "8b56dac5612de412d068fe4a0ff936068e3a99e0167b2288113fd9162b5aba30",
+      "bytes": 54728,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1be0b45311c077257790",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-SemiBoldItalic.otf",
+      "sha256": "e293e22a093733f449d2683d83d904ffdb57a017655ce2286f2d16216d571afa",
+      "bytes": 113324,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5b904e9a3a639d4fdb8d",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare-SemiBoldItalic.woff2",
+      "sha256": "adf466a26d1de5fdeee937d425023bd7ff5f6cca4199445b4f7dd5056a742c6d",
+      "bytes": 60616,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e4d7c1db6e74e62e0723",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare.otf",
+      "sha256": "5840434d5d039ef0779b5b09a7fb9debf9c99f935066de97842e0cbe9a50170b",
+      "bytes": 91476,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_31d0cfbb83bf6951d9ef",
+      "path": "public/assets/fonts/Narcissian-Nectare/NarcissianNectare.woff2",
+      "sha256": "9b53fa626ada266ac639519fa0bbcff3c8b682ac2b1901ee46e63dfc28855d7f",
+      "bytes": 45816,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e00772a20dd6df95db32",
+      "path": "public/assets/fonts/Peignot/Peignot LT Std Demi_Bold.json",
+      "sha256": "f2abbaddaccd86d1089f100946f77a9c61d241bfe868ba5108ae568db71204c2",
+      "bytes": 66337,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e066b70b04aa98ef425c",
+      "path": "public/assets/fonts/Peignot/Peignot LT Std Demi_Regular.json",
+      "sha256": "b55b88ec680008fa412f496e0790307f27607aed5063ffb9c1caad8eedea79c1",
+      "bytes": 66967,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_66d912609cd9b57f0de5",
+      "path": "public/assets/fonts/Peignot/Peignot LT Std Light_Regular.json",
+      "sha256": "a8321624f98e25f82c48ba059f5437cf8ce327c8e1921e628422f42fe3bf5465",
+      "bytes": 66494,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_89c648cb61964fdab074",
+      "path": "public/assets/fonts/Pinyon Script/OFL.txt",
+      "sha256": "be830a8445135a16ff32eefd101f074630afea669688ff9fefaee0b70d3b9417",
+      "bytes": 4385,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e8cde9bb5f814cfa9354",
+      "path": "public/assets/fonts/Pinyon Script/PinyonScript-Regular.ttf",
+      "sha256": "d475e64cdb8d5670579944f1fd5885cc4cf752bd9fc9c27d0bfa3404ab367421",
+      "bytes": 148956,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c36f6b813b68ac2e2370",
+      "path": "public/assets/fonts/Precis/Apercu.otf",
+      "sha256": "4259b8718d072bc679e67eac73bbdd4010f1df3cde568b768110f88bcde8c6c1",
+      "bytes": 31852,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_47307979d91684485e97",
+      "path": "public/assets/fonts/Precis/Apercu.woff2",
+      "sha256": "c5188f9d402d35cb2ba237a8bb2ec18f45292ccef899902b180a48a6e42f4c6f",
+      "bytes": 19436,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5ab36b854af3ca7c1399",
+      "path": "public/assets/fonts/Precis/Precis-Black.otf",
+      "sha256": "4c148b9d4a6d2a9a9294229e53f4cd6d9f0863990977d19b4658df380481c3d5",
+      "bytes": 120160,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_14296ec31d8e9a6b082c",
+      "path": "public/assets/fonts/Precis/Precis-Black.woff2",
+      "sha256": "1bf740ea40b295ca57069c4afbb9f224109b2a8925698b6909c5fcd172e04834",
+      "bytes": 50076,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1ece1c46e58df2a9546a",
+      "path": "public/assets/fonts/Precis/Precis-BlackItalic.otf",
+      "sha256": "662f50d094e3726a05568668e41997fda60835945ae1e91a37ec8cf0b81513ee",
+      "bytes": 134744,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_45b0ccff8af4f3459bb0",
+      "path": "public/assets/fonts/Precis/Precis-BlackItalic.woff2",
+      "sha256": "dacce14b4f4c914fd2f08b0ad5bdf43f1a7e5dfbc83c51eb523567073b7a60fb",
+      "bytes": 53756,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bd3f13fffb72fb863bd1",
+      "path": "public/assets/fonts/Precis/Precis-Bold.otf",
+      "sha256": "f1ddbb6d9f99e398f370690743b3a6243a51bed99ef19ca881b11e53dba09b24",
+      "bytes": 114732,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2a7de956ee777f597bb6",
+      "path": "public/assets/fonts/Precis/Precis-Bold.woff2",
+      "sha256": "ceb673766ed5806a03d888d2a3a299b5e80c22a02682c86e82e1eba4702c4c52",
+      "bytes": 45144,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_12e6da0ab53e493bb202",
+      "path": "public/assets/fonts/Precis/Precis-BoldItalic.otf",
+      "sha256": "419b79bbdd639f0b2e8bbdcc575f72c4872474ddcf67c5f778ea2888bb2199dc",
+      "bytes": 127344,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_02ff63b6696436d30f54",
+      "path": "public/assets/fonts/Precis/Precis-BoldItalic.woff2",
+      "sha256": "ad890788d9cc14bafdc97d0a50a38d55e1aa25561e248103cfb41b68ddb25454",
+      "bytes": 48048,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bcf9eaf1398b081ee255",
+      "path": "public/assets/fonts/Precis/Precis-Italic.otf",
+      "sha256": "10551b1b9a153ba48ded7ccd1107fe373d46f363cbe35b8ec2e5bd80e166cf4b",
+      "bytes": 127764,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bdb3ef9374c4a2ab6421",
+      "path": "public/assets/fonts/Precis/Precis-Italic.woff2",
+      "sha256": "50be2e63783171ae0015f961ae82e0751f9f3dc5d4a40d28d9662bf0e41337a8",
+      "bytes": 48316,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8c412eee4020b3a90fd5",
+      "path": "public/assets/fonts/Precis/Precis-Medium.otf",
+      "sha256": "17c53640a1ec975c8182d73db997040ccca32493db154c1439e00c94862721f4",
+      "bytes": 124108,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_05b275ae19719741c3eb",
+      "path": "public/assets/fonts/Precis/Precis-Medium.woff2",
+      "sha256": "2513093b8f98b069bd2fee2fcbb7ab909c67bc3d89d6a9a4e62418e2f630e4cb",
+      "bytes": 47028,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bf5ece45eb99cbc29c90",
+      "path": "public/assets/fonts/Precis/Precis-MediumItalic.otf",
+      "sha256": "5f9ac1bbab27173274344fce6987c9bdb09aff0095d55ada7229b81004774b86",
+      "bytes": 123748,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b3728106086957d07033",
+      "path": "public/assets/fonts/Precis/Precis-MediumItalic.woff2",
+      "sha256": "7d8364ea4375a9157dfc6d777f85ba0cc2c4ff114fa77547b28b8394844f5a3b",
+      "bytes": 55104,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e657c11c444f60458720",
+      "path": "public/assets/fonts/Precis/Precis.otf",
+      "sha256": "acfed84606b28dddef5e81b76d1105e9a90446b43ff0bf137b99129e9ee5929f",
+      "bytes": 31884,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_cbdf5c49084ca6e287c2",
+      "path": "public/assets/fonts/Precis/Precis.woff2",
+      "sha256": "6b38b1bc61a3efe108e128ee3e79e5056ab0b0e26bf9497f245a184b3293e806",
+      "bytes": 19540,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_cccf3d7a3282000165f9",
+      "path": "public/assets/fonts/Precis/PrecisCondensedPro-Bold.otf",
+      "sha256": "0d9c5764e13fdb2a819317312c478650a506439a6c154fcb755a00f71806db68",
+      "bytes": 110356,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_acfac83d97bbddf4e122",
+      "path": "public/assets/fonts/Precis/PrecisCondensedPro-Bold.woff2",
+      "sha256": "62fa7d6e79d8540c41353631cecbf7e5dc5b9427ac6a5b52868579ece84af5ce",
+      "bytes": 45708,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6e57e3dc83717c4632fc",
+      "path": "public/assets/fonts/Precis/PrecisCondensedPro-BoldItalic.otf",
+      "sha256": "674da65d2b1066ca1cc5c25ae0b9d40193f9c16af25034ef90a370237146b66e",
+      "bytes": 115928,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2f672641f0319acd5d06",
+      "path": "public/assets/fonts/Precis/PrecisCondensedPro-BoldItalic.woff2",
+      "sha256": "ee0429a4197362a767597335cc476d434d9b5aca1e648ccef44c06adafa4bda6",
+      "bytes": 47512,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2dd12ec8eea8b8cbf741",
+      "path": "public/assets/fonts/Pretendard/LICENSE-Pretendard.txt",
+      "sha256": "b04538c9abec39a3db75108cf0af0fd9c77032fe8aa2cf38345b4d250e98e38e",
+      "bytes": 4419,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8fd190762d1531942b6d",
+      "path": "public/assets/fonts/Pretendard/Pretendard-Bold.otf",
+      "sha256": "2e91915fab54df71cc9598ebf608b2bdb54c6fe3c066ac61dff0bc44fca71cc7",
+      "bytes": 1576660,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_266e286cc997cd960d67",
+      "path": "public/assets/fonts/Pretendard/Pretendard-Bold.woff2",
+      "sha256": "4609c3356e536fafe38f4add0daeceb3d8595d3057bce13c428c33ddbd43d362",
+      "bytes": 791156,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f026f66634abd812861f",
+      "path": "public/assets/fonts/Pretendard/Pretendard-Light.woff2",
+      "sha256": "b7426635cce2ea2b95c9c802e43fba1c620e0dafaf25f737c069b8b4e09fa841",
+      "bytes": 757000,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d7f6840bab934c567fc5",
+      "path": "public/assets/fonts/Pretendard/Pretendard-Medium.otf",
+      "sha256": "d39e50e4bb52b4993b6a4eeb821a171254745bd824446af01e1f616b89fface0",
+      "bytes": 1584068,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_918988e2108ce31ebb73",
+      "path": "public/assets/fonts/Pretendard/Pretendard-Medium.woff2",
+      "sha256": "d03481330eeba0659ab5b87f25ceb504a35de377dd90a0d0aba2982eb2d05e2c",
+      "bytes": 778432,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_daac1da80a9631b9cd19",
+      "path": "public/assets/fonts/Pretendard/Pretendard-Regular.otf",
+      "sha256": "3ffbacde6ab8411f1d2db54bb9b1f0b3ee2a738932033722cf0388c06aed1c93",
+      "bytes": 1574352,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b29edead2ab0cbe9d8ad",
+      "path": "public/assets/fonts/Pretendard/Pretendard-Regular.woff2",
+      "sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63",
+      "bytes": 765892,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_05b7858ac0d6ee42e5be",
+      "path": "public/assets/fonts/RalewayDots.json",
+      "sha256": "e0699bff2718654c10f000568de85c11a9d16992166d8f8135e373dfc275f6d7",
+      "bytes": 1430758,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6042c3f084ba762f69b8",
+      "path": "public/assets/fonts/RalewayDots.ttf",
+      "sha256": "fc50ab6f151493c5392d3d46b05551f1080592b477095f0882b4a5bccf9ab76d",
+      "bytes": 443504,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_011c1433147033459547",
+      "path": "public/assets/fonts/Siegfried/Siegfried-Bold.otf",
+      "sha256": "76ae42489964108377c925a84ff6248b0c9ee1a87f4ff998ff1d9508ffd50a90",
+      "bytes": 606420,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_097afb704b9259e95148",
+      "path": "public/assets/fonts/Siegfried/Siegfried-BoldItalic.otf",
+      "sha256": "b374ea6905be82650a0693097a4b13f7ef96e4233775b55f4a32abae0cac713b",
+      "bytes": 604820,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2212f6eb1f96d3b40292",
+      "path": "public/assets/fonts/Siegfried/Siegfried-ExtraBold.otf",
+      "sha256": "6fc61483eefce3d8c25f984287c5bdf9679471ebf268dc81fa8bf4a4f3549d19",
+      "bytes": 607512,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bd8ede80b3de0e14233e",
+      "path": "public/assets/fonts/Siegfried/Siegfried-ExtraBoldItalic.otf",
+      "sha256": "7e2c131183835caf852eb589b662b7a52c30ae9b6a3a189d5f18dc8711a49348",
+      "bytes": 606772,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e3b821e64519b54d74b8",
+      "path": "public/assets/fonts/Siegfried/Siegfried-Heavy.otf",
+      "sha256": "5d51307cb7dc978ead0514bd8a398a08d80168b7ab472f62d005b0cc173a6458",
+      "bytes": 604464,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_aef80b934231e628a237",
+      "path": "public/assets/fonts/Siegfried/Siegfried-HeavyItalic.otf",
+      "sha256": "7842a9c7be8579e28e98015aa9527e89a87dce4eef8a5c65a1acd58fe77c37b8",
+      "bytes": 605732,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_09e6cf9671d00b5fcb90",
+      "path": "public/assets/fonts/Siegfried/Siegfried-Light.otf",
+      "sha256": "d6356a89e503f79922e07c7544bd2b0b1e67cb98bb05fe77ce6dc1677249cb5e",
+      "bytes": 595856,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2a32fe69ef53c7949933",
+      "path": "public/assets/fonts/Siegfried/Siegfried-LightItalic.otf",
+      "sha256": "3cf527f9e12fa9d3356f1e77eb9b94e734753b26df314158572995da817b14a8",
+      "bytes": 600920,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c95406b144b9545299c1",
+      "path": "public/assets/fonts/Siegfried/Siegfried-Regular.otf",
+      "sha256": "3db9206e94182778bbacb4d0d6008b092e33f0cf9d49a780a8e7dfa713b00bb2",
+      "bytes": 605108,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b9beebb605e48c3eaa76",
+      "path": "public/assets/fonts/Siegfried/Siegfried-RegularItalic.otf",
+      "sha256": "0e6ddc6f75ade17bf1ca8e3e4726ae7f1f12ba658d880102722c6cfc60a7cc4a",
+      "bytes": 604120,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_32571a73d902e58eb94d",
+      "path": "public/assets/fonts/SpaceGrotesk/SpaceGrotesk-Bold.woff2",
+      "sha256": "06d705cebbab916f0c0fe82b6c6f4cae06aa07fd6f5ee078421206040326ef63",
+      "bytes": 41780,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_08f4b5c05262b6773590",
+      "path": "public/assets/fonts/SpaceGrotesk/SpaceGrotesk-Light.woff2",
+      "sha256": "1ee507e5ab54a92e9a69c78d04729412bc8f766f99e6738a4139f556a6516f0d",
+      "bytes": 42088,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_140eeb356893a76c8cfe",
+      "path": "public/assets/fonts/SpaceGrotesk/SpaceGrotesk-Medium.woff2",
+      "sha256": "f20a85be4c8a74ddad94d46fcce503666498855e5a87755d75cd728d801bbe58",
+      "bytes": 42796,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1879989c5afcdf0969dc",
+      "path": "public/assets/fonts/SpaceGrotesk/SpaceGrotesk-Regular.woff2",
+      "sha256": "c6620e3d49a9f9dba3be3aa93c89d6d5a51096cb1c616d2691edb630551d5da5",
+      "bytes": 42708,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_29cc7c0cc47dfb0f3458",
+      "path": "public/assets/fonts/SUIT-Variable.css",
+      "sha256": "e63331e0a08ff254e2d30ac2bb926661775d709d9736173469b53e3597409595",
+      "bytes": 129,
+      "mimeType": "text/css",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d07e77f538f9dd7d618b",
+      "path": "public/assets/fonts/SUIT-Variable.woff2",
+      "sha256": "a48c5a20d3834ca28e41dd91acd79a17d2d14470990a81d79027f614e66b76ef",
+      "bytes": 625756,
+      "mimeType": "font/woff2",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_95e77984373acaea3a2b",
+      "path": "public/assets/fonts/Weaved/JolyDisplayBold.otf",
+      "sha256": "2930b3a64dac40af13914bc41f9047b21eef113c6c8f5725b0f1fbc2f402b0cc",
+      "bytes": 124056,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8e2752bc4c180583eee8",
+      "path": "public/assets/fonts/Weaved/JolyDisplayBoldItalic.otf",
+      "sha256": "f6266dc6809e7a6c6359ec8a7fa2c22e7ea822fb140626bb6e7bd375db21e2b0",
+      "bytes": 156212,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_dd6647e6ba9abf8423d4",
+      "path": "public/assets/fonts/Weaved/JolyDisplayRegular.otf",
+      "sha256": "748ad5287e6a1035bb8ef91c3856d96ccb925c37b1b1ea4a24a8b0e3e6fe0502",
+      "bytes": 120784,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f793f6a1741eae543f6e",
+      "path": "public/assets/fonts/Weaved/JolyDisplayRegularItalic.otf",
+      "sha256": "ae1b00bafb9dbfadbfed34e112995312b258683cbef869e7343f7e4d721b085d",
+      "bytes": 142596,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_673036b51ea52693c87d",
+      "path": "public/assets/fonts/Weaved/JolyTextRegular.otf",
+      "sha256": "890b846e14122f800bdb5ff3dc3f90be204c93c43b5bc1c44f0dde6e929e48f1",
+      "bytes": 124972,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_18200f666986e6eb5d66",
+      "path": "public/assets/fonts/Weaved/JolyTextRegularItalic.otf",
+      "sha256": "3ec32edfe1f41538f3e884f0b6b311c8bb3450cd5ba3613eb19ae1a3514b79a5",
+      "bytes": 142040,
+      "mimeType": "font/otf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c92adceb88b1614db711",
+      "path": "public/assets/fonts/Workbench_Regular.json",
+      "sha256": "417bc5accab7dcf5a21738dc1fea7d1818231f084a56702e8136788fc7cfa9b1",
+      "bytes": 328697,
+      "mimeType": "application/json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c7b2e971305513da595f",
+      "path": "public/assets/fonts/Workbench.ttf",
+      "sha256": "b1db7465faf801f49ee34e2b4357f3a96ed24e08f57f3bd0b4ac9c87106490ca",
+      "bytes": 31928,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3e51c60aa9bc5ea802d0",
+      "path": "public/assets/grooveee.png",
+      "sha256": "f73fda477bf3220efbe8eeee84edd88bb1f09edc7b88a0966616cf1c6da5d945",
+      "bytes": 24479,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_309a349c1c9f765bc277",
+      "path": "public/assets/icons/estate-icons.svg",
+      "sha256": "402ddc93c225582f9b880fa5facc0a05b36807502ccbfd33ae9d6edbf0ba26cb",
+      "bytes": 13874,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7c213e1ea82811406476",
+      "path": "public/assets/icons/lock_black.svg",
+      "sha256": "8f81c8223f5bc056215a3c5679d05b7414cd6a1311c68f0d6170ac61c10d9187",
+      "bytes": 1075,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_29af36dbfa3356a43681",
+      "path": "public/assets/icons/NOTANEXIT.svg",
+      "sha256": "402ee798eadc08766fc1f064ba1f737fb38e05a1762abb2120dc07e1a358ec9e",
+      "bytes": 2565,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a2a5cb726c618b4aec4d",
+      "path": "public/assets/icons/sidebar.svg",
+      "sha256": "19aa84d6871a74bbf74d3f9c92651ff09b8d2a5385fcc7249bade522ae9fcb3e",
+      "bytes": 581,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_804da29516b00341785a",
+      "path": "public/assets/icons/Untitled-1.ai",
+      "sha256": "e5c02f601dfb099c20d232a684c4b954a0276c17861ab1da12916af61167338a",
+      "bytes": 345104,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_37b1143707c2122ea5d8",
+      "path": "public/assets/lostinseoul/home-scene/Banc.glb",
+      "sha256": "17b41f6f9e072c481558dcadb56c627e698d754382df9b120d8006acd7ee8c4f",
+      "bytes": 285600,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c1913669aa7a6fc8117a",
+      "path": "public/assets/lostinseoul/home-scene/Cables.glb",
+      "sha256": "94d998cf3bb557c005b253f89885c03a75b6f18394dba9ce7f732e5bd1c198a5",
+      "bytes": 131960,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_70d74581f051dd0c5b17",
+      "path": "public/assets/lostinseoul/home-scene/normal.jpg",
+      "sha256": "b4835aa7762c2a668050ded895da14bf0a7d6c5ecff9c7ed78dc135496bb7c7c",
+      "bytes": 312898,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8ebf84a10c107e00a629",
+      "path": "public/assets/lostinseoul/home-scene/scene.glb",
+      "sha256": "f18defb1ebb0d552d66f8345083f2e7c221c1652b67bdea4c166d6335b3af6c0",
+      "bytes": 423640,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_623eef765730f6aa25bc",
+      "path": "public/assets/lostinseoul/home-scene/shadows.png",
+      "sha256": "4397202b29a93e33bab11047fcfc5b2eed1ef402d9ea9a173785d24943924ec4",
+      "bytes": 661124,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_04ef73201b47ecdeae9d",
+      "path": "public/assets/lostinseoul/home-scene/Wall.glb",
+      "sha256": "e88fb3df85025f9bc01fc29f99ea0e2df2bfe0473d5ccb2e80ad380a534a3a39",
+      "bytes": 1872,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_628494cbee59280aa944",
+      "path": "public/assets/lostinseoul/home-video.mov",
+      "sha256": "894ac7077e91b9bf426ab9d81477976b77fdc2db0b31c766fa419a320f46fff2",
+      "bytes": 21176787,
+      "mimeType": "video/quicktime",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f1abc27c8306ae974d75",
+      "path": "public/assets/lottie-dark.lottie",
+      "sha256": "7f3ae632c4e81540da96924b9d2d7404d10ddc89458fd46ace95f1aff3169f0c",
+      "bytes": 3085,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ca5882d788362483afa2",
+      "path": "public/assets/lottie-light.lottie",
+      "sha256": "2886837b22ede014c1a7a95c4e5272cb4298d3924a430074a784f00fb2a30e90",
+      "bytes": 3183,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0f6a4bab771c562f53c5",
+      "path": "public/assets/lp_effects.png",
+      "sha256": "810ce62672af32eb0359ee1c03d3fb991a6fbc380e9793e16746d09d11b1e44c",
+      "bytes": 27904,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5976202368f131d09156",
+      "path": "public/assets/lp_grooves.png",
+      "sha256": "53665ea1f763c6043697a16f19bb4239ff392a837b56dc0b0d1cb3608fe4b86e",
+      "bytes": 22590,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e66ed2372af34c4e1688",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A-1200x630.jpg",
+      "sha256": "aca71a7fb3c7ae3836155b3754c4870e1d067490d8c8e5c30c73ea61e94dc072",
+      "bytes": 73738,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_445c1ed7752bcd5a4a5d",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A-1400x2057.jpg",
+      "sha256": "2d61c31d7e8ece917e9e22a2996d2543c032b6a58c72c899b53ba2ddbda8ac43",
+      "bytes": 307442,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e5e857a8fc1069652dac",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A-1920x2821.jpg",
+      "sha256": "999ad13fcf5db163960d15cd0fec8be4bc5736490eefeb23183bec70ab4a27c3",
+      "bytes": 619545,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_977c9a03173118b4665c",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A-300x441.jpg",
+      "sha256": "c6136ab56e892ad2616d86d507af210cb81882bf756caaae2d96cebc2cc21568",
+      "bytes": 16885,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_32ddb102ed07edeaf476",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A-500x500.jpg",
+      "sha256": "20799513fdac21f68210aeccea71c94047e7af406a069b8d320a8096a58ccdeb",
+      "bytes": 26780,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e36ca6d3829061f68277",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A-600x882.jpg",
+      "sha256": "fe374c7feddcc9cf8d410420b2d758bd042196b25b1a8e22b02837b40566fd65",
+      "bytes": 55457,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b73ee1ef6f9b16d1d071",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A-900x1322.jpg",
+      "sha256": "d9dcba523b4fa487c7277d03a71ec54f3cd0309ed84a7387f366ff822288f891",
+      "bytes": 120451,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_236d3f5ff9550599bd81",
+      "path": "public/assets/media/unsplash-omRMbFSqN6A.webp",
+      "sha256": "063aaaff60ba2a278a7bb8b56777536bb3801757aad287145cdb6238c3e6d782",
+      "bytes": 1644070,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_843cc6f1fbeaa3495f22",
+      "path": "public/assets/noise.png",
+      "sha256": "c0cda2212046c2ba929cf1f9107425f155d89e8d92672b84d977ef9a7e26cb04",
+      "bytes": 12792,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5e11a2a46b8199caa216",
+      "path": "public/assets/notch.png",
+      "sha256": "da9475ab5b37394f84c18c27f488dd14860d6cf72e7acb647f5dda52fca1c60e",
+      "bytes": 665,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6e239557daa2a34aea87",
+      "path": "public/assets/notch@2x.png",
+      "sha256": "e1c3aece17a708ae8794ee170246a79b5ec26a0bd92f2d5c92e764718c7a01c3",
+      "bytes": 1854,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c8efc802c39095d560bd",
+      "path": "public/assets/papier.png",
+      "sha256": "95591af64bab30ebc0df0ea0bc7feca8516f8db5e9d331d3ccc5a62ccf25bea4",
+      "bytes": 1184463,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5073f81db29257a7d9c4",
+      "path": "public/assets/pixel.mp4",
+      "sha256": "b2d2c283a43a2311b2f1b459c3d99b95b23a478801950dfe50a90b1fee0e53dc",
+      "bytes": 176200,
+      "mimeType": "video/mp4",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_22a93896772305329509",
+      "path": "public/assets/plate/apr25_textures/badge/back_engravings_bump.png",
+      "sha256": "0b8b9d3f78c4925de9b5a5321a0d4bb257818538c0d02da235358e056ef8a6b2",
+      "bytes": 145772,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f4ac04b13cf2a2f1805f",
+      "path": "public/assets/plate/apr25_textures/badge/back_engravings_clr.png",
+      "sha256": "af0b777a18de71f5d96fc86bbc089dfab8ab1fa4d53520d05b8990febc3617e1",
+      "bytes": 51304,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5fceceedd0a591404435",
+      "path": "public/assets/plate/apr25_textures/badge/back_engravings_nrm.png",
+      "sha256": "5a2e3f060743fc5d2d1735921e0e3c628bfc06e25b3a8cf66495af2861ed341d",
+      "bytes": 20811,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c3b345029ce24a19a790",
+      "path": "public/assets/plate/apr25_textures/badge/back_engravings_rough.png",
+      "sha256": "ec157c0574c6ca83084fd22f9464dc4b9d8ca57c6533e76367efde1467f223ea",
+      "bytes": 230977,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0750bc92b26302f9354d",
+      "path": "public/assets/plate/apr25_textures/badge/badge_compreed.glb",
+      "sha256": "b610a007ef010dfd0a97dd7ce3502f4d00fde7050814034d7783abcf933cf162",
+      "bytes": 3562568,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b740179ea8b97ddf47b6",
+      "path": "public/assets/plate/apr25_textures/badge/badge_compressed.glb",
+      "sha256": "0dd1463a854304b4dc6abb6e063fdde2b6017566a1c9cf25227a7cda9083c95e",
+      "bytes": 371252,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_dde65be9e252774b4ca8",
+      "path": "public/assets/plate/apr25_textures/badge/badge_prodce-transformed.glb",
+      "sha256": "e9f86cad6096d772a6451ba82995cadaea5b9f52f5413668de656513672efc50",
+      "bytes": 381860,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8630bdbfa2097aa45cfa",
+      "path": "public/assets/plate/apr25_textures/badge/badge_prodce.glb",
+      "sha256": "da07d4a80ebbee151eab6cf511bede0198580242e967276ed3787f2d7773f658",
+      "bytes": 10322548,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_43dd620c357a8669ce2d",
+      "path": "public/assets/plate/apr25_textures/badge/Badge_prodce.jsx",
+      "sha256": "525700576350a8f91d005ed33e5cb63df00717d4b67bc9bbd0905cf4b6e47b45",
+      "bytes": 1109,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0f641713afef5facecc2",
+      "path": "public/assets/plate/apr25_textures/badge/badge_produce.glb",
+      "sha256": "4206e7d16f7c6ef2f0173f3535c969c985553d64e36818902b733feaaeeaa516",
+      "bytes": 6517556,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_64793458531b428e264a",
+      "path": "public/assets/plate/apr25_textures/badge/BADGE-transformed.glb",
+      "sha256": "c00e1ff25fc8cc74e8bb010f6418e0745b7d96e8d3757bee2ffef962c9a9734b",
+      "bytes": 245848,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_53d501e981d841a872e3",
+      "path": "public/assets/plate/apr25_textures/badge/BADGE.glb",
+      "sha256": "c5f804d600aa7782e9bbf7dcb5f58f90903b9a7da9be4afc4601b890e4dcf0ff",
+      "bytes": 6686648,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4a740000f2b877d3151c",
+      "path": "public/assets/plate/apr25_textures/badge/BADGEd-transformed.glb",
+      "sha256": "9f61799367acaa0fb0e38701bf106e6001656a48a9165906ebeb6facd3c971b6",
+      "bytes": 1382612,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6e8a7b13048f6139a94e",
+      "path": "public/assets/plate/apr25_textures/badge/BADGEd.glb",
+      "sha256": "9d4aa9ddc5aa71d0766b76be99d059685a37a9b6ca12bbb01f69ea6dca095cbc",
+      "bytes": 26432732,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_31e2fc0cd0323d1f719f",
+      "path": "public/assets/plate/apr25_textures/badge/BADGEd.jsx",
+      "sha256": "9d5c62189a4a55fd7f64e80bf458b7b63e8450213ecc975115ab6f17575994f9",
+      "bytes": 1357,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a7a14a37c0a7aa984d71",
+      "path": "public/assets/plate/apr25_textures/badge/badgerr.glb",
+      "sha256": "f774d38959fa6f583575f776c2f898c94111f09431ae9417893d7ad7e83fbfee",
+      "bytes": 33462476,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_cab259723f2474155444",
+      "path": "public/assets/plate/apr25_textures/badge/Bagmje-transformed.glb",
+      "sha256": "84ba7ec925b641a67b7712112f306690b32247deee71dd2e4d758f2168ba185c",
+      "bytes": 1088148,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1df31c5c8caad260459d",
+      "path": "public/assets/plate/apr25_textures/badge/Bagmje.glb",
+      "sha256": "8bba619b914dae19c5025ebea29a17eb0e08b97e8f6592cb87fc4f2a5a7a22d1",
+      "bytes": 46430716,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_56767e013cdc7f9e1d97",
+      "path": "public/assets/plate/apr25_textures/badge/Bagmje.jsx",
+      "sha256": "3d1d7032dcb6d778c113d78bb55256516b589bcff3451549967ee0fc7cc8ccb0",
+      "bytes": 1015,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5af35828e205215263be",
+      "path": "public/assets/plate/apr25_textures/badge/btm_engr_clr.png",
+      "sha256": "d477b0fa100f74a8711b25197254972c1493127987372b204ca822aec84509a6",
+      "bytes": 20399,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_127dc6b4928e97c2f3bc",
+      "path": "public/assets/plate/apr25_textures/badge/btm_engr_nrm.png",
+      "sha256": "30f68c140a4ce4971b29c5d603bc18236ff7ea5f9da94f92fbd6e325cd9c0d78",
+      "bytes": 29596,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_db650668eff0c8cb2b63",
+      "path": "public/assets/plate/apr25_textures/badge/btm_engr_rough.png",
+      "sha256": "81beec64f7f830db7016810ce6c8dbf453e774639c880911bf8003e3e5b6ad9f",
+      "bytes": 63102,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_139e6418f9d75d3963c0",
+      "path": "public/assets/plate/apr25_textures/badge/clamp_bump.png",
+      "sha256": "6cdef3859527846c6d0e4d46333816fb6170e7cd9dea47d84af72d6a07a0aa86",
+      "bytes": 160912,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1348ffe135cd1f8291b5",
+      "path": "public/assets/plate/apr25_textures/badge/clamp_color.png",
+      "sha256": "17e05ef698b5071100247e485e71401854a6a6f0d0f34ddacf2b0a931833eb2a",
+      "bytes": 26745,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1da5768bf1238e9c3c79",
+      "path": "public/assets/plate/apr25_textures/badge/clamp_nrm.png",
+      "sha256": "bb87d09f9568c39549b638d992cfa9c3bdffb648fc9a799ca354394258e67c48",
+      "bytes": 349276,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0e360c9313ac222b396c",
+      "path": "public/assets/plate/apr25_textures/badge/clamp_rough.png",
+      "sha256": "ed84ed766431e2bea2159fe67240595357c728d4a140cf027989283f754abdad",
+      "bytes": 193333,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9044b0207156531234b8",
+      "path": "public/assets/plate/apr25_textures/badge/clip_bump.png",
+      "sha256": "1d75b1e0d6b06ac5de9623f1bdd69f513c0139c7a61542bd42c57b4ee5fae38f",
+      "bytes": 150382,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9128f8377cdeb0cf739b",
+      "path": "public/assets/plate/apr25_textures/badge/clip_color.png",
+      "sha256": "8a2a8ec4a5fca31c2ad2d725e065d94f011ca63fb4d16871039f148b5ab00eb8",
+      "bytes": 31306,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f1450a276919317011d4",
+      "path": "public/assets/plate/apr25_textures/badge/clip_nrm.png",
+      "sha256": "fa655f5f5fec85e2b28bc4f781c2015ff328c3e6f0b34e6c72e921c623bdfe9f",
+      "bytes": 272142,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4c8e10ca168e83853bca",
+      "path": "public/assets/plate/apr25_textures/badge/clip_rough.png",
+      "sha256": "ea2707be15f55acadf58a7646426df60f96b32b6620c83836c09990c1a7318ec",
+      "bytes": 199403,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_fb0266d1ab58792f9fa7",
+      "path": "public/assets/plate/apr25_textures/badge/frame_bump.png",
+      "sha256": "c12896bb6239348ab89e6fac8ee45902e90296562044ed189b7e3a13882122d4",
+      "bytes": 19503,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_736b55faa6daa0adad45",
+      "path": "public/assets/plate/apr25_textures/badge/frame_clr.png",
+      "sha256": "501bcfa4df66db933dd299bbaf9a9ee728f31a97d14c80038dd1d178849cc829",
+      "bytes": 9812,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1d73ab68733bd1816062",
+      "path": "public/assets/plate/apr25_textures/badge/frame_nrm.png",
+      "sha256": "ec8aada1067fcada11b5802186b330869e4155d5169d82b0450555692b62195e",
+      "bytes": 47274,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3f17d9bbf04f71fc0381",
+      "path": "public/assets/plate/apr25_textures/badge/frame_rough.png",
+      "sha256": "2b0d9b71803e91e62b5322e8b1fd49ce3d627bf92a77238c4fd2da74d402f0fe",
+      "bytes": 38218,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4a7dcb5eafc3b3bcdade",
+      "path": "public/assets/plate/apr25_textures/badge/logo_bump.png",
+      "sha256": "5ddc42f4adee8d2e7872bc41158368e648e5b716bec2813c640901fcd1a337e9",
+      "bytes": 41842,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6d66e74baaac50720916",
+      "path": "public/assets/plate/apr25_textures/badge/logo_clr.png",
+      "sha256": "1543bf342c50372ed3bcf041c742805699158acdf17a756ff57f0eb692d92568",
+      "bytes": 8282,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c8c62171212ab5e9d61d",
+      "path": "public/assets/plate/apr25_textures/badge/logo_rough.png",
+      "sha256": "e281f3767870a06b641523015b0659fc53f214d7ebf65e51fa4a3ffe15e34742",
+      "bytes": 44991,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_86aba5d1251b53faff1b",
+      "path": "public/assets/plate/apr25_textures/grain_metal/back_engrave_rough.jpg",
+      "sha256": "34f062cd7be9d9b19266f1f11e98a6584153a8af7e78b8b2df4db0ae247f308f",
+      "bytes": 174621,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_70b15a4ba5137dfcd204",
+      "path": "public/assets/plate/apr25_textures/grain_metal/back_engrave.jpg",
+      "sha256": "30bf061146c207b2d384f84a914dcb626c620cb493833ad0e144901fb70826e6",
+      "bytes": 264458,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e393bbeababfc1e854d5",
+      "path": "public/assets/plate/apr25_textures/grain_metal/clipping_metal.jpg",
+      "sha256": "3ef7bb1246ef0193cb50ecfc16c2fe9d9eee8bf5ac2d06daa3a7f49391c35184",
+      "bytes": 1525311,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6aa13d4b29e79062ebf7",
+      "path": "public/assets/plate/apr25_textures/grain_metal/clipping_rough.jpg",
+      "sha256": "cbdf18d7d7551fe5ad680c931e8df80f0172dfaa176ede483f22863145260544",
+      "bytes": 931219,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0b093ba073ed02d713f1",
+      "path": "public/assets/plate/apr25_textures/grain_metal/color_1k.png",
+      "sha256": "4c580859195175544f8afdef49b853d9335361bf6a199d9bffb7f33db091c57e",
+      "bytes": 20652,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_cc0689ef53bcef5a78b2",
+      "path": "public/assets/plate/apr25_textures/grain_metal/displacement.jpg",
+      "sha256": "552d2012f5a579611e48487dd444e7117d6f6e5dd37011f0b1a2f0750984dc15",
+      "bytes": 219333,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_48a61fd9d7b6c557971c",
+      "path": "public/assets/plate/apr25_textures/grain_metal/frame_displacement.jpg",
+      "sha256": "6d66480317a1c359be8d1dc62cafc416709f5b0b5b0bbdbae277d72d806e81e2",
+      "bytes": 3124862,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_885e6a6b3244a8a09ae1",
+      "path": "public/assets/plate/apr25_textures/grain_metal/frame_displacement.png",
+      "sha256": "58aef8678ec3dd6c7212a29a91b082c4ef994c8f45e15c09b6b97cf283e7bfe4",
+      "bytes": 8413401,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4294ccca7a3d1f0c3aea",
+      "path": "public/assets/plate/apr25_textures/grain_metal/frame_nm.jpg",
+      "sha256": "3ba09bd5ed9ed607f90b4ba1baa56744f7e7360022d80ba62d2c1254a54800f7",
+      "bytes": 4473969,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5c82406ff073385331e0",
+      "path": "public/assets/plate/apr25_textures/grain_metal/frame_rough.jpg",
+      "sha256": "2693d52964c17ebed9a77c96389b3ce98e1c55ab0c9eff2fbb3f58949e1e3a54",
+      "bytes": 3206077,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c81ad87f8ce2e0b654f4",
+      "path": "public/assets/plate/apr25_textures/grain_metal/roughness_1k.png",
+      "sha256": "1c0348a0f90674944044e00e9cb700f6d0cd21cdeb228782b88594f8b3760e22",
+      "bytes": 1117573,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_259ced9a1a6423a3fedf",
+      "path": "public/assets/plate/badge/back_engraving_colors.png",
+      "sha256": "615a4a98335c846695cd821a4b6728e87d40835b61598c7765c9113e3983cf0f",
+      "bytes": 31838,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_63f1ba26d8633be8d2b9",
+      "path": "public/assets/plate/badge/back_engraving_normal.png",
+      "sha256": "a4948bd2b6cae3fe691400ad1d372c59a79028beb92cc5d5084b91290fbfcf51",
+      "bytes": 461739,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d74e1fc0457f15fab178",
+      "path": "public/assets/plate/badge/back_engraving_roughness.png",
+      "sha256": "54eb0450b6488b7bd67606da7f1b513f9cca6e9b37c943a4e9c6478cb021897f",
+      "bytes": 137233,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_39067b73dd8b53629cd5",
+      "path": "public/assets/plate/badge/BADGE-transformed.glb",
+      "sha256": "e96fa2b418cd433fe191f292004203038df55e71e2579d9a54a8feb60bd28672",
+      "bytes": 205092,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_25e6ed0e4a8dd7a5d705",
+      "path": "public/assets/plate/badge/BADGE.glb",
+      "sha256": "13fcddcbbff4b041c9557df0309d46e144d42fa7dc7d1532fce2fe533c75687f",
+      "bytes": 4862072,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f8cf9950c6a5e7d2b838",
+      "path": "public/assets/plate/badge/btm_engraving_colors.png",
+      "sha256": "6e775c22b1952e63405f43b0a81613882feb0d1339932bce5999f06f5294fc46",
+      "bytes": 47968,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a635f204dafe7cab742f",
+      "path": "public/assets/plate/badge/btm_engraving_normal.png",
+      "sha256": "ff162fecaa33c365953720bb3cba8c61d68800de332e3a6f4eb1d362b6312691",
+      "bytes": 728765,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d88f1f9a206d034b407a",
+      "path": "public/assets/plate/badge/btm_engraving_roughness.png",
+      "sha256": "5729c737314d0ce828a45e432eac6e326c82c5fe29c54dfd38361612ce7f69e3",
+      "bytes": 39497,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8f2c9e239c143ae28066",
+      "path": "public/assets/plate/badge/clamp_colors.png",
+      "sha256": "ab3e039fdaf93dd55b541d7fc68dcdda61823fff5bead03fea6942b092ba0e8a",
+      "bytes": 61717,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ac3d019355cd809ddf54",
+      "path": "public/assets/plate/badge/clamp_normal.png",
+      "sha256": "ed2dc419ae2513411df91769a76b98769f27bd09117504c9a3a231ff71c5dabd",
+      "bytes": 802484,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5021962ec54f835f1b63",
+      "path": "public/assets/plate/badge/clamp_roughness.png",
+      "sha256": "008b318151cae1358aa701aed696ab45a8945a43a772b2e962fe64853bb893fb",
+      "bytes": 24945,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f4378e1f0df374ff9f40",
+      "path": "public/assets/plate/badge/clip_colors.png",
+      "sha256": "da27eeb45137955256dda08369c6193ca1bbb2de49baf1b1501cc3904128145c",
+      "bytes": 36009,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_560175afeb94947ace57",
+      "path": "public/assets/plate/badge/clip_normal.png",
+      "sha256": "59f7c2f2cb31763bbfafeacc074c577d1e21ba0fb5aea97186f9768a3782516a",
+      "bytes": 2186813,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_64a8665015338f984f60",
+      "path": "public/assets/plate/badge/clip_roughness.png",
+      "sha256": "25e2322cc86f6d576e2ce651cadcc96fd3b9dce7a324c493e957bc1e479acbd4",
+      "bytes": 111261,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_767b26d8746b1b5f6b8f",
+      "path": "public/assets/plate/badge/frame_colors.png",
+      "sha256": "133a1c532bc5cacd79b64d4a63a67dca14815a70889193f04c492d5176219f24",
+      "bytes": 11353,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_835a5525581ed28a2452",
+      "path": "public/assets/plate/badge/frame_displacement.png",
+      "sha256": "100e87fbb7f808445bd33f08017cc23faab3abc8401dac1b64708caf8899a883",
+      "bytes": 343735,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0fab4b45c634eeef4887",
+      "path": "public/assets/plate/badge/frame_normal.png",
+      "sha256": "8f4f077a2132ab9a091d32342ad925fab46206005fa79d0eada1a22d3a70be54",
+      "bytes": 207767,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b72dd5f3f00cec654994",
+      "path": "public/assets/plate/badge/frame_roughness.png",
+      "sha256": "818ff6c5e64215a32cc89052b5380741ba1acaf27c8adc307f8eaee3d5d68145",
+      "bytes": 59568,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_69ecb513f389ba68c8d0",
+      "path": "public/assets/plate/badge/front_btm_engraving.png",
+      "sha256": "ae1e75dcf326c834c036b43522910ca8ab7d09a26e2870929aa4445397eeb4fe",
+      "bytes": 216596,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c8a3780085a81e34b3ff",
+      "path": "public/assets/plate/badge/logo_colors.png",
+      "sha256": "867894d84cac50293bd7ecf55bc43beee93c3595fe83be0671d70dc5862fb08c",
+      "bytes": 16182,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b65a7e0ea0d07d741ee2",
+      "path": "public/assets/plate/badge/logo_normal.png",
+      "sha256": "6d9a0f6ed9d3a91bf7caeebed7cb44aebd6c6a95b2961f2c41222f2dbbe77543",
+      "bytes": 268486,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ba26221ecc7adf9ac79c",
+      "path": "public/assets/plate/badge/logo_roughness.png",
+      "sha256": "665b37a5ad1c0aa80d54383065bbbaee86cfddfc7071029e8cc146f3ceb05843",
+      "bytes": 171107,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c8d7c0e14bfe07d4aacf",
+      "path": "public/assets/plate/badge/tagme-transformed.glb",
+      "sha256": "da93a6911780f8efe80063fa13bd319f3664786e133b7bc7faf01c8eefe96574",
+      "bytes": 207596,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d6e31516396db6fb0627",
+      "path": "public/assets/plate/badge/tagme.glb",
+      "sha256": "7b9dfc22b8e776e405c93c1948c2c365e53d5813c120f26bd735e3e1bd639b77",
+      "bytes": 6914356,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c900f12f88b7bffdc5e8",
+      "path": "public/assets/plate/pl/col.png",
+      "sha256": "fddbeedc9cd453963510de701cb99468d66eb254912314ad209dc8981573e318",
+      "bytes": 5522214,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4009f0436962b987acb8",
+      "path": "public/assets/plate/pl/col540.png",
+      "sha256": "f30b117b955155c1d38fafea0ee4754101e7e6c7a6671ab73c26145e81437804",
+      "bytes": 440268,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_decacdc87136b4e9febe",
+      "path": "public/assets/plate/pl/nml.png",
+      "sha256": "aa03fd3d4e55274a17699714e87bac1a6ce72af99ad1d10ec9630d646c0263e6",
+      "bytes": 1637411,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d4295c2c40fb8189bccf",
+      "path": "public/assets/plate/pl/nml54.png",
+      "sha256": "1d7a2ada27de1ff0f067d8613ed0aea73a4a1a6b26943f720ea012b7fdcc9765",
+      "bytes": 649088,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ad172ef45e3a33180780",
+      "path": "public/assets/plate/pl/PACKAGE_2.glb",
+      "sha256": "20516893eb6bb18d6fa221f7bbc5257a7ba5bc3c67d6f74c8102c7e81dfb20e7",
+      "bytes": 6429644,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_00ba69318a1da0bfc6e8",
+      "path": "public/assets/plate/pl/rou.png",
+      "sha256": "8ca6176f803336cb4066e6c4242f3c22486095686361fb0bd2a485f489a731ca",
+      "bytes": 1030066,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_35a43562a08ae8f9c064",
+      "path": "public/assets/plate/pl/rou540.png",
+      "sha256": "b04d4791cd0cf2f2a553d03eae7088685eb37a235c3c58f1780ccfac3a87d968",
+      "bytes": 168087,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5ba59d8022e0a67f425e",
+      "path": "public/assets/plate/pl/tag (3).glb",
+      "sha256": "0e98c648156a6c39b27327c640e47ba3235add87afa1c88e998c8fa6f80f208a",
+      "bytes": 261320,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_cd43f2821664be6c40d7",
+      "path": "public/assets/rp_plaque/model/Plat.tsx",
+      "sha256": "afd45888a9f82e3f84569030b67a8e006a34f10c3cd008e6015fd6a055a051b2",
+      "bytes": 2602,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_dd7c3d281b8660eb39ae",
+      "path": "public/assets/rp_plaque/model/plate.glb",
+      "sha256": "9566d4564e651d6db07010957f4852b15df7166f5ef075ccff4914d1a1928e3c",
+      "bytes": 28327260,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3fee60c214c52dd0f29c",
+      "path": "public/assets/rp_plaque/model/Plate.jsx",
+      "sha256": "80d88667518f858e36649ad09bf62f6477d21b44c3c02a8910f2c3462deda69d",
+      "bytes": 1701,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ef8fad922ae9d4592184",
+      "path": "public/assets/rp_plaque/model/pp.glb",
+      "sha256": "427d94902d6562de625a3d1084efeff556273661d7ab66f143da974db7e6102a",
+      "bytes": 4017468,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e14226a0477de00ce346",
+      "path": "public/assets/rp_plaque/model/Pp.tsx",
+      "sha256": "b27a793b1f749c1de3490403b8757dc2accbf63dc6071515a236c488b109e2cf",
+      "bytes": 3300,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0cca280cdf7f65af2714",
+      "path": "public/assets/rp_plaque/textures/badge18.glb",
+      "sha256": "875e6a064c324967602bc38977a84023b08ed21ceb2b5b74f11c86e2a7f78c37",
+      "bytes": 2224788,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d1561405d3172e1943e5",
+      "path": "public/assets/rp_plaque/textures/cards_b.png",
+      "sha256": "f39346b5f9044f67da68043b01a229186bcea3437147ec46317ffca47070dd86",
+      "bytes": 6740886,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_dada7071d4a05f8fd535",
+      "path": "public/assets/rp_plaque/textures/cards_d.png",
+      "sha256": "63dcea9f492960b0a676eaed2e542521884d038f053c9497d51404346d0c8698",
+      "bytes": 7693163,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_930915a615eef2162394",
+      "path": "public/assets/rp_plaque/textures/cards_n.png",
+      "sha256": "f41c91a529738bc838f9753b6be78041cfe30acc04740f09f9bc6adac7f7b59a",
+      "bytes": 15078897,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_58f5d55d9f6d090b2576",
+      "path": "public/assets/rp_plaque/textures/cards_r.png",
+      "sha256": "663af2707ff09875bf1e9ae84b81b70f01c7afe5001a0d366b1d8ab574139ab4",
+      "bytes": 69227,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1d492421c12cf7c19550",
+      "path": "public/assets/rp_plaque/textures/engravings_b.png",
+      "sha256": "482d03e08b151b4cf4c00feddb29ca480ebeb2b0cdb0c783580947e1e689fd79",
+      "bytes": 1928686,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5814590c70296c840cee",
+      "path": "public/assets/rp_plaque/textures/engravings_d.png",
+      "sha256": "caab9919521de94668b97e426d9f2d741d86f5e97b8c5cc8b921e096decb4798",
+      "bytes": 906573,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a5482c553c5f1f11574b",
+      "path": "public/assets/rp_plaque/textures/engravings_n.png",
+      "sha256": "91e43ea3bee05045793a68ab174bded9c740d2061d96bbb2b141824e0ec18b85",
+      "bytes": 9870276,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d5b4776659ecb8b5f189",
+      "path": "public/assets/rp_plaque/textures/engravings_r.png",
+      "sha256": "318a3ae108ae16f37eafb94f2499cb486124a1e9870b179d00a9a65100d7c9e7",
+      "bytes": 561833,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f22b3758a0f899669a40",
+      "path": "public/assets/rp_plaque/textures/frame_engraving_b.png",
+      "sha256": "ff7fc0ba043d4704cc2866f8837fbec48c7d2b2709ae56807eab49bf26a5e71a",
+      "bytes": 3763458,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_98123b893eb70fba842b",
+      "path": "public/assets/rp_plaque/textures/frame_engraving_d.png",
+      "sha256": "dd56ccfebd5632f669fb0dd35d05b8a9dc0de55e536f78b03ed142200a0ac011",
+      "bytes": 2718072,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a46f5bc9fe9e785cea4c",
+      "path": "public/assets/rp_plaque/textures/frame_engraving_n.png",
+      "sha256": "ffbc30d6ad576ba9cee04651dcd60826c10a74f5a440c30d3aba6f424dff3023",
+      "bytes": 16585941,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_11162f935dee2b1214ef",
+      "path": "public/assets/rp_plaque/textures/frame_engraving_r.png",
+      "sha256": "630e31517274a1dd91ffd395a712d60129499cc7e76d68df186405de9ffd7bbb",
+      "bytes": 375365,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c2e339eb89cfa4c010c3",
+      "path": "public/assets/rp_plaque/textures/line_c.png",
+      "sha256": "6ad06b1dcc80afb7d6305ae17b48458d5bbecaea1fa1db48ef0fbcf8f2194ce9",
+      "bytes": 328868,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_04e9886fd110052a7f0e",
+      "path": "public/assets/rp_plaque/textures/line_d.png",
+      "sha256": "ba46abc154fef0a07312aeb6e57c25e0e56af24031bab1099e5469cc86b744a1",
+      "bytes": 1613317,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3ba63805dcf2aa9c3031",
+      "path": "public/assets/rp_plaque/textures/line_h.png",
+      "sha256": "bd337c3ad2670ffeb6f1c4537980c29f94f98dc3b77323eb6a71e1405d3eeaca",
+      "bytes": 79966,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0eb0db4b306462d42662",
+      "path": "public/assets/rp_plaque/textures/line_m.png",
+      "sha256": "34c736fbaac5bf7cea315a09b0a9dbb43b0b683474104b8c4d9afadfe98ee20d",
+      "bytes": 123273,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f01454bd765581b6b629",
+      "path": "public/assets/rp_plaque/textures/line_n.png",
+      "sha256": "3fa3fe91dcc4008c1079ba82c3153b1c7af5ec5d14c1fe026236d4bc4f64cda3",
+      "bytes": 254749,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_622938120d8c6217c758",
+      "path": "public/assets/rp_plaque/textures/prev/card_d.png",
+      "sha256": "56ec11c437c5e91be9d39da8ffc181704989d297252f1870eb12d010a3094771",
+      "bytes": 10344698,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d9e325ce9f4905e9893d",
+      "path": "public/assets/rp_plaque/textures/prev/card_e.png",
+      "sha256": "48421c2c207977f2b431557a04cbaa1097bf3508a332ee8976d5602ff87ad0b3",
+      "bytes": 11271927,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f4cc24877221c82a2c9f",
+      "path": "public/assets/rp_plaque/textures/prev/card_n.png",
+      "sha256": "1316f51eb527a265c4b09784a5c78f8369c90e5345d81f498a101e5635f188f3",
+      "bytes": 20195101,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b9b1779548d819f2962b",
+      "path": "public/assets/rp_plaque/textures/prev/card_r.png",
+      "sha256": "8e03e76742bffde576378b3c49bab5a506dabf4af1c8d045e4d4ca1bf0fcfbbf",
+      "bytes": 114983,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_847c61ee4589a61c30b0",
+      "path": "public/assets/rp_plaque/textures/prev/clamp_d.png",
+      "sha256": "c78afb8d3e8c683c25adb8cc07f654dd2a627afd39a937d4ddc91789d2d3f524",
+      "bytes": 88215,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b2238cb660801b8e58cf",
+      "path": "public/assets/rp_plaque/textures/prev/clamp_n.png",
+      "sha256": "f32d412b0a96df32fde9845759bb36618fc0f6850de934260bc5134f09b42b5c",
+      "bytes": 5145430,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e28dda10749850a51722",
+      "path": "public/assets/rp_plaque/textures/prev/clamp_r.png",
+      "sha256": "614664833c5eb645b3c1f736d76ed3a12893d7810b814e1f1f4cd2e6598fce54",
+      "bytes": 84053,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_842948eb4696a992d466",
+      "path": "public/assets/rp_plaque/textures/prev/clip_d.png",
+      "sha256": "780f66439d11ee0ccb706589a19a601bf5641c27e507c09f924dd4b0b4137304",
+      "bytes": 181926,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c9dc8670aca992a8462b",
+      "path": "public/assets/rp_plaque/textures/prev/clip_n.png",
+      "sha256": "983e9f76dc2bad904ececa61ae2ad8fa82d1bf1ef067888a323a29453ab93cc8",
+      "bytes": 1551267,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a82fef6dd3da0cedb63e",
+      "path": "public/assets/rp_plaque/textures/prev/clip_r.png",
+      "sha256": "2d8f613e7015394cf5361fd00b3553ba640b15e868322d9fc79871f729d25296",
+      "bytes": 172953,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7223c08b56ba4aaea4dd",
+      "path": "public/assets/rp_plaque/textures/prev/engravings_d.png",
+      "sha256": "63905fa879e642bcc7d914a4f788002b84d9a2d00633733cc9eb95c034a88d4f",
+      "bytes": 1162436,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_57a0a0d2c1d1e4b2827a",
+      "path": "public/assets/rp_plaque/textures/prev/engravings_e.png",
+      "sha256": "0f0b5dfdecec67e73d22bbe09fdd2eb3f80447d65ca9d50b0ffa834762dd3c09",
+      "bytes": 905280,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ca86ab1c4da3f40c3210",
+      "path": "public/assets/rp_plaque/textures/prev/engravings_n.png",
+      "sha256": "797147ce5d43e6b0d42a4bb38cf852f304dafa29a654cdb02ff958e6ca6d68c2",
+      "bytes": 9614928,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_11d737e73bae6e02b5f8",
+      "path": "public/assets/rp_plaque/textures/prev/engravings_r.png",
+      "sha256": "fb4741c916c2599cf0a18ec96713dc3203ac3ca144329d044246f94b7b3b5205",
+      "bytes": 722190,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5e4d46295632dd361d23",
+      "path": "public/assets/rp_plaque/textures/prev/frame_d.png",
+      "sha256": "4138e6f110cf4c660b2709c88b9a61922782fd808ac0967c774b58f3678be1f9",
+      "bytes": 35569,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_21e24353621f467b7eb9",
+      "path": "public/assets/rp_plaque/textures/prev/frame_n.png",
+      "sha256": "5132ffde49d571d080b07bdf223ef64b4fe70c353ef3fb05b41d7a4447fe021d",
+      "bytes": 252150,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7c402885ab4510cbd67c",
+      "path": "public/assets/rp_plaque/textures/prev/frame_r.png",
+      "sha256": "aa15009a200476b70ff1a71ed6e1d8fbe724f965ba45c77083470db48c5be243",
+      "bytes": 25339,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b73eb8089112b58122ad",
+      "path": "public/assets/scroll.gif",
+      "sha256": "7a33e972716953fae6bfb475efb7c94ce2528e338377d1cb4526839ee8640794",
+      "bytes": 38126,
+      "mimeType": "image/gif",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8f8bc3561a03482778e9",
+      "path": "public/assets/seamless.png",
+      "sha256": "e3ebe7792cb613d1d09bebb2e890d1896869b053efa0cc0aa736518be26335c6",
+      "bytes": 102994,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e8277a33af7a83bc84b6",
+      "path": "public/assets/SIGN_2308.svg",
+      "sha256": "f00162e9583d224983cfbfb85796f75fccb224b5b9f1edeb6362b358d6f5b156",
+      "bytes": 25701,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8fe1d57c846cc5d10d73",
+      "path": "public/assets/signage.svg",
+      "sha256": "51c771d80272d6e2665965cd52bd717800198c08a2586e50c0602a8b53695972",
+      "bytes": 584784,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5004f6779fc2c534715a",
+      "path": "public/assets/signature.svg",
+      "sha256": "1db5c5df2cb4a3c86b111c5ada5dbaa500736f0b58c1d00a38fdcbb91bc61374",
+      "bytes": 306648,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_168fd7bc02f1e2fef718",
+      "path": "public/assets/ss.svg",
+      "sha256": "fff32a6d688f801255a13135e00aaa691da9b9ea93329034a9c8d30dec8ae9c9",
+      "bytes": 138661,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_aa807505e2bd9b4f93b3",
+      "path": "public/assets/starliner-backdrop.svg",
+      "sha256": "ccb9e2cfaeac2f54668ad34e492328efa0ba879beb191782b3b535511b9f0d27",
+      "bytes": 21116,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_58e39c054c177468cdc7",
+      "path": "public/assets/textures/lp/base.png",
+      "sha256": "85385a53b97fa0b12a9606fab7c32ddb7e5d48e721437a23058b5a10d3e3d8e1",
+      "bytes": 7946,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_98d69c7e5164f75822d3",
+      "path": "public/assets/textures/lp/base@2x.png",
+      "sha256": "6ff82d4d13d0516f475f4d1263dd181fb5cdc9fdd8ab9730a3d29c1d19cbda7e",
+      "bytes": 12884,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1629d19ccc1ef4d07076",
+      "path": "public/assets/textures/lp/disk.png",
+      "sha256": "6da36364fda827b0aa68d9ffde0f80ee5b820002e5c33232cce84f7f547cc607",
+      "bytes": 125574,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a7e78fc3b16cd866a52f",
+      "path": "public/assets/textures/lp/disk@2x.png",
+      "sha256": "221ea43d9ef3978f6c9b9de6071f30d0ff767b9dc463ff89a84170087b360c35",
+      "bytes": 422263,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9aa0804f0fcc842565dd",
+      "path": "public/assets/textures/lp/inner_groove.png",
+      "sha256": "eae6620fef17c35591e5f6fe01f3aa943681c3140b8c1baf79405b1071f46ead",
+      "bytes": 3057,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6f3dbc15abcc69ca2c30",
+      "path": "public/assets/textures/lp/inner_groove@2x.png",
+      "sha256": "7dfc54609fc3e532318a0d9396c0615d5c45f58f6eb8f5175593ef8d9bf98e08",
+      "bytes": 18763,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c665de31a74c0ff91744",
+      "path": "public/assets/textures/lp/lp_bleu_effect.png",
+      "sha256": "16577686acdccf44cb390adac84ebd65da00d83686ceac0d598fd6760c2970e2",
+      "bytes": 22109,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f5977f181aec1c2befb4",
+      "path": "public/assets/textures/lp/lp_bleu_effect@2x.png",
+      "sha256": "f7b90bc23f4af8c384ed5ecc800eb369270628fee648d8737566f05af6074400",
+      "bytes": 67248,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0acbe0ee11510d3b7fab",
+      "path": "public/assets/textures/lp/lp_effects.png",
+      "sha256": "810ce62672af32eb0359ee1c03d3fb991a6fbc380e9793e16746d09d11b1e44c",
+      "bytes": 27904,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5c93cff4dc550654c02d",
+      "path": "public/assets/textures/lp/lp_effects@2x.png",
+      "sha256": "c06a97f0a8ecbad6352be9c1a87f7ff798b99703124d46c49d915c6f77df4a9b",
+      "bytes": 75565,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_af5c086251dec4555569",
+      "path": "public/assets/textures/lp/lp_gradient_effects_bo.png",
+      "sha256": "26d5c055ab6e2c114ea029eb6fe738d180fc0142de79d4348b39c1d201186ecf",
+      "bytes": 72949,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_737aa34f63177d95c482",
+      "path": "public/assets/textures/lp/lp_gradient_effects_bo@2x.png",
+      "sha256": "00b1b573c88e609acbbea7f5c09e8cae53807763c5f506de24eef97c919b694f",
+      "bytes": 193789,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_359c64fe314d0996906d",
+      "path": "public/assets/textures/lp/lp_grooves_bleu_op20.png",
+      "sha256": "a107a55b958e10873e98571c5d953758fe5c15068ce34f3a1a77e5059d7622fc",
+      "bytes": 22149,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_90f65dfffed62b282a63",
+      "path": "public/assets/textures/lp/lp_grooves_bleu_op20@2x.png",
+      "sha256": "06ac97e472c35672fb3a94a14ce32108f7df618d2c7edb891e3092ab0e9d6852",
+      "bytes": 67003,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7fb026e653ee542f3e16",
+      "path": "public/assets/textures/lp/lp_grooves_gradient_bo.png",
+      "sha256": "34b59ce7271614987e7881d1a3f44a0161bf757a935414c79733225d17576841",
+      "bytes": 56102,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_97e8113fe198bd438970",
+      "path": "public/assets/textures/lp/lp_grooves_gradient_bo@2x.png",
+      "sha256": "867e6a34ee8f974ea842ed46f9b4915f3ad3fb7f3907acc6aaf4613b418b09b0",
+      "bytes": 159955,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_64c9180e9b3751cf4618",
+      "path": "public/assets/textures/lp/lp_grooves_inv_op35.png",
+      "sha256": "8116c3de038e85dc241a10d4e7a7cefa3f9cc5ec608a68ed7663a973e27f8ab5",
+      "bytes": 22601,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bac2048418baa7240fd0",
+      "path": "public/assets/textures/lp/lp_grooves_inv_op35@2x.png",
+      "sha256": "64b75d99577fcc0df17c18c5dd5bbed9ce1052b45aeb4bc0363698fabe0462f0",
+      "bytes": 67480,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5ea48c888f34b968bdd9",
+      "path": "public/assets/textures/lp/lp_grooves_op75.png",
+      "sha256": "f37fb142b08c2462078b4c20e453f5d338a2c924d9496a18dc1c0b34fd024888",
+      "bytes": 22307,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5cc9d340bcb2de6612e8",
+      "path": "public/assets/textures/lp/lp_grooves_op75@2x.png",
+      "sha256": "4affc738dc16761773b0a691ed66d90539f2848186bb8636151fdd868b0e11a0",
+      "bytes": 67647,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d61a1b120a0842dfbaea",
+      "path": "public/assets/textures/lp/lp_grooves.png",
+      "sha256": "f333d4fb44ff48e883606652202144ad050baf5fe776ec8a002bdb9725b4e0b0",
+      "bytes": 22305,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b6531e87c2ab385607cd",
+      "path": "public/assets/textures/lp/lp_grooves@2x.png",
+      "sha256": "97d70a30ccf44192a41dd99b4b576cfa027e9353ead9c00c302740646db18982",
+      "bytes": 66764,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_afc9fbc6dd65232a4f6e",
+      "path": "public/assets/textures/lp/lp_inner_grooves_1.png",
+      "sha256": "667ef7e0316d1a4e2c5e76c626401d992cece013b554d911f9163adf9f72d8d0",
+      "bytes": 14626,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ca76c01ae9806fd2d171",
+      "path": "public/assets/textures/lp/lp_inner_grooves_1@2x.png",
+      "sha256": "882177dbc6e41737f45f58537e776a3fef94aedb61bb70e6f30a69b67cd1b96c",
+      "bytes": 46490,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3374cdba5e358556c245",
+      "path": "public/assets/textures/lp/lp_inner_grooves.png",
+      "sha256": "fed292fe8f5c5bdc579c839a2b63642ea8ad9f41b6b1eb7a1c7b52b89803113e",
+      "bytes": 7555,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3e420351b9dcaf77f4f5",
+      "path": "public/assets/textures/lp/lp_inner_grooves@2x.png",
+      "sha256": "9a09648e88f6d14f231ab89b6f8889e14f8ab2ac8fb1170294feb81100c6840d",
+      "bytes": 30335,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7734f2209224dd2c10e2",
+      "path": "public/assets/textures/lp/lp_opacitymask.png",
+      "sha256": "353d4f76c45f1ff917c8a2f96028395176131cc879e42f242b7e0c4161a041be",
+      "bytes": 47059,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_29f17c89ac8ac95c6779",
+      "path": "public/assets/textures/lp/lp_opacitymask@2x.png",
+      "sha256": "ad5b5159649b50db1d26c4901748d303ea2aaab37da5ef4991c2a69f262d9eb7",
+      "bytes": 119946,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_fc827e52e5b46c0b4cb5",
+      "path": "public/assets/textures/lp/lp_svg.png",
+      "sha256": "183ce55da63ae5385d9ebb46777aa9e23183c1111da087303b03a8b5260a223f",
+      "bytes": 101831,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_10a8acf0e51efdd36557",
+      "path": "public/assets/textures/lp/lp_svg@2x.png",
+      "sha256": "f51524d68a9ad7bbbb2a44dd085a5654fa4a602ec79b136d44b2aca8de10d8ae",
+      "bytes": 378569,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_54d1fca151732ce10434",
+      "path": "public/assets/textures/photograph/672a4022c04412b253b0af22_card-2_back@2x.png",
+      "sha256": "2d8977e402fff356374890614eee1260eb07dc08f8c32bca83554fdbd596772e",
+      "bytes": 133202,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a522da8d5e5de7ffc4fe",
+      "path": "public/assets/textures/photograph/apple-touch-icon.png",
+      "sha256": "83deb83b401bbb3340a717cfc0d212f3c9b339267b6230bb6e7d8f5f8ff16e80",
+      "bytes": 91828,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_021aac2869661f4301ec",
+      "path": "public/assets/textures/photograph/card-2_front-clear@2x.png",
+      "sha256": "ef8e7d2593ceb6dbb9532b42d00d7e0d361bbee1c5e6f88ffa9a6d0e134f9f1b",
+      "bytes": 113125,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_21dc5922f816a23030b4",
+      "path": "public/assets/textures/photograph/card-4_back-2@2x.png",
+      "sha256": "ab0bc5be5156f41801621eae48f58e4382c97a7a8b561868a66fc20f2cef6995",
+      "bytes": 92275,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_343df5d42225c7fdefb8",
+      "path": "public/assets/textures/photograph/card-4_front-clear@2x.png",
+      "sha256": "83deb83b401bbb3340a717cfc0d212f3c9b339267b6230bb6e7d8f5f8ff16e80",
+      "bytes": 91828,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_dc92fdc447be8537617c",
+      "path": "public/assets/theme-init.min.js",
+      "sha256": "0a0e92a43b02d85b610f91fa8405aa6ed096d362be58da56a09665c740986982",
+      "bytes": 908,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a1eb7c02f628d856f845",
+      "path": "public/assets/three/Asset 27.svg",
+      "sha256": "dab61d1bca98600121f738dc71c6e500cdd07954efba43c9169ffdba7e7db522",
+      "bytes": 21012,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c8e6908628d5ad343878",
+      "path": "public/assets/three/Asset 28.svg",
+      "sha256": "91dfc058af44bb7cc331e9c221a03f76c50d319bd54f4611ea6b8a9f33f91740",
+      "bytes": 718,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_594602a33454177e5e05",
+      "path": "public/assets/three/Asset 29.svg",
+      "sha256": "fac1d36bb1a741e73bda51feb9c4693d02786406eea660d2025c90f81dc11198",
+      "bytes": 878,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1663b5cf3041776ead3d",
+      "path": "public/assets/three/Asset 30.svg",
+      "sha256": "92f879185c544a01b3ab79ac994211cf5f2b7a07853862778687f9c62827c8e2",
+      "bytes": 882,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_faf337c7c7c0a04885ee",
+      "path": "public/assets/three/badge/badgeblend.glb",
+      "sha256": "db78a6377fc601094dbeaec424169c39a47171e4fdc559a39690f958ab3821a3",
+      "bytes": 8851504,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f7b6812aa1a88595de7a",
+      "path": "public/assets/three/badge/model.glb",
+      "sha256": "3f487268857fa1f20e7b9ac79524bc9ff930b092ca2897bd55d837c9195bad22",
+      "bytes": 1770280,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5373ca3b4c903d52e5d3",
+      "path": "public/assets/three/displacement.png",
+      "sha256": "daddbcb2cd73caabc3766c4d7135c56ef5834c1711b899439a8ec5804d5c6726",
+      "bytes": 421362,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_18e704920d6213390a2a",
+      "path": "public/assets/three/dpi.png",
+      "sha256": "b664cd31769f42eb683e97637f32fef4a33f2489a2d4f352816779aa452ded68",
+      "bytes": 485007,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a326e0ae2c97bbe7e29c",
+      "path": "public/assets/three/ggh.png",
+      "sha256": "ea143cd99134640dcad74a36efdb32ed84f214bfb62b3d5108dfa87dafadcef9",
+      "bytes": 186110,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4f768ea4cd5610a16c8c",
+      "path": "public/assets/three/ggh2.png",
+      "sha256": "bc7d75cad3856e6ad1dbab8479c3ea2bef4826d87a5478643fc01a5c90f1a349",
+      "bytes": 186196,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_64ecdb3d3ffe65508804",
+      "path": "public/assets/three/gghn.png",
+      "sha256": "02962e2e952f5a65e2bcdc9e66ab23da94c68a7114e21ae6c2e849d4155b0312",
+      "bytes": 1407194,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1adfffbe2ea553bd7898",
+      "path": "public/assets/three/gght.png",
+      "sha256": "9d9c2cdb83bfb531813324fee8e7e38b58665b9ae86665b5f0f99ad4f6a1ad9f",
+      "bytes": 282790,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_553deb8e351fff987a15",
+      "path": "public/assets/three/height.png",
+      "sha256": "1585c0bc5990c7333ed318930b1439452f5b0e9ead541b9f07a7d766e22f8842",
+      "bytes": 217098,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ecbcaf8599155af040a0",
+      "path": "public/assets/three/het.png",
+      "sha256": "ae6098738f4079a56fc3f363f33e32932268499ae3be958fcea45ea8bb5c4185",
+      "bytes": 1163398,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c4043d79147c228473de",
+      "path": "public/assets/three/mat.glb",
+      "sha256": "12a9578ff56eaf871d1a89729cfa03518c4289f35d99fea512db9913cfd708ee",
+      "bytes": 132,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c7bba1787748b1be36f1",
+      "path": "public/assets/three/materials/band/base.png",
+      "sha256": "b4ceda71ac276ef7b8e2879c03dc33f9ffcf2af34b44ed3f5239cc8933db7032",
+      "bytes": 8783,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_472ba969d97ef3808b5f",
+      "path": "public/assets/three/materials/brushed_metal/normal.jpg",
+      "sha256": "43352bd2249e4d21fb2d31f41ee895f18db21e0b85b8d54e54c38478cd879510",
+      "bytes": 1423181,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_737bd9758176b8698ade",
+      "path": "public/assets/three/materials/engraving/base.png",
+      "sha256": "35138e2275e08d8b62f3d92b27d1e7c8862d91e24421541da3cf81f5dcd348f4",
+      "bytes": 3731518,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2e04ff408d494ee933c5",
+      "path": "public/assets/three/materials/paper/normal.png",
+      "sha256": "b25cf8d74654d2b45d67d62317f0395da17c175f6780459771f8f0a320a5afb5",
+      "bytes": 2231454,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d21c7e278e2459353173",
+      "path": "public/assets/three/materials/paper/paper_d.png",
+      "sha256": "4642e370f66480884c8628c6d3425a7a9b17b2fe91cb13eddd7122df55ed2e0b",
+      "bytes": 4592,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8bd0ec8290d55cbfb291",
+      "path": "public/assets/three/materials/paper/paper_e.png",
+      "sha256": "9a334c89c9511a9c155910ad84763ff23c8b112f0211566c41a19673f0552c6c",
+      "bytes": 3693,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_fd1fecbeccff272e4310",
+      "path": "public/assets/three/materials/paper/paper_n.png",
+      "sha256": "bef791deafff20b285c20d10a3ba472ed540c18b1ff5f73abfb827c3e5468f90",
+      "bytes": 606259,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6c285af76a1120c6893b",
+      "path": "public/assets/three/materials/paper/paper_r.png",
+      "sha256": "c055b79fec80e2adad5b2220636605cbf4b69e2aa39a31851008293b7bf77fce",
+      "bytes": 4589,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_087700ce3996042d9fe7",
+      "path": "public/assets/three/materials/paper/paper_sh.png",
+      "sha256": "94e00b6b2c8b67d662a64348c64497aa4334f6822bcc3cd03129fc530b4dd7a1",
+      "bytes": 13123,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d779fb0a07a1e80b861d",
+      "path": "public/assets/three/materials/titanium/aniso.png",
+      "sha256": "c42e2c8d71df6935c99a9d5f22f02300cc4868426898847a7c2768edb8e5c5b3",
+      "bytes": 408460,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0ffce8add1aa7319d772",
+      "path": "public/assets/three/materials/titanium/base.png",
+      "sha256": "8b285505caa4f5c96278badbb3a590cc1917bd50ce09c7eede4d3f4c1357447d",
+      "bytes": 297596,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9ef37aff4e17533f9bc0",
+      "path": "public/assets/three/materials/titanium/displacement.png",
+      "sha256": "c96c84773ebffe77af51074c1a6da4c3cce493b8388d0069fdbd1239c4d04a1c",
+      "bytes": 163452,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2472fc4784e97bfb039b",
+      "path": "public/assets/three/materials/titanium/height.png",
+      "sha256": "62f1224df3cf6a21254ed00ca344d5223c1d2a698f980395617bd24fe20abe0c",
+      "bytes": 2131,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bd1840311264afd04401",
+      "path": "public/assets/three/materials/titanium/normal.png",
+      "sha256": "eb98d4669e17f25a1118ad5d9cdb4cc8810f3f766699ad480b2f7f2669503207",
+      "bytes": 542547,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e75181b5adc1080bbc6e",
+      "path": "public/assets/three/materials/titanium/roughness.png",
+      "sha256": "63c0a437c23af1ede40261b96c0761996b7cda85ea60f4e652a906256ee5a26e",
+      "bytes": 39249,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4136745b9a48e4066d8a",
+      "path": "public/assets/three/mmal.png",
+      "sha256": "8830e215e4c79162682a53f9a93614e8cb75c4fa6fc8a5331cb6769c5c776eff",
+      "bytes": 6482727,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9e8de6bc97c589d8f136",
+      "path": "public/assets/three/mmale.png",
+      "sha256": "4dd695734460d88683059d95be4365412ef6e70d696666b74f4ec88b17d05a75",
+      "bytes": 2126594,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b47078f5ac2fc6c43df5",
+      "path": "public/assets/three/normal.png",
+      "sha256": "5e344ce273beac52e4bf06891b528593b20a6f9fe62e919e97503c91c0919d0d",
+      "bytes": 725126,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_28334a7425f83cd7586b",
+      "path": "public/assets/three/plate/model.glb",
+      "sha256": "ca0041a5c548fd5062c9e1693d54a55d040d1c9eacce42084585353de3e57fb0",
+      "bytes": 2713264,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e93f5676e3177aabe2c7",
+      "path": "public/assets/three/t2.glb",
+      "sha256": "0e98c648156a6c39b27327c640e47ba3235add87afa1c88e998c8fa6f80f208a",
+      "bytes": 261320,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f89e0e575ab22bd16e4a",
+      "path": "public/assets/three/tag.glb",
+      "sha256": "0e98c648156a6c39b27327c640e47ba3235add87afa1c88e998c8fa6f80f208a",
+      "bytes": 261320,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_22d2410b39f2ddbf7a41",
+      "path": "public/assets/three/tag2.glb",
+      "sha256": "8d49cef2031955447f6de267a955567d53b09618fbc8f660fc8151495faefcce",
+      "bytes": 15810040,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7c1d9d5168fd92073d20",
+      "path": "public/assets/three/tag3.glb",
+      "sha256": "dc4454d7b6f3a84872184c1667d5343da01d6d81cfd5d2b62bed873e222515f3",
+      "bytes": 10320072,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_076aa324785dfa5714d9",
+      "path": "public/assets/three/tag4.glb",
+      "sha256": "401cf8418c50a09b54b177b4c832e51968f5e9c6e9b657c7bfc85ee8ef4e795f",
+      "bytes": 10527304,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_21887f1cdcc114df7111",
+      "path": "public/assets/three/tagdis.glb",
+      "sha256": "bfee1c7a6e249a0c64f2fa4f8324a933ce975534fefa27511ac9a4b3043cb86b",
+      "bytes": 8199684,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_280b003d75261a7c5631",
+      "path": "public/assets/three/tape/Display.mp4",
+      "sha256": "b95527404fe744f4f391278525d8fc0180b653af39a83903c964fa42d39b57d0",
+      "bytes": 3974307,
+      "mimeType": "video/mp4",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_50b84947a59e262c561a",
+      "path": "public/assets/three/tape/player.bin",
+      "sha256": "71e1ebf3e8528805cd4e9f31bfac0e174082814fd826d0e3d7a6ca8348333c28",
+      "bytes": 924096,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_34aa77072e9b5e08b070",
+      "path": "public/assets/three/tape/player.gltf",
+      "sha256": "8d59061329168f13bd56eb7172d1124fd4521688f5e57ebcc86313f294ae53d3",
+      "bytes": 19569,
+      "mimeType": "model/gltf+json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1db1d092eb10986ef4f8",
+      "path": "public/assets/three/tape/urban_alley_01_1k.hdr",
+      "sha256": "61aeab087aae22c1b4da31bc04e54987659d3bb0ee684d2b09df7a0bb81db476",
+      "bytes": 1708553,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bf0b47719dab756a1d70",
+      "path": "public/assets/three/text/colors.png",
+      "sha256": "92974dc101aa921f60f5ec290d9ef908b674027950d41949e06f2ac432737065",
+      "bytes": 1119070,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4b284a9d103bd1c6d3f5",
+      "path": "public/assets/three/text/h-i.png",
+      "sha256": "9040a7973339cb2a58debae4ea18fbbca8fdc88703fe2b61d64eae749efee4dc",
+      "bytes": 329706,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_06fe8de2f8823c96ebfd",
+      "path": "public/assets/three/text/height.png",
+      "sha256": "8b302a037a742546d891c595d6402c32c2b13666a56324e9b6fa914553eb9e43",
+      "bytes": 886536,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_48170133b4c2c3eeaaed",
+      "path": "public/assets/three/text/normal.png",
+      "sha256": "9b70c64238a2c6bca8c5e658c53a18b493f6e5b6c82e9f894cca1d9a7e1d7b5d",
+      "bytes": 3222071,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6998bb71eb47638a8c96",
+      "path": "public/audio/day-n-night/Gunna Ft. Lil Baby - Sold Out Dates.csv",
+      "sha256": "1c4d6fd0baa1e1bbd81bcd6767194ef46c5453ce37b91104001048ea409256ad",
+      "bytes": 74,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_44c43b2d41e9e6ebb461",
+      "path": "public/audio/day-n-night/README.md",
+      "sha256": "85b6b7cc0dc5b425b37bca24c12dbc00f909b8a00505ed0117138eee56233d81",
+      "bytes": 1953,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f6c0a14cfa6952499871",
+      "path": "public/audio/day-n-night/Zach Bryan - Zach Bryan.csv",
+      "sha256": "3fb9550964266a2b6c771493358df852ec9180882d6120f21f847af71b7e7f24",
+      "bytes": 62,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_53dd0c9856edae8b8be9",
+      "path": "public/blur.png",
+      "sha256": "da2db449e0ea044c37b610d2c0c7a63334df64dd82d380a68835c998608a02c8",
+      "bytes": 174158,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f4af2f416b5506e8e7f3",
+      "path": "public/crosshair.svg",
+      "sha256": "64cd5ff65d66582885045ea3fb18d986b689fdb22016b9af2100252770806daf",
+      "bytes": 184,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5c9e1e3a99582ff5b0d0",
+      "path": "public/draco/draco_decoder.wasm",
+      "sha256": "c55a594e8ffd18426d36b27fea9618af3df5e173640a3e56d46f09d76f0574f2",
+      "bytes": 285747,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f7d202719f2f511d6c9f",
+      "path": "public/draco/draco_wasm_wrapper.js",
+      "sha256": "d719647a712d30c59b32231b186290cf35be0ede7815587e83cf471688ec5664",
+      "bytes": 88701,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0fa4cdadeee234f98eb5",
+      "path": "public/favicon-16x16.png",
+      "sha256": "6c7491ceddbe058176ba30a39efceaaadc427804542b52deb1da8c90ef551a03",
+      "bytes": 456,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_244229020a19605f983e",
+      "path": "public/favicon-32x32.png",
+      "sha256": "947948f14b55af90c6f0999f864e37dcfbb59b865776083c4933611997510ef3",
+      "bytes": 869,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6620dfe3c4945a1f7904",
+      "path": "public/favicon-spin-worker.js",
+      "sha256": "c37a02bc0f965c01b3646b5822fd01fde3836ca68c42cebe325b6e9e3cb06c95",
+      "bytes": 6314,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e0c1fed5665f65930d87",
+      "path": "public/favicon.ico",
+      "sha256": "a81ff5bbd79f53ad03a27d410ff8b80f8c2f7369b0d57dbef72106f2ed28cdc5",
+      "bytes": 15406,
+      "mimeType": "image/x-icon",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_15d62bd9efadbf971701",
+      "path": "public/favicon.svg",
+      "sha256": "ceac9e37f3c503db048f7cd40b21885b9ac605d822df72fc1255a9e771886fbf",
+      "bytes": 1018,
+      "mimeType": "image/svg+xml",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_16e6fb92e3a6a6d167dd",
+      "path": "public/fonts/GeistMono-Regular.ttf",
+      "sha256": "5a0de4b3d54ab272f76a1d8c84b7fb24c67bbec6591d5300e61c7bc10094b6c8",
+      "bytes": 149284,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b4930eccc118ab5721ae",
+      "path": "public/fonts/InstrumentSerif-Italic.ttf",
+      "sha256": "08939b8bdf534afec24ae0ef5e03f948940cd9a8fe08e7fecbad040e62327385",
+      "bytes": 71592,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_74e116d29505d859041c",
+      "path": "public/fonts/InstrumentSerif-Regular.ttf",
+      "sha256": "498efd461f6ddfcb7a111bf9a565709d2085d48201d501ead960d93e84ffbb88",
+      "bytes": 70012,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3975e3a19f1628779931",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_4b_7e_image.webp",
+      "sha256": "6bc5f520aac913feca4b26bcf093ff520ee5b9824a29d79b14ffde2f3ace4355",
+      "bytes": 45780,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_39fb438bf454d44f8352",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126-1200x630.webp",
+      "sha256": "01b5dfe94d81d4c64e5e4930c2d0138d9a3660162e7df1f35faa22c73bcedf25",
+      "bytes": 53378,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f1ea7a30795c38fd5f07",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126-1400x788.webp",
+      "sha256": "69b48c96ac15c2cfcd0660dbc55e1de5ce787d9105abff21a078c46f3ea9b86e",
+      "bytes": 69904,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6d112bd306fa4a435e03",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126-1920x1080.webp",
+      "sha256": "e3bdbf94278b92b39ab6caec166cd08243ce46ab7b1f71a7f1ebf81c85926992",
+      "bytes": 108156,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ac9db990841cbe0e5f5e",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126-300x169.webp",
+      "sha256": "a018ee9c682383922980849421ee15c309556db39013b0b5c449e7c0e4440cc9",
+      "bytes": 8860,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d4949d3063970afa2e3b",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126-500x500.webp",
+      "sha256": "d2fa2fbeb34f768c7acf8d75a0541a46830b7c7dd17280b8d9bb24d39550b3a3",
+      "bytes": 25154,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e007dc3acc0f36f12e9c",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126-600x338.webp",
+      "sha256": "969b9e603525e2c3c78cfa50ae05d542c2637cca7314d2c0050e10f395dd21b6",
+      "bytes": 22708,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_928a872b0addb03ff240",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126-900x506.webp",
+      "sha256": "e0ede6921741476f2fc1302231f9e91eaaf36b8b64d5d1f6baa1d1a47e26677b",
+      "bytes": 38836,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_06d4fb6b5c852b87c849",
+      "path": "public/media/019a2b05-1086-710f-a59a-274e51e91024_80_1e_photomode_30082025_174126.webp",
+      "sha256": "e3bdbf94278b92b39ab6caec166cd08243ce46ab7b1f71a7f1ebf81c85926992",
+      "bytes": 108156,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b4b72e0a95e3a6fae87f",
+      "path": "public/media/03de03_7abc9900fc694966b1bbf06ce7ade3a8~mv2.jpg",
+      "sha256": "4b1fe42d1e68e777c6ff1f5262ec64bc8f533baa46cbc071cf1d73fe25594c34",
+      "bytes": 24275,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_46716c1df030b84c17bb",
+      "path": "public/media/21succession-recap-articleLarge-1.webp",
+      "sha256": "aca587dc7bc83106e25eeada56b75d6406ff9b38ade36a085d47bf1a33912027",
+      "bytes": 27996,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6ade747569a66cc17006",
+      "path": "public/media/21succession-recap-articleLarge.webp",
+      "sha256": "297e538021351c93575eeb823038a2edbd46d26da3cf19a8c133b4f2dff81dc8",
+      "bytes": 28432,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9c4ddeeb484278b4b3dd",
+      "path": "public/media/2ABAEAE7-CCBF-4B42-A358-F7565EFA94B7.jpeg",
+      "sha256": "6f4665e6d3f028e97d59c018cb5ea34e92abae830910e5f9b1a2f968c6279cdd",
+      "bytes": 197678,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d10c7440220a0a6d4343",
+      "path": "public/media/apple-touch-icon-1.png",
+      "sha256": "0cb70db7ab22b5778a1af1406ccee18776056ee5646ad7717931e25be4b1018e",
+      "bytes": 3383,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5d5941cf314fbaabb182",
+      "path": "public/media/apple-touch-icon.png",
+      "sha256": "0cb70db7ab22b5778a1af1406ccee18776056ee5646ad7717931e25be4b1018e",
+      "bytes": 3383,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_643d4fc0731f181cfd3f",
+      "path": "public/media/blur-300x300.png",
+      "sha256": "2b52ab448c8294f2beca72095fec630208235f0a8200153befeeaa5e64a4d1bf",
+      "bytes": 77007,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c92f8848530787a0d310",
+      "path": "public/media/blur-500x500.png",
+      "sha256": "12276e50db6acd42e7de1c87c6f3911b2f2dea75debc11979e225ac9bdfaeb54",
+      "bytes": 228797,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_129728ccf0928a1cbac7",
+      "path": "public/media/blur-600x601.png",
+      "sha256": "b467bf451818f357ce4bc3bfca98980134a2fa8a904da23afbd872a12e17eb32",
+      "bytes": 331452,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_25dfbdad77175ff61d99",
+      "path": "public/media/blur.png",
+      "sha256": "d7326870bbc82700c76cb5723a26b374d95a657239e5097f91d682a9430ad06e",
+      "bytes": 248779,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_13a5c9416cd8a994be3e",
+      "path": "public/media/branded_2-1200x630.webp",
+      "sha256": "2ce08a0fc8e13f5a6147e02f40bd10801931863d3e5ee24b18da1989755100b5",
+      "bytes": 36644,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_411ed7c7fba80097400c",
+      "path": "public/media/branded_2-300x474.webp",
+      "sha256": "2b6aa901702634c8a834d15f4ec1e0ede8e54bf1ad83219708d20f8721dbd4f8",
+      "bytes": 11904,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2e3a1033645e581c1626",
+      "path": "public/media/branded_2-500x500.webp",
+      "sha256": "8321bfdb60cf8c557fd7094364d6f367b7daaf13cf0e3e56d915006bbce3a0c3",
+      "bytes": 21016,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_130c5fdf47311839d57b",
+      "path": "public/media/branded_2-600x947.webp",
+      "sha256": "73dff432747d4371089df22686e42825b30d7eb895b1d0dcfbf5c7eec31da53f",
+      "bytes": 28978,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c8f8b8929193308c8193",
+      "path": "public/media/branded_2.webp",
+      "sha256": "c753672d12218aab379e20fee69c1eefe698d0c040c2c1ae18b2f76870471afe",
+      "bytes": 42362,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e10ae43ffe1eb078f6b7",
+      "path": "public/media/DALL·E 2025-02-11 15.31.40 - A candid photo of a table taken at a party of an 80s rockstar, featuring a rock-chic, glam vibe. The background shows slightly out-of-focus silhouette.webp",
+      "sha256": "3181605fc3f83deb6db8cd53ea98e11fc1f7ea4462088169d2048e958b58b02e",
+      "bytes": 124882,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5512443cd302f1d91f70",
+      "path": "public/media/f.mp4",
+      "sha256": "e9ef341a44f9fd6933074554695ed63567b766aef994151b6cfe244d58ee9a87",
+      "bytes": 13795464,
+      "mimeType": "video/mp4",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_890435516cd31e08e611",
+      "path": "public/media/favicon-32x32.png",
+      "sha256": "17631ad876c2169deb539525fd24b3cb3607d4ec3161b2e6c0b7f19e236397c3",
+      "bytes": 605,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6fefc5565cca0cbda175",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash-1200x630.jpg",
+      "sha256": "11218d3d049c6cedfdd7fc5f8ac279517355bab6f8a91387c6b4862664041197",
+      "bytes": 115279,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0697ed982b3d4fc3f443",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash-1400x1731.jpg",
+      "sha256": "9408082af0b000cf9363b39657228629c74267a010cdb6e435785cc157f55480",
+      "bytes": 344124,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5baf63db41428896ff2c",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash-1920x2374.jpg",
+      "sha256": "4863b38dd6f23b76fe9afe3fe3da3851bb6caf396ebc756db03128c4521d181d",
+      "bytes": 696270,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8d0216e6b1577d1f1869",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash-300x371.jpg",
+      "sha256": "fcd1f1f4f07da65e2a0cd4a00be0650c2ec3301343b41297c7ce88687a1dc10a",
+      "bytes": 25433,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a04e87d7dd0fb7a3be9d",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash-500x500.jpg",
+      "sha256": "7f4f3ef755708feb8dbf60f408adee8202df571979a0ba2ef29204bb0ad0156b",
+      "bytes": 48734,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5a3f6e46a2f8392891f2",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash-600x742.jpg",
+      "sha256": "a4c35d718727d3bee389ddf3d7a9ae79f5656bfdb00f2150f82f7246dbba48cd",
+      "bytes": 76150,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a9b8bf043c4ee247866b",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash-900x1113.jpg",
+      "sha256": "516d1866f39dd58e33e384f543b4e3fec0cfe6c422b6b789b98c8e64980eb6e6",
+      "bytes": 152673,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_33780c3606ce413c22c6",
+      "path": "public/media/federico-scarionati-EomurrCz3dk-unsplash.jpg",
+      "sha256": "d0c44305c724fe1955a1cc0b94aaa5c596990d79810178b5d3bd33211d026f99",
+      "bytes": 11245062,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_51142d24025c399da174",
+      "path": "public/media/gits-sacmajor2-1666976419455-1200x630.jpg",
+      "sha256": "559e613ad66463b99c7f717383a710881c31a9107feeb333c229159e4170a7f4",
+      "bytes": 100373,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3e97d6491ba4c48b2f55",
+      "path": "public/media/gits-sacmajor2-1666976419455-300x200.jpg",
+      "sha256": "ccd3be7695452ef242cb869b58ce208de1208d6b1abd59eb33188632600dcefb",
+      "bytes": 13536,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7aca74d1a497af891199",
+      "path": "public/media/gits-sacmajor2-1666976419455-500x500.jpg",
+      "sha256": "1e8a2184016e23e3b951e2f7f0da0fe0be7808bb43597df2f88494ff4e56ce49",
+      "bytes": 38234,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_53cc93aae2b15abf48ab",
+      "path": "public/media/gits-sacmajor2-1666976419455-600x400.jpg",
+      "sha256": "4e468128d238c1e0efba92a520bc4e9d2b3c72f731f87a96f65267222d10f3ab",
+      "bytes": 40910,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d8cb8a183504ce847abe",
+      "path": "public/media/gits-sacmajor2-1666976419455-900x600.jpg",
+      "sha256": "5445311bd5e8ea694696542d9cd3d84b459fe1bb2615a3cf1833c69f05703e48",
+      "bytes": 76923,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f12d038e25ae8620ef96",
+      "path": "public/media/gits-sacmajor2-1666976419455.jpg",
+      "sha256": "a50ac49fca5994f8bc36a1bf48b61883f19a02f44e0d1af1304d115396ea0144",
+      "bytes": 117927,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_94e8e3af8acfda9e8fc2",
+      "path": "public/media/gits-sacmajor2-1666976419456-1200x630.jpg",
+      "sha256": "559e613ad66463b99c7f717383a710881c31a9107feeb333c229159e4170a7f4",
+      "bytes": 100373,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_65f59ca51d9c0dab10ca",
+      "path": "public/media/gits-sacmajor2-1666976419456-300x200.jpg",
+      "sha256": "ccd3be7695452ef242cb869b58ce208de1208d6b1abd59eb33188632600dcefb",
+      "bytes": 13536,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7e3b7b2836e9d5056f42",
+      "path": "public/media/gits-sacmajor2-1666976419456-500x500.jpg",
+      "sha256": "1e8a2184016e23e3b951e2f7f0da0fe0be7808bb43597df2f88494ff4e56ce49",
+      "bytes": 38234,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_08f629d94b50be1a3391",
+      "path": "public/media/gits-sacmajor2-1666976419456-600x400.jpg",
+      "sha256": "4e468128d238c1e0efba92a520bc4e9d2b3c72f731f87a96f65267222d10f3ab",
+      "bytes": 40910,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f03aa3b57d25bdc8e219",
+      "path": "public/media/gits-sacmajor2-1666976419456-900x600.jpg",
+      "sha256": "5445311bd5e8ea694696542d9cd3d84b459fe1bb2615a3cf1833c69f05703e48",
+      "bytes": 76923,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c560b6cde009fe108ec2",
+      "path": "public/media/gits-sacmajor2-1666976419456.jpg",
+      "sha256": "a9c42de9804f5cdb7424be2efde41a755057b846b616fb1b96e35cde32acbca0",
+      "bytes": 118162,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_deec085d5432272e6f7e",
+      "path": "public/media/gradient_bw-1400x1400.png",
+      "sha256": "9dd2a4f66388d5ee091931de807c722f9fe34dc8a35fbe7960e803801c4a49a2",
+      "bytes": 2036386,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7fc4778ba8ca683cfd05",
+      "path": "public/media/gradient_bw-300x300.png",
+      "sha256": "c4279a62aeaf43233c770d7f2099d3658c058da65ce494eb0625870464b05fbb",
+      "bytes": 82411,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2ebeed428d280c798ca3",
+      "path": "public/media/gradient_bw-500x500.png",
+      "sha256": "6b7c404e8cb3f30ef098212c19ec9d01b269d24f827a7f683b9270ce90693d14",
+      "bytes": 242353,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_da9486eab405a5ad2e77",
+      "path": "public/media/gradient_bw-600x600.png",
+      "sha256": "fc44a1edecd2153381a0ea162f562df3b6f21b9a1629b41dde29c7cd5d9701d8",
+      "bytes": 358087,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6d97d6b0cc73855a27ed",
+      "path": "public/media/gradient_bw-900x900.png",
+      "sha256": "14b1586168b5433f35048c5c1f68fc5a522b8f1ec70a7e81510dc90e226c83a8",
+      "bytes": 834658,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2b4fd0e818d32cc0d342",
+      "path": "public/media/gradient_bw.png",
+      "sha256": "9148b9fb1bfab7625376dbb290223fb835acc38126cf5a7e630a23e77b0a97ab",
+      "bytes": 2313382,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_be209db8461ed17f0c1d",
+      "path": "public/media/gradient-1-1400x1400.png",
+      "sha256": "c8851dc92e569466a9dfa53bf447e0bef43a940b5d383e04cbc1a0da73570338",
+      "bytes": 3878839,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4007b7a78c6218bacd10",
+      "path": "public/media/gradient-1-1920x1920.png",
+      "sha256": "554a0dedc628a76995ec0348028b5d0e1a1840d761e5f39f2daa50c88c82c14f",
+      "bytes": 7267175,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9a9fdde400f3000240aa",
+      "path": "public/media/gradient-1-300x300.png",
+      "sha256": "78d1819e0a4d74d067acc99e6b6319514527edf5c5e7801238076cf1dc969346",
+      "bytes": 159165,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8b709e3be1e9f98bb678",
+      "path": "public/media/gradient-1-500x500.png",
+      "sha256": "c5aaafdfb7b8f27bd59d3887a7450c0c45acdc392952139a0d904f59cda08f16",
+      "bytes": 465822,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_040f99c1aa3db9b5598c",
+      "path": "public/media/gradient-1-600x600.png",
+      "sha256": "26fb5a1c063b94be3c4aa38174902d4fd31418e885b01a8fcfcd503b9998e824",
+      "bytes": 682940,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f6889604684acfe25065",
+      "path": "public/media/gradient-1-900x900.png",
+      "sha256": "8e8de7185708a9b83a999d739b6398943d4e44369bc96230665e2f553c482e4b",
+      "bytes": 1575971,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_668775b08770af7db91f",
+      "path": "public/media/gradient-1.png",
+      "sha256": "7073eff514a84d471967fb5233b02fda1ab1d7bbf7f7f64786c4dd648d441027",
+      "bytes": 18797950,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bad78f7ec16b3c91c95c",
+      "path": "public/media/gradient-1400x1400.png",
+      "sha256": "c8851dc92e569466a9dfa53bf447e0bef43a940b5d383e04cbc1a0da73570338",
+      "bytes": 3878839,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b768f2611ecb699f1381",
+      "path": "public/media/gradient-1920x1920.png",
+      "sha256": "554a0dedc628a76995ec0348028b5d0e1a1840d761e5f39f2daa50c88c82c14f",
+      "bytes": 7267175,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_45290c385dc498cdc1c5",
+      "path": "public/media/gradient-300x300.png",
+      "sha256": "78d1819e0a4d74d067acc99e6b6319514527edf5c5e7801238076cf1dc969346",
+      "bytes": 159165,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8e5ff8e5bfe5a4c96d77",
+      "path": "public/media/gradient-500x500.png",
+      "sha256": "c5aaafdfb7b8f27bd59d3887a7450c0c45acdc392952139a0d904f59cda08f16",
+      "bytes": 465822,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_54a9d34780889990fc47",
+      "path": "public/media/gradient-600x600.png",
+      "sha256": "26fb5a1c063b94be3c4aa38174902d4fd31418e885b01a8fcfcd503b9998e824",
+      "bytes": 682940,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_595887febc31437f4b2e",
+      "path": "public/media/gradient-900x900.png",
+      "sha256": "8e8de7185708a9b83a999d739b6398943d4e44369bc96230665e2f553c482e4b",
+      "bytes": 1575971,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_67b927a623f1306eabbc",
+      "path": "public/media/gradient.png",
+      "sha256": "7073eff514a84d471967fb5233b02fda1ab1d7bbf7f7f64786c4dd648d441027",
+      "bytes": 18797950,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f1e8a1cb0ea9c67188fb",
+      "path": "public/media/IMG_5206.jpeg",
+      "sha256": "3c07e113ddd0e8bb5d7823f1581738427f2a6e382a16cc4b2745ee490e856557",
+      "bytes": 1435017,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d717e8bfade93fcc9800",
+      "path": "public/media/IMG_5260.jpeg",
+      "sha256": "1494605283f3f69c3c7b050c2ea72a1cb30f1202f1dd0aba702c810c011d61df",
+      "bytes": 123278,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_cd462858d640e8e2cba0",
+      "path": "public/media/IMG_6355.jpeg",
+      "sha256": "6b0569f1e3e0ec6591a07c58514bceadf23a97c7795cd80f7b04bfa36eea4d20",
+      "bytes": 1282382,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_00d68edf058a4932a0d2",
+      "path": "public/media/IMG_6521.jpeg",
+      "sha256": "4403d1b4a468a5bad2f2ba85a3c9bd544aec420e8b9280e29d398b6e853bbb27",
+      "bytes": 1910754,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_322fb0bb00df668caa7b",
+      "path": "public/media/IMG_6521.webp",
+      "sha256": "103e37a68f23e528c95c901f2caada8c584b6c36213eaf2dea36d86f258332b8",
+      "bytes": 802268,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0792d72686cf783c2349",
+      "path": "public/media/IMG_7569.jpeg",
+      "sha256": "8a5952bd6c40e079e40761d85b02c2ddcdb277ce2e36787afc6dd953acfd5ddc",
+      "bytes": 74182,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0e83e6df232b41f4be95",
+      "path": "public/media/img1-1-300x202.webp",
+      "sha256": "14f3debc5ac4abaf41f6b71a7050e090bc645381b6b4b758938196ae866b2766",
+      "bytes": 7746,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3766c893cc0e8053c3d3",
+      "path": "public/media/img1-1-500x500.webp",
+      "sha256": "fa38725c7e706e92707c384b6ff07592fbe7c4ab18056a187b9caabe08c86ea3",
+      "bytes": 13468,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bec3cfe7fced900327c0",
+      "path": "public/media/img1-1.webp",
+      "sha256": "c559c325dd6f0723b76a16b8d201c0296fe0b8e16b96c2842f7c8064a8d878ba",
+      "bytes": 13878,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4302125633f03330d17b",
+      "path": "public/media/img2-300x380.webp",
+      "sha256": "8d5903966c2ff97fe50110572733987b99ef3e90dc6576e05e21ebdfe862cc8a",
+      "bytes": 25234,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_de65f73021c5268a91af",
+      "path": "public/media/img2-500x500.webp",
+      "sha256": "e5bb3bab7046e73b9177bea1ba2cafac190adf14e0e759b586be30a50404488f",
+      "bytes": 49618,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a0fec228b1d1ce9d603e",
+      "path": "public/media/img2.webp",
+      "sha256": "2dfe48ac59efc017249d33a0af063ef3dbc1d326decbc997e78f0419eb9ba20d",
+      "bytes": 51506,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_563cfed85fea506fbd3c",
+      "path": "public/media/img5-1200x630.webp",
+      "sha256": "d778a2284c61f16a644e1869daeeb6351e56375e3df4f12decf8723d35eb5149",
+      "bytes": 65206,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0824f0fa5cb7427d41b9",
+      "path": "public/media/img5-1400x1867.webp",
+      "sha256": "0ad4fdf74abadf536f82df7ab59d368e12011028b9da73d669ab7cf3499a2c2f",
+      "bytes": 195972,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_599ea47586e21fdb9d05",
+      "path": "public/media/img5-300x400.webp",
+      "sha256": "a106aa81f5d25bc1ed09a743fd5234a5e4d49363fd851d6884988816de77d1e9",
+      "bytes": 15108,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_13b0cfeffc80387702f6",
+      "path": "public/media/img5-500x500.webp",
+      "sha256": "5799a57a26ed8ad729f7ea78277ff79b58ec756c99ed287e39dc4c7503678607",
+      "bytes": 22326,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9d1d6f73596a6d5dc19e",
+      "path": "public/media/img5-600x800.webp",
+      "sha256": "97e6a62bfc29cb4d310eed886168d39c53b7f0c7982f86260b2e897439179e63",
+      "bytes": 41622,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_bbf89f1d8c8025474ac6",
+      "path": "public/media/img5-900x1200.webp",
+      "sha256": "bbdd860fb7b49feb5d9c02d3fbc40b162b2c19baa8229affed8589a087eec4ce",
+      "bytes": 92172,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_59caf1608b745899ae81",
+      "path": "public/media/img5.webp",
+      "sha256": "5419bb8e385f87bc4b99b1244ef14322e5997bd6f0d58ce6a7974e96a23d7ec1",
+      "bytes": 213468,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_09de90dc31c40ccbe137",
+      "path": "public/media/img6-300x96.webp",
+      "sha256": "fc70ff8a7e21edee3f72e982b102f7850c37afaf5f386baacd91045d4f177e2a",
+      "bytes": 2022,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9ac01ba39c0da75e1a2a",
+      "path": "public/media/img6-500x500.webp",
+      "sha256": "09423d689f5003ab7a448db0c0fbeceb035ebb49fe049737d14ca46be3cb444c",
+      "bytes": 6450,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_75419d8afbe05865844e",
+      "path": "public/media/img6.webp",
+      "sha256": "8fe6a6538dbb1f614fdded2672c1dc782793bfda5730da2a6d057f456dab1534",
+      "bytes": 5462,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_23a6381b9f2c4159e68a",
+      "path": "public/media/img7_02-300x184.webp",
+      "sha256": "1c161ec8d17d9cfd89c173b7a82e6e05b4cab718fd88ec8842ca7295ff71a0dd",
+      "bytes": 14484,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c5fda9e63fa3530c7f7e",
+      "path": "public/media/img7_02-500x500.webp",
+      "sha256": "b65107027d6320a5737ef12612554f9b84c0598895c7656eddacc7b6aabdbf00",
+      "bytes": 28970,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c5e26e4627a6fe5bacbd",
+      "path": "public/media/img7_02.webp",
+      "sha256": "3acfc0f0e1dad43f9d15a2f917ab3d37822be57cd2bc91e36405efd5f37f144c",
+      "bytes": 30918,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f880ab763244a0e75402",
+      "path": "public/media/img7-300x180.webp",
+      "sha256": "4c0df6d592c808f51cbb7cfc08ea8ac6b0d770a027fb71629bfc0d57be115df1",
+      "bytes": 15302,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0a73c8684a5979184dfb",
+      "path": "public/media/img7-500x500.webp",
+      "sha256": "19a1693f647a0055ff1f9767cd5f6dc414a10ede109a485acdc503ff47dcc316",
+      "bytes": 37488,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_61132cde29ba185d13d9",
+      "path": "public/media/img7-600x360.webp",
+      "sha256": "ddef64b779d9b62ba29a1234aa2612b7425b1f1b64c55271a257b38040a4b848",
+      "bytes": 34562,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_33f251ceee4bb970006f",
+      "path": "public/media/img7.webp",
+      "sha256": "ddef64b779d9b62ba29a1234aa2612b7425b1f1b64c55271a257b38040a4b848",
+      "bytes": 34562,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_d205e5e9f82e2f14e4dc",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-1200x630.jpg",
+      "sha256": "d4778c3e7fbb253c1bfeb2eb53f33b683e3c78e9b011b77e93440071fbe52ef3",
+      "bytes": 11177,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7040e95ec8414c6f1d77",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-1400x2100.jpg",
+      "sha256": "f83c2f12589846d827c327c22836f84ecb42128eb9abb26ca39e1b134214fc4f",
+      "bytes": 126324,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7786a4584861bd6aa4e7",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-1920x2880.jpg",
+      "sha256": "38bbfb5ab738d2dbc93e9d34641b45be861000ee5b9eb0b1fc74929445a99aba",
+      "bytes": 212281,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0c4699841504eb0f605f",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-300x450.jpg",
+      "sha256": "fd10095f63600ec71fbabd22f6c3ad0234a4b682564cc91bb26eb612ba7bc77a",
+      "bytes": 10346,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e2ea57325e01882a388f",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-500x500.jpg",
+      "sha256": "9a527a16d8dba4aaac194fe927e20f74a0d19e14308ef1b59385782139f66d4a",
+      "bytes": 18129,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_664943da5daf44d1e8e1",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-600x900.jpg",
+      "sha256": "850e33c1347b8ef3d4981487d37012b108e14a62c1496c5e01278901983d0871",
+      "bytes": 31657,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c019f875c764ab8b12d3",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-900x1350.jpg",
+      "sha256": "bdfe3efa17a9eeb90c72024671cc33642908b5911e51d03424a3d73f9089db9d",
+      "bytes": 61913,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_6902bfcdc34bfa868df0",
+      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash.jpg",
+      "sha256": "b81e0d2ae82df6390d18b6f547cef7120bbe99e1484b6f11b382b5aaf8dc43ec",
+      "bytes": 696429,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_26aaccdf3dbb2796a2b1",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-1200x630.webp",
+      "sha256": "587abd6b5665d4df655ca43cb0365cced2cac6450c943e5ff316b57b3f824a80",
+      "bytes": 46350,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_36676082283cdb965a60",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-1400x2099.webp",
+      "sha256": "f7d0ede8dd31786b6aa5c9def3c51c2d790a7ff12677b14cd9f532dd116ed8f5",
+      "bytes": 176310,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c40b4056623e9d329f59",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-1920x2879.webp",
+      "sha256": "2cad4add18dbfd3cdcb05021c99eae3991c255aa953d50614a88b494db16669e",
+      "bytes": 282568,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b7b9cd7972a27d715a2b",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-300x450.webp",
+      "sha256": "34d14650008ee8b64bfd0f4867bc82575bdc411dba815f6883dbfd49221f13fb",
+      "bytes": 17618,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_87b6dc3abe9bbee08e04",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-500x500.webp",
+      "sha256": "effdbe13a7fd1c058aab7e78ba5645172de7d178f84e4865579acd33c7a51e48",
+      "bytes": 27224,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_96e6643d2d05a759173f",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-600x900.webp",
+      "sha256": "de38439b53f6ee7b7d61e3f011c0fca9c56e8cbe61926c67af9cba47b9d06c2f",
+      "bytes": 47310,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f50a74a7238711b9981f",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-900x1349.webp",
+      "sha256": "a20f678ca9db1f855ec01991eba320b16a859c00abf42925fe67319007eb3181",
+      "bytes": 88928,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a25a389a9e4880988e23",
+      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1.webp",
+      "sha256": "fde73c49c5cb36d2a241e627b2f6c7b4fca4a52418f61bb63db31f1101ccb051",
+      "bytes": 1357430,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_22aab3a97a923d21529f",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1200x630.webp",
+      "sha256": "590336af476440c7cc88ea1418ab7bb17b045be8a942a404433e3cb3d05b0815",
+      "bytes": 15722,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8ba9bd1249ea70373bae",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1400x886.webp",
+      "sha256": "de735e02e5ea25a1910906e13ee19c03e18c71de602d330589f5d7226cabcfa7",
+      "bytes": 23154,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c273db9351702feb4e7a",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1920x1215.webp",
+      "sha256": "977baff9e1292067e095ec53a196525eab00e91a32ccd0ba8727cea1d5e56274",
+      "bytes": 35922,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_abefec4e471d72f7a71f",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-300x189.webp",
+      "sha256": "b6c9b5f909d20ec255082c1c06c67d37abbedd1cb197cf27e2ba4766e6f66b00",
+      "bytes": 3194,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_603a01eadf91ed4ecb0f",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-500x500.webp",
+      "sha256": "0d5a09cdd1f393d0cf9e2f18a7ac57957a33355c653cec62959bec876cece3cf",
+      "bytes": 7146,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c31bf2236a1b5ec97c04",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-600x379.webp",
+      "sha256": "ac68eaa8685755046b9a9578ec7137a98212311e261860469d81250cc0737e8f",
+      "bytes": 7516,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_860d93f704b13e78e14c",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-900x569.webp",
+      "sha256": "ad1f6f72403eafc9f3e3eee88e08206027d03de9b741dfa01af0762c61822025",
+      "bytes": 12884,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4785c65568bd83ac7b29",
+      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1.webp",
+      "sha256": "0ef7f0f1402660816ed7e9c46a249bf887ca92f017b07d18b6e83faf60a299cd",
+      "bytes": 1378114,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_af448f9c105b02336976",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1200x630.webp",
+      "sha256": "98cf756179416bce2fce6db1e52ca33deeebf06753d0bf1a691d75b605bb328b",
+      "bytes": 138060,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b81395676133ca81e65f",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1400x933.webp",
+      "sha256": "8aa6c1b2b7310abc7d022af94dc7264fe4f3d7a3bd3a6013d1793eba014fb2f9",
+      "bytes": 211846,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2cb85e51e190050b06da",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1920x1280.webp",
+      "sha256": "5dec3d47ce515c7f868c0147fb074c860c7ce327cb365ee58847dbc6c11a6be2",
+      "bytes": 383438,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_8884225f05b79474b1bb",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-300x200.webp",
+      "sha256": "eac3a26bc48162af52f4b2d8fef9beaaae3d70283c7e5dfb7cc5fc8b2cc7da36",
+      "bytes": 10602,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a8e73d2f8c351ac212ac",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-500x500.webp",
+      "sha256": "d11dcd2a97b7256db0692febcb99e68c4082bf3ec06014e5267bba82d7c85c95",
+      "bytes": 64624,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_aa62d49b23c61996c5c0",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-600x400.webp",
+      "sha256": "56276c683101fa0bbb1fbde78e6ae1d53948b38bdf5a7d5c4dffc9a5b8a82fea",
+      "bytes": 40374,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_4e2e4a7bd13633923479",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-900x600.webp",
+      "sha256": "e498fe0922acb2fc47af2022ac043f1579d0ddbc20d5f02ab68ea61fcda12bcb",
+      "bytes": 88500,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_83e8c4bc500c68df1b48",
+      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1.webp",
+      "sha256": "66e8effd298eb846d0a1979901110313da1afdb924ff9c82c005eec884d6cfe0",
+      "bytes": 1922242,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ad3561afdba7453c12f7",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1200x630.webp",
+      "sha256": "58b5d289f8bd37fa5873534468886478f0eb113952c434d5760f72b41fb028a8",
+      "bytes": 62552,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_48194319e4fba0ec4a47",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1400x2100.webp",
+      "sha256": "b673eb3a9785239e1f88cb7f3e4ce8e8390e0a4f5b87879ed5b80b24cd875219",
+      "bytes": 163878,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_7f35b9ac97054534f64a",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1920x2880.webp",
+      "sha256": "1059eb817a2dc7b67b0fa2a4011bca63e2199d0ce2e42e2b500134fd03b7dd5e",
+      "bytes": 239602,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_23888959d9df5409280b",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-300x450.webp",
+      "sha256": "112558414eab46f1b4261fcbe0377bf2a5ef29f006eb1526f41b37f74d1a54f7",
+      "bytes": 20288,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a7b79c5c26a7e854d673",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-500x500.webp",
+      "sha256": "2229d3137ed12cba01c527348f766560232944b284c010d83a883c97838d609e",
+      "bytes": 28252,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_352c65561a60bb7a6add",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-600x900.webp",
+      "sha256": "431993b0d15fc0ec87258d6855b14f4eefb3020d3110f377c593f019e7680fa8",
+      "bytes": 53262,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e63d40cc8baf89f621ce",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-900x1350.webp",
+      "sha256": "febd99c32e5c00c766873959b8aa5050b823148d27de78be886d158d179b2d2b",
+      "bytes": 93188,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0758df0fb1bad84be910",
+      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1.webp",
+      "sha256": "e9217391a17299a89c2771dc32b432764f52e08ee4a28991e236232e8b73cc1f",
+      "bytes": 358528,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_08cd6db126e75718c597",
+      "path": "public/media/Snap Camera Photo 10.jpg",
+      "sha256": "3f0cdb66d365475b7b65d90307057ce513a44940c73ed892915880c783f6b896",
+      "bytes": 63840,
+      "mimeType": "image/jpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1154db3285a0590008af",
+      "path": "public/scripts/brightness.worker.js",
+      "sha256": "1d9b92412cd9ccb7a8b1a3c8687ee31e86750683f57576cdc3ffcb149c71c266",
+      "bytes": 1114,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f618c56874763988d243",
+      "path": "public/static_hor.gif",
+      "sha256": "bd0993fc718909b0d20161f3fcd75c8f4f2d1a887c2c9d19670a0594c0c3c006",
+      "bytes": 661,
+      "mimeType": "image/gif",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5cb87dc79d45ead2841f",
+      "path": "public/track_media/Jay-Z_Kanye_West_Ft_Frank_Ocean_-_No_Church_In_the_Wild-1.mp3",
+      "sha256": "6434db6c7b68c72da3a869f24ee97f1896614101c97d8ca84ba5279d2661e03c",
+      "bytes": 6773239,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0e11f044c9f71695bd93",
+      "path": "public/track_media/MOTION FREESTYLE-1.mp3",
+      "sha256": "2dfbc2c611f55e90d3eb5d2dc1e9406e98b9bfd8fae7079ee29e3dbe9188e6aa",
+      "bytes": 3938920,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1c80bc877986bf6cda5e",
+      "path": "public/track_media/Track_1.mp3",
+      "sha256": "d25421b592cfbe87cdd8e13da85c4572c2a0ede5eb3560198ee662e84a7dd4f0",
+      "bytes": 3048900,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_636092c6c109556982b7",
+      "path": "public/track_media/Track_1.ogg",
+      "sha256": "aaf20eebb7c4c057e0459ab35221456c952f9e2ae7b184ebf6bc18c757a9e280",
+      "bytes": 1747671,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_241a9bd336b13a7e3bcc",
+      "path": "public/track_media/Track_2.mp3",
+      "sha256": "5200c8a3e8e2aa50ad77fd3688572380b14880533dc4753c8e17ec2b43d90e75",
+      "bytes": 4005795,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_53a0620861f58b841180",
+      "path": "public/track_media/Track_2.ogg",
+      "sha256": "54f70bfb7d59d6c880ddeac40ec080ba7049da3e617ae9af54eb507879cfb4fa",
+      "bytes": 2434991,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a99080653c813b0428dc",
+      "path": "public/track_media/Track_3.mp3",
+      "sha256": "28b0fa426ae8355e7ed69a4ec214d222b36560dbec06fc5bf5743c3f833ccd38",
+      "bytes": 2752768,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f5d04df3f93eb6347566",
+      "path": "public/track_media/Track_3.ogg",
+      "sha256": "c5697264f481f221d53ac989966476d195ac7257cba632cb10c2b60c51486bfa",
+      "bytes": 1719987,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_fa48f35358fb8540493e",
+      "path": "public/track_media/Track_4.mp3",
+      "sha256": "df25422afe81ac39500fc8d777a92c1d679825616e1c8f3911e6017970f3e396",
+      "bytes": 2001953,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_b5bb3ba33d946573106a",
+      "path": "public/track_media/Track_4.ogg",
+      "sha256": "176d3078cf8aefdb3fea2265f822a58eeeda74b857e4fb57de23dd724a2a52c2",
+      "bytes": 1223192,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_1a1897cf609f8208eb19",
+      "path": "public/track_media/Track_5.mp3",
+      "sha256": "8b33c6f4ee73fa608396ca426349cf1d9b874341c09cb45aafbd60a26090fd66",
+      "bytes": 3421625,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_989c04ed3156fbeb557e",
+      "path": "public/track_media/Track_5.ogg",
+      "sha256": "9f42fe7b24d8201b9b5196d109e61918e1aaf405b30239a3e464059abaafeb45",
+      "bytes": 2163367,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_2e18765d80198f73d87b",
+      "path": "public/track_media/Track_6.mp3",
+      "sha256": "31ce70c2815059dbd1ec853679b627a3b7662cc3634573bd933ce74a31893df5",
+      "bytes": 2742333,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_15765679721ee56ba386",
+      "path": "public/track_media/Track_6.ogg",
+      "sha256": "0a6beb783b78b41e9b90bda5cb3a09afb565b3d6d3fdf61e618b56c949061864",
+      "bytes": 1622937,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_88ea2f57bf10b9ec6fb4",
+      "path": "public/track_media/Track_7.mp3",
+      "sha256": "9c0628d2f054aebf6ecf8d388082994b48e41f69bfd639ef88727db61798cf98",
+      "bytes": 4778936,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_559a2dd4ae79542f9181",
+      "path": "public/track_media/Track_7.ogg",
+      "sha256": "19794fb09d0e13b761959795e0dddeb16d2b24868a3873b54db2b734d536ebe0",
+      "bytes": 2842900,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0ecc283491e2c095d6ee",
+      "path": "public/track_media/Track_8.mp3",
+      "sha256": "ef3fad80eb6b06da70170a4eaf9cb781504586b7353ce8bbc15086c33e0044d6",
+      "bytes": 1122732,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_9b8e9e8f3e0b1c27a032",
+      "path": "public/track_media/Track_8.ogg",
+      "sha256": "32e78189d52ea433cc4411c9f184971c671497c71ff08738076a1bdc75d11a29",
+      "bytes": 497892,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_f6e4f16a94b384b5bfa3",
+      "path": "public/track_media/Track_9.mp3",
+      "sha256": "50204fc079b7a16d427686753e211e793c740df94ef2101cd17ebed98e08c900",
+      "bytes": 1418438,
+      "mimeType": "audio/mpeg",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_59023356467e84301a20",
+      "path": "public/track_media/Track_9.ogg",
+      "sha256": "8a5274b73306a96e20d08dc4991bc10406484ce5f8d0ee852ca071ca0165d759",
+      "bytes": 456432,
+      "mimeType": "audio/ogg",
+      "gitTracked": true
+    }
+  ]
+}
