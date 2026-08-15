@@ -1290,6 +1290,22 @@
       "gitTracked": true
     },
     {
+      "id": "asset_7e3f7a2b24d26fb32774",
+      "path": "public/assets/lostinseoul/retail-church/walle_ando.bin",
+      "sha256": "7e9ff5a4205499052e32ba1f21aede67ac5210dfbba4d6c98997f8f75c232a7f",
+      "bytes": 201664,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_5569f73e7c289d5335e6",
+      "path": "public/assets/lostinseoul/retail-church/walleAndo.types.ts",
+      "sha256": "4159f0661bed4d0c1b266409b5bd8605ab6ba5a287ad8f25c38f855429c9ceed",
+      "bytes": 3456,
+      "mimeType": "application/octet-stream",
+      "gitTracked": true
+    },
+    {
       "id": "asset_f1abc27c8306ae974d75",
       "path": "public/assets/lottie-dark.lottie",
       "sha256": "7f3ae632c4e81540da96924b9d2d7404d10ddc89458fd46ace95f1aff3169f0c",
@@ -2774,6 +2790,14 @@
       "path": "public/assets/three/badge/model.glb",
       "sha256": "3f487268857fa1f20e7b9ac79524bc9ff930b092ca2897bd55d837c9195bad22",
       "bytes": 1770280,
+      "mimeType": "model/gltf-binary",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_c82d24bb5363316ac34d",
+      "path": "public/assets/three/catalyst-10/catalyst-10.glb",
+      "sha256": "93d97656a3acc98acdb5e6e5828aabe833b75d02f06eb03fd3e6202785fe1520",
+      "bytes": 494156,
       "mimeType": "model/gltf-binary",
       "gitTracked": true
     },
