@@ -1,0 +1,49 @@
+#!/bin/sh
+set -eu
+
+for required_path in \
+  .git-support/README.md \
+  .git-support/archive.json \
+  .git-support/archive.mjs \
+  .git-support/archive.test.ts \
+  .git-support/hooks/pre-commit \
+  .git-support/media.json \
+  .git-support/media.mjs \
+  .git-support/media.test.ts; do
+  if ! git cat-file -e ":${required_path}" 2>/dev/null; then
+    echo "Git support migration is not fully staged; missing ${required_path}." >&2
+    exit 1
+  fi
+done
+
+if ! git show :package.json | node -e '
+const chunks = [];
+process.stdin.on("data", (chunk) => chunks.push(chunk));
+process.stdin.on("end", () => {
+  const { scripts = {} } = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  const requiredScripts = {
+    "archive:list": "node .git-support/archive.mjs list",
+    "archive:inspect": "node .git-support/archive.mjs inspect",
+    "archive:mount": "node .git-support/archive.mjs mount",
+    "archive:restore": "node .git-support/archive.mjs restore",
+    "hooks:install": "git config core.hooksPath .git-support/hooks",
+    "media:scan": "node .git-support/media.mjs scan",
+    "media:sync-staged": "node .git-support/media.mjs sync-staged",
+    "media:audit": "node .git-support/media.mjs audit",
+  };
+  const valid = Object.entries(requiredScripts).every(
+    ([name, command]) => scripts[name] === command,
+  );
+  process.exit(valid ? 0 : 1);
+});
+'; then
+  echo "Git support migration is not fully staged; stage the package.json path updates first." >&2
+  exit 1
+fi
+
+if git cat-file -e :media/catalog.json 2>/dev/null; then
+  echo "The obsolete media/catalog.json path is still staged; stage its removal before committing." >&2
+  exit 1
+fi
+
+pnpm --silent run media:sync-staged --stage

@@ -12,6 +12,12 @@
       "rules": [
         { "id": "git", "pattern": ".git", "exclude_from": ["docker", "rsync"] },
         {
+          "id": "git-support",
+          "pattern": ".git-support",
+          "exclude_from": ["docker", "rsync"],
+          "note": "Repository hooks, catalogs, tests, and archive tooling are not runtime inputs."
+        },
+        {
           "id": "github-ci",
           "pattern": ".github",
           "exclude_from": ["rsync"],
@@ -51,6 +57,12 @@
     {
       "title": "Code archaeology",
       "rules": [
+        {
+          "id": "quarantine",
+          "pattern": ".shit",
+          "exclude_from": ["docker", "rsync"],
+          "note": "Temporary dormant-source quarantine; never a runtime input."
+        },
         {
           "id": "attic",
           "pattern": ".attic",

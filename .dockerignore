@@ -4,6 +4,9 @@
 
 # ── Version control ────────────────────────────────────────
 .git
+#   Repository hooks, catalogs, tests, and archive tooling are not runtime
+#   inputs.
+.git-support
 
 # ── Build artifacts ────────────────────────────────────────
 #   Docker builder stage installs fresh; rsync never benefits from shipping
@@ -11,6 +14,8 @@
 node_modules
 
 # ── Code archaeology ────────────────────────────────────────
+#   Temporary dormant-source quarantine; never a runtime input.
+.shit
 .attic
 .grave
 patches

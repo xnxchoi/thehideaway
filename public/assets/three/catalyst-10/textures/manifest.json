@@ -1,0 +1,104 @@
+{
+  "generator": "threejs_baker",
+  "schema": 1,
+  "flipY": false,
+  "objects": {
+    "pump": {
+      "resolution": 512,
+      "maps": {
+        "basecolor": {
+          "file": "pump_basecolor.png",
+          "colorSpace": "srgb"
+        },
+        "normal": {
+          "file": "pump_normal.png",
+          "colorSpace": "linear"
+        },
+        "orm": {
+          "file": "pump_orm.png",
+          "colorSpace": "linear",
+          "pack": "orm"
+        },
+        "sheen": {
+          "file": "pump_sheen.png",
+          "colorSpace": "srgb",
+          "pack": "color_alpha"
+        },
+        "anisotropy": {
+          "file": "pump_anisotropy.png",
+          "colorSpace": "linear",
+          "pack": "aniso"
+        }
+      }
+    },
+    "label": {
+      "resolution": 2048,
+      "maps": {
+        "basecolor": {
+          "file": "label_basecolor.png",
+          "colorSpace": "srgb"
+        },
+        "normal": {
+          "file": "label_normal.png",
+          "colorSpace": "linear"
+        },
+        "metallic": {
+          "file": "label_metallic.png",
+          "colorSpace": "linear"
+        },
+        "roughness": {
+          "file": "label_roughness.png",
+          "colorSpace": "linear"
+        },
+        "ao": {
+          "file": "label_ao.png",
+          "colorSpace": "linear"
+        }
+      }
+    },
+    "cap_neck": {
+      "resolution": 512,
+      "maps": {
+        "basecolor": {
+          "file": "cap_neck_basecolor.png",
+          "colorSpace": "srgb"
+        },
+        "normal": {
+          "file": "cap_neck_normal.png",
+          "colorSpace": "linear"
+        },
+        "orm": {
+          "file": "cap_neck_orm.png",
+          "colorSpace": "linear",
+          "pack": "orm"
+        },
+        "sheen": {
+          "file": "cap_neck_sheen.png",
+          "colorSpace": "srgb",
+          "pack": "color_alpha"
+        }
+      }
+    },
+    "cap": {
+      "resolution": 2048,
+      "maps": {
+        "basecolor": {
+          "file": "cap_basecolor.png",
+          "colorSpace": "srgb"
+        },
+        "normal": {
+          "file": "cap_normal.png",
+          "colorSpace": "linear"
+        },
+        "roughness": {
+          "file": "cap_roughness.png",
+          "colorSpace": "linear"
+        },
+        "clearcoat": {
+          "file": "cap_clearcoat.png",
+          "colorSpace": "linear"
+        }
+      }
+    }
+  }
+}

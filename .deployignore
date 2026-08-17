@@ -4,6 +4,9 @@
 
 # ── Version control ────────────────────────────────────────
 .git
+#   Repository hooks, catalogs, tests, and archive tooling are not runtime
+#   inputs.
+.git-support
 #   CI workflows belong on GitHub, not on the VPS
 .github
 
@@ -25,6 +28,8 @@ dist
 coverage
 
 # ── Code archaeology ────────────────────────────────────────
+#   Temporary dormant-source quarantine; never a runtime input.
+.shit
 .attic
 .grave
 patches

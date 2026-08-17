@@ -49,6 +49,9 @@ tests/
 .next
 .pnpm-store
 .turbo
+.git-support/archive-worktree/
+.git-support/media.local.json
+/thehideaway.code-workspace
 /.claude/
 
 !/.claude/PRPs
@@ -78,3 +81,4 @@ readmes/**/*.css
 readmes/**/*.html
 !/src/components/Shells/Header/HCC.tsx
 tsconfig.tsbuildinfo
+.shit

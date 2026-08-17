@@ -13,7 +13,10 @@ export default defineConfig({
     }
   },
   test: {
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    include: [
+      "src/**/*.{test,spec}.{ts,tsx}",
+      ".git-support/**/*.{test,spec}.{ts,tsx}"
+    ],
     exclude: [
       "node_modules/**",
       ".attic/**",
