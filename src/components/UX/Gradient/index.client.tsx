@@ -32,7 +32,7 @@ export function VGradient() {
 
   return (
     <View
-      className="absolute inset-0 z-[200]"
+      className="absolute inset-0 z-200"
       visible={navIsOpen}
       data-active={navIsOpen}
     >

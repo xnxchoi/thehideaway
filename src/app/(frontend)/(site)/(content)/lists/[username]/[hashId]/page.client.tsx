@@ -4,7 +4,7 @@ import { BookmarkButton } from "@/components/UX/Bookmark";
 import { Link } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
 import type { CompilationItemType } from "@/payload/collections/Compilations";
-import type { Compilation, Media, User } from "@/payload-types";
+import type { Compilation, Media, User } from "@payload-types";
 import * as m from "motion/react-m";
 import Image from "next/image";
 import { useMemo, useState } from "react";

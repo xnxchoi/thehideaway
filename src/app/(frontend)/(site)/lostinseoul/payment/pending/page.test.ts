@@ -26,13 +26,16 @@ describe("LOSTINSEOUL payment pending", () => {
     find.mockReset();
   });
 
-  it("renders only an owned pending manual order", async () => {
-    find.mockImplementation(async ({ collection }) => ({
-      docs:
-        collection === "product-orders"
-          ? [{ id: "order-1", payment_status: "pending_manual" }]
-          : [{ provider: "manual" }]
-    }));
+  it("renders only an owned pending bank-transfer order", async () => {
+    find.mockResolvedValue({
+      docs: [
+        {
+          id: "order-1",
+          payment_method: "bank_transfer",
+          payment_status: "pending"
+        }
+      ]
+    });
     const { default: Page } = await import("./page");
 
     await expect(
@@ -41,13 +44,10 @@ describe("LOSTINSEOUL payment pending", () => {
     expect(notFound).not.toHaveBeenCalled();
   });
 
-  it("rejects paid or PortOne orders", async () => {
-    find.mockImplementation(async ({ collection }) => ({
-      docs:
-        collection === "product-orders"
-          ? [{ id: "order-1", payment_status: "paid" }]
-          : [{ provider: "portone" }]
-    }));
+  it("rejects paid or card orders", async () => {
+    find.mockResolvedValue({
+      docs: [{ id: "order-1", payment_method: "card", payment_status: "paid" }]
+    });
     const { default: Page } = await import("./page");
 
     await expect(

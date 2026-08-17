@@ -38,7 +38,7 @@ import { useIsMobile } from "@/providers/MiddleMan";
 import { useKinetics } from "@/components/layouts/Registration/KineticProvider";
 import { useShallow } from "zustand/shallow";
 
-const glbPath = "/assets/plate/pl/PACKAGE_2.glb";
+const glbPath = "/assets/three/plate/mai.glb";
 /**
  * TODO: port over files in the paths below to the new directory (/assets/three/...)
  */

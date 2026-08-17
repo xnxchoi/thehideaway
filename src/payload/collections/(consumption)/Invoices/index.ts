@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
 
 export const Invoices: CollectionConfig = {
   slug: "invoices",
@@ -34,12 +35,13 @@ export const Invoices: CollectionConfig = {
   },
   access: {
     read: ({ req }) => {
+      if (!req.user) return false;
       if (req.user?.role === "admin") return true;
       return { client: { equals: req.user?.id } };
     },
-    create: ({ req }) => req.user?.role === "admin",
-    update: ({ req }) => req.user?.role === "admin",
-    delete: ({ req }) => req.user?.role === "admin"
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin
   },
   fields: [
     {
@@ -48,9 +50,11 @@ export const Invoices: CollectionConfig = {
       unique: true,
       index: true,
       required: true,
+      access: {
+        update: () => false
+      },
       admin: {
-        readOnly: true,
-        description: "Auto-incremented at issue time."
+        readOnly: true
       }
     },
     {
@@ -86,12 +90,9 @@ export const Invoices: CollectionConfig = {
       name: "price",
       type: "relationship",
       relationTo: "prices",
+      required: true,
       hasMany: false,
-      maxDepth: 0,
-      admin: {
-        description:
-          "The Price doc the customer transacted. Nullable for legacy / hand-issued invoices that predate the Product/Price split."
-      }
+      maxDepth: 0
     },
     {
       name: "amount",
@@ -132,8 +133,7 @@ export const Invoices: CollectionConfig = {
         { label: "Draft", value: "draft" },
         { label: "Open", value: "open" },
         { label: "Paid", value: "paid" },
-        { label: "Void", value: "void" },
-        // 'pending' is a legacy value from the pre-Sprint-2 3-state FSM.
+        { label: "Void", value: "void" }, // 'pending' is a legacy value from the pre-Sprint-2 3-state FSM.
         // Kept here to mirror the DB enum (which still carries the value
         // because Postgres won't let us DROP a single enum value without
         // a full type-recreate). No new code path writes 'pending';

@@ -2,18 +2,10 @@ import type { Metadata } from "next";
 import { createTranslator } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
-import { isManualPaymentEnabled } from "@/lib/lost-commerce/payment-methods";
-import {
-  isLostCommercePaymentPreviewEnabled,
-  isLostCommercePaymentUiEnabled
-} from "@/lib/lost-commerce/payment-preview";
-import { isPortOneCheckoutEnabled } from "@/lib/lost-commerce/portone";
-import {
-  getLostFragranceData,
-  getLostHomeData
-} from "@/lib/lost-commerce/queries";
-import enMessages from "../../../../../../../messages/en.json";
-import koMessages from "../../../../../../../messages/ko.json";
+import { getLostHomeData } from "@/lib/lost-commerce/queries";
+import { getCommerceFragrancePresentation } from "@/lib/commerce/product-presentation";
+import enMessages from "../../../../../../messages/en.json";
+import koMessages from "../../../../../../messages/ko.json";
 import { getLostBusinessFooterProps } from "../business-footer-props";
 import { LostFragranceChapter, type LostFragranceCopy } from "./page.client";
 
@@ -67,7 +59,7 @@ function copyFrom(t: FragranceTranslator): LostFragranceCopy {
 
 export default async function LostFragrancePage() {
   const [product, home, rawLocale, t] = await Promise.all([
-    getLostFragranceData().catch(() => null),
+    getCommerceFragrancePresentation().catch(() => null),
     getLostHomeData().catch(() => ({ drops: [], products: [] })),
     getLocale(),
     getTranslations("LOSTINSEOUL")
@@ -75,10 +67,7 @@ export default async function LostFragrancePage() {
   const locale = rawLocale === "ko" ? "ko" : "en";
   const tEn = fragranceTranslator("en");
   const tKo = fragranceTranslator("ko");
-  const checkoutEnabled = isLostCommercePaymentUiEnabled({
-    configured: isPortOneCheckoutEnabled() || isManualPaymentEnabled(),
-    previewEnabled: isLostCommercePaymentPreviewEnabled()
-  });
+  const checkoutEnabled = false;
 
   return (
     <RPage slug={["lostinseoul", "fragrance"]} theme="dark" type="pages">

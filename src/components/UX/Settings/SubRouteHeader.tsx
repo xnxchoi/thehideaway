@@ -50,7 +50,7 @@ export function SubRouteHeader({
         href={backHref}
         className={cn(
           "group inline-flex w-fit items-center gap-1.5 text-xs text-foreground/55 transition-colors hover:text-foreground/85",
-          "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
+
           "rounded-sm",
           // The persistent rail on xl+ makes this redundant. Hidden on
           // desktop, primary nav affordance below xl.

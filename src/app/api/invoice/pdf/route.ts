@@ -27,8 +27,6 @@ import type {
   InvoiceStatus
 } from "@/components/UX/Invoice/types";
 
-export const runtime = "nodejs";
-
 /* ---------------------------------------------------------------- *
  *  Server-driven invoice PDF.
  *

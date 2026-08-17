@@ -38,25 +38,21 @@ export default function RP_Cursor() {
   );
 
   useEffect(() => {
-    const updatePosition = (e: MouseEvent) => {
+    const updatePosition = (e: PointerEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
     };
 
-    document.addEventListener("mousemove", updatePosition);
+    document.addEventListener("pointermove", updatePosition, { passive: true });
 
     return () => {
-      document.removeEventListener("mousemove", updatePosition);
+      document.removeEventListener("pointermove", updatePosition);
     };
   }, [cursorX, cursorY]);
-  const springConfig = useMemo(() => ({ duration: 0 }), []);
   const isTouchDevice = useDeviceInfo(useShallow((r) => r.isTouchDevice));
   const [isTextCursor, setIsTextCursor] = useState(!1);
   const marquee = useCursor(useShallow((l) => l.marquee));
   const [direction, setDirection] = useState<"ltr" | "rtl">("ltr");
-  const cursorXSpring = useSpring(cursorX, springConfig || { duration: 0 });
-  const cursorYSpring = useSpring(cursorY, springConfig || { duration: 0 });
-
   const cursorState = useCursor(useShallow((l) => l.cursorState));
   const oCircle = useRef(null);
   const iCircle = useRef(null);
@@ -295,7 +291,10 @@ export default function RP_Cursor() {
   const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
 
   useEffect(() => {
-    theme && (setBaseCursorTheme(theme), !navIsOpen && resetCursorTheme());
+    if (!theme) return;
+    const baseCursorTheme = theme === "light" ? "dark" : "light";
+    setBaseCursorTheme(baseCursorTheme);
+    if (!navIsOpen) resetCursorTheme();
   }, [
     navIsOpen,
     resetCursorTheme,
@@ -317,8 +316,8 @@ export default function RP_Cursor() {
         "show_cursor cursor-none": isEnabled
       })}
       style={{
-        x: cursorXSpring,
-        y: cursorYSpring,
+        x: cursorX,
+        y: cursorY,
         translateX: "-50%",
         translateY: "-50%"
       }}
@@ -415,7 +414,7 @@ export default function RP_Cursor() {
                 />
                 <m.circle
                   ref={iCircle}
-                  className="inline fill-nav-button stroke-0"
+                  className="inline stroke-0"
                   cx={50}
                   cy={50}
                   variants={innerVariants}
@@ -424,7 +423,7 @@ export default function RP_Cursor() {
                   exit={"hidden"}
                   r={innerRadius}
                   strokeWidth={0}
-                  data-themed="fill"
+                  style={{ fill: strokeColor }}
                 />
               </m.svg>
             )}

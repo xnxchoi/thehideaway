@@ -31,8 +31,6 @@ import { requireInventoryReservationPolicyForCheckout } from "@/lib/lost-commerc
 import { reserveCheckoutOrderInventoryInTransaction } from "@/lib/lost-commerce/checkout-inventory-reservations";
 import type { ReservationTransactionRequest } from "@/lib/lost-commerce/inventory-reservation-store";
 
-export const runtime = "nodejs";
-
 const LineSchema = z
   .object({
     productId: z.string().min(1),
@@ -295,7 +293,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         payload,
         user: auth.user,
         lines: parsed.data.lines,
-        req: txReq as never
+        req: txReq
       });
       skuIds = discovery.lines.map((line) => line.skuId);
     }
@@ -305,7 +303,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       payload,
       user: auth.user,
       lines: parsed.data.lines,
-      req: txReq as never
+      req: txReq
     });
     if (resolved.mode === "request_to_order") {
       if (!resolved.campaignId) throw new Error("campaign-required");
@@ -314,7 +312,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         campaignId: resolved.campaignId,
         productId: resolved.lines[0]?.productId ?? "",
         skuIds: [...new Set(resolved.lines.map((line) => line.skuId))].sort(),
-        req: txReq as never
+        req: txReq
       });
     }
 
@@ -377,7 +375,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       : undefined;
 
     order = (await payload.create({
-      collection: "product-orders" as never,
+      collection: "product-orders",
       overrideAccess: true,
       req: txReq,
       data: {
@@ -401,7 +399,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         shipping: parsed.data.shipping,
         contact: parsed.data.contact,
         expires_at: expiresAt
-      } as never
+      }
     })) as { id: string; order_ref: string };
 
     if (reservationPolicy) {
@@ -418,7 +416,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const paymentRef = `${orderRef}_${parsed.data.paymentProvider}`;
     await payload.create({
-      collection: "product-payments" as never,
+      collection: "product-payments",
       overrideAccess: true,
       req: txReq,
       data: {
@@ -434,7 +432,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         payment_channel: parsed.data.paymentChannel,
         payment_method: parsed.data.paymentMethod,
         request_payload: portonePayload
-      } as never
+      }
     });
 
     await completeCommerceCommand({
@@ -447,7 +445,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         ok: true,
         order: { id: String(order.id), order_ref: order.order_ref },
         paymentProvider: parsed.data.paymentProvider,
-        portone: portonePayload as never
+        portone: portonePayload
       },
       resource: { type: "product-order", id: String(order.id) }
     });

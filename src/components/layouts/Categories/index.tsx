@@ -64,7 +64,7 @@ const HeroTop = ({
     >
       <Link
         className="absolute top-0 left-0 z-0 h-full w-full"
-        href={`//essays/${slug}`}
+        href={`/essays/${slug}`}
       ></Link>
       <HeroTopMedia image={image} />
       <HeroTopTag tag={category.title} />
@@ -179,7 +179,7 @@ const HeroSub = ({
     >
       <Link
         className="absolute top-0 left-0 z-0 h-full w-full"
-        href={`//essays/${slug}`}
+        href={`/essays/${slug}`}
       ></Link>
       <SubMedia image={post.image} />
       <SubTag tag={category.title} />

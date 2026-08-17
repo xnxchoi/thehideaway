@@ -1,19 +1,19 @@
 "use client";
 
-import { PayloadLinkProps } from "@/components/core/Link/types";
+import type { PayloadLinkProps } from "@/components/core/Link/types";
 import { ViewportSizes } from "@/components/core/Media/types";
 import type { PageTransitionType } from "@/components/UX/Transition";
-import { Footer, Header, Media } from "@/payload-types";
+import type { Footer, Header, Media } from "@/payload-types";
 import type { Theme } from "@/providers/Theme/types";
 import { getMenuPagePreviewKey, getPageTypeFromUrl } from "@/utilities/Helpers";
-import { Flatten } from "@/utilities/typeUtilities";
+import type { Flatten } from "@/utilities/typeUtilities";
 import { isEqual } from "lodash-es";
 import type { Variant } from "motion/react";
-import { DataFromCollectionSlug } from "payload";
+import type { DataFromCollectionSlug } from "payload";
 import type { CSSProperties, RefObject } from "react";
 import { subscribeWithSelector } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
-import { PageType } from "./Routing/RP_Voyageur";
+import type { PageType } from "./Routing/RP_Voyageur";
 
 type CommonLinkProps = Omit<PayloadLinkProps, "reference" | "url" | "type">;
 

@@ -92,7 +92,7 @@ async function queryPageBySlug({
   slug: string;
   draft: boolean;
 }) {
-  // "use cache";
+  "use cache";
   const payload = await getPayload({ config });
 
   const result = await payload.find({

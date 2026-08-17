@@ -2,7 +2,7 @@ import { currentUser } from "@/lib/auth/context/get-context-props";
 import { getCompilationByHashId } from "@/payload/collections/Compilations/actions";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type { User, Media } from "@/payload-types";
+import type { User, Media } from "@payload-types";
 import PublicCompilationClient from "./page.client";
 
 export const generateMetadata = async ({

@@ -106,7 +106,7 @@ export function ActionButton({
       aria-busy={loading}
       className={cn(
         "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-tight transition-colors",
-        "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
+
         tone === "danger"
           ? "border-rouge-700/40 text-rouge-700/85 hover:border-rouge-700 hover:text-rouge-700"
           : "border-foreground/30 text-foreground/85 hover:border-foreground/55 hover:text-foreground",

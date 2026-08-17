@@ -71,6 +71,41 @@ export type PageType =
   | "search"
   | "me";
 
+/**
+ * Convert the routing store's semantic page type into a public URL prefix.
+ * Page types describe behavior/layout; they are not necessarily URL segments.
+ */
+export const pageTypeToPublicPrefix = (pageType: PageType): string => {
+  switch (pageType) {
+    case "posts":
+      return "essays";
+    case "categories":
+      return "archived";
+    case "tags":
+      return "tagged";
+    case "pages":
+      return "";
+    case "home":
+      return "home";
+    default:
+      return pageType;
+  }
+};
+
+export const pageTypeToPublicPath = (
+  pageType: PageType,
+  slug: string
+): string => {
+  const prefix = pageTypeToPublicPrefix(pageType);
+  const encodedSlug = slug
+    .split("/")
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+
+  return `/${[prefix, encodedSlug].filter(Boolean).join("/")}`;
+};
+
 export interface PageTypeSlugMap {
   auth: ["/auth"];
   account: ["/account"];

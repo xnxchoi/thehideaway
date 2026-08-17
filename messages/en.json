@@ -172,45 +172,45 @@
       "total": "Total"
     },
     "fragrance": {
-      "metaTitle": "Fragrance — LOSTINSEOUL",
-      "metaDescription": "The first fragrance from LOSTINSEOUL. Light, air, and what stays on the skin.",
-      "eyebrow": "The first fragrance",
-      "titleDisplay": "In the air",
-      "titleReading": "Light, air, and what stays on the skin.",
+      "metaTitle": "CATALYST — LOSTINSEOUL",
+      "metaDescription": "CATALYST fragrance by LOSTINSEOUL.",
+      "eyebrow": "Fragrance",
+      "titleDisplay": "CATALYST",
+      "titleReading": "Fragrance by LOSTINSEOUL.",
       "enter": "Scroll",
-      "placeholderName": "№ 01",
-      "placeholderNote": "The release is being prepared. The object will appear here.",
+      "placeholderName": "CATALYST",
+      "placeholderNote": "Product information is unavailable.",
       "phases": {
         "open": {
-          "display": "Light",
-          "reading": "A single light finds the dark."
+          "display": "Stage 1",
+          "reading": ""
         },
         "bloom": {
-          "display": "Bloom",
-          "reading": "The air thickens, and holds the light."
+          "display": "Stage 2",
+          "reading": ""
         },
         "suspend": {
-          "display": "Suspension",
-          "reading": "It hangs there — weightless, almost nothing."
+          "display": "Stage 3",
+          "reading": ""
         }
       },
       "reveal": {
-        "eyebrow": "What stays",
-        "editionNote": "Limited run, Seoul dispatch.",
-        "viewObject": "View the object"
+        "eyebrow": "Product",
+        "editionNote": "",
+        "viewObject": "View product"
       }
     },
     "gate": {
       "metaTitle": "Access — LOSTINSEOUL",
-      "metaDescription": "LOSTINSEOUL - Early Access",
-      "eyebrow": "Private",
+      "metaDescription": "LOSTINSEOUL access page.",
+      "eyebrow": "Access",
       "status": "Locked",
       "label": "Access",
-      "lede": "Opening Soon...",
+      "lede": "Enter the passcode.",
       "passwordLabel": "Passcode",
-      "passwordPlaceholder": "Enter...",
-      "invalid": "Wrong passcode.",
-      "submit": "Enter",
+      "passwordPlaceholder": "Enter passcode",
+      "invalid": "Incorrect passcode.",
+      "submit": "Continue",
       "footer": ""
     },
     "legal": {
@@ -440,87 +440,63 @@
     }
   },
   "ComingSoon": {
-    "eyebrow": "IN DEVELOPMENT",
+    "label": "Status",
     "chips": {
-      "default": "FORTHCOMING",
-      "draft": "IN DRAFT",
-      "soon": "SOON-ISH",
-      "queued": "QUEUED",
-      "wetInk": "WET INK",
-      "backstage": "BACKSTAGE",
-      "nearly": "NEARLY",
-      "patience": "PATIENCE"
+      "default": "Coming soon",
+      "draft": "Draft",
+      "soon": "Coming soon",
+      "queued": "Queued",
+      "inProgress": "In progress"
     },
     "dispatches": {
-      "default": "This one's in the editor's stack, under a coffee ring. We'll dig it out when we dig it out.",
-      "backstage": "Not ready for company. The furniture is still arriving.",
-      "composing": "Currently being written in a room you aren't in. We'll open the door in due course.",
-      "argued": "Being argued about by adults. Leave an address and we'll tell you who won.",
-      "honest": "We started this before we should have. Come back after we finish."
+      "default": "Coming soon."
     },
     "tooltips": {
-      "composition": {
-        "line1": "Under composition.",
-        "line2": "Do not disturb."
-      },
-      "wetInk": {
-        "line1": "Wet ink.",
-        "line2": "Hands off."
-      },
-      "editor": {
-        "line1": "In the editor's stack.",
-        "line2": "Kindly wait."
-      }
+      "draft": { "line1": "Draft", "line2": "Coming soon" },
+      "inProgress": { "line1": "In progress", "line2": "Coming soon" }
     },
     "toasts": {
-      "notYet": "Not yet. — Ed.",
-      "nearly": "Nearly. Not nearly enough.",
-      "tryLater": "Try the door again next week.",
-      "locked": "The door is locked. On purpose."
+      "unavailable": "Not available yet.",
+      "locked": "Not available."
     },
     "notify": {
-      "cta": "TELL ME WHEN",
-      "placeholder": "your address",
-      "ack": "Logged. We'll write."
+      "cta": "Notify me",
+      "placeholder": "Email address",
+      "ack": "Notifications are not available yet."
     },
-    "sectionCopy": "Commentary — forthcoming. The margins are still being ruled.",
-    "cardCopy": "Something here, eventually."
+    "sectionCopy": "Coming soon.",
+    "cardCopy": "Coming soon."
   },
   "Gate": {
-    "eyebrow": "THE HIDEAWAY — SEOUL",
+    "label": "The Hideaway",
     "wordmark": "The Hideaway",
-    "title": "Returning soon.",
-    "lede": "We are still ruling the margins. The room opens in stages.",
-    "footnote": "What is ready to read, you can find at home.",
+    "title": "Coming soon.",
+    "subtitle": "",
+    "footnote": "",
     "ctaPrimary": "Home",
     "ctaPrimaryHref": "/home",
-    "ctaSecondary": "Sign in",
+    "ctaSecondary": "Log in",
     "ctaSecondaryHref": "/sign-in",
-    "colophon": "An editorial house, in private rehearsal."
+    "footer": ""
   },
   "Settings": {
     "navAria": "Settings sections",
     "back": "Settings",
     "sections": {
       "general": {
-        "label": "General",
-        "blurb": "Language, theme, and other interface preferences."
+        "label": "General"
       },
       "profile": {
-        "label": "Profile",
-        "blurb": "Your public face — name, bio, location, link."
+        "label": "Profile"
       },
       "account": {
-        "label": "Account",
-        "blurb": "Handle, sign-in email, password, address, subscriptions."
+        "label": "Account"
       },
       "security": {
-        "label": "Security",
-        "blurb": "Two-factor, sessions, providers, passkeys, account closure."
+        "label": "Security"
       },
       "notifications": {
-        "label": "Notifications",
-        "blurb": "What you hear from us — and how often."
+        "label": "Notifications"
       }
     },
     "providers": {
@@ -532,10 +508,10 @@
         "passkey": "Passkey",
         "credential-2fa": "2FA"
       },
-      "blurbs": {
-        "google": "Sign in with your Google account.",
-        "naver": "Sign in with your Naver account.",
-        "kakao": "Sign in with your Kakao account.",
+      "descriptions": {
+        "google": "Sign in with Google.",
+        "naver": "Sign in with Naver.",
+        "kakao": "Sign in with Kakao.",
         "credential": "Email and password sign-in.",
         "passkey": "Hardware-backed sign-in via passkeys.",
         "credential-2fa": "One-time code after password sign-in."
@@ -556,21 +532,20 @@
     },
     "general": {
       "title": "General",
-      "blurb": "Interface preferences — language, theme, and how the platform reacts to your OS settings.",
-      "interfaceEyebrow": "Interface",
+      "description": "Language, theme, and motion settings.",
+      "interfaceLabel": "Interface",
       "themeLabel": "Theme",
       "themeOptions": {
         "light": "Light",
         "dark": "Dark"
       },
-      "motionEyebrow": "Motion",
-      "motionBlurb": "No in-app override — we honour your OS accessibility setting. Toggle it there, we'll match.",
+      "motionLabel": "Motion",
       "reduceMotionLabel": "Reduce motion",
-      "reduceMotionDescription": "Mirrored from your OS accessibility settings.",
+      "reduceMotionDescription": "Uses your operating system setting.",
       "reduceMotionDetected": {
         "loading": "Detecting…",
-        "on": "On — animations minimised",
-        "off": "Off — full motion"
+        "on": "On",
+        "off": "Off"
       }
     }
   },
@@ -808,7 +783,6 @@
             "eyebrow": "yang min woo",
             "name": "YM.FM",
             "role": "Barber. Musician. Friend of the house.",
-            "blurb": "He carries the room once daylight gives way.",
             "handle": "@yangminwoo__",
             "listenTitle": "Listen to YM.FM",
             "listenLabel": "Play",

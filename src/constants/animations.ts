@@ -1,24 +1,6 @@
 import type { SpringConfig } from "@react-spring/three";
 import { MotionValue } from "motion/react";
-
-export const DURATION = Object.freeze({
-  S: 0.6
-});
-export const EASE = Object.freeze({
-  p3eo: "power3.out",
-  p3eio: "power3.inOut",
-  p3ei: "power3.in"
-});
-export const VIEW_DIMENSIONS = Object.freeze({
-  top: 10,
-  right: 10,
-  bottom: 20,
-  left: 10
-});
-const backEaseConfig =
-  (overshoot = 1.70158) =>
-  (p: number) =>
-    p ? --p * p * ((overshoot + 1) * p + overshoot) + 1 : 0;
+    
 const easeInOutFromOut = (easeOut: (p: number) => number) => (p: number) =>
   p < 0.5 ? (1 - easeOut(1 - p * 2)) / 2 : 0.5 + easeOut((p - 0.5) * 2) / 2;
 const ee = Object.freeze({

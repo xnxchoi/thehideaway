@@ -111,23 +111,20 @@ afterAll(() => {
 describe("lost commerce query normalization", () => {
   it("normalizes active SKUs without scalar stock compatibility fields", () => {
     expect(
-      normalizeLostProductSkus(
-        { unit_amount: 120000 },
-        [
-          {
-            id: "sku-1",
-            active: true,
-            sku: "LIS-1",
-            label: "Black / 02",
-            options: [
-              { key: "size", value: "02" },
-              { key: "color", value: "Black" }
-            ],
-            price_override_amount: 135000
-          },
-          { id: "sku-2", active: false, sku: "LIS-2", options: [] }
-        ]
-      )
+      normalizeLostProductSkus({ unit_amount: 120000 }, [
+        {
+          id: "sku-1",
+          active: true,
+          sku: "LIS-1",
+          label: "Black / 02",
+          options: [
+            { key: "size", value: "02" },
+            { key: "color", value: "Black" }
+          ],
+          price_override_amount: 135000
+        },
+        { id: "sku-2", active: false, sku: "LIS-2", options: [] }
+      ])
     ).toEqual([
       {
         id: "sku-1",
@@ -159,6 +156,34 @@ describe("lost commerce query normalization", () => {
 });
 
 describe("lost commerce relational SKU queries", () => {
+  it("exposes a populated rich description for the optional detail panel", async () => {
+    const description = {
+      root: {
+        type: "root",
+        children: [{ type: "paragraph", version: 1 }],
+        direction: null,
+        format: "",
+        indent: 0,
+        version: 1
+      }
+    };
+    mockProductQuery(product({ description }), {
+      1: [
+        {
+          id: "sku-1",
+          product: "product-1",
+          active: true,
+          sku: "LIS-1",
+          options: []
+        }
+      ]
+    });
+
+    const result = await getLostProductBySlug("catalyst");
+
+    expect(result?.description).toBe(description);
+  });
+
   it("combines every active SKU page in Payload sort order", async () => {
     mockProductQuery(product(), {
       1: [
@@ -223,6 +248,33 @@ describe("lost commerce relational SKU queries", () => {
     expect(result?.modes).toEqual([]);
     expect(result?.displayPrice).toBeNull();
     expect(result?.variants).toEqual([]);
+  });
+
+  it("shows a fixed pre-order price before its campaign becomes actionable", async () => {
+    mockProductQuery(
+      product({
+        standard_enabled: false,
+        request_to_order_enabled: true,
+        private_order_enabled: false
+      }),
+      {
+        1: [
+          {
+            id: "sku-preorder",
+            product: "product-1",
+            active: true,
+            sku: "LIS-PREORDER",
+            options: []
+          }
+        ]
+      }
+    );
+
+    const result = await getLostProductBySlug("catalyst");
+
+    expect(result?.modes).toEqual([]);
+    expect(result?.displayPrice).toBe("\u20a9120,000");
+    expect(result?.variants[0]?.actionableModes).toEqual([]);
   });
 
   it("enables standard purchase when batched ATP is positive", async () => {
@@ -498,7 +550,7 @@ describe("lost commerce relational SKU queries", () => {
     const result = await getLostProductBySlug("catalyst");
 
     expect(result?.modes).toEqual([]);
-    expect(result?.displayPrice).toBeNull();
+    expect(result?.displayPrice).toBe("\u20a9120,000");
     expect(result?.variants[0]?.actionableModes).toEqual([]);
   });
 
@@ -573,7 +625,7 @@ describe("lost commerce relational SKU queries", () => {
     const result = await getLostProductBySlug("catalyst");
 
     expect(result?.modes).toEqual([]);
-    expect(result?.displayPrice).toBeNull();
+    expect(result?.displayPrice).toBe("\u20a9120,000");
     expect(result?.variants[0]?.actionableModes).toEqual([]);
   });
 
@@ -604,6 +656,39 @@ describe("lost commerce relational SKU queries", () => {
 });
 
 describe("lost commerce storefront queries", () => {
+  it("prefers an actionable private preset over a closed pre-order price", async () => {
+    mockProductQuery(
+      product({
+        standard_enabled: false,
+        request_to_order_enabled: true,
+        private_order_enabled: true,
+        private_preset_price_enabled: true,
+        private_unit_amount: 150000
+      }),
+      {
+        1: [
+          {
+            id: "sku-mixed-private",
+            product: "product-1",
+            active: true,
+            sku: "LIS-MIXED-PRIVATE",
+            price_override_amount: 120000,
+            options: []
+          }
+        ]
+      }
+    );
+
+    const result = await getLostHomeData();
+
+    expect(result.products[0]).toEqual(
+      expect.objectContaining({
+        displayPrice: "₩150,000",
+        modes: ["private_order"]
+      })
+    );
+  });
+
   it("displays a complete positive private preset for a private-only product", async () => {
     mockProductQuery(
       product({

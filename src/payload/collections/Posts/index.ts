@@ -27,7 +27,6 @@ import {
   PayloadRequest,
   Where
 } from "payload";
-import { PROPS_COLLAPSIBLE } from "../constants";
 import {
   postBookmarkSaveHandler,
   unBookmarkPostHandler
@@ -38,6 +37,7 @@ import { revalidateDelete, revalidatePost } from "./hooks/revalidatePost";
 import { promoteAuthorAfterPostChange } from "@/payload/collections/Users/hooks/promoteToAuthor";
 import { RichContent } from "./richContent";
 import { RichTitle } from "./richTitle";
+import { PROPS_COLLAPSIBLE } from "@/constants/navigation";
 
 export const Posts: CollectionConfig<"posts"> = {
   slug: "posts", // This config controls what's populated by default when a post is referenced

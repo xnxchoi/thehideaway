@@ -188,6 +188,7 @@ export function LostCheckoutPageClient({
     configured: portOneEnabled,
     previewEnabled: paymentPreviewEnabled
   });
+  const commerceConnected = portOneUiEnabled || manualPaymentEnabled;
   const [provider, setProvider] = useState<"portone" | "manual">(
     portOneUiEnabled ? "portone" : "manual"
   );
@@ -199,12 +200,17 @@ export function LostCheckoutPageClient({
   const currency = lines[0]?.currency ?? "KRW";
 
   useEffect(() => {
+    if (!commerceConnected) {
+      rememberPendingPayment(null);
+      setPendingPayment(null);
+      return;
+    }
     const pending = readPendingPayment();
     if (pending) {
       setPendingPayment(pending);
       setState("idle");
     }
-  }, []);
+  }, [commerceConnected]);
 
   function finishReconciliation(
     result: ProductPaymentRecoveryResult,
@@ -331,9 +337,12 @@ export function LostCheckoutPageClient({
       }
       setPendingPayment(payment);
       try {
-        const portOneResponse = await window.PortOne.requestPayment(
-          data.portone
-        );
+        const requestPayment = window.PortOne?.requestPayment;
+        if (!requestPayment) {
+          setState("failed");
+          return;
+        }
+        const portOneResponse = await requestPayment(data.portone);
         if (isPortOneFailure(portOneResponse)) {
           const reconciled = await reconcileFailedOrder(data.order.order_ref);
           finishReconciliation(reconciled, payment);
@@ -434,14 +443,22 @@ export function LostCheckoutPageClient({
                 <legend className="mb-2 text-lg font-medium">
                   {labels.contact}
                 </legend>
+                <label className="sr-only" htmlFor="lost-checkout-name">
+                  {labels.name}
+                </label>
                 <input
+                  id="lost-checkout-name"
                   className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
                   autoComplete="name"
                   name="name"
                   placeholder={labels.name}
                   required
                 />
+                <label className="sr-only" htmlFor="lost-checkout-email">
+                  {labels.email}
+                </label>
                 <input
+                  id="lost-checkout-email"
                   className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
                   autoComplete="email"
                   inputMode="email"
@@ -450,7 +467,11 @@ export function LostCheckoutPageClient({
                   required
                   type="email"
                 />
+                <label className="sr-only" htmlFor="lost-checkout-phone">
+                  {labels.phone}
+                </label>
                 <input
+                  id="lost-checkout-phone"
                   className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
                   autoComplete="tel"
                   inputMode="tel"
@@ -463,14 +484,22 @@ export function LostCheckoutPageClient({
                 <legend className="mb-2 text-lg font-medium">
                   {labels.shipping}
                 </legend>
+                <label className="sr-only" htmlFor="lost-checkout-address">
+                  {labels.address}
+                </label>
                 <input
+                  id="lost-checkout-address"
                   className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
                   autoComplete="shipping street-address"
                   name="address"
                   placeholder={labels.address}
                   required
                 />
+                <label className="sr-only" htmlFor="lost-checkout-note">
+                  {labels.note}
+                </label>
                 <textarea
+                  id="lost-checkout-note"
                   className="min-h-28 border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent p-3 text-[16px] outline-none md:text-sm"
                   name="note"
                   placeholder={labels.note}

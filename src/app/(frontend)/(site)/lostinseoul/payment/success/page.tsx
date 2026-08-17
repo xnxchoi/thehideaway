@@ -20,20 +20,19 @@ export default async function LostPaymentSuccessPage({ searchParams }: Props) {
 
   const payload = await getPayload({ config });
   const orders = await payload.find({
-    collection: "product-orders" as never,
+    collection: "commerce-orders" as never,
     depth: 0,
     limit: 1,
     overrideAccess: true,
     where: {
       and: [
-        { order_ref: { equals: order } },
+        { ref: { equals: order } },
         { user: { equals: String(session.user.id) } }
       ]
-    } as never
+    }
   });
   const ownedOrder = orders.docs[0] as
-    | { id: string; payment_status?: string }
-    | undefined;
+    { id: string; payment_status?: string } | undefined;
   if (!ownedOrder) notFound();
 
   if (ownedOrder.payment_status !== "paid") notFound();

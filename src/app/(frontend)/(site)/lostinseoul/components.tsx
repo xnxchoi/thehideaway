@@ -21,10 +21,10 @@ import { useLenis } from "lenis/react";
 import { useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
 import {
-  type CSSProperties,
   type ComponentProps,
-  type RefObject,
+  type CSSProperties,
   type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useRef,
@@ -44,14 +44,12 @@ import {
 import {
   getLostCollectionTagState,
   getLostCollectionVideoState,
-  lostCollectionTransition,
-  type LostCollectionMotionState
+  type LostCollectionMotionState,
+  lostCollectionTransition
 } from "./collection-motion";
 import {
-  getLostBagAnnouncementChromeState,
   getLostBagAnnouncementChromeTransition,
-  getLostBagChromeTransition,
-  getLostBagRegularChromeState
+  getLostBagChromeTransition
 } from "./cart-frame";
 import { LostCartOverlay } from "./cart-overlay";
 import {
@@ -66,10 +64,10 @@ import {
   getLostEntryTransition,
   isLostEntryPhase,
   LOST_ENTRY_PHASE_EVENT,
+  type LostEntryPhase,
   resolveLostHeaderEntryPhase,
-  shouldForceLostEntryReady,
   shouldFinishLostEntry,
-  type LostEntryPhase
+  shouldForceLostEntryReady
 } from "./entry-motion";
 import {
   getLostHeroVideoUrl,
@@ -184,24 +182,20 @@ export function LostEntrySequence({ sceneReady }: { sceneReady: boolean }) {
   }, []);
 
   useEffect(() => {
-    if (phase !== "loading") return undefined;
+    if (phase !== "loading") return;
     if (
-      !shouldFinishLostEntry({
+      shouldFinishLostEntry({
         minimumElapsed,
         sceneReady,
         sceneTimedOut
       })
     ) {
-      return undefined;
+      setPhase("ending");
     }
-
-    setPhase("ending");
-    return undefined;
   }, [minimumElapsed, phase, sceneReady, sceneTimedOut]);
 
   useEffect(() => {
-    if (phase !== "ending") return undefined;
-
+    if (phase !== "ending") return;
     const readyTimer = window.setTimeout(() => {
       setPhase("ready");
     }, LOST_ENTRY_EXIT_MS);
@@ -298,7 +292,7 @@ export function LostAnnouncementBar({
   const chromeState = getLostEntryElementState("chrome", entryPhase);
   const announcementState =
     entryPhase === "ready"
-      ? getLostBagAnnouncementChromeState(bagOpen)
+      ? { opacity: bagOpen ? 0 : 1, y: bagOpen ? "-100%" : "0%" }
       : chromeState;
 
   return (
@@ -369,7 +363,9 @@ export function LostHeader({
   const headerChromeState =
     entryPhase === "ready"
       ? {
-          ...getLostBagRegularChromeState(bagOpen),
+          opacity: bagOpen ? 0 : 1,
+          y: bagOpen ? "-100%" : "0%",
+
           pointerEvents: bagOpen ? "none" : "auto"
         }
       : chromeState;
@@ -463,7 +459,8 @@ function LostHeaderLogo({ bagOpen }: { bagOpen: boolean }) {
     >
       <m.div
         animate={{
-          ...getLostBagRegularChromeState(bagOpen),
+          opacity: bagOpen ? 0 : 1,
+          y: bagOpen ? "-100%" : "0%",
           pointerEvents: bagOpen ? "none" : "auto"
         }}
         initial={false}
@@ -1736,7 +1733,7 @@ export function LostFocusProductSection({
             <Link
               aria-label={viewProductLabel}
               className="lost-focus-pin__target"
-              href={`/lostinseoul/products/${product.slug}`}
+              href={`/products/${product.slug}`}
             >
               <span />
             </Link>
@@ -1759,7 +1756,7 @@ export function LostFocusProductSection({
                   <Link
                     aria-label={viewProductLabel}
                     className="lost-frost-button lost-frost-button--icon !min-h-12 !w-12 !border-[oklch(from_var(--black)_l_c_h_/_0.15)] !bg-[oklch(from_var(--black)_l_c_h_/_0.06)] !text-[var(--black)]"
-                    href={`/lostinseoul/products/${product.slug}`}
+                    href={`/products/${product.slug}`}
                   >
                     <ArrowElbowDownRightIcon
                       aria-hidden
@@ -1785,7 +1782,7 @@ export function LostFocusProductSection({
           {focusProducts.slice(0, 3).map((product) => (
             <Link
               className="lost-focus-mobile-card"
-              href={`/lostinseoul/products/${product.slug}`}
+              href={`/products/${product.slug}`}
               key={`${product.id}-mobile-focus`}
             >
               <span>{product.name}</span>

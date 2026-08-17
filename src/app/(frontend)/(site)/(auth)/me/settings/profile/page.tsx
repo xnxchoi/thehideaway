@@ -1,5 +1,5 @@
 import { currentUser } from "@/lib/auth/context/get-context-props";
-import type { User } from "@/payload-types";
+import type { User } from "@payload-types";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import ProfileSectionClient from "./page.client";

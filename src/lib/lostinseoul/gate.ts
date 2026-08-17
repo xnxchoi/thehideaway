@@ -80,6 +80,11 @@ export async function hasLostGateCookie(
   },
   now = Date.now()
 ): Promise<boolean> {
+  // Dev-only bypass: never gate the storefront in local development, so the
+  // members-only pages load without the passcode. NODE_ENV is "development"
+  // only under `next dev`; production builds are unaffected.
+  if (process.env.NODE_ENV === "development") return true;
+
   const secret = lostGateSessionSecret();
   const value = request.cookies.get(LOST_GATE_COOKIE_NAME)?.value;
   if (!secret || !value) return false;

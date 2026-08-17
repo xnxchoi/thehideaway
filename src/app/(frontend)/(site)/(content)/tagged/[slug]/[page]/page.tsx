@@ -13,6 +13,7 @@ import type { Metadata } from "next/types";
 import { getPayload, TypedCollectionSelect } from "payload";
 
 import PageClient from "./page.client";
+import { cacheLife } from "next/cache";
 
 type Args = {
   params: Promise<{
@@ -76,8 +77,8 @@ export default async function Page({ params: paramsPromise }: Args) {
 }
 
 async function getTag({ slug }: { slug: string }) {
-  // "use cache";
-  // cacheLife("days");
+  "use cache";
+  cacheLife("days");
   const payload = await getPayload({ config });
   return await payload
     .find({
@@ -100,7 +101,7 @@ async function getTag({ slug }: { slug: string }) {
 }
 
 async function getTagPosts({ id }: { id: string }) {
-  // "use cache";
+  "use cache";
   const buildSelect = <T extends TaggedCollectionSlug>(
     collectionSlug: T
   ): TypedCollectionSelect[T] => {

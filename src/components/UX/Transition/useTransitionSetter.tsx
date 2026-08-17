@@ -7,7 +7,6 @@ import { startTransition, useCallback, useEffect, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 import type { PageTransitionType } from "./index";
 import { pickTransitionType, type TransitionDecision } from "./pageGroups";
-import { recordTransitionDecision } from "./transitionDevHistory";
 
 type TransitionSetOptions = {
   override?: PageTransitionType | null;
@@ -53,7 +52,6 @@ export const useTransitionSetter = () => {
       setTransitionOutType(decision.type);
       setIsTransitioningWipe(decision.type === "CURTAIN");
       setNavigationPageItemSelected(-1);
-      recordTransitionDecision({ fromHref, toHref, decision });
       return decision;
     },
     [

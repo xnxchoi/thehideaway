@@ -17,13 +17,16 @@ describe("LOSTINSEOUL payment return", () => {
   });
 
   it("redirects to success only after authoritative reconciliation", async () => {
-    verifyReturnedProductPayment.mockResolvedValue({ ok: true });
+    verifyReturnedProductPayment.mockResolvedValue({
+      ok: true,
+      orderRef: "ord_1"
+    });
     const { default: Page } = await import("./page");
 
     await expect(
       Page({ searchParams: Promise.resolve({ paymentId: "lis_1" }) })
     ).rejects.toThrow(
-      "redirect:/lostinseoul/payment/success?order=lis_1&paymentId=lis_1"
+      "redirect:/lostinseoul/payment/success?order=ord_1&paymentId=lis_1"
     );
   });
 

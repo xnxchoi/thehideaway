@@ -7,7 +7,7 @@ import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
 import { Credits, type Credited } from "@/components/sections/Credits";
 import { Link } from "@/components/core/Link/Link";
-import type { Profile, User, UserMedia } from "@/payload-types";
+import type { Profile, User, UserMedia } from "@payload-types";
 import type { RP_Roles } from "@/stores/Notification/NotificationStore";
 import { GuestsChrome } from "./GuestsChrome";
 

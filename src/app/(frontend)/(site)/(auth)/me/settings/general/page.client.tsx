@@ -41,12 +41,12 @@ export default function GeneralSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-8">
-        <SubRouteHeader title={t("title")} blurb={t("blurb")} />
+        <SubRouteHeader title={t("title")} blurb={t("description")} />
 
         <PanelBento>
           <Panel>
             <PanelGrid>
-              <PanelHeader eyebrow={t("interfaceEyebrow")} />
+              <PanelHeader eyebrow={t("interfaceLabel")} />
               <PanelControls>
                 <LocaleField current={locale} />
                 <ThemeField />
@@ -56,10 +56,7 @@ export default function GeneralSectionClient({
 
           <Panel>
             <PanelGrid>
-              <PanelHeader
-                eyebrow={t("motionEyebrow")}
-                blurb={t("motionBlurb")}
-              />
+              <PanelHeader eyebrow={t("motionLabel")} />
               <PanelControls>
                 <ReducedMotionStatus />
               </PanelControls>

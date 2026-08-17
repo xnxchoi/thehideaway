@@ -32,7 +32,7 @@ export default async function LostPaymentReturnPage({ searchParams }: Props) {
   if (!result.ok && result.reason !== "payment-failed") {
     redirect("/lostinseoul/checkout");
   }
-  const verifiedOrder = result.ok ? paymentId || order : order;
+  const verifiedOrder = result.ok ? result.orderRef : order;
   redirect(
     paymentPath(result.ok ? "success" : "failure", {
       order: verifiedOrder,

@@ -29,11 +29,11 @@ export async function claimRequestOrderCapacity(input: {
 
   await campaignCommitmentLock(input.payload, transactionID, input.campaignId);
   const campaign = (await input.payload.findByID({
-    collection: "product-order-campaigns" as never,
+    collection: "product-order-campaigns",
     id: input.campaignId,
     depth: 0,
     disableErrors: true,
-    req: input.req as never,
+    req: input.req,
     overrideAccess: true
   })) as ProductOrderCampaign | null;
   if (!campaign || campaign.state !== "open") {
@@ -86,10 +86,10 @@ export async function markRequestOrderPaid(input: {
   await campaignCommitmentLock(input.payload, transactionID, campaignId);
 
   const campaign = (await input.payload.findByID({
-    collection: "product-order-campaigns" as never,
+    collection: "product-order-campaigns",
     id: campaignId,
     depth: 0,
-    req: input.req as never,
+    req: input.req,
     overrideAccess: true
   })) as ProductOrderCampaign;
 
@@ -109,10 +109,10 @@ export async function markRequestOrderPaid(input: {
 
   const committedOrders = thresholdMet
     ? await input.payload.find({
-        collection: "product-orders" as never,
+        collection: "product-orders",
         depth: 0,
         pagination: false,
-        req: input.req as never,
+        req: input.req,
         overrideAccess: true,
         where: {
           and: [
@@ -120,7 +120,7 @@ export async function markRequestOrderPaid(input: {
             { payment_status: { equals: "paid" } },
             { status: { equals: "committed" } }
           ]
-        } as never
+        }
       })
     : { docs: [] };
 
@@ -140,37 +140,37 @@ export async function markRequestOrderPaid(input: {
   }
 
   await input.payload.update({
-    collection: "product-order-campaigns" as never,
+    collection: "product-order-campaigns",
     id: campaignId,
-    req: input.req as never,
+    req: input.req,
     overrideAccess: true,
     data: {
       paid_commitments: paidCommitments,
       state: thresholdMet ? "met" : campaign.state
-    } as never
+    }
   });
 
   await input.payload.update({
-    collection: "product-orders" as never,
+    collection: "product-orders",
     id: input.order.id,
-    req: input.req as never,
+    req: input.req,
     overrideAccess: true,
     data: {
       status: nextOrderStatus,
       fulfillment_status: thresholdMet ? "in_production" : "reserved"
-    } as never
+    }
   });
 
   for (const order of committedOrderDocs) {
     await input.payload.update({
-      collection: "product-orders" as never,
+      collection: "product-orders",
       id: String(order.id),
-      req: input.req as never,
+      req: input.req,
       overrideAccess: true,
       data: {
         status: "confirmed",
         fulfillment_status: "in_production"
-      } as never
+      }
     });
   }
 }

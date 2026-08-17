@@ -157,7 +157,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
             {lines.length > 0 ? (
               <Link
                 className="inline-flex min-h-[48px] items-center justify-center rounded-[4px] bg-[var(--n-s-fg)] px-5 text-sm font-medium text-[var(--n-s-bg)]"
-                href="/lostinseoul/checkout"
+                href="/checkout"
               >
                 {labels.checkout}
               </Link>

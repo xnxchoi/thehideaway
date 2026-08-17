@@ -1,5 +1,6 @@
 import config from "@payload-config";
 import { getPayload } from "payload";
+import type { CommerceProduct } from "@/payload-types";
 import { formatLostMoney } from "./format";
 import { getStorefrontInventoryAvailability } from "./storefront-inventory-availability";
 import {
@@ -48,6 +49,7 @@ export type LostCampaignView = {
 };
 
 export type LostProductDetail = LostProductCard & {
+  description?: CommerceProduct["description"];
   details?: string | null;
   care?: string | null;
   shippingReturns?: string | null;
@@ -63,6 +65,15 @@ function stringValue(value: unknown, fallback = ""): string {
 
 function nullableString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
+}
+
+function richTextValue(value: unknown): CommerceProduct["description"] {
+  if (!value || typeof value !== "object") return null;
+  const root = (value as { root?: unknown }).root;
+  if (!root || typeof root !== "object") return null;
+  const children = (root as { children?: unknown }).children;
+  if (!Array.isArray(children) || children.length === 0) return null;
+  return value as NonNullable<CommerceProduct["description"]>;
 }
 
 function numberValue(value: unknown, fallback = 0): number {
@@ -245,10 +256,15 @@ function cardDisplayPrice(
   const pricedMode = productModes.find(
     (mode) => mode === "standard_purchase" || mode === "request_to_order"
   );
-  const pricedVariants = pricedMode ? variants.filter((variant) => variant.actionableModes.includes(
-    pricedMode)) : productModes.length === 0 && product.request_to_order_enabled === true ? variants : [];
+  const pricedVariants = pricedMode
+    ? variants.filter((variant) => variant.actionableModes.includes(pricedMode))
+    : productModes.length === 0 && product.request_to_order_enabled === true
+      ? variants
+      : [];
   if (pricedVariants.length > 0) {
-    const amounts = pricedVariants.flatMap((variant) => isPositiveAmount(variant.amount) ? [variant.amount] : []);
+    const amounts = pricedVariants.flatMap((variant) =>
+      isPositiveAmount(variant.amount) ? [variant.amount] : []
+    );
     const distinctAmounts = [...new Set(amounts)].sort((a, b) => a - b);
     if (distinctAmounts.length === 0) return null;
     if (distinctAmounts.length === 1) {
@@ -394,7 +410,7 @@ async function storefrontAvailability(
 async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
   const payload = await getPayload({ config });
   const result = await payload.find({
-    collection: "product-order-campaigns" as never,
+    collection: "product-order-campaigns",
     depth: 0,
     pagination: false,
     overrideAccess: true,
@@ -405,7 +421,7 @@ async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
         { state: { equals: "open" } },
         { deadline: { greater_than: new Date().toISOString() } }
       ]
-    } as never
+    }
   });
   return (result.docs as AnyDoc[]).find(isCampaignCheckoutActionable) ?? null;
 }
@@ -417,7 +433,7 @@ export async function getLostHomeData(): Promise<{
   const payload = await getPayload({ config });
   const [productsResult, dropsResult] = await Promise.all([
     payload.find({
-      collection: "products" as never,
+      collection: "products",
       depth: 1,
       limit: 24,
       overrideAccess: true,
@@ -427,15 +443,15 @@ export async function getLostHomeData(): Promise<{
           { active: { equals: true } },
           { storefront: { equals: "lostinseoul" } }
         ]
-      } as never
+      }
     }),
     payload.find({
-      collection: "product-drops" as never,
+      collection: "product-drops",
       depth: 0,
       limit: 8,
       overrideAccess: true,
       sort: "sort",
-      where: { active: { equals: true } } as never
+      where: { active: { equals: true } }
     })
   ]);
 
@@ -476,7 +492,7 @@ export async function getLostProductBySlug(
         { active: { equals: true } },
         { storefront: { equals: "lostinseoul" } }
       ]
-    } as never
+    }
   });
   const product = result.docs[0] as AnyDoc | undefined;
   if (!product) return null;
@@ -499,6 +515,7 @@ export async function getLostProductBySlug(
 
   return {
     ...card(product, campaign, variants),
+    description: richTextValue(product.description),
     details: nullableString(product.details),
     care: nullableString(product.care),
     shippingReturns: nullableString(product.shipping_returns),
@@ -535,7 +552,7 @@ export async function getLostFragranceData(): Promise<LostProductDetail | null> 
         { active: { equals: true } },
         { storefront: { equals: "lostinseoul" } }
       ]
-    } as never
+    }
   });
   const fragrance = (result.docs as AnyDoc[]).find((product) =>
     categoryMatchesFragrance(product.category)
@@ -555,28 +572,28 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
   const payload = await getPayload({ config });
   const [dropResult, dropsResult] = await Promise.all([
     payload.find({
-      collection: "product-drops" as never,
+      collection: "product-drops",
       depth: 0,
       limit: 1,
       overrideAccess: true,
       where: {
         and: [{ slug: { equals: slug } }, { active: { equals: true } }]
-      } as never
+      }
     }),
     payload.find({
-      collection: "product-drops" as never,
+      collection: "product-drops",
       depth: 0,
       limit: 8,
       overrideAccess: true,
       sort: "sort",
-      where: { active: { equals: true } } as never
+      where: { active: { equals: true } }
     })
   ]);
   const drop = dropResult.docs[0] as AnyDoc | undefined;
   if (!drop) return null;
 
   const productResult = await payload.find({
-    collection: "products" as never,
+    collection: "products",
     depth: 1,
     limit: 48,
     overrideAccess: true,
@@ -587,7 +604,7 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
         { storefront: { equals: "lostinseoul" } },
         { drop: { equals: drop.id } }
       ]
-    } as never
+    }
   });
 
   const productDocs = productResult.docs as AnyDoc[];

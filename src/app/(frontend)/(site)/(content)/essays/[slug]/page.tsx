@@ -14,7 +14,10 @@ type Args = {
 };
 
 export default async function Post({ params: paramsPromise }: Args) {
-  const { slug = "" } = await paramsPromise;
+  const { slug } = await paramsPromise;
+  if (!slug) {
+    return <></>;
+  }
   if (slug.length < 1) return <PayloadRedirects url={"/home"} />;
   const p = await queryPostBySlug({ slug });
   if (!p) return <PayloadRedirects url={"/home"} />;

@@ -746,7 +746,7 @@ function LostBagPanel({
               </div>
               <Link
                 className="inline-flex min-h-18 items-center justify-center rounded-[4px] bg-[var(--lost-bag-strong)] px-5 text-[1.2rem] leading-none font-medium text-[var(--lost-bag-strong-ink)]"
-                href="/lostinseoul/checkout"
+                href="/checkout"
               >
                 {checkoutLabel}
               </Link>
@@ -796,7 +796,7 @@ function LostBagLine({
     <div className="grid grid-cols-[7.2rem_1fr] gap-4 border-b border-[var(--lost-bag-line)] pb-5 last:border-b-0">
       <Link
         className="aspect-square overflow-hidden bg-[var(--lost-bag-soft)]"
-        href={`/lostinseoul/products/${line.productSlug}`}
+        href={`/products/${line.productSlug}`}
       >
         {line.imageUrl ? (
           <LostCartLineImage
@@ -810,7 +810,7 @@ function LostBagLine({
         <div className="flex items-start justify-between gap-3">
           <Link
             className="text-[1.4rem] leading-tight font-medium tracking-tight"
-            href={`/lostinseoul/products/${line.productSlug}`}
+            href={`/products/${line.productSlug}`}
           >
             {line.productName}
           </Link>

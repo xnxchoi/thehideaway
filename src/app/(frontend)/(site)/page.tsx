@@ -4,6 +4,7 @@ import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOve
 
 import { Metadata } from "next";
 import { Suspense } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 
 export default async function HomePage() {
   const posts = await getHomePosts();
@@ -22,12 +23,18 @@ export default async function HomePage() {
 }
 
 async function getHomePosts() {
-  // "use cache";
-  // cacheLife("hours");
-  // cacheTag("posts-sitemap");
+  "use cache";
+  cacheLife("hours");
+  cacheTag("posts-sitemap");
   const posts = await queryPostOverviews({
     limit: 8,
     page: 1,
+    draftsEnabled: false,
+    where: {
+      _status: {
+        equals: "published"
+      }
+    },
     overrideAccess: true
   });
   return posts;

@@ -148,12 +148,11 @@ export const getPostOverviews = async <
   } = await payload
     .find({
       collection: "posts",
-      draft: draftsEnabled,
+      draft: false,
       where,
       select: { slug: true },
-    ...rest,
+      ...rest,
       overrideAccess: true
-
     })
     .then((r) => r as PaginatedDocs<{ id: string; slug: string }>)
     .catch((e) => {

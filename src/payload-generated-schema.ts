@@ -282,6 +282,14 @@ export const enum_user_media_audience = pgEnum("enum_user_media_audience", [
   "patrons",
   "curated"
 ]);
+export const enum_deferred_emails_category = pgEnum(
+  "enum_deferred_emails_category",
+  ["notifications", "alerts", "validators", "authenticators", "misc"]
+);
+export const enum_deferred_emails_status = pgEnum(
+  "enum_deferred_emails_status",
+  ["pending", "sent", "failed"]
+);
 export const enum_profile_rsvp_tier = pgEnum("enum_profile_rsvp_tier", [
   "host",
   "past",
@@ -459,13 +467,25 @@ export const enum_compilations_visibility = pgEnum(
   "enum_compilations_visibility",
   ["public", "private"]
 );
-export const enum_deferred_emails_category = pgEnum(
-  "enum_deferred_emails_category",
-  ["notifications", "alerts", "validators", "authenticators", "misc"]
+export const enum_commerce_products_currency = pgEnum(
+  "enum_commerce_products_currency",
+  ["KRW"]
 );
-export const enum_deferred_emails_status = pgEnum(
-  "enum_deferred_emails_status",
-  ["pending", "sent", "failed"]
+export const enum_commerce_orders_currency = pgEnum(
+  "enum_commerce_orders_currency",
+  ["KRW"]
+);
+export const enum_commerce_orders_payment_method = pgEnum(
+  "enum_commerce_orders_payment_method",
+  ["card", "bank_transfer"]
+);
+export const enum_commerce_orders_payment_status = pgEnum(
+  "enum_commerce_orders_payment_status",
+  ["pending", "paid", "failed", "canceled"]
+);
+export const enum_commerce_orders_status = pgEnum(
+  "enum_commerce_orders_status",
+  ["awaiting_payment", "paid", "preparing", "shipped", "completed", "canceled"]
 );
 export const enum_exports_format = pgEnum("enum_exports_format", [
   "csv",
@@ -496,291 +516,10 @@ export const enum_redirects_to_type = pgEnum("enum_redirects_to_type", [
   "reference",
   "custom"
 ]);
-export const enum_plans_payment_methods = pgEnum("enum_plans_payment_methods", [
-  "card",
-  "bank_transfer",
-  "cash"
-]);
-export const enum_plans_tier = pgEnum("enum_plans_tier", [
-  "resident",
-  "patron",
-  "cofounder"
-]);
-export const enum_plans_validity = pgEnum("enum_plans_validity", [
-  "yearly",
-  "lifetime"
-]);
-export const enum_plans_type = pgEnum("enum_plans_type", ["one_time"]);
-export const enum_plans_state = pgEnum("enum_plans_state", ["active", "ended"]);
-export const enum_invoices_payment_method_method = pgEnum(
-  "enum_invoices_payment_method_method",
-  ["bank_transfer", "cash"]
-);
-export const enum_invoices_status = pgEnum("enum_invoices_status", [
-  "draft",
-  "open",
-  "paid",
-  "void",
-  "pending"
-]);
-export const enum_prices_type = pgEnum("enum_prices_type", [
-  "one_time",
-  "recurring"
-]);
-export const enum_prices_recurring_interval = pgEnum(
-  "enum_prices_recurring_interval",
-  ["day", "week", "month", "year"]
-);
-export const enum_subscriptions_subscription_status = pgEnum(
-  "enum_subscriptions_subscription_status",
-  ["pending", "active", "expired", "canceled"]
-);
-export const enum_subscriptions_request_method = pgEnum(
-  "enum_subscriptions_request_method",
-  ["bank_transfer", "cash", "card"]
-);
-export const enum_subscriptions_provider = pgEnum(
-  "enum_subscriptions_provider",
-  ["manual", "portone"]
-);
-export const enum_products_currency = pgEnum("enum_products_currency", [
-  "KRW",
-  "USD",
-  "JPY",
-  "EUR"
-]);
-export const enum_products_private_tier_gate = pgEnum(
-  "enum_products_private_tier_gate",
-  ["anyone", "resident", "patron", "cofounder", "staff"]
-);
-export const enum_product_order_campaigns_state = pgEnum(
-  "enum_product_order_campaigns_state",
-  ["draft", "open", "met", "failed", "converted", "canceled"]
-);
-export const enum_product_order_campaigns_progress_visibility = pgEnum(
-  "enum_product_order_campaigns_progress_visibility",
-  ["hidden", "percentage", "count"]
-);
-export const enum_product_carts_status = pgEnum("enum_product_carts_status", [
-  "active",
-  "converted",
-  "abandoned"
-]);
-export const enum_product_carts_currency = pgEnum(
-  "enum_product_carts_currency",
-  ["KRW", "USD", "JPY", "EUR"]
-);
-export const enum_product_orders_order_mode = pgEnum(
-  "enum_product_orders_order_mode",
-  ["standard_purchase", "request_to_order", "private_order"]
-);
-export const enum_product_orders_status = pgEnum("enum_product_orders_status", [
-  "draft",
-  "quote_requested",
-  "quote_ready",
-  "pending_payment",
-  "paid",
-  "paid_inventory_review",
-  "committed",
-  "confirmed",
-  "converted",
-  "failed",
-  "canceled",
-  "refunded"
-]);
-export const enum_product_orders_payment_status = pgEnum(
-  "enum_product_orders_payment_status",
-  [
-    "unpaid",
-    "pending",
-    "paid",
-    "pending_manual",
-    "failed",
-    "refunded",
-    "partially_refunded"
-  ]
-);
-export const enum_product_orders_fulfillment_status = pgEnum(
-  "enum_product_orders_fulfillment_status",
-  ["unfulfilled", "reserved", "in_production", "fulfilled", "canceled"]
-);
-export const enum_product_orders_currency = pgEnum(
-  "enum_product_orders_currency",
-  ["KRW", "USD", "JPY", "EUR"]
-);
-export const enum_product_payments_provider = pgEnum(
-  "enum_product_payments_provider",
-  ["portone", "manual"]
-);
-export const enum_product_payments_status = pgEnum(
-  "enum_product_payments_status",
-  [
-    "initiated",
-    "pending",
-    "paid",
-    "failed",
-    "refunded",
-    "partially_refunded",
-    "manual_pending"
-  ]
-);
-export const enum_product_payments_currency = pgEnum(
-  "enum_product_payments_currency",
-  ["KRW", "USD", "JPY", "EUR"]
-);
-export const enum_commerce_commands_status = pgEnum(
-  "enum_commerce_commands_status",
-  ["in_progress", "succeeded"]
-);
-export const enum_commerce_provider_events_provider = pgEnum(
-  "enum_commerce_provider_events_provider",
-  ["portone"]
-);
-export const enum_commerce_provider_events_processing_status = pgEnum(
-  "enum_commerce_provider_events_processing_status",
-  ["received", "processing", "retryable", "processed", "rejected"]
-);
-export const enum_inventory_levels_disposition = pgEnum(
-  "enum_inventory_levels_disposition",
-  [
-    "available",
-    "quarantine",
-    "damaged",
-    "inspection_pending",
-    "returned_pending_release",
-    "discarded"
-  ]
-);
-export const enum_inventory_movements_kind = pgEnum(
-  "enum_inventory_movements_kind",
-  ["inbound", "outbound", "transfer"]
-);
-export const enum_inventory_movements_from_disposition = pgEnum(
-  "enum_inventory_movements_from_disposition",
-  [
-    "available",
-    "quarantine",
-    "damaged",
-    "inspection_pending",
-    "returned_pending_release",
-    "discarded"
-  ]
-);
-export const enum_inventory_movements_to_disposition = pgEnum(
-  "enum_inventory_movements_to_disposition",
-  [
-    "available",
-    "quarantine",
-    "damaged",
-    "inspection_pending",
-    "returned_pending_release",
-    "discarded"
-  ]
-);
-export const enum_inventory_movements_source_type = pgEnum(
-  "enum_inventory_movements_source_type",
-  [
-    "inventory_command",
-    "inventory_receipt",
-    "inventory_lot_release",
-    "inventory_adjustment",
-    "inventory_cycle_count",
-    "inventory_reservation"
-  ]
-);
-export const enum_inventory_receipts_status = pgEnum(
-  "enum_inventory_receipts_status",
-  ["draft", "open", "closed", "cancelled"]
-);
-export const enum_inventory_cycle_counts_status = pgEnum(
-  "enum_inventory_cycle_counts_status",
-  ["draft", "submitted", "applied", "rejected", "cancelled"]
-);
-export const enum_inventory_cycle_count_lines_disposition = pgEnum(
-  "enum_inventory_cycle_count_lines_disposition",
-  [
-    "available",
-    "quarantine",
-    "damaged",
-    "inspection_pending",
-    "returned_pending_release",
-    "discarded"
-  ]
-);
-export const enum_inventory_reservations_status = pgEnum(
-  "enum_inventory_reservations_status",
-  ["active", "consumed", "released", "expired"]
-);
-export const enum_inventory_reservations_consume_point = pgEnum(
-  "enum_inventory_reservations_consume_point",
-  ["payment_confirmed"]
-);
-export const enum_inventory_reservations_expiry_boundary = pgEnum(
-  "enum_inventory_reservations_expiry_boundary",
-  ["at_or_after"]
-);
-export const enum_inventory_reservations_payment_time_source = pgEnum(
-  "enum_inventory_reservations_payment_time_source",
-  ["provider_paid_at"]
-);
-export const enum_inventory_reservations_late_payment_policy = pgEnum(
-  "enum_inventory_reservations_late_payment_policy",
-  ["manual_review"]
-);
-export const enum_inventory_reservations_backorder_mode = pgEnum(
-  "enum_inventory_reservations_backorder_mode",
-  ["disabled"]
-);
-export const enum_inventory_reservation_operator_events_source = pgEnum(
-  "enum_inventory_reservation_operator_events_source",
-  ["manual_operator"]
-);
-export const enum_inventory_reservation_operator_events_action = pgEnum(
-  "enum_inventory_reservation_operator_events_action",
-  ["release", "expire", "reconcile", "run_expiry"]
-);
-export const enum_inventory_reservation_entries_operation = pgEnum(
-  "enum_inventory_reservation_entries_operation",
-  ["reserve", "consume", "release", "expire", "late_payment_detected"]
-);
-export const enum_inventory_reservation_entries_evidence_code = pgEnum(
-  "enum_inventory_reservation_entries_evidence_code",
-  [
-    "provider_timestamp_missing",
-    "provider_timestamp_before_reservation",
-    "provider_payment_late",
-    "physical_inventory_unavailable"
-  ]
-);
-export const enum_events_exclusive_links_type = pgEnum(
-  "enum_events_exclusive_links_type",
-  ["link", "form"]
-);
-export const enum_events_state = pgEnum("enum_events_state", [
-  "draft",
-  "open",
-  "closed",
-  "ended"
-]);
-export const enum_ticket_orders_currency = pgEnum(
-  "enum_ticket_orders_currency",
-  ["KRW"]
-);
-export const enum_ticket_orders_locale = pgEnum("enum_ticket_orders_locale", [
-  "ko",
-  "en"
-]);
-export const enum_tickets_status = pgEnum("enum_tickets_status", [
-  "pending",
-  "active",
-  "used",
-  "canceled"
-]);
 export const enum_payload_jobs_log_task_slug = pgEnum(
   "enum_payload_jobs_log_task_slug",
   [
     "inline",
-    "expireInventoryReservations",
     "welcomeUser",
     "welcomeUsers",
     "refreshSearchScores",
@@ -801,7 +540,6 @@ export const enum_payload_jobs_task_slug = pgEnum(
   "enum_payload_jobs_task_slug",
   [
     "inline",
-    "expireInventoryReservations",
     "welcomeUser",
     "welcomeUsers",
     "refreshSearchScores",
@@ -3544,6 +3282,74 @@ export const user_media_rels = pgTable(
   ]
 );
 
+export const email_quota = pgTable(
+  "email_quota",
+  {
+    id: varchar("id").primaryKey(),
+    date: varchar("date").notNull(),
+    used: numeric("used", { mode: "number" }).notNull().default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("email_quota_date_idx").on(columns.date),
+    index("email_quota_updated_at_idx").on(columns.updatedAt),
+    index("email_quota_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const deferred_emails = pgTable(
+  "deferred_emails",
+  {
+    id: varchar("id").primaryKey(),
+    emailData: varchar("email_data").notNull(),
+    category: enum_deferred_emails_category("category").notNull(),
+    scheduledFor: timestamp("scheduled_for", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    attempts: numeric("attempts", { mode: "number" }).notNull().default(0),
+    status: enum_deferred_emails_status("status").notNull().default("pending"),
+    sentAt: timestamp("sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    lastError: varchar("last_error"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("deferred_emails_updated_at_idx").on(columns.updatedAt),
+    index("deferred_emails_created_at_idx").on(columns.createdAt)
+  ]
+);
+
 export const profile_slides = pgTable(
   "profile_slides",
   {
@@ -5499,6 +5305,178 @@ export const compilations_rels = pgTable(
   ]
 );
 
+export const commerce_products = pgTable(
+  "commerce_products",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    slug: varchar("slug").notNull(),
+    active: boolean("active").notNull().default(false),
+    unit_amount: numeric("unit_amount", { mode: "number" }).notNull(),
+    currency: enum_commerce_products_currency("currency")
+      .notNull()
+      .default("KRW"),
+    max_quantity: numeric("max_quantity", { mode: "number" })
+      .notNull()
+      .default(1),
+    summary: varchar("summary"),
+    description: jsonb("description"),
+    details: varchar("details"),
+    care: varchar("care"),
+    shipping_returns: varchar("shipping_returns"),
+    hero_media: varchar("hero_media_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("commerce_products_slug_idx").on(columns.slug),
+    index("commerce_products_active_idx").on(columns.active),
+    index("commerce_products_hero_media_idx").on(columns.hero_media),
+    index("commerce_products_sort_idx").on(columns.sort),
+    index("commerce_products_updated_at_idx").on(columns.updatedAt),
+    index("commerce_products_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const commerce_products_rels = pgTable(
+  "commerce_products_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    mediaID: varchar("media_id")
+  },
+  (columns) => [
+    index("commerce_products_rels_order_idx").on(columns.order),
+    index("commerce_products_rels_parent_idx").on(columns.parent),
+    index("commerce_products_rels_path_idx").on(columns.path),
+    index("commerce_products_rels_media_id_idx").on(columns.mediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [commerce_products.id],
+      name: "commerce_products_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "commerce_products_rels_media_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const commerce_orders = pgTable(
+  "commerce_orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    ref: varchar("ref").notNull(),
+    user: uuid("user_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    product: uuid("product_id")
+      .notNull()
+      .references(() => commerce_products.id, {
+        onDelete: "set null"
+      }),
+    product_name_snapshot: varchar("product_name_snapshot").notNull(),
+    product_slug_snapshot: varchar("product_slug_snapshot").notNull(),
+    quantity: numeric("quantity", { mode: "number" }).notNull(),
+    unit_amount_snapshot: numeric("unit_amount_snapshot", {
+      mode: "number"
+    }).notNull(),
+    total_amount: numeric("total_amount", { mode: "number" }).notNull(),
+    currency: enum_commerce_orders_currency("currency")
+      .notNull()
+      .default("KRW"),
+    payment_method:
+      enum_commerce_orders_payment_method("payment_method").notNull(),
+    payment_status: enum_commerce_orders_payment_status("payment_status")
+      .notNull()
+      .default("pending"),
+    status: enum_commerce_orders_status("status")
+      .notNull()
+      .default("awaiting_payment"),
+    contact: jsonb("contact").notNull(),
+    shipping: jsonb("shipping").notNull(),
+    idempotency_key: varchar("idempotency_key").notNull(),
+    request_hash: varchar("request_hash").notNull(),
+    provider_payment_id: varchar("provider_payment_id"),
+    provider_transaction_id: varchar("provider_transaction_id"),
+    bank_transfer_reference: varchar("bank_transfer_reference"),
+    tracking_number: varchar("tracking_number"),
+    paid_at: timestamp("paid_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    shipped_at: timestamp("shipped_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    completed_at: timestamp("completed_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("commerce_orders_ref_idx").on(columns.ref),
+    index("commerce_orders_user_idx").on(columns.user),
+    index("commerce_orders_product_idx").on(columns.product),
+    index("commerce_orders_payment_status_idx").on(columns.payment_status),
+    index("commerce_orders_status_idx").on(columns.status),
+    uniqueIndex("commerce_orders_idempotency_key_idx").on(
+      columns.idempotency_key
+    ),
+    uniqueIndex("commerce_orders_provider_payment_id_idx").on(
+      columns.provider_payment_id
+    ),
+    index("commerce_orders_provider_transaction_id_idx").on(
+      columns.provider_transaction_id
+    ),
+    uniqueIndex("commerce_orders_bank_transfer_reference_idx").on(
+      columns.bank_transfer_reference
+    ),
+    index("commerce_orders_paid_at_idx").on(columns.paid_at),
+    index("commerce_orders_shipped_at_idx").on(columns.shipped_at),
+    index("commerce_orders_completed_at_idx").on(columns.completed_at),
+    index("commerce_orders_updated_at_idx").on(columns.updatedAt),
+    index("commerce_orders_created_at_idx").on(columns.createdAt)
+  ]
+);
+
 export const admins = pgTable(
   "admins",
   {
@@ -5590,74 +5568,6 @@ export const _admins_v = pgTable(
     ),
     index("_admins_v_created_at_idx").on(columns.createdAt),
     index("_admins_v_updated_at_idx").on(columns.updatedAt)
-  ]
-);
-
-export const email_quota = pgTable(
-  "email_quota",
-  {
-    id: varchar("id").primaryKey(),
-    date: varchar("date").notNull(),
-    used: numeric("used", { mode: "number" }).notNull().default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("email_quota_date_idx").on(columns.date),
-    index("email_quota_updated_at_idx").on(columns.updatedAt),
-    index("email_quota_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const deferred_emails = pgTable(
-  "deferred_emails",
-  {
-    id: varchar("id").primaryKey(),
-    emailData: varchar("email_data").notNull(),
-    category: enum_deferred_emails_category("category").notNull(),
-    scheduledFor: timestamp("scheduled_for", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    attempts: numeric("attempts", { mode: "number" }).notNull().default(0),
-    status: enum_deferred_emails_status("status").notNull().default("pending"),
-    sentAt: timestamp("sent_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    lastError: varchar("last_error"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("deferred_emails_updated_at_idx").on(columns.updatedAt),
-    index("deferred_emails_created_at_idx").on(columns.createdAt)
   ]
 );
 
@@ -6065,2186 +5975,6 @@ export const search_rels = pgTable(
   ]
 );
 
-export const plans_payment_methods = pgTable(
-  "plans_payment_methods",
-  {
-    order: integer("order").notNull(),
-    parent: uuid("parent_id").notNull(),
-    value: enum_plans_payment_methods("value"),
-    id: uuid("id").defaultRandom().primaryKey()
-  },
-  (columns) => [
-    index("plans_payment_methods_order_idx").on(columns.order),
-    index("plans_payment_methods_parent_idx").on(columns.parent),
-    foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [plans.id],
-      name: "plans_payment_methods_parent_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const plans_features = pgTable(
-  "plans_features",
-  {
-    _order: integer("_order").notNull(),
-    _parentID: uuid("_parent_id").notNull(),
-    id: varchar("id").primaryKey(),
-    label: varchar("label").notNull(),
-    included: boolean("included").default(true)
-  },
-  (columns) => [
-    index("plans_features_order_idx").on(columns._order),
-    index("plans_features_parent_id_idx").on(columns._parentID),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [plans.id],
-      name: "plans_features_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const plans = pgTable(
-  "plans",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: varchar("name").notNull(),
-    tier: enum_plans_tier("tier").notNull().default("resident"),
-    tier_label: varchar("tier_label").notNull().default(""),
-    validity: enum_plans_validity("validity").notNull().default("yearly"),
-    type: enum_plans_type("type").notNull().default("one_time"),
-    description: varchar("description"),
-    seat_limit: numeric("seat_limit", { mode: "number" }),
-    discount_label: varchar("discount_label"),
-    sort: numeric("sort", { mode: "number" }).default(0),
-    state: enum_plans_state("state").notNull().default("active"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("plans_name_idx").on(columns.name),
-    index("plans_sort_idx").on(columns.sort),
-    index("plans_updated_at_idx").on(columns.updatedAt),
-    index("plans_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const invoices_payment_method = pgTable(
-  "invoices_payment_method",
-  {
-    _order: integer("_order").notNull(),
-    _parentID: uuid("_parent_id").notNull(),
-    id: varchar("id").primaryKey(),
-    method: enum_invoices_payment_method_method("method").notNull(),
-    amount: numeric("amount", { mode: "number" }).notNull(),
-    currency: uuid("currency_id")
-      .notNull()
-      .references(() => currency.id, {
-        onDelete: "set null"
-      }),
-    payment_date: timestamp("payment_date", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    reference: varchar("reference")
-  },
-  (columns) => [
-    index("invoices_payment_method_order_idx").on(columns._order),
-    index("invoices_payment_method_parent_id_idx").on(columns._parentID),
-    index("invoices_payment_method_currency_idx").on(columns.currency),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [invoices.id],
-      name: "invoices_payment_method_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const invoices = pgTable(
-  "invoices",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    invoice_number: numeric("invoice_number", { mode: "number" }).notNull(),
-    client: uuid("client_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    subscription: uuid("subscription_id")
-      .notNull()
-      .references(() => subscriptions.id, {
-        onDelete: "set null"
-      }),
-    plan: uuid("plan_id")
-      .notNull()
-      .references(() => plans.id, {
-        onDelete: "set null"
-      }),
-    price: uuid("price_id").references(() => prices.id, {
-      onDelete: "set null"
-    }),
-    amount: numeric("amount", { mode: "number" }).notNull(),
-    currency: uuid("currency_id")
-      .notNull()
-      .references(() => currency.id, {
-        onDelete: "set null"
-      }),
-    fx_rate_used: numeric("fx_rate_used", { mode: "number" }),
-    status: enum_invoices_status("status").notNull().default("draft"),
-    paid_at: timestamp("paid_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    cycle_start: timestamp("cycle_start", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    cycle_end: timestamp("cycle_end", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    bank_reference: varchar("bank_reference"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("invoices_invoice_number_idx").on(columns.invoice_number),
-    index("invoices_client_idx").on(columns.client),
-    index("invoices_subscription_idx").on(columns.subscription),
-    index("invoices_plan_idx").on(columns.plan),
-    index("invoices_price_idx").on(columns.price),
-    index("invoices_currency_idx").on(columns.currency),
-    index("invoices_status_idx").on(columns.status),
-    index("invoices_updated_at_idx").on(columns.updatedAt),
-    index("invoices_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const prices = pgTable(
-  "prices",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    nickname: varchar("nickname").notNull(),
-    plan: uuid("plan_id")
-      .notNull()
-      .references(() => plans.id, {
-        onDelete: "set null"
-      }),
-    currency: uuid("currency_id")
-      .notNull()
-      .references(() => currency.id, {
-        onDelete: "set null"
-      }),
-    unit_amount: numeric("unit_amount", { mode: "number" }).notNull(),
-    type: enum_prices_type("type").notNull().default("one_time"),
-    recurring_interval:
-      enum_prices_recurring_interval("recurring_interval").default("month"),
-    recurring_interval_count: numeric("recurring_interval_count", {
-      mode: "number"
-    }).default(1),
-    recurring_trial_period_days: numeric("recurring_trial_period_days", {
-      mode: "number"
-    }).default(0),
-    active: boolean("active").notNull().default(true),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("prices_plan_idx").on(columns.plan),
-    index("prices_currency_idx").on(columns.currency),
-    index("prices_active_idx").on(columns.active),
-    index("prices_updated_at_idx").on(columns.updatedAt),
-    index("prices_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const subscriptions = pgTable(
-  "subscriptions",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    user: uuid("user_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    plan: uuid("plan_id")
-      .notNull()
-      .references(() => plans.id, {
-        onDelete: "set null"
-      }),
-    price: uuid("price_id")
-      .notNull()
-      .references(() => prices.id, {
-        onDelete: "set null"
-      }),
-    amount: numeric("amount", { mode: "number" }).notNull().default(0),
-    currency: uuid("currency_id")
-      .notNull()
-      .references(() => currency.id, {
-        onDelete: "set null"
-      }),
-    start_date: timestamp("start_date", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    expires_at: timestamp("expires_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    subscription_status: enum_subscriptions_subscription_status(
-      "subscription_status"
-    )
-      .notNull()
-      .default("pending"),
-    paid: boolean("paid").default(false),
-    validity_waived: boolean("validity_waived").default(false),
-    last_waiver_check: timestamp("last_waiver_check", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    request_method: enum_subscriptions_request_method("request_method")
-      .notNull()
-      .default("bank_transfer"),
-    provider: enum_subscriptions_provider("provider")
-      .notNull()
-      .default("manual"),
-    payment_ref: varchar("payment_ref"),
-    portone_transaction_ref: varchar("portone_transaction_ref"),
-    request_note: varchar("request_note"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("subscriptions_user_idx").on(columns.user),
-    index("subscriptions_plan_idx").on(columns.plan),
-    index("subscriptions_price_idx").on(columns.price),
-    index("subscriptions_currency_idx").on(columns.currency),
-    index("subscriptions_expires_at_idx").on(columns.expires_at),
-    index("subscriptions_subscription_status_idx").on(
-      columns.subscription_status
-    ),
-    index("subscriptions_provider_idx").on(columns.provider),
-    uniqueIndex("subscriptions_payment_ref_idx").on(columns.payment_ref),
-    index("subscriptions_portone_transaction_ref_idx").on(
-      columns.portone_transaction_ref
-    ),
-    index("subscriptions_updated_at_idx").on(columns.updatedAt),
-    index("subscriptions_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const exchange_rate_rates = pgTable(
-  "exchange_rate_rates",
-  {
-    _order: integer("_order").notNull(),
-    _parentID: uuid("_parent_id").notNull(),
-    id: varchar("id").primaryKey(),
-    currency: uuid("currency_id")
-      .notNull()
-      .references(() => currency.id, {
-        onDelete: "set null"
-      }),
-    rate: numeric("rate", { mode: "number" }).notNull()
-  },
-  (columns) => [
-    index("exchange_rate_rates_order_idx").on(columns._order),
-    index("exchange_rate_rates_parent_id_idx").on(columns._parentID),
-    index("exchange_rate_rates_currency_idx").on(columns.currency),
-    index("exchange_rate_rates_rate_idx").on(columns.rate),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [exchange_rate.id],
-      name: "exchange_rate_rates_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const exchange_rate = pgTable(
-  "exchange_rate",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    date: timestamp("date", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("exchange_rate_date_idx").on(columns.date),
-    index("exchange_rate_updated_at_idx").on(columns.updatedAt),
-    index("exchange_rate_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const currency = pgTable(
-  "currency",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: varchar("name").notNull(),
-    slugKey: varchar("slug_key"),
-    hashId: varchar("hash_id").notNull(),
-    slugLock: boolean("slug_lock").notNull(),
-    slug: varchar("slug").notNull(),
-    kr_nm: varchar("kr_nm").notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("currency_name_idx").on(columns.name),
-    index("currency_slug_key_idx").on(columns.slugKey),
-    index("currency_hash_id_idx").on(columns.hashId),
-    uniqueIndex("currency_kr_nm_idx").on(columns.kr_nm),
-    index("currency_updated_at_idx").on(columns.updatedAt),
-    index("currency_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const holidays_dates = pgTable(
-  "holidays_dates",
-  {
-    _order: integer("_order").notNull(),
-    _parentID: uuid("_parent_id").notNull(),
-    id: varchar("id").primaryKey(),
-    date: timestamp("date", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    name: varchar("name").notNull()
-  },
-  (columns) => [
-    index("holidays_dates_order_idx").on(columns._order),
-    index("holidays_dates_parent_id_idx").on(columns._parentID),
-    index("holidays_dates_date_idx").on(columns.date),
-    index("holidays_dates_name_idx").on(columns.name),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [holidays.id],
-      name: "holidays_dates_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const holidays = pgTable(
-  "holidays",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    period: numeric("period", { mode: "number" }).notNull(),
-    country: varchar("country").notNull().default("kr"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("holidays_period_idx").on(columns.period),
-    index("holidays_country_idx").on(columns.country),
-    index("holidays_updated_at_idx").on(columns.updatedAt),
-    index("holidays_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const product_category = pgTable(
-  "product_category",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: varchar("name").notNull(),
-    slug: varchar("slug").notNull(),
-    sort: numeric("sort", { mode: "number" }).default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("product_category_slug_idx").on(columns.slug),
-    index("product_category_sort_idx").on(columns.sort),
-    index("product_category_updated_at_idx").on(columns.updatedAt),
-    index("product_category_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const product_sub = pgTable(
-  "product_sub",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: varchar("name").notNull(),
-    slug: varchar("slug").notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("product_sub_slug_idx").on(columns.slug),
-    index("product_sub_updated_at_idx").on(columns.updatedAt),
-    index("product_sub_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const product_drops = pgTable(
-  "product_drops",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    title: varchar("title").notNull(),
-    slug: varchar("slug").notNull(),
-    active: boolean("active").notNull().default(false),
-    kicker: varchar("kicker"),
-    lede: varchar("lede"),
-    hero_media: varchar("hero_media_id").references(() => media.id, {
-      onDelete: "set null"
-    }),
-    sort: numeric("sort", { mode: "number" }).default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("product_drops_slug_idx").on(columns.slug),
-    index("product_drops_active_idx").on(columns.active),
-    index("product_drops_hero_media_idx").on(columns.hero_media),
-    index("product_drops_sort_idx").on(columns.sort),
-    index("product_drops_updated_at_idx").on(columns.updatedAt),
-    index("product_drops_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const products = pgTable(
-  "products",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: varchar("name").notNull(),
-    slug: varchar("slug").notNull(),
-    active: boolean("active").notNull().default(false),
-    storefront: varchar("storefront").notNull().default("lostinseoul"),
-    drop: uuid("drop_id").references(() => product_drops.id, {
-      onDelete: "set null"
-    }),
-    category: uuid("category_id").references(() => product_category.id, {
-      onDelete: "set null"
-    }),
-    summary: varchar("summary"),
-    description: jsonb("description"),
-    details: varchar("details"),
-    care: varchar("care"),
-    shipping_returns: varchar("shipping_returns"),
-    hero_media: varchar("hero_media_id").references(() => media.id, {
-      onDelete: "set null"
-    }),
-    currency: enum_products_currency("currency").notNull().default("KRW"),
-    unit_amount: numeric("unit_amount", { mode: "number" })
-      .notNull()
-      .default(0),
-    compare_at_amount: numeric("compare_at_amount", { mode: "number" }),
-    max_order_quantity: numeric("max_order_quantity", { mode: "number" })
-      .notNull()
-      .default(1),
-    min_order_quantity: numeric("min_order_quantity", { mode: "number" })
-      .notNull()
-      .default(1),
-    standard_enabled: boolean("standard_enabled").notNull().default(true),
-    request_to_order_enabled: boolean("request_to_order_enabled")
-      .notNull()
-      .default(false),
-    private_order_enabled: boolean("private_order_enabled")
-      .notNull()
-      .default(false),
-    private_preset_price_enabled: boolean("private_preset_price_enabled")
-      .notNull()
-      .default(false),
-    private_unit_amount: numeric("private_unit_amount", { mode: "number" }),
-    private_tier_gate: enum_products_private_tier_gate("private_tier_gate")
-      .notNull()
-      .default("anyone"),
-    sort: numeric("sort", { mode: "number" }).default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("products_name_idx").on(columns.name),
-    uniqueIndex("products_slug_idx").on(columns.slug),
-    index("products_active_idx").on(columns.active),
-    index("products_storefront_idx").on(columns.storefront),
-    index("products_drop_idx").on(columns.drop),
-    index("products_category_idx").on(columns.category),
-    index("products_hero_media_idx").on(columns.hero_media),
-    index("products_currency_idx").on(columns.currency),
-    index("products_unit_amount_idx").on(columns.unit_amount),
-    index("products_max_order_quantity_idx").on(columns.max_order_quantity),
-    index("products_min_order_quantity_idx").on(columns.min_order_quantity),
-    index("products_standard_enabled_idx").on(columns.standard_enabled),
-    index("products_request_to_order_enabled_idx").on(
-      columns.request_to_order_enabled
-    ),
-    index("products_private_order_enabled_idx").on(
-      columns.private_order_enabled
-    ),
-    index("products_private_tier_gate_idx").on(columns.private_tier_gate),
-    index("products_sort_idx").on(columns.sort),
-    index("products_updated_at_idx").on(columns.updatedAt),
-    index("products_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const products_rels = pgTable(
-  "products_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    mediaID: varchar("media_id")
-  },
-  (columns) => [
-    index("products_rels_order_idx").on(columns.order),
-    index("products_rels_parent_idx").on(columns.parent),
-    index("products_rels_path_idx").on(columns.path),
-    index("products_rels_media_id_idx").on(columns.mediaID),
-    foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [products.id],
-      name: "products_rels_parent_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["mediaID"]],
-      foreignColumns: [media.id],
-      name: "products_rels_media_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const product_variants_options = pgTable(
-  "product_variants_options",
-  {
-    _order: integer("_order").notNull(),
-    _parentID: uuid("_parent_id").notNull(),
-    id: varchar("id").primaryKey(),
-    key: varchar("key").notNull(),
-    value: varchar("value").notNull()
-  },
-  (columns) => [
-    index("product_variants_options_order_idx").on(columns._order),
-    index("product_variants_options_parent_id_idx").on(columns._parentID),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [product_variants.id],
-      name: "product_variants_options_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const product_variants = pgTable(
-  "product_variants",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    product: uuid("product_id")
-      .notNull()
-      .references(() => products.id, {
-        onDelete: "set null"
-      }),
-    active: boolean("active").notNull().default(false),
-    identity_locked: boolean("identity_locked").notNull().default(false),
-    sku: varchar("sku"),
-    label: varchar("label"),
-    option_key: varchar("option_key").notNull(),
-    price_override_amount: numeric("price_override_amount", { mode: "number" }),
-    barcode: varchar("barcode"),
-    weight_grams: numeric("weight_grams", { mode: "number" }),
-    length_mm: numeric("length_mm", { mode: "number" }),
-    width_mm: numeric("width_mm", { mode: "number" }),
-    height_mm: numeric("height_mm", { mode: "number" }),
-    tax_category: varchar("tax_category"),
-    sort: numeric("sort", { mode: "number" }).default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("product_variants_product_idx").on(columns.product),
-    index("product_variants_active_idx").on(columns.active),
-    uniqueIndex("product_variants_sku_idx").on(columns.sku),
-    uniqueIndex("product_variants_option_key_idx").on(columns.option_key),
-    uniqueIndex("product_variants_barcode_idx").on(columns.barcode),
-    index("product_variants_sort_idx").on(columns.sort),
-    index("product_variants_updated_at_idx").on(columns.updatedAt),
-    index("product_variants_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const product_order_campaigns = pgTable(
-  "product_order_campaigns",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    title: varchar("title").notNull(),
-    product: uuid("product_id")
-      .notNull()
-      .references(() => products.id, {
-        onDelete: "set null"
-      }),
-    state: enum_product_order_campaigns_state("state")
-      .notNull()
-      .default("draft"),
-    minimum_commitments: numeric("minimum_commitments", { mode: "number" })
-      .notNull()
-      .default(1),
-    maximum_commitments: numeric("maximum_commitments", { mode: "number" }),
-    paid_commitments: numeric("paid_commitments", { mode: "number" }).default(
-      0
-    ),
-    deadline: timestamp("deadline", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    progress_visibility: enum_product_order_campaigns_progress_visibility(
-      "progress_visibility"
-    )
-      .notNull()
-      .default("hidden"),
-    eligible_variants: jsonb("eligible_variants"),
-    refund_policy: varchar("refund_policy"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("product_order_campaigns_product_idx").on(columns.product),
-    index("product_order_campaigns_state_idx").on(columns.state),
-    index("product_order_campaigns_deadline_idx").on(columns.deadline),
-    index("product_order_campaigns_updated_at_idx").on(columns.updatedAt),
-    index("product_order_campaigns_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const product_order_campaigns_rels = pgTable(
-  "product_order_campaigns_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    "product-variantsID": uuid("product_variants_id")
-  },
-  (columns) => [
-    index("product_order_campaigns_rels_order_idx").on(columns.order),
-    index("product_order_campaigns_rels_parent_idx").on(columns.parent),
-    index("product_order_campaigns_rels_path_idx").on(columns.path),
-    index("product_order_campaigns_rels_product_variants_id_idx").on(
-      columns["product-variantsID"]
-    ),
-    foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [product_order_campaigns.id],
-      name: "product_order_campaigns_rels_parent_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-variantsID"]],
-      foreignColumns: [product_variants.id],
-      name: "product_order_campaigns_rels_product_variants_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const product_carts = pgTable(
-  "product_carts",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    user: uuid("user_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    storefront: varchar("storefront").notNull().default("lostinseoul"),
-    status: enum_product_carts_status("status").notNull().default("active"),
-    currency: enum_product_carts_currency("currency").notNull().default("KRW"),
-    line_schema_version: numeric("line_schema_version", { mode: "number" })
-      .notNull()
-      .default(1),
-    lines: jsonb("lines")
-      .notNull()
-      .default(sql`'[]'::jsonb`),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("product_carts_user_idx").on(columns.user),
-    index("product_carts_storefront_idx").on(columns.storefront),
-    index("product_carts_status_idx").on(columns.status),
-    index("product_carts_updated_at_idx").on(columns.updatedAt),
-    index("product_carts_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const product_orders = pgTable(
-  "product_orders",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    order_ref: varchar("order_ref").notNull(),
-    user: uuid("user_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    storefront: varchar("storefront").notNull().default("lostinseoul"),
-    order_mode: enum_product_orders_order_mode("order_mode").notNull(),
-    status: enum_product_orders_status("status").notNull().default("draft"),
-    payment_status: enum_product_orders_payment_status("payment_status")
-      .notNull()
-      .default("unpaid"),
-    fulfillment_status: enum_product_orders_fulfillment_status(
-      "fulfillment_status"
-    )
-      .notNull()
-      .default("unfulfilled"),
-    currency: enum_product_orders_currency("currency").notNull().default("KRW"),
-    subtotal_amount: numeric("subtotal_amount", { mode: "number" })
-      .notNull()
-      .default(0),
-    total_amount: numeric("total_amount", { mode: "number" })
-      .notNull()
-      .default(0),
-    campaign: uuid("campaign_id").references(() => product_order_campaigns.id, {
-      onDelete: "set null"
-    }),
-    line_snapshot_version: numeric("line_snapshot_version", { mode: "number" })
-      .notNull()
-      .default(1),
-    lines: jsonb("lines")
-      .notNull()
-      .default(sql`'[]'::jsonb`),
-    shipping: jsonb("shipping"),
-    contact: jsonb("contact"),
-    quote: jsonb("quote"),
-    paid_at: timestamp("paid_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    expires_at: timestamp("expires_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("product_orders_order_ref_idx").on(columns.order_ref),
-    index("product_orders_user_idx").on(columns.user),
-    index("product_orders_storefront_idx").on(columns.storefront),
-    index("product_orders_order_mode_idx").on(columns.order_mode),
-    index("product_orders_status_idx").on(columns.status),
-    index("product_orders_payment_status_idx").on(columns.payment_status),
-    index("product_orders_fulfillment_status_idx").on(
-      columns.fulfillment_status
-    ),
-    index("product_orders_total_amount_idx").on(columns.total_amount),
-    index("product_orders_campaign_idx").on(columns.campaign),
-    index("product_orders_paid_at_idx").on(columns.paid_at),
-    index("product_orders_expires_at_idx").on(columns.expires_at),
-    index("product_orders_updated_at_idx").on(columns.updatedAt),
-    index("product_orders_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const product_payments = pgTable(
-  "product_payments",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    payment_ref: varchar("payment_ref").notNull(),
-    order: uuid("order_id")
-      .notNull()
-      .references(() => product_orders.id, {
-        onDelete: "set null"
-      }),
-    user: uuid("user_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    provider: enum_product_payments_provider("provider")
-      .notNull()
-      .default("portone"),
-    status: enum_product_payments_status("status")
-      .notNull()
-      .default("initiated"),
-    amount: numeric("amount", { mode: "number" }).notNull(),
-    currency: enum_product_payments_currency("currency")
-      .notNull()
-      .default("KRW"),
-    portone_order_ref: varchar("portone_order_ref"),
-    portone_transaction_ref: varchar("portone_transaction_ref"),
-    payment_channel: varchar("payment_channel"),
-    payment_method: varchar("payment_method"),
-    request_payload: jsonb("request_payload"),
-    events: jsonb("events").default(sql`'[]'::jsonb`),
-    paid_at: timestamp("paid_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("product_payments_payment_ref_idx").on(columns.payment_ref),
-    index("product_payments_order_idx").on(columns.order),
-    index("product_payments_user_idx").on(columns.user),
-    index("product_payments_provider_idx").on(columns.provider),
-    index("product_payments_status_idx").on(columns.status),
-    index("product_payments_portone_order_ref_idx").on(
-      columns.portone_order_ref
-    ),
-    index("product_payments_portone_transaction_ref_idx").on(
-      columns.portone_transaction_ref
-    ),
-    index("product_payments_paid_at_idx").on(columns.paid_at),
-    index("product_payments_updated_at_idx").on(columns.updatedAt),
-    index("product_payments_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const commerce_commands = pgTable(
-  "commerce_commands",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    command_key: varchar("command_key").notNull(),
-    business_key: varchar("business_key").notNull(),
-    request_hash: varchar("request_hash").notNull(),
-    status: enum_commerce_commands_status("status")
-      .notNull()
-      .default("in_progress"),
-    attempt_count: numeric("attempt_count", { mode: "number" })
-      .notNull()
-      .default(1),
-    lease_token_hash: varchar("lease_token_hash"),
-    lease_expires_at: timestamp("lease_expires_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    safe_response: jsonb("safe_response"),
-    resource_type: varchar("resource_type"),
-    resource_id: varchar("resource_id"),
-    completed_at: timestamp("completed_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("commerce_commands_command_key_idx").on(columns.command_key),
-    uniqueIndex("commerce_commands_business_key_idx").on(columns.business_key),
-    index("commerce_commands_status_idx").on(columns.status),
-    index("commerce_commands_lease_expires_at_idx").on(
-      columns.lease_expires_at
-    ),
-    index("commerce_commands_resource_type_idx").on(columns.resource_type),
-    index("commerce_commands_resource_id_idx").on(columns.resource_id),
-    index("commerce_commands_completed_at_idx").on(columns.completed_at),
-    index("commerce_commands_updated_at_idx").on(columns.updatedAt),
-    index("commerce_commands_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const commerce_provider_events = pgTable(
-  "commerce_provider_events",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    dedupe_key: varchar("dedupe_key").notNull(),
-    provider: enum_commerce_provider_events_provider("provider").notNull(),
-    event_key: varchar("event_key").notNull(),
-    event_type: varchar("event_type"),
-    payment_ref: varchar("payment_ref"),
-    payload_hash: varchar("payload_hash"),
-    provider_status: varchar("provider_status"),
-    transaction_ref: varchar("transaction_ref"),
-    product_payment: uuid("product_payment_id").references(
-      () => product_payments.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    occurred_at: timestamp("occurred_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    received_at: timestamp("received_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    processing_status: enum_commerce_provider_events_processing_status(
-      "processing_status"
-    )
-      .notNull()
-      .default("received"),
-    attempt_count: numeric("attempt_count", { mode: "number" })
-      .notNull()
-      .default(0),
-    lease_token_hash: varchar("lease_token_hash"),
-    lease_expires_at: timestamp("lease_expires_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    last_attempt_at: timestamp("last_attempt_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    processed_at: timestamp("processed_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    outcome_code: varchar("outcome_code"),
-    last_error_code: varchar("last_error_code"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("commerce_provider_events_dedupe_key_idx").on(
-      columns.dedupe_key
-    ),
-    index("commerce_provider_events_provider_idx").on(columns.provider),
-    index("commerce_provider_events_event_key_idx").on(columns.event_key),
-    index("commerce_provider_events_event_type_idx").on(columns.event_type),
-    index("commerce_provider_events_payment_ref_idx").on(columns.payment_ref),
-    index("commerce_provider_events_payload_hash_idx").on(columns.payload_hash),
-    index("commerce_provider_events_provider_status_idx").on(
-      columns.provider_status
-    ),
-    index("commerce_provider_events_transaction_ref_idx").on(
-      columns.transaction_ref
-    ),
-    index("commerce_provider_events_product_payment_idx").on(
-      columns.product_payment
-    ),
-    index("commerce_provider_events_occurred_at_idx").on(columns.occurred_at),
-    index("commerce_provider_events_received_at_idx").on(columns.received_at),
-    index("commerce_provider_events_processing_status_idx").on(
-      columns.processing_status
-    ),
-    index("commerce_provider_events_lease_expires_at_idx").on(
-      columns.lease_expires_at
-    ),
-    index("commerce_provider_events_last_attempt_at_idx").on(
-      columns.last_attempt_at
-    ),
-    index("commerce_provider_events_processed_at_idx").on(columns.processed_at),
-    index("commerce_provider_events_outcome_code_idx").on(columns.outcome_code),
-    index("commerce_provider_events_last_error_code_idx").on(
-      columns.last_error_code
-    ),
-    index("commerce_provider_events_updated_at_idx").on(columns.updatedAt),
-    index("commerce_provider_events_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const stock_locations = pgTable(
-  "stock_locations",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    code: varchar("code").notNull(),
-    name: varchar("name").notNull(),
-    active: boolean("active").notNull().default(false),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("stock_locations_code_idx").on(columns.code),
-    index("stock_locations_active_idx").on(columns.active),
-    index("stock_locations_updated_at_idx").on(columns.updatedAt),
-    index("stock_locations_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const inventory_levels = pgTable(
-  "inventory_levels",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    aggregate_key: varchar("aggregate_key").notNull(),
-    sku: uuid("sku_id")
-      .notNull()
-      .references(() => product_variants.id, {
-        onDelete: "set null"
-      }),
-    location: uuid("location_id")
-      .notNull()
-      .references(() => stock_locations.id, {
-        onDelete: "set null"
-      }),
-    disposition: enum_inventory_levels_disposition("disposition").notNull(),
-    quantity: numeric("quantity", { mode: "number" }).notNull().default(0),
-    movement_count: numeric("movement_count", { mode: "number" })
-      .notNull()
-      .default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_levels_aggregate_key_idx").on(columns.aggregate_key),
-    index("inventory_levels_sku_idx").on(columns.sku),
-    index("inventory_levels_location_idx").on(columns.location),
-    index("inventory_levels_disposition_idx").on(columns.disposition),
-    index("inventory_levels_updated_at_idx").on(columns.updatedAt),
-    index("inventory_levels_created_at_idx").on(columns.createdAt),
-    uniqueIndex("sku_location_disposition_idx").on(
-      columns.sku,
-      columns.location,
-      columns.disposition
-    )
-  ]
-);
-
-export const inventory_movements = pgTable(
-  "inventory_movements",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    idempotency_key: varchar("idempotency_key").notNull(),
-    request_hash: varchar("request_hash").notNull(),
-    sku: uuid("sku_id")
-      .notNull()
-      .references(() => product_variants.id, {
-        onDelete: "set null"
-      }),
-    kind: enum_inventory_movements_kind("kind").notNull(),
-    quantity: numeric("quantity", { mode: "number" }).notNull(),
-    from_location: uuid("from_location_id").references(
-      () => stock_locations.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    from_disposition:
-      enum_inventory_movements_from_disposition("from_disposition"),
-    to_location: uuid("to_location_id").references(() => stock_locations.id, {
-      onDelete: "set null"
-    }),
-    to_disposition: enum_inventory_movements_to_disposition("to_disposition"),
-    reason_code: varchar("reason_code").notNull(),
-    source_type: enum_inventory_movements_source_type("source_type").notNull(),
-    source_ref: varchar("source_ref"),
-    receipt: uuid("receipt_id").references(() => inventory_receipts.id, {
-      onDelete: "set null"
-    }),
-    receipt_line: uuid("receipt_line_id").references(
-      () => inventory_receipt_lines.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    lot: uuid("lot_id").references(() => inventory_lots.id, {
-      onDelete: "set null"
-    }),
-    cycle_count: uuid("cycle_count_id").references(
-      () => inventory_cycle_counts.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    cycle_count_line: uuid("cycle_count_line_id").references(
-      () => inventory_cycle_count_lines.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    actor: varchar("actor"),
-    effective_at: timestamp("effective_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_movements_idempotency_key_idx").on(
-      columns.idempotency_key
-    ),
-    index("inventory_movements_sku_idx").on(columns.sku),
-    index("inventory_movements_kind_idx").on(columns.kind),
-    index("inventory_movements_from_location_idx").on(columns.from_location),
-    index("inventory_movements_from_disposition_idx").on(
-      columns.from_disposition
-    ),
-    index("inventory_movements_to_location_idx").on(columns.to_location),
-    index("inventory_movements_to_disposition_idx").on(columns.to_disposition),
-    index("inventory_movements_receipt_idx").on(columns.receipt),
-    index("inventory_movements_receipt_line_idx").on(columns.receipt_line),
-    index("inventory_movements_lot_idx").on(columns.lot),
-    index("inventory_movements_cycle_count_idx").on(columns.cycle_count),
-    index("inventory_movements_cycle_count_line_idx").on(
-      columns.cycle_count_line
-    ),
-    index("inventory_movements_updated_at_idx").on(columns.updatedAt),
-    index("inventory_movements_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const inventory_receipts = pgTable(
-  "inventory_receipts",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    location: uuid("location_id")
-      .notNull()
-      .references(() => stock_locations.id, {
-        onDelete: "set null"
-      }),
-    status: enum_inventory_receipts_status("status").notNull().default("draft"),
-    supplier_name: varchar("supplier_name"),
-    external_reference: varchar("external_reference"),
-    opened_at: timestamp("opened_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    opened_by: uuid("opened_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    closed_at: timestamp("closed_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    closed_by: uuid("closed_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    cancelled_at: timestamp("cancelled_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    cancelled_by: uuid("cancelled_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("inventory_receipts_location_idx").on(columns.location),
-    index("inventory_receipts_status_idx").on(columns.status),
-    index("inventory_receipts_external_reference_idx").on(
-      columns.external_reference
-    ),
-    index("inventory_receipts_opened_at_idx").on(columns.opened_at),
-    index("inventory_receipts_opened_by_idx").on(columns.opened_by),
-    index("inventory_receipts_closed_at_idx").on(columns.closed_at),
-    index("inventory_receipts_closed_by_idx").on(columns.closed_by),
-    index("inventory_receipts_cancelled_at_idx").on(columns.cancelled_at),
-    index("inventory_receipts_cancelled_by_idx").on(columns.cancelled_by),
-    index("inventory_receipts_updated_at_idx").on(columns.updatedAt),
-    index("inventory_receipts_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const inventory_receipt_lines = pgTable(
-  "inventory_receipt_lines",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    receipt_sku_key: varchar("receipt_sku_key").notNull(),
-    receipt: uuid("receipt_id")
-      .notNull()
-      .references(() => inventory_receipts.id, {
-        onDelete: "set null"
-      }),
-    sku: uuid("sku_id")
-      .notNull()
-      .references(() => product_variants.id, {
-        onDelete: "set null"
-      }),
-    expected_quantity: numeric("expected_quantity", { mode: "number" }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_receipt_lines_receipt_sku_key_idx").on(
-      columns.receipt_sku_key
-    ),
-    index("inventory_receipt_lines_receipt_idx").on(columns.receipt),
-    index("inventory_receipt_lines_sku_idx").on(columns.sku),
-    index("inventory_receipt_lines_updated_at_idx").on(columns.updatedAt),
-    index("inventory_receipt_lines_created_at_idx").on(columns.createdAt),
-    uniqueIndex("receipt_sku_idx").on(columns.receipt, columns.sku)
-  ]
-);
-
-export const inventory_lots = pgTable(
-  "inventory_lots",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    operation_key: varchar("operation_key").notNull(),
-    receipt_line: uuid("receipt_line_id")
-      .notNull()
-      .references(() => inventory_receipt_lines.id, {
-        onDelete: "set null"
-      }),
-    external_lot_code: varchar("external_lot_code"),
-    received_quantity: numeric("received_quantity", {
-      mode: "number"
-    }).notNull(),
-    received_at: timestamp("received_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    actor: uuid("actor_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_lots_operation_key_idx").on(columns.operation_key),
-    index("inventory_lots_receipt_line_idx").on(columns.receipt_line),
-    index("inventory_lots_external_lot_code_idx").on(columns.external_lot_code),
-    index("inventory_lots_received_at_idx").on(columns.received_at),
-    index("inventory_lots_actor_idx").on(columns.actor),
-    index("inventory_lots_updated_at_idx").on(columns.updatedAt),
-    index("inventory_lots_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const inventory_cycle_counts = pgTable(
-  "inventory_cycle_counts",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    location: uuid("location_id")
-      .notNull()
-      .references(() => stock_locations.id, {
-        onDelete: "set null"
-      }),
-    status: enum_inventory_cycle_counts_status("status")
-      .notNull()
-      .default("draft"),
-    submitted_at: timestamp("submitted_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    submitted_by: uuid("submitted_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    applied_at: timestamp("applied_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    applied_by: uuid("applied_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    rejected_at: timestamp("rejected_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    rejected_by: uuid("rejected_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    cancelled_at: timestamp("cancelled_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    cancelled_by: uuid("cancelled_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("inventory_cycle_counts_location_idx").on(columns.location),
-    index("inventory_cycle_counts_status_idx").on(columns.status),
-    index("inventory_cycle_counts_submitted_at_idx").on(columns.submitted_at),
-    index("inventory_cycle_counts_submitted_by_idx").on(columns.submitted_by),
-    index("inventory_cycle_counts_applied_at_idx").on(columns.applied_at),
-    index("inventory_cycle_counts_applied_by_idx").on(columns.applied_by),
-    index("inventory_cycle_counts_rejected_at_idx").on(columns.rejected_at),
-    index("inventory_cycle_counts_rejected_by_idx").on(columns.rejected_by),
-    index("inventory_cycle_counts_cancelled_at_idx").on(columns.cancelled_at),
-    index("inventory_cycle_counts_cancelled_by_idx").on(columns.cancelled_by),
-    index("inventory_cycle_counts_updated_at_idx").on(columns.updatedAt),
-    index("inventory_cycle_counts_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const inventory_cycle_count_lines = pgTable(
-  "inventory_cycle_count_lines",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    count_aggregate_key: varchar("count_aggregate_key").notNull(),
-    count: uuid("count_id")
-      .notNull()
-      .references(() => inventory_cycle_counts.id, {
-        onDelete: "set null"
-      }),
-    sku: uuid("sku_id")
-      .notNull()
-      .references(() => product_variants.id, {
-        onDelete: "set null"
-      }),
-    disposition:
-      enum_inventory_cycle_count_lines_disposition("disposition").notNull(),
-    counted_quantity: numeric("counted_quantity", { mode: "number" }).notNull(),
-    system_quantity: numeric("system_quantity", { mode: "number" }).notNull(),
-    movement_count_snapshot: numeric("movement_count_snapshot", {
-      mode: "number"
-    }).notNull(),
-    variance: numeric("variance", { mode: "number" }).notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_cycle_count_lines_count_aggregate_key_idx").on(
-      columns.count_aggregate_key
-    ),
-    index("inventory_cycle_count_lines_count_idx").on(columns.count),
-    index("inventory_cycle_count_lines_sku_idx").on(columns.sku),
-    index("inventory_cycle_count_lines_disposition_idx").on(
-      columns.disposition
-    ),
-    index("inventory_cycle_count_lines_updated_at_idx").on(columns.updatedAt),
-    index("inventory_cycle_count_lines_created_at_idx").on(columns.createdAt),
-    uniqueIndex("count_sku_disposition_idx").on(
-      columns.count,
-      columns.sku,
-      columns.disposition
-    )
-  ]
-);
-
-export const inventory_reservations = pgTable(
-  "inventory_reservations",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    reservation_key: varchar("reservation_key").notNull(),
-    request_hash: varchar("request_hash").notNull(),
-    order: uuid("order_id")
-      .notNull()
-      .references(() => product_orders.id, {
-        onDelete: "set null"
-      }),
-    sku: uuid("sku_id")
-      .notNull()
-      .references(() => product_variants.id, {
-        onDelete: "set null"
-      }),
-    location: uuid("location_id")
-      .notNull()
-      .references(() => stock_locations.id, {
-        onDelete: "set null"
-      }),
-    quantity: numeric("quantity", { mode: "number" }).notNull(),
-    status: enum_inventory_reservations_status("status")
-      .notNull()
-      .default("active"),
-    expires_at: timestamp("expires_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    reserved_at: timestamp("reserved_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    terminal_at: timestamp("terminal_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    policy_version: numeric("policy_version", { mode: "number" }).notNull(),
-    ttl_minutes: numeric("ttl_minutes", { mode: "number" }).notNull(),
-    safety_stock: numeric("safety_stock", { mode: "number" }).notNull(),
-    consume_point:
-      enum_inventory_reservations_consume_point("consume_point").notNull(),
-    expiry_boundary:
-      enum_inventory_reservations_expiry_boundary("expiry_boundary").notNull(),
-    payment_time_source: enum_inventory_reservations_payment_time_source(
-      "payment_time_source"
-    ).notNull(),
-    late_payment_policy: enum_inventory_reservations_late_payment_policy(
-      "late_payment_policy"
-    ).notNull(),
-    backorder_mode:
-      enum_inventory_reservations_backorder_mode("backorder_mode").notNull(),
-    recovery_of: uuid("recovery_of_id").references(
-      (): AnyPgColumn => inventory_reservations.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_reservations_reservation_key_idx").on(
-      columns.reservation_key
-    ),
-    index("inventory_reservations_order_idx").on(columns.order),
-    index("inventory_reservations_sku_idx").on(columns.sku),
-    index("inventory_reservations_location_idx").on(columns.location),
-    index("inventory_reservations_status_idx").on(columns.status),
-    index("inventory_reservations_expires_at_idx").on(columns.expires_at),
-    index("inventory_reservations_terminal_at_idx").on(columns.terminal_at),
-    uniqueIndex("inventory_reservations_recovery_of_idx").on(
-      columns.recovery_of
-    ),
-    index("inventory_reservations_updated_at_idx").on(columns.updatedAt),
-    index("inventory_reservations_created_at_idx").on(columns.createdAt),
-    index("sku_location_status_idx").on(
-      columns.sku,
-      columns.location,
-      columns.status
-    ),
-    index("status_expires_at_idx").on(columns.status, columns.expires_at)
-  ]
-);
-
-export const inventory_reservation_operator_events = pgTable(
-  "inventory_reservation_operator_events",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    event_key: varchar("event_key").notNull(),
-    command_key: varchar("command_key").notNull(),
-    source:
-      enum_inventory_reservation_operator_events_source("source").notNull(),
-    correlation_key: varchar("correlation_key").notNull(),
-    causation_key: varchar("causation_key").notNull(),
-    action:
-      enum_inventory_reservation_operator_events_action("action").notNull(),
-    outcome_code: varchar("outcome_code").notNull(),
-    actor: uuid("actor_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    order: uuid("order_id").references(() => product_orders.id, {
-      onDelete: "set null"
-    }),
-    payment: uuid("payment_id").references(() => product_payments.id, {
-      onDelete: "set null"
-    }),
-    reservation: uuid("reservation_id").references(
-      () => inventory_reservations.id,
-      {
-        onDelete: "set null"
-      }
-    ),
-    reason_code: varchar("reason_code").notNull(),
-    evidence_reference: varchar("evidence_reference").notNull(),
-    expected_state_hash: varchar("expected_state_hash").notNull(),
-    observed_state_hash: varchar("observed_state_hash").notNull(),
-    affected_count: numeric("affected_count", { mode: "number" }).notNull(),
-    effective_at: timestamp("effective_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_reservation_operator_events_event_key_idx").on(
-      columns.event_key
-    ),
-    index("inventory_reservation_operator_events_command_key_idx").on(
-      columns.command_key
-    ),
-    index("inventory_reservation_operator_events_correlation_key_idx").on(
-      columns.correlation_key
-    ),
-    index("inventory_reservation_operator_events_causation_key_idx").on(
-      columns.causation_key
-    ),
-    index("inventory_reservation_operator_events_outcome_code_idx").on(
-      columns.outcome_code
-    ),
-    index("inventory_reservation_operator_events_actor_idx").on(columns.actor),
-    index("inventory_reservation_operator_events_order_idx").on(columns.order),
-    index("inventory_reservation_operator_events_payment_idx").on(
-      columns.payment
-    ),
-    index("inventory_reservation_operator_events_reservation_idx").on(
-      columns.reservation
-    ),
-    index("inventory_reservation_operator_events_reason_code_idx").on(
-      columns.reason_code
-    ),
-    index("inventory_reservation_operator_events_effective_at_idx").on(
-      columns.effective_at
-    ),
-    index("inventory_reservation_operator_events_updated_at_idx").on(
-      columns.updatedAt
-    ),
-    index("inventory_reservation_operator_events_created_at_idx").on(
-      columns.createdAt
-    )
-  ]
-);
-
-export const inventory_reservation_entries = pgTable(
-  "inventory_reservation_entries",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    idempotency_key: varchar("idempotency_key").notNull(),
-    request_hash: varchar("request_hash").notNull(),
-    reservation: uuid("reservation_id")
-      .notNull()
-      .references(() => inventory_reservations.id, {
-        onDelete: "set null"
-      }),
-    operation:
-      enum_inventory_reservation_entries_operation("operation").notNull(),
-    quantity: numeric("quantity", { mode: "number" }).notNull(),
-    payment: uuid("payment_id").references(() => product_payments.id, {
-      onDelete: "set null"
-    }),
-    provider_event_ref: varchar("provider_event_ref"),
-    provider_paid_at: timestamp("provider_paid_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    evidence_code:
-      enum_inventory_reservation_entries_evidence_code("evidence_code"),
-    actor: varchar("actor"),
-    effective_at: timestamp("effective_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("inventory_reservation_entries_idempotency_key_idx").on(
-      columns.idempotency_key
-    ),
-    index("inventory_reservation_entries_reservation_idx").on(
-      columns.reservation
-    ),
-    index("inventory_reservation_entries_operation_idx").on(columns.operation),
-    index("inventory_reservation_entries_payment_idx").on(columns.payment),
-    index("inventory_reservation_entries_provider_event_ref_idx").on(
-      columns.provider_event_ref
-    ),
-    index("inventory_reservation_entries_provider_paid_at_idx").on(
-      columns.provider_paid_at
-    ),
-    index("inventory_reservation_entries_evidence_code_idx").on(
-      columns.evidence_code
-    ),
-    index("inventory_reservation_entries_effective_at_idx").on(
-      columns.effective_at
-    ),
-    index("inventory_reservation_entries_updated_at_idx").on(columns.updatedAt),
-    index("inventory_reservation_entries_created_at_idx").on(columns.createdAt),
-    index("reservation_operation_idx").on(
-      columns.reservation,
-      columns.operation
-    )
-  ]
-);
-
-export const events_exclusive_links = pgTable(
-  "events_exclusive_links",
-  {
-    _order: integer("_order").notNull(),
-    _parentID: uuid("_parent_id").notNull(),
-    id: varchar("id").primaryKey(),
-    label: varchar("label").notNull(),
-    url: varchar("url").notNull(),
-    type: enum_events_exclusive_links_type("type").notNull().default("link")
-  },
-  (columns) => [
-    index("events_exclusive_links_order_idx").on(columns._order),
-    index("events_exclusive_links_parent_id_idx").on(columns._parentID),
-    foreignKey({
-      columns: [columns["_parentID"]],
-      foreignColumns: [events.id],
-      name: "events_exclusive_links_parent_id_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const events = pgTable(
-  "events",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: varchar("name").notNull(),
-    slug: varchar("slug").notNull(),
-    description: varchar("description"),
-    date: timestamp("date", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }).notNull(),
-    end_date: timestamp("end_date", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    location: varchar("location"),
-    gate_password: varchar("gate_password").notNull(),
-    capacity: numeric("capacity", { mode: "number" }).default(0),
-    max_per_user: numeric("max_per_user", { mode: "number" })
-      .notNull()
-      .default(3),
-    ticket_price: numeric("ticket_price", { mode: "number" }).notNull(),
-    payment_instructions: varchar("payment_instructions"),
-    state: enum_events_state("state").notNull().default("draft"),
-    image: varchar("image_id").references(() => media.id, {
-      onDelete: "set null"
-    }),
-    exclusive_content: jsonb("exclusive_content"),
-    goods_drop_enabled: boolean("goods_drop_enabled").default(false),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("events_name_idx").on(columns.name),
-    uniqueIndex("events_slug_idx").on(columns.slug),
-    index("events_image_idx").on(columns.image),
-    index("events_updated_at_idx").on(columns.updatedAt),
-    index("events_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const ticket_orders = pgTable(
-  "ticket_orders",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    purchaser: uuid("purchaser_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    event: uuid("event_id")
-      .notNull()
-      .references(() => events.id, {
-        onDelete: "set null"
-      }),
-    purchaser_name: varchar("purchaser_name"),
-    sender_name: varchar("sender_name"),
-    quantity: numeric("quantity", { mode: "number" }).notNull().default(1),
-    unit_amount: numeric("unit_amount", { mode: "number" })
-      .notNull()
-      .default(0),
-    total_amount: numeric("total_amount", { mode: "number" })
-      .notNull()
-      .default(0),
-    currency: enum_ticket_orders_currency("currency").notNull().default("KRW"),
-    paid: boolean("paid").default(false),
-    payment_submitted_at: timestamp("payment_submitted_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    paid_at: timestamp("paid_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    password: varchar("password"),
-    password_issued_at: timestamp("password_issued_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    password_expires_at: timestamp("password_expires_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    mailed_at: timestamp("mailed_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    locale: enum_ticket_orders_locale("locale").default("ko"),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    index("ticket_orders_purchaser_idx").on(columns.purchaser),
-    index("ticket_orders_event_idx").on(columns.event),
-    index("ticket_orders_updated_at_idx").on(columns.updatedAt),
-    index("ticket_orders_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const tickets = pgTable(
-  "tickets",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    ticket_number: numeric("ticket_number", { mode: "number" }),
-    event: uuid("event_id")
-      .notNull()
-      .references(() => events.id, {
-        onDelete: "set null"
-      }),
-    user: uuid("user_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    purchaser: uuid("purchaser_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    status: enum_tickets_status("status").notNull().default("pending"),
-    paid: boolean("paid").default(false),
-    paid_at: timestamp("paid_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    claim_token: varchar("claim_token"),
-    claim_email: varchar("claim_email"),
-    gift_initial_name: varchar("gift_initial_name"),
-    gift_name_locked: boolean("gift_name_locked").default(false),
-    order: uuid("order_id").references(() => ticket_orders.id, {
-      onDelete: "set null"
-    }),
-    claimed_at: timestamp("claimed_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    check_in_code: varchar("check_in_code"),
-    checked_in: boolean("checked_in").default(false),
-    checked_in_at: timestamp("checked_in_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    checked_in_by: uuid("checked_in_by_id").references(() => users.id, {
-      onDelete: "set null"
-    }),
-    passkey_credential_id: varchar("passkey_credential_id"),
-    reminder_sent_at: timestamp("reminder_sent_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    delivery_address_recipient_name: varchar("delivery_address_recipient_name"),
-    delivery_address_address: varchar("delivery_address_address"),
-    delivery_address_phone: varchar("delivery_address_phone"),
-    delivery_address_submitted_at: timestamp("delivery_address_submitted_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("tickets_ticket_number_idx").on(columns.ticket_number),
-    index("tickets_event_idx").on(columns.event),
-    index("tickets_user_idx").on(columns.user),
-    index("tickets_purchaser_idx").on(columns.purchaser),
-    index("tickets_status_idx").on(columns.status),
-    uniqueIndex("tickets_claim_token_idx").on(columns.claim_token),
-    index("tickets_order_idx").on(columns.order),
-    uniqueIndex("tickets_check_in_code_idx").on(columns.check_in_code),
-    index("tickets_checked_in_idx").on(columns.checked_in),
-    index("tickets_checked_in_by_idx").on(columns.checked_in_by),
-    index("tickets_reminder_sent_at_idx").on(columns.reminder_sent_at),
-    index("tickets_updated_at_idx").on(columns.updatedAt),
-    index("tickets_created_at_idx").on(columns.createdAt)
-  ]
-);
-
 export const payload_kv = pgTable(
   "payload_kv",
   {
@@ -8311,7 +6041,6 @@ export const payload_jobs = pgTable(
       precision: 3
     }),
     processing: boolean("processing").default(false),
-    meta: jsonb("meta"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -8447,43 +6176,18 @@ export const payload_locked_documents_rels = pgTable(
     pagesID: varchar("pages_id"),
     postsID: varchar("posts_id"),
     userMediaID: varchar("user_media_id"),
+    "email-quotaID": varchar("email_quota_id"),
+    "deferred-emailsID": varchar("deferred_emails_id"),
     profileID: uuid("profile_id"),
     bookmarksID: varchar("bookmarks_id"),
     userViewsID: uuid("user_views_id"),
     responsesID: varchar("responses_id"),
     compilationsID: varchar("compilations_id"),
+    "commerce-productsID": uuid("commerce_products_id"),
+    "commerce-ordersID": uuid("commerce_orders_id"),
     adminsID: varchar("admins_id"),
-    "email-quotaID": varchar("email_quota_id"),
-    "deferred-emailsID": varchar("deferred_emails_id"),
     redirectsID: uuid("redirects_id"),
     searchID: varchar("search_id"),
-    plansID: uuid("plans_id"),
-    invoicesID: uuid("invoices_id"),
-    pricesID: uuid("prices_id"),
-    subscriptionsID: uuid("subscriptions_id"),
-    "exchange-rateID": uuid("exchange_rate_id"),
-    currencyID: uuid("currency_id"),
-    holidaysID: uuid("holidays_id"),
-    "product-categoryID": uuid("product_category_id"),
-    "product-subID": uuid("product_sub_id"),
-    "product-dropsID": uuid("product_drops_id"),
-    productsID: uuid("products_id"),
-    "product-variantsID": uuid("product_variants_id"),
-    "product-order-campaignsID": uuid("product_order_campaigns_id"),
-    "product-cartsID": uuid("product_carts_id"),
-    "product-ordersID": uuid("product_orders_id"),
-    "product-paymentsID": uuid("product_payments_id"),
-    "commerce-commandsID": uuid("commerce_commands_id"),
-    "commerce-provider-eventsID": uuid("commerce_provider_events_id"),
-    "stock-locationsID": uuid("stock_locations_id"),
-    "inventory-levelsID": uuid("inventory_levels_id"),
-    "inventory-receiptsID": uuid("inventory_receipts_id"),
-    "inventory-receipt-linesID": uuid("inventory_receipt_lines_id"),
-    "inventory-cycle-countsID": uuid("inventory_cycle_counts_id"),
-    "inventory-cycle-count-linesID": uuid("inventory_cycle_count_lines_id"),
-    eventsID: uuid("events_id"),
-    "ticket-ordersID": uuid("ticket_orders_id"),
-    ticketsID: uuid("tickets_id"),
     "payload-foldersID": uuid("payload_folders_id")
   },
   (columns) => [
@@ -8533,6 +6237,12 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_user_media_id_idx").on(
       columns.userMediaID
     ),
+    index("payload_locked_documents_rels_email_quota_id_idx").on(
+      columns["email-quotaID"]
+    ),
+    index("payload_locked_documents_rels_deferred_emails_id_idx").on(
+      columns["deferred-emailsID"]
+    ),
     index("payload_locked_documents_rels_profile_id_idx").on(columns.profileID),
     index("payload_locked_documents_rels_bookmarks_id_idx").on(
       columns.bookmarksID
@@ -8546,90 +6256,17 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_compilations_id_idx").on(
       columns.compilationsID
     ),
+    index("payload_locked_documents_rels_commerce_products_id_idx").on(
+      columns["commerce-productsID"]
+    ),
+    index("payload_locked_documents_rels_commerce_orders_id_idx").on(
+      columns["commerce-ordersID"]
+    ),
     index("payload_locked_documents_rels_admins_id_idx").on(columns.adminsID),
-    index("payload_locked_documents_rels_email_quota_id_idx").on(
-      columns["email-quotaID"]
-    ),
-    index("payload_locked_documents_rels_deferred_emails_id_idx").on(
-      columns["deferred-emailsID"]
-    ),
     index("payload_locked_documents_rels_redirects_id_idx").on(
       columns.redirectsID
     ),
     index("payload_locked_documents_rels_search_id_idx").on(columns.searchID),
-    index("payload_locked_documents_rels_plans_id_idx").on(columns.plansID),
-    index("payload_locked_documents_rels_invoices_id_idx").on(
-      columns.invoicesID
-    ),
-    index("payload_locked_documents_rels_prices_id_idx").on(columns.pricesID),
-    index("payload_locked_documents_rels_subscriptions_id_idx").on(
-      columns.subscriptionsID
-    ),
-    index("payload_locked_documents_rels_exchange_rate_id_idx").on(
-      columns["exchange-rateID"]
-    ),
-    index("payload_locked_documents_rels_currency_id_idx").on(
-      columns.currencyID
-    ),
-    index("payload_locked_documents_rels_holidays_id_idx").on(
-      columns.holidaysID
-    ),
-    index("payload_locked_documents_rels_product_category_id_idx").on(
-      columns["product-categoryID"]
-    ),
-    index("payload_locked_documents_rels_product_sub_id_idx").on(
-      columns["product-subID"]
-    ),
-    index("payload_locked_documents_rels_product_drops_id_idx").on(
-      columns["product-dropsID"]
-    ),
-    index("payload_locked_documents_rels_products_id_idx").on(
-      columns.productsID
-    ),
-    index("payload_locked_documents_rels_product_variants_id_idx").on(
-      columns["product-variantsID"]
-    ),
-    index("payload_locked_documents_rels_product_order_campaigns_id_idx").on(
-      columns["product-order-campaignsID"]
-    ),
-    index("payload_locked_documents_rels_product_carts_id_idx").on(
-      columns["product-cartsID"]
-    ),
-    index("payload_locked_documents_rels_product_orders_id_idx").on(
-      columns["product-ordersID"]
-    ),
-    index("payload_locked_documents_rels_product_payments_id_idx").on(
-      columns["product-paymentsID"]
-    ),
-    index("payload_locked_documents_rels_commerce_commands_id_idx").on(
-      columns["commerce-commandsID"]
-    ),
-    index("payload_locked_documents_rels_commerce_provider_events_i_idx").on(
-      columns["commerce-provider-eventsID"]
-    ),
-    index("payload_locked_documents_rels_stock_locations_id_idx").on(
-      columns["stock-locationsID"]
-    ),
-    index("payload_locked_documents_rels_inventory_levels_id_idx").on(
-      columns["inventory-levelsID"]
-    ),
-    index("payload_locked_documents_rels_inventory_receipts_id_idx").on(
-      columns["inventory-receiptsID"]
-    ),
-    index("payload_locked_documents_rels_inventory_receipt_lines_id_idx").on(
-      columns["inventory-receipt-linesID"]
-    ),
-    index("payload_locked_documents_rels_inventory_cycle_counts_id_idx").on(
-      columns["inventory-cycle-countsID"]
-    ),
-    index("payload_locked_documents_rels_inventory_cycle_count_line_idx").on(
-      columns["inventory-cycle-count-linesID"]
-    ),
-    index("payload_locked_documents_rels_events_id_idx").on(columns.eventsID),
-    index("payload_locked_documents_rels_ticket_orders_id_idx").on(
-      columns["ticket-ordersID"]
-    ),
-    index("payload_locked_documents_rels_tickets_id_idx").on(columns.ticketsID),
     index("payload_locked_documents_rels_payload_folders_id_idx").on(
       columns["payload-foldersID"]
     ),
@@ -8734,6 +6371,16 @@ export const payload_locked_documents_rels = pgTable(
       name: "payload_locked_documents_rels_user_media_fk"
     }).onDelete("cascade"),
     foreignKey({
+      columns: [columns["email-quotaID"]],
+      foreignColumns: [email_quota.id],
+      name: "payload_locked_documents_rels_email_quota_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["deferred-emailsID"]],
+      foreignColumns: [deferred_emails.id],
+      name: "payload_locked_documents_rels_deferred_emails_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["profileID"]],
       foreignColumns: [profile.id],
       name: "payload_locked_documents_rels_profile_fk"
@@ -8759,19 +6406,19 @@ export const payload_locked_documents_rels = pgTable(
       name: "payload_locked_documents_rels_compilations_fk"
     }).onDelete("cascade"),
     foreignKey({
+      columns: [columns["commerce-productsID"]],
+      foreignColumns: [commerce_products.id],
+      name: "payload_locked_documents_rels_commerce_products_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["commerce-ordersID"]],
+      foreignColumns: [commerce_orders.id],
+      name: "payload_locked_documents_rels_commerce_orders_fk"
+    }).onDelete("cascade"),
+    foreignKey({
       columns: [columns["adminsID"]],
       foreignColumns: [admins.id],
       name: "payload_locked_documents_rels_admins_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["email-quotaID"]],
-      foreignColumns: [email_quota.id],
-      name: "payload_locked_documents_rels_email_quota_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["deferred-emailsID"]],
-      foreignColumns: [deferred_emails.id],
-      name: "payload_locked_documents_rels_deferred_emails_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["redirectsID"]],
@@ -8782,141 +6429,6 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["searchID"]],
       foreignColumns: [search.id],
       name: "payload_locked_documents_rels_search_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["plansID"]],
-      foreignColumns: [plans.id],
-      name: "payload_locked_documents_rels_plans_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["invoicesID"]],
-      foreignColumns: [invoices.id],
-      name: "payload_locked_documents_rels_invoices_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["pricesID"]],
-      foreignColumns: [prices.id],
-      name: "payload_locked_documents_rels_prices_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["subscriptionsID"]],
-      foreignColumns: [subscriptions.id],
-      name: "payload_locked_documents_rels_subscriptions_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["exchange-rateID"]],
-      foreignColumns: [exchange_rate.id],
-      name: "payload_locked_documents_rels_exchange_rate_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["currencyID"]],
-      foreignColumns: [currency.id],
-      name: "payload_locked_documents_rels_currency_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["holidaysID"]],
-      foreignColumns: [holidays.id],
-      name: "payload_locked_documents_rels_holidays_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-categoryID"]],
-      foreignColumns: [product_category.id],
-      name: "payload_locked_documents_rels_product_category_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-subID"]],
-      foreignColumns: [product_sub.id],
-      name: "payload_locked_documents_rels_product_sub_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-dropsID"]],
-      foreignColumns: [product_drops.id],
-      name: "payload_locked_documents_rels_product_drops_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["productsID"]],
-      foreignColumns: [products.id],
-      name: "payload_locked_documents_rels_products_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-variantsID"]],
-      foreignColumns: [product_variants.id],
-      name: "payload_locked_documents_rels_product_variants_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-order-campaignsID"]],
-      foreignColumns: [product_order_campaigns.id],
-      name: "payload_locked_documents_rels_product_order_campaigns_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-cartsID"]],
-      foreignColumns: [product_carts.id],
-      name: "payload_locked_documents_rels_product_carts_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-ordersID"]],
-      foreignColumns: [product_orders.id],
-      name: "payload_locked_documents_rels_product_orders_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["product-paymentsID"]],
-      foreignColumns: [product_payments.id],
-      name: "payload_locked_documents_rels_product_payments_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["commerce-commandsID"]],
-      foreignColumns: [commerce_commands.id],
-      name: "payload_locked_documents_rels_commerce_commands_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["commerce-provider-eventsID"]],
-      foreignColumns: [commerce_provider_events.id],
-      name: "payload_locked_documents_rels_commerce_provider_events_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["stock-locationsID"]],
-      foreignColumns: [stock_locations.id],
-      name: "payload_locked_documents_rels_stock_locations_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["inventory-levelsID"]],
-      foreignColumns: [inventory_levels.id],
-      name: "payload_locked_documents_rels_inventory_levels_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["inventory-receiptsID"]],
-      foreignColumns: [inventory_receipts.id],
-      name: "payload_locked_documents_rels_inventory_receipts_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["inventory-receipt-linesID"]],
-      foreignColumns: [inventory_receipt_lines.id],
-      name: "payload_locked_documents_rels_inventory_receipt_lines_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["inventory-cycle-countsID"]],
-      foreignColumns: [inventory_cycle_counts.id],
-      name: "payload_locked_documents_rels_inventory_cycle_counts_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["inventory-cycle-count-linesID"]],
-      foreignColumns: [inventory_cycle_count_lines.id],
-      name: "payload_locked_documents_rels_inventory_cycle_count_lines_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["eventsID"]],
-      foreignColumns: [events.id],
-      name: "payload_locked_documents_rels_events_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["ticket-ordersID"]],
-      foreignColumns: [ticket_orders.id],
-      name: "payload_locked_documents_rels_ticket_orders_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["ticketsID"]],
-      foreignColumns: [tickets.id],
-      name: "payload_locked_documents_rels_tickets_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["payload-foldersID"]],
@@ -9387,21 +6899,6 @@ export const footer_rels = pgTable(
     }).onDelete("cascade")
   ]
 );
-
-export const payload_jobs_stats = pgTable("payload_jobs_stats", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  stats: jsonb("stats"),
-  updatedAt: timestamp("updated_at", {
-    mode: "string",
-    withTimezone: true,
-    precision: 3
-  }),
-  createdAt: timestamp("created_at", {
-    mode: "string",
-    withTimezone: true,
-    precision: 3
-  })
-});
 
 export const relations_users_locales = relations(users_locales, ({ one }) => ({
   _parentID: one(users, {
@@ -10330,6 +7827,8 @@ export const relations_user_media = relations(user_media, ({ one, many }) => ({
     relationName: "_rels"
   })
 }));
+export const relations_email_quota = relations(email_quota, () => ({}));
+export const relations_deferred_emails = relations(deferred_emails, () => ({}));
 export const relations_profile_slides = relations(
   profile_slides,
   ({ one }) => ({
@@ -11126,6 +8625,49 @@ export const relations_compilations = relations(
     })
   })
 );
+export const relations_commerce_products_rels = relations(
+  commerce_products_rels,
+  ({ one }) => ({
+    parent: one(commerce_products, {
+      fields: [commerce_products_rels.parent],
+      references: [commerce_products.id],
+      relationName: "_rels"
+    }),
+    mediaID: one(media, {
+      fields: [commerce_products_rels.mediaID],
+      references: [media.id],
+      relationName: "media"
+    })
+  })
+);
+export const relations_commerce_products = relations(
+  commerce_products,
+  ({ one, many }) => ({
+    hero_media: one(media, {
+      fields: [commerce_products.hero_media],
+      references: [media.id],
+      relationName: "hero_media"
+    }),
+    _rels: many(commerce_products_rels, {
+      relationName: "_rels"
+    })
+  })
+);
+export const relations_commerce_orders = relations(
+  commerce_orders,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [commerce_orders.user],
+      references: [users.id],
+      relationName: "user"
+    }),
+    product: one(commerce_products, {
+      fields: [commerce_orders.product],
+      references: [commerce_products.id],
+      relationName: "product"
+    })
+  })
+);
 export const relations_admins = relations(admins, ({ one }) => ({
   foto: one(media, {
     fields: [admins.foto],
@@ -11145,8 +8687,6 @@ export const relations__admins_v = relations(_admins_v, ({ one }) => ({
     relationName: "version_foto"
   })
 }));
-export const relations_email_quota = relations(email_quota, () => ({}));
-export const relations_deferred_emails = relations(deferred_emails, () => ({}));
 export const relations_exports_texts = relations(exports_texts, ({ one }) => ({
   parent: one(exports, {
     fields: [exports_texts.parent],
@@ -11306,580 +8846,6 @@ export const relations_search = relations(search, ({ many }) => ({
     relationName: "_rels"
   })
 }));
-export const relations_plans_payment_methods = relations(
-  plans_payment_methods,
-  ({ one }) => ({
-    parent: one(plans, {
-      fields: [plans_payment_methods.parent],
-      references: [plans.id],
-      relationName: "payment_methods"
-    })
-  })
-);
-export const relations_plans_features = relations(
-  plans_features,
-  ({ one }) => ({
-    _parentID: one(plans, {
-      fields: [plans_features._parentID],
-      references: [plans.id],
-      relationName: "features"
-    })
-  })
-);
-export const relations_plans = relations(plans, ({ many }) => ({
-  payment_methods: many(plans_payment_methods, {
-    relationName: "payment_methods"
-  }),
-  features: many(plans_features, {
-    relationName: "features"
-  })
-}));
-export const relations_invoices_payment_method = relations(
-  invoices_payment_method,
-  ({ one }) => ({
-    _parentID: one(invoices, {
-      fields: [invoices_payment_method._parentID],
-      references: [invoices.id],
-      relationName: "payment_method"
-    }),
-    currency: one(currency, {
-      fields: [invoices_payment_method.currency],
-      references: [currency.id],
-      relationName: "currency"
-    })
-  })
-);
-export const relations_invoices = relations(invoices, ({ one, many }) => ({
-  client: one(users, {
-    fields: [invoices.client],
-    references: [users.id],
-    relationName: "client"
-  }),
-  subscription: one(subscriptions, {
-    fields: [invoices.subscription],
-    references: [subscriptions.id],
-    relationName: "subscription"
-  }),
-  plan: one(plans, {
-    fields: [invoices.plan],
-    references: [plans.id],
-    relationName: "plan"
-  }),
-  price: one(prices, {
-    fields: [invoices.price],
-    references: [prices.id],
-    relationName: "price"
-  }),
-  currency: one(currency, {
-    fields: [invoices.currency],
-    references: [currency.id],
-    relationName: "currency"
-  }),
-  payment_method: many(invoices_payment_method, {
-    relationName: "payment_method"
-  })
-}));
-export const relations_prices = relations(prices, ({ one }) => ({
-  plan: one(plans, {
-    fields: [prices.plan],
-    references: [plans.id],
-    relationName: "plan"
-  }),
-  currency: one(currency, {
-    fields: [prices.currency],
-    references: [currency.id],
-    relationName: "currency"
-  })
-}));
-export const relations_subscriptions = relations(subscriptions, ({ one }) => ({
-  user: one(users, {
-    fields: [subscriptions.user],
-    references: [users.id],
-    relationName: "user"
-  }),
-  plan: one(plans, {
-    fields: [subscriptions.plan],
-    references: [plans.id],
-    relationName: "plan"
-  }),
-  price: one(prices, {
-    fields: [subscriptions.price],
-    references: [prices.id],
-    relationName: "price"
-  }),
-  currency: one(currency, {
-    fields: [subscriptions.currency],
-    references: [currency.id],
-    relationName: "currency"
-  })
-}));
-export const relations_exchange_rate_rates = relations(
-  exchange_rate_rates,
-  ({ one }) => ({
-    _parentID: one(exchange_rate, {
-      fields: [exchange_rate_rates._parentID],
-      references: [exchange_rate.id],
-      relationName: "rates"
-    }),
-    currency: one(currency, {
-      fields: [exchange_rate_rates.currency],
-      references: [currency.id],
-      relationName: "currency"
-    })
-  })
-);
-export const relations_exchange_rate = relations(exchange_rate, ({ many }) => ({
-  rates: many(exchange_rate_rates, {
-    relationName: "rates"
-  })
-}));
-export const relations_currency = relations(currency, () => ({}));
-export const relations_holidays_dates = relations(
-  holidays_dates,
-  ({ one }) => ({
-    _parentID: one(holidays, {
-      fields: [holidays_dates._parentID],
-      references: [holidays.id],
-      relationName: "dates"
-    })
-  })
-);
-export const relations_holidays = relations(holidays, ({ many }) => ({
-  dates: many(holidays_dates, {
-    relationName: "dates"
-  })
-}));
-export const relations_product_category = relations(
-  product_category,
-  () => ({})
-);
-export const relations_product_sub = relations(product_sub, () => ({}));
-export const relations_product_drops = relations(product_drops, ({ one }) => ({
-  hero_media: one(media, {
-    fields: [product_drops.hero_media],
-    references: [media.id],
-    relationName: "hero_media"
-  })
-}));
-export const relations_products_rels = relations(products_rels, ({ one }) => ({
-  parent: one(products, {
-    fields: [products_rels.parent],
-    references: [products.id],
-    relationName: "_rels"
-  }),
-  mediaID: one(media, {
-    fields: [products_rels.mediaID],
-    references: [media.id],
-    relationName: "media"
-  })
-}));
-export const relations_products = relations(products, ({ one, many }) => ({
-  drop: one(product_drops, {
-    fields: [products.drop],
-    references: [product_drops.id],
-    relationName: "drop"
-  }),
-  category: one(product_category, {
-    fields: [products.category],
-    references: [product_category.id],
-    relationName: "category"
-  }),
-  hero_media: one(media, {
-    fields: [products.hero_media],
-    references: [media.id],
-    relationName: "hero_media"
-  }),
-  _rels: many(products_rels, {
-    relationName: "_rels"
-  })
-}));
-export const relations_product_variants_options = relations(
-  product_variants_options,
-  ({ one }) => ({
-    _parentID: one(product_variants, {
-      fields: [product_variants_options._parentID],
-      references: [product_variants.id],
-      relationName: "options"
-    })
-  })
-);
-export const relations_product_variants = relations(
-  product_variants,
-  ({ one, many }) => ({
-    product: one(products, {
-      fields: [product_variants.product],
-      references: [products.id],
-      relationName: "product"
-    }),
-    options: many(product_variants_options, {
-      relationName: "options"
-    })
-  })
-);
-export const relations_product_order_campaigns_rels = relations(
-  product_order_campaigns_rels,
-  ({ one }) => ({
-    parent: one(product_order_campaigns, {
-      fields: [product_order_campaigns_rels.parent],
-      references: [product_order_campaigns.id],
-      relationName: "_rels"
-    }),
-    "product-variantsID": one(product_variants, {
-      fields: [product_order_campaigns_rels["product-variantsID"]],
-      references: [product_variants.id],
-      relationName: "product-variants"
-    })
-  })
-);
-export const relations_product_order_campaigns = relations(
-  product_order_campaigns,
-  ({ one, many }) => ({
-    product: one(products, {
-      fields: [product_order_campaigns.product],
-      references: [products.id],
-      relationName: "product"
-    }),
-    _rels: many(product_order_campaigns_rels, {
-      relationName: "_rels"
-    })
-  })
-);
-export const relations_product_carts = relations(product_carts, ({ one }) => ({
-  user: one(users, {
-    fields: [product_carts.user],
-    references: [users.id],
-    relationName: "user"
-  })
-}));
-export const relations_product_orders = relations(
-  product_orders,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [product_orders.user],
-      references: [users.id],
-      relationName: "user"
-    }),
-    campaign: one(product_order_campaigns, {
-      fields: [product_orders.campaign],
-      references: [product_order_campaigns.id],
-      relationName: "campaign"
-    })
-  })
-);
-export const relations_product_payments = relations(
-  product_payments,
-  ({ one }) => ({
-    order: one(product_orders, {
-      fields: [product_payments.order],
-      references: [product_orders.id],
-      relationName: "order"
-    }),
-    user: one(users, {
-      fields: [product_payments.user],
-      references: [users.id],
-      relationName: "user"
-    })
-  })
-);
-export const relations_commerce_commands = relations(
-  commerce_commands,
-  () => ({})
-);
-export const relations_commerce_provider_events = relations(
-  commerce_provider_events,
-  ({ one }) => ({
-    product_payment: one(product_payments, {
-      fields: [commerce_provider_events.product_payment],
-      references: [product_payments.id],
-      relationName: "product_payment"
-    })
-  })
-);
-export const relations_stock_locations = relations(stock_locations, () => ({}));
-export const relations_inventory_levels = relations(
-  inventory_levels,
-  ({ one }) => ({
-    sku: one(product_variants, {
-      fields: [inventory_levels.sku],
-      references: [product_variants.id],
-      relationName: "sku"
-    }),
-    location: one(stock_locations, {
-      fields: [inventory_levels.location],
-      references: [stock_locations.id],
-      relationName: "location"
-    })
-  })
-);
-export const relations_inventory_movements = relations(
-  inventory_movements,
-  ({ one }) => ({
-    sku: one(product_variants, {
-      fields: [inventory_movements.sku],
-      references: [product_variants.id],
-      relationName: "sku"
-    }),
-    from_location: one(stock_locations, {
-      fields: [inventory_movements.from_location],
-      references: [stock_locations.id],
-      relationName: "from_location"
-    }),
-    to_location: one(stock_locations, {
-      fields: [inventory_movements.to_location],
-      references: [stock_locations.id],
-      relationName: "to_location"
-    }),
-    receipt: one(inventory_receipts, {
-      fields: [inventory_movements.receipt],
-      references: [inventory_receipts.id],
-      relationName: "receipt"
-    }),
-    receipt_line: one(inventory_receipt_lines, {
-      fields: [inventory_movements.receipt_line],
-      references: [inventory_receipt_lines.id],
-      relationName: "receipt_line"
-    }),
-    lot: one(inventory_lots, {
-      fields: [inventory_movements.lot],
-      references: [inventory_lots.id],
-      relationName: "lot"
-    }),
-    cycle_count: one(inventory_cycle_counts, {
-      fields: [inventory_movements.cycle_count],
-      references: [inventory_cycle_counts.id],
-      relationName: "cycle_count"
-    }),
-    cycle_count_line: one(inventory_cycle_count_lines, {
-      fields: [inventory_movements.cycle_count_line],
-      references: [inventory_cycle_count_lines.id],
-      relationName: "cycle_count_line"
-    })
-  })
-);
-export const relations_inventory_receipts = relations(
-  inventory_receipts,
-  ({ one }) => ({
-    location: one(stock_locations, {
-      fields: [inventory_receipts.location],
-      references: [stock_locations.id],
-      relationName: "location"
-    }),
-    opened_by: one(users, {
-      fields: [inventory_receipts.opened_by],
-      references: [users.id],
-      relationName: "opened_by"
-    }),
-    closed_by: one(users, {
-      fields: [inventory_receipts.closed_by],
-      references: [users.id],
-      relationName: "closed_by"
-    }),
-    cancelled_by: one(users, {
-      fields: [inventory_receipts.cancelled_by],
-      references: [users.id],
-      relationName: "cancelled_by"
-    })
-  })
-);
-export const relations_inventory_receipt_lines = relations(
-  inventory_receipt_lines,
-  ({ one }) => ({
-    receipt: one(inventory_receipts, {
-      fields: [inventory_receipt_lines.receipt],
-      references: [inventory_receipts.id],
-      relationName: "receipt"
-    }),
-    sku: one(product_variants, {
-      fields: [inventory_receipt_lines.sku],
-      references: [product_variants.id],
-      relationName: "sku"
-    })
-  })
-);
-export const relations_inventory_lots = relations(
-  inventory_lots,
-  ({ one }) => ({
-    receipt_line: one(inventory_receipt_lines, {
-      fields: [inventory_lots.receipt_line],
-      references: [inventory_receipt_lines.id],
-      relationName: "receipt_line"
-    }),
-    actor: one(users, {
-      fields: [inventory_lots.actor],
-      references: [users.id],
-      relationName: "actor"
-    })
-  })
-);
-export const relations_inventory_cycle_counts = relations(
-  inventory_cycle_counts,
-  ({ one }) => ({
-    location: one(stock_locations, {
-      fields: [inventory_cycle_counts.location],
-      references: [stock_locations.id],
-      relationName: "location"
-    }),
-    submitted_by: one(users, {
-      fields: [inventory_cycle_counts.submitted_by],
-      references: [users.id],
-      relationName: "submitted_by"
-    }),
-    applied_by: one(users, {
-      fields: [inventory_cycle_counts.applied_by],
-      references: [users.id],
-      relationName: "applied_by"
-    }),
-    rejected_by: one(users, {
-      fields: [inventory_cycle_counts.rejected_by],
-      references: [users.id],
-      relationName: "rejected_by"
-    }),
-    cancelled_by: one(users, {
-      fields: [inventory_cycle_counts.cancelled_by],
-      references: [users.id],
-      relationName: "cancelled_by"
-    })
-  })
-);
-export const relations_inventory_cycle_count_lines = relations(
-  inventory_cycle_count_lines,
-  ({ one }) => ({
-    count: one(inventory_cycle_counts, {
-      fields: [inventory_cycle_count_lines.count],
-      references: [inventory_cycle_counts.id],
-      relationName: "count"
-    }),
-    sku: one(product_variants, {
-      fields: [inventory_cycle_count_lines.sku],
-      references: [product_variants.id],
-      relationName: "sku"
-    })
-  })
-);
-export const relations_inventory_reservations = relations(
-  inventory_reservations,
-  ({ one }) => ({
-    order: one(product_orders, {
-      fields: [inventory_reservations.order],
-      references: [product_orders.id],
-      relationName: "order"
-    }),
-    sku: one(product_variants, {
-      fields: [inventory_reservations.sku],
-      references: [product_variants.id],
-      relationName: "sku"
-    }),
-    location: one(stock_locations, {
-      fields: [inventory_reservations.location],
-      references: [stock_locations.id],
-      relationName: "location"
-    }),
-    recovery_of: one(inventory_reservations, {
-      fields: [inventory_reservations.recovery_of],
-      references: [inventory_reservations.id],
-      relationName: "recovery_of"
-    })
-  })
-);
-export const relations_inventory_reservation_operator_events = relations(
-  inventory_reservation_operator_events,
-  ({ one }) => ({
-    actor: one(users, {
-      fields: [inventory_reservation_operator_events.actor],
-      references: [users.id],
-      relationName: "actor"
-    }),
-    order: one(product_orders, {
-      fields: [inventory_reservation_operator_events.order],
-      references: [product_orders.id],
-      relationName: "order"
-    }),
-    payment: one(product_payments, {
-      fields: [inventory_reservation_operator_events.payment],
-      references: [product_payments.id],
-      relationName: "payment"
-    }),
-    reservation: one(inventory_reservations, {
-      fields: [inventory_reservation_operator_events.reservation],
-      references: [inventory_reservations.id],
-      relationName: "reservation"
-    })
-  })
-);
-export const relations_inventory_reservation_entries = relations(
-  inventory_reservation_entries,
-  ({ one }) => ({
-    reservation: one(inventory_reservations, {
-      fields: [inventory_reservation_entries.reservation],
-      references: [inventory_reservations.id],
-      relationName: "reservation"
-    }),
-    payment: one(product_payments, {
-      fields: [inventory_reservation_entries.payment],
-      references: [product_payments.id],
-      relationName: "payment"
-    })
-  })
-);
-export const relations_events_exclusive_links = relations(
-  events_exclusive_links,
-  ({ one }) => ({
-    _parentID: one(events, {
-      fields: [events_exclusive_links._parentID],
-      references: [events.id],
-      relationName: "exclusive_links"
-    })
-  })
-);
-export const relations_events = relations(events, ({ one, many }) => ({
-  image: one(media, {
-    fields: [events.image],
-    references: [media.id],
-    relationName: "image"
-  }),
-  exclusive_links: many(events_exclusive_links, {
-    relationName: "exclusive_links"
-  })
-}));
-export const relations_ticket_orders = relations(ticket_orders, ({ one }) => ({
-  purchaser: one(users, {
-    fields: [ticket_orders.purchaser],
-    references: [users.id],
-    relationName: "purchaser"
-  }),
-  event: one(events, {
-    fields: [ticket_orders.event],
-    references: [events.id],
-    relationName: "event"
-  })
-}));
-export const relations_tickets = relations(tickets, ({ one }) => ({
-  event: one(events, {
-    fields: [tickets.event],
-    references: [events.id],
-    relationName: "event"
-  }),
-  user: one(users, {
-    fields: [tickets.user],
-    references: [users.id],
-    relationName: "user"
-  }),
-  purchaser: one(users, {
-    fields: [tickets.purchaser],
-    references: [users.id],
-    relationName: "purchaser"
-  }),
-  order: one(ticket_orders, {
-    fields: [tickets.order],
-    references: [ticket_orders.id],
-    relationName: "order"
-  }),
-  checked_in_by: one(users, {
-    fields: [tickets.checked_in_by],
-    references: [users.id],
-    relationName: "checked_in_by"
-  })
-}));
 export const relations_payload_kv = relations(payload_kv, () => ({}));
 export const relations_payload_jobs_log = relations(
   payload_jobs_log,
@@ -12022,6 +8988,16 @@ export const relations_payload_locked_documents_rels = relations(
       references: [user_media.id],
       relationName: "userMedia"
     }),
+    "email-quotaID": one(email_quota, {
+      fields: [payload_locked_documents_rels["email-quotaID"]],
+      references: [email_quota.id],
+      relationName: "email-quota"
+    }),
+    "deferred-emailsID": one(deferred_emails, {
+      fields: [payload_locked_documents_rels["deferred-emailsID"]],
+      references: [deferred_emails.id],
+      relationName: "deferred-emails"
+    }),
     profileID: one(profile, {
       fields: [payload_locked_documents_rels.profileID],
       references: [profile.id],
@@ -12047,20 +9023,20 @@ export const relations_payload_locked_documents_rels = relations(
       references: [compilations.id],
       relationName: "compilations"
     }),
+    "commerce-productsID": one(commerce_products, {
+      fields: [payload_locked_documents_rels["commerce-productsID"]],
+      references: [commerce_products.id],
+      relationName: "commerce-products"
+    }),
+    "commerce-ordersID": one(commerce_orders, {
+      fields: [payload_locked_documents_rels["commerce-ordersID"]],
+      references: [commerce_orders.id],
+      relationName: "commerce-orders"
+    }),
     adminsID: one(admins, {
       fields: [payload_locked_documents_rels.adminsID],
       references: [admins.id],
       relationName: "admins"
-    }),
-    "email-quotaID": one(email_quota, {
-      fields: [payload_locked_documents_rels["email-quotaID"]],
-      references: [email_quota.id],
-      relationName: "email-quota"
-    }),
-    "deferred-emailsID": one(deferred_emails, {
-      fields: [payload_locked_documents_rels["deferred-emailsID"]],
-      references: [deferred_emails.id],
-      relationName: "deferred-emails"
     }),
     redirectsID: one(redirects, {
       fields: [payload_locked_documents_rels.redirectsID],
@@ -12071,141 +9047,6 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.searchID],
       references: [search.id],
       relationName: "search"
-    }),
-    plansID: one(plans, {
-      fields: [payload_locked_documents_rels.plansID],
-      references: [plans.id],
-      relationName: "plans"
-    }),
-    invoicesID: one(invoices, {
-      fields: [payload_locked_documents_rels.invoicesID],
-      references: [invoices.id],
-      relationName: "invoices"
-    }),
-    pricesID: one(prices, {
-      fields: [payload_locked_documents_rels.pricesID],
-      references: [prices.id],
-      relationName: "prices"
-    }),
-    subscriptionsID: one(subscriptions, {
-      fields: [payload_locked_documents_rels.subscriptionsID],
-      references: [subscriptions.id],
-      relationName: "subscriptions"
-    }),
-    "exchange-rateID": one(exchange_rate, {
-      fields: [payload_locked_documents_rels["exchange-rateID"]],
-      references: [exchange_rate.id],
-      relationName: "exchange-rate"
-    }),
-    currencyID: one(currency, {
-      fields: [payload_locked_documents_rels.currencyID],
-      references: [currency.id],
-      relationName: "currency"
-    }),
-    holidaysID: one(holidays, {
-      fields: [payload_locked_documents_rels.holidaysID],
-      references: [holidays.id],
-      relationName: "holidays"
-    }),
-    "product-categoryID": one(product_category, {
-      fields: [payload_locked_documents_rels["product-categoryID"]],
-      references: [product_category.id],
-      relationName: "product-category"
-    }),
-    "product-subID": one(product_sub, {
-      fields: [payload_locked_documents_rels["product-subID"]],
-      references: [product_sub.id],
-      relationName: "product-sub"
-    }),
-    "product-dropsID": one(product_drops, {
-      fields: [payload_locked_documents_rels["product-dropsID"]],
-      references: [product_drops.id],
-      relationName: "product-drops"
-    }),
-    productsID: one(products, {
-      fields: [payload_locked_documents_rels.productsID],
-      references: [products.id],
-      relationName: "products"
-    }),
-    "product-variantsID": one(product_variants, {
-      fields: [payload_locked_documents_rels["product-variantsID"]],
-      references: [product_variants.id],
-      relationName: "product-variants"
-    }),
-    "product-order-campaignsID": one(product_order_campaigns, {
-      fields: [payload_locked_documents_rels["product-order-campaignsID"]],
-      references: [product_order_campaigns.id],
-      relationName: "product-order-campaigns"
-    }),
-    "product-cartsID": one(product_carts, {
-      fields: [payload_locked_documents_rels["product-cartsID"]],
-      references: [product_carts.id],
-      relationName: "product-carts"
-    }),
-    "product-ordersID": one(product_orders, {
-      fields: [payload_locked_documents_rels["product-ordersID"]],
-      references: [product_orders.id],
-      relationName: "product-orders"
-    }),
-    "product-paymentsID": one(product_payments, {
-      fields: [payload_locked_documents_rels["product-paymentsID"]],
-      references: [product_payments.id],
-      relationName: "product-payments"
-    }),
-    "commerce-commandsID": one(commerce_commands, {
-      fields: [payload_locked_documents_rels["commerce-commandsID"]],
-      references: [commerce_commands.id],
-      relationName: "commerce-commands"
-    }),
-    "commerce-provider-eventsID": one(commerce_provider_events, {
-      fields: [payload_locked_documents_rels["commerce-provider-eventsID"]],
-      references: [commerce_provider_events.id],
-      relationName: "commerce-provider-events"
-    }),
-    "stock-locationsID": one(stock_locations, {
-      fields: [payload_locked_documents_rels["stock-locationsID"]],
-      references: [stock_locations.id],
-      relationName: "stock-locations"
-    }),
-    "inventory-levelsID": one(inventory_levels, {
-      fields: [payload_locked_documents_rels["inventory-levelsID"]],
-      references: [inventory_levels.id],
-      relationName: "inventory-levels"
-    }),
-    "inventory-receiptsID": one(inventory_receipts, {
-      fields: [payload_locked_documents_rels["inventory-receiptsID"]],
-      references: [inventory_receipts.id],
-      relationName: "inventory-receipts"
-    }),
-    "inventory-receipt-linesID": one(inventory_receipt_lines, {
-      fields: [payload_locked_documents_rels["inventory-receipt-linesID"]],
-      references: [inventory_receipt_lines.id],
-      relationName: "inventory-receipt-lines"
-    }),
-    "inventory-cycle-countsID": one(inventory_cycle_counts, {
-      fields: [payload_locked_documents_rels["inventory-cycle-countsID"]],
-      references: [inventory_cycle_counts.id],
-      relationName: "inventory-cycle-counts"
-    }),
-    "inventory-cycle-count-linesID": one(inventory_cycle_count_lines, {
-      fields: [payload_locked_documents_rels["inventory-cycle-count-linesID"]],
-      references: [inventory_cycle_count_lines.id],
-      relationName: "inventory-cycle-count-lines"
-    }),
-    eventsID: one(events, {
-      fields: [payload_locked_documents_rels.eventsID],
-      references: [events.id],
-      relationName: "events"
-    }),
-    "ticket-ordersID": one(ticket_orders, {
-      fields: [payload_locked_documents_rels["ticket-ordersID"]],
-      references: [ticket_orders.id],
-      relationName: "ticket-orders"
-    }),
-    ticketsID: one(tickets, {
-      fields: [payload_locked_documents_rels.ticketsID],
-      references: [tickets.id],
-      relationName: "tickets"
     }),
     "payload-foldersID": one(payload_folders, {
       fields: [payload_locked_documents_rels["payload-foldersID"]],
@@ -12463,10 +9304,6 @@ export const relations_footer = relations(footer, ({ one, many }) => ({
     relationName: "_rels"
   })
 }));
-export const relations_payload_jobs_stats = relations(
-  payload_jobs_stats,
-  () => ({})
-);
 
 type DatabaseSchema = {
   enum__locales: typeof enum__locales;
@@ -12525,6 +9362,8 @@ type DatabaseSchema = {
   enum__posts_v_version_status: typeof enum__posts_v_version_status;
   enum__posts_v_published_locale: typeof enum__posts_v_published_locale;
   enum_user_media_audience: typeof enum_user_media_audience;
+  enum_deferred_emails_category: typeof enum_deferred_emails_category;
+  enum_deferred_emails_status: typeof enum_deferred_emails_status;
   enum_profile_rsvp_tier: typeof enum_profile_rsvp_tier;
   enum_profile_audience: typeof enum_profile_audience;
   enum_profile_status: typeof enum_profile_status;
@@ -12564,8 +9403,11 @@ type DatabaseSchema = {
   enum__responses_v_version_status: typeof enum__responses_v_version_status;
   enum__responses_v_published_locale: typeof enum__responses_v_published_locale;
   enum_compilations_visibility: typeof enum_compilations_visibility;
-  enum_deferred_emails_category: typeof enum_deferred_emails_category;
-  enum_deferred_emails_status: typeof enum_deferred_emails_status;
+  enum_commerce_products_currency: typeof enum_commerce_products_currency;
+  enum_commerce_orders_currency: typeof enum_commerce_orders_currency;
+  enum_commerce_orders_payment_method: typeof enum_commerce_orders_payment_method;
+  enum_commerce_orders_payment_status: typeof enum_commerce_orders_payment_status;
+  enum_commerce_orders_status: typeof enum_commerce_orders_status;
   enum_exports_format: typeof enum_exports_format;
   enum_exports_sort_order: typeof enum_exports_sort_order;
   enum_exports_locale: typeof enum_exports_locale;
@@ -12573,58 +9415,6 @@ type DatabaseSchema = {
   enum_imports_import_mode: typeof enum_imports_import_mode;
   enum_imports_status: typeof enum_imports_status;
   enum_redirects_to_type: typeof enum_redirects_to_type;
-  enum_plans_payment_methods: typeof enum_plans_payment_methods;
-  enum_plans_tier: typeof enum_plans_tier;
-  enum_plans_validity: typeof enum_plans_validity;
-  enum_plans_type: typeof enum_plans_type;
-  enum_plans_state: typeof enum_plans_state;
-  enum_invoices_payment_method_method: typeof enum_invoices_payment_method_method;
-  enum_invoices_status: typeof enum_invoices_status;
-  enum_prices_type: typeof enum_prices_type;
-  enum_prices_recurring_interval: typeof enum_prices_recurring_interval;
-  enum_subscriptions_subscription_status: typeof enum_subscriptions_subscription_status;
-  enum_subscriptions_request_method: typeof enum_subscriptions_request_method;
-  enum_subscriptions_provider: typeof enum_subscriptions_provider;
-  enum_products_currency: typeof enum_products_currency;
-  enum_products_private_tier_gate: typeof enum_products_private_tier_gate;
-  enum_product_order_campaigns_state: typeof enum_product_order_campaigns_state;
-  enum_product_order_campaigns_progress_visibility: typeof enum_product_order_campaigns_progress_visibility;
-  enum_product_carts_status: typeof enum_product_carts_status;
-  enum_product_carts_currency: typeof enum_product_carts_currency;
-  enum_product_orders_order_mode: typeof enum_product_orders_order_mode;
-  enum_product_orders_status: typeof enum_product_orders_status;
-  enum_product_orders_payment_status: typeof enum_product_orders_payment_status;
-  enum_product_orders_fulfillment_status: typeof enum_product_orders_fulfillment_status;
-  enum_product_orders_currency: typeof enum_product_orders_currency;
-  enum_product_payments_provider: typeof enum_product_payments_provider;
-  enum_product_payments_status: typeof enum_product_payments_status;
-  enum_product_payments_currency: typeof enum_product_payments_currency;
-  enum_commerce_commands_status: typeof enum_commerce_commands_status;
-  enum_commerce_provider_events_provider: typeof enum_commerce_provider_events_provider;
-  enum_commerce_provider_events_processing_status: typeof enum_commerce_provider_events_processing_status;
-  enum_inventory_levels_disposition: typeof enum_inventory_levels_disposition;
-  enum_inventory_movements_kind: typeof enum_inventory_movements_kind;
-  enum_inventory_movements_from_disposition: typeof enum_inventory_movements_from_disposition;
-  enum_inventory_movements_to_disposition: typeof enum_inventory_movements_to_disposition;
-  enum_inventory_movements_source_type: typeof enum_inventory_movements_source_type;
-  enum_inventory_receipts_status: typeof enum_inventory_receipts_status;
-  enum_inventory_cycle_counts_status: typeof enum_inventory_cycle_counts_status;
-  enum_inventory_cycle_count_lines_disposition: typeof enum_inventory_cycle_count_lines_disposition;
-  enum_inventory_reservations_status: typeof enum_inventory_reservations_status;
-  enum_inventory_reservations_consume_point: typeof enum_inventory_reservations_consume_point;
-  enum_inventory_reservations_expiry_boundary: typeof enum_inventory_reservations_expiry_boundary;
-  enum_inventory_reservations_payment_time_source: typeof enum_inventory_reservations_payment_time_source;
-  enum_inventory_reservations_late_payment_policy: typeof enum_inventory_reservations_late_payment_policy;
-  enum_inventory_reservations_backorder_mode: typeof enum_inventory_reservations_backorder_mode;
-  enum_inventory_reservation_operator_events_source: typeof enum_inventory_reservation_operator_events_source;
-  enum_inventory_reservation_operator_events_action: typeof enum_inventory_reservation_operator_events_action;
-  enum_inventory_reservation_entries_operation: typeof enum_inventory_reservation_entries_operation;
-  enum_inventory_reservation_entries_evidence_code: typeof enum_inventory_reservation_entries_evidence_code;
-  enum_events_exclusive_links_type: typeof enum_events_exclusive_links_type;
-  enum_events_state: typeof enum_events_state;
-  enum_ticket_orders_currency: typeof enum_ticket_orders_currency;
-  enum_ticket_orders_locale: typeof enum_ticket_orders_locale;
-  enum_tickets_status: typeof enum_tickets_status;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
   enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
@@ -12694,6 +9484,8 @@ type DatabaseSchema = {
   _posts_v_rels: typeof _posts_v_rels;
   user_media: typeof user_media;
   user_media_rels: typeof user_media_rels;
+  email_quota: typeof email_quota;
+  deferred_emails: typeof deferred_emails;
   profile_slides: typeof profile_slides;
   profile_rsvp_gallery: typeof profile_rsvp_gallery;
   profile: typeof profile;
@@ -12733,10 +9525,11 @@ type DatabaseSchema = {
   _responses_v_rels: typeof _responses_v_rels;
   compilations: typeof compilations;
   compilations_rels: typeof compilations_rels;
+  commerce_products: typeof commerce_products;
+  commerce_products_rels: typeof commerce_products_rels;
+  commerce_orders: typeof commerce_orders;
   admins: typeof admins;
   _admins_v: typeof _admins_v;
-  email_quota: typeof email_quota;
-  deferred_emails: typeof deferred_emails;
   exports: typeof exports;
   exports_texts: typeof exports_texts;
   imports: typeof imports;
@@ -12749,47 +9542,6 @@ type DatabaseSchema = {
   search: typeof search;
   search_locales: typeof search_locales;
   search_rels: typeof search_rels;
-  plans_payment_methods: typeof plans_payment_methods;
-  plans_features: typeof plans_features;
-  plans: typeof plans;
-  invoices_payment_method: typeof invoices_payment_method;
-  invoices: typeof invoices;
-  prices: typeof prices;
-  subscriptions: typeof subscriptions;
-  exchange_rate_rates: typeof exchange_rate_rates;
-  exchange_rate: typeof exchange_rate;
-  currency: typeof currency;
-  holidays_dates: typeof holidays_dates;
-  holidays: typeof holidays;
-  product_category: typeof product_category;
-  product_sub: typeof product_sub;
-  product_drops: typeof product_drops;
-  products: typeof products;
-  products_rels: typeof products_rels;
-  product_variants_options: typeof product_variants_options;
-  product_variants: typeof product_variants;
-  product_order_campaigns: typeof product_order_campaigns;
-  product_order_campaigns_rels: typeof product_order_campaigns_rels;
-  product_carts: typeof product_carts;
-  product_orders: typeof product_orders;
-  product_payments: typeof product_payments;
-  commerce_commands: typeof commerce_commands;
-  commerce_provider_events: typeof commerce_provider_events;
-  stock_locations: typeof stock_locations;
-  inventory_levels: typeof inventory_levels;
-  inventory_movements: typeof inventory_movements;
-  inventory_receipts: typeof inventory_receipts;
-  inventory_receipt_lines: typeof inventory_receipt_lines;
-  inventory_lots: typeof inventory_lots;
-  inventory_cycle_counts: typeof inventory_cycle_counts;
-  inventory_cycle_count_lines: typeof inventory_cycle_count_lines;
-  inventory_reservations: typeof inventory_reservations;
-  inventory_reservation_operator_events: typeof inventory_reservation_operator_events;
-  inventory_reservation_entries: typeof inventory_reservation_entries;
-  events_exclusive_links: typeof events_exclusive_links;
-  events: typeof events;
-  ticket_orders: typeof ticket_orders;
-  tickets: typeof tickets;
   payload_kv: typeof payload_kv;
   payload_jobs_log: typeof payload_jobs_log;
   payload_jobs: typeof payload_jobs;
@@ -12809,7 +9561,6 @@ type DatabaseSchema = {
   footer_column3_links: typeof footer_column3_links;
   footer: typeof footer;
   footer_rels: typeof footer_rels;
-  payload_jobs_stats: typeof payload_jobs_stats;
   relations_users_locales: typeof relations_users_locales;
   relations_users: typeof relations_users;
   relations__users_v_locales: typeof relations__users_v_locales;
@@ -12868,6 +9619,8 @@ type DatabaseSchema = {
   relations__posts_v: typeof relations__posts_v;
   relations_user_media_rels: typeof relations_user_media_rels;
   relations_user_media: typeof relations_user_media;
+  relations_email_quota: typeof relations_email_quota;
+  relations_deferred_emails: typeof relations_deferred_emails;
   relations_profile_slides: typeof relations_profile_slides;
   relations_profile_rsvp_gallery: typeof relations_profile_rsvp_gallery;
   relations_profile_rels: typeof relations_profile_rels;
@@ -12907,10 +9660,11 @@ type DatabaseSchema = {
   relations__responses_v: typeof relations__responses_v;
   relations_compilations_rels: typeof relations_compilations_rels;
   relations_compilations: typeof relations_compilations;
+  relations_commerce_products_rels: typeof relations_commerce_products_rels;
+  relations_commerce_products: typeof relations_commerce_products;
+  relations_commerce_orders: typeof relations_commerce_orders;
   relations_admins: typeof relations_admins;
   relations__admins_v: typeof relations__admins_v;
-  relations_email_quota: typeof relations_email_quota;
-  relations_deferred_emails: typeof relations_deferred_emails;
   relations_exports_texts: typeof relations_exports_texts;
   relations_exports: typeof relations_exports;
   relations_imports: typeof relations_imports;
@@ -12923,47 +9677,6 @@ type DatabaseSchema = {
   relations_search_locales: typeof relations_search_locales;
   relations_search_rels: typeof relations_search_rels;
   relations_search: typeof relations_search;
-  relations_plans_payment_methods: typeof relations_plans_payment_methods;
-  relations_plans_features: typeof relations_plans_features;
-  relations_plans: typeof relations_plans;
-  relations_invoices_payment_method: typeof relations_invoices_payment_method;
-  relations_invoices: typeof relations_invoices;
-  relations_prices: typeof relations_prices;
-  relations_subscriptions: typeof relations_subscriptions;
-  relations_exchange_rate_rates: typeof relations_exchange_rate_rates;
-  relations_exchange_rate: typeof relations_exchange_rate;
-  relations_currency: typeof relations_currency;
-  relations_holidays_dates: typeof relations_holidays_dates;
-  relations_holidays: typeof relations_holidays;
-  relations_product_category: typeof relations_product_category;
-  relations_product_sub: typeof relations_product_sub;
-  relations_product_drops: typeof relations_product_drops;
-  relations_products_rels: typeof relations_products_rels;
-  relations_products: typeof relations_products;
-  relations_product_variants_options: typeof relations_product_variants_options;
-  relations_product_variants: typeof relations_product_variants;
-  relations_product_order_campaigns_rels: typeof relations_product_order_campaigns_rels;
-  relations_product_order_campaigns: typeof relations_product_order_campaigns;
-  relations_product_carts: typeof relations_product_carts;
-  relations_product_orders: typeof relations_product_orders;
-  relations_product_payments: typeof relations_product_payments;
-  relations_commerce_commands: typeof relations_commerce_commands;
-  relations_commerce_provider_events: typeof relations_commerce_provider_events;
-  relations_stock_locations: typeof relations_stock_locations;
-  relations_inventory_levels: typeof relations_inventory_levels;
-  relations_inventory_movements: typeof relations_inventory_movements;
-  relations_inventory_receipts: typeof relations_inventory_receipts;
-  relations_inventory_receipt_lines: typeof relations_inventory_receipt_lines;
-  relations_inventory_lots: typeof relations_inventory_lots;
-  relations_inventory_cycle_counts: typeof relations_inventory_cycle_counts;
-  relations_inventory_cycle_count_lines: typeof relations_inventory_cycle_count_lines;
-  relations_inventory_reservations: typeof relations_inventory_reservations;
-  relations_inventory_reservation_operator_events: typeof relations_inventory_reservation_operator_events;
-  relations_inventory_reservation_entries: typeof relations_inventory_reservation_entries;
-  relations_events_exclusive_links: typeof relations_events_exclusive_links;
-  relations_events: typeof relations_events;
-  relations_ticket_orders: typeof relations_ticket_orders;
-  relations_tickets: typeof relations_tickets;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_jobs_log: typeof relations_payload_jobs_log;
   relations_payload_jobs: typeof relations_payload_jobs;
@@ -12983,7 +9696,6 @@ type DatabaseSchema = {
   relations_footer_column3_links: typeof relations_footer_column3_links;
   relations_footer_rels: typeof relations_footer_rels;
   relations_footer: typeof relations_footer;
-  relations_payload_jobs_stats: typeof relations_payload_jobs_stats;
 };
 
 declare module "@payloadcms/db-postgres" {

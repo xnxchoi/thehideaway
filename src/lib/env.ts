@@ -718,9 +718,25 @@ const schema = z.object({
     )
 });
 
-const isProduction = process.env.NODE_ENV === "production";
+/**
+ * Next can import Payload config before it has populated NODE_ENV. During
+ * those early imports NEXT_PHASE is the reliable signal. Without this, a
+ * local `next dev` boot can accidentally run the production schema and warn
+ * about provider credentials that intentionally exist only on the VPS.
+ */
+export const isProductionEnvironment = (environment: {
+  NODE_ENV?: string;
+  NEXT_PHASE?: string;
+}): boolean =>
+  environment.NODE_ENV === "production" ||
+  environment.NEXT_PHASE === "phase-production-build" ||
+  environment.NEXT_PHASE === "phase-production-server";
+
+const isProduction = isProductionEnvironment(process.env);
 const skipValidation =
-  process.env.SKIP_ENV_VALIDATION === "1" || process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development" ||
+  process.env.SKIP_ENV_VALIDATION === "1" ||
+  process.env.NODE_ENV === "test" ||
+  !isProduction ||
   // Type generation, schema generation, etc. — Payload CLI loads payload.config
   // without a real prod env, and we don't want to refuse those operations.
   process.env.PAYLOAD_GENERATE === "1";

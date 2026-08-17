@@ -38,8 +38,6 @@ import {
   type InventoryOperationResult
 } from "@/lib/lost-commerce/inventory-operations";
 
-export const runtime = "nodejs";
-
 const entityId = z.uuidv7();
 const reference = z.string().regex(/^[A-Za-z0-9_.:~/-]{1,200}$/);
 const positiveQuantity = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER);

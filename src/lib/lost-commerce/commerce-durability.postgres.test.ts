@@ -175,7 +175,7 @@ describeWithPostgres.sequential("commerce durability with PostgreSQL", () => {
     await expect(
       completeCommerceCommand({
         payload,
-        req: { payload, transactionID: staleTransaction, context: {} } as never,
+        req: { payload, transactionID: staleTransaction, context: {} },
         commandKey,
         requestHash: initial.requestHash,
         leaseToken: initial.leaseToken,
@@ -194,7 +194,7 @@ describeWithPostgres.sequential("commerce durability with PostgreSQL", () => {
         payload,
         transactionID: completionTransaction,
         context: {}
-      } as never,
+      },
       commandKey,
       requestHash: replacement.requestHash,
       leaseToken: replacement.leaseToken,

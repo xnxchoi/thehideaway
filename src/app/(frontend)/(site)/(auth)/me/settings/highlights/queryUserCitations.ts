@@ -1,7 +1,7 @@
 "use server";
 
 import { getPayload } from "@/lib/payload";
-import type { Citation } from "@/payload-types";
+import type { Citation } from "@payload-types";
 
 export type UserCitation = Pick<
   Citation,

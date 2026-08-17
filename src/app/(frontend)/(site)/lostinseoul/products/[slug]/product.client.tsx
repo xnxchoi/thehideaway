@@ -807,7 +807,7 @@ export function LostProductDetailClient({
                 <div className="grid grid-cols-2 gap-x-2 pb-7 lg:gap-x-4 lg:pb-8">
                   <Link
                     className="lost-source-button lost-source-button--white justify-center"
-                    href="/lostinseoul/checkout"
+                    href="/checkout"
                     onClick={buyNow}
                   >
                     <span>{labels.directPurchase}</span>
@@ -939,7 +939,7 @@ export function LostProductDetailClient({
             <div className="grid grid-cols-2 gap-2">
               <Link
                 className="lost-source-button lost-source-button--white justify-center"
-                href="/lostinseoul/checkout"
+                href="/checkout"
                 onClick={buyNow}
               >
                 <span>{labels.directPurchase}</span>

@@ -10,6 +10,12 @@ law.
 It is not a complete inventory of the UI. It is the operating logic for making
 new UI feel authored by the same intelligence.
 
+## Copy Boundary
+
+This document governs visual and interaction design only. It does not authorize stylized copy. All user-facing text
+follows `readmes/VOICE.md`: standard, compact, neutral, and limited to confirmed facts unless the user explicitly
+directs otherwise for a specific surface.
+
 ## Purpose
 
 Use this before creating or changing visible interface work.
@@ -59,12 +65,9 @@ The goal is recognizability across difference, not sameness.
 
 Highest-level consistency is global:
 
-- brand posture,
-- narrative philosophy,
-- editorial attitude,
-- emotional register,
+- product identity,
 - relationship between content, interface, and audience,
-- overall authorship.
+- accessibility and usability.
 
 Lowest-level consistency is local but strict:
 
@@ -90,8 +93,7 @@ consistency.
 
 Name the level of the decision.
 
-High-level decisions usually concern brand, posture, audience relationship,
-editorial attitude, and emotional register.
+High-level decisions usually concern product identity, audience relationship, accessibility, and usability.
 
 Low-level decisions concern the smallest meaningful unit in the current
 problem. That unit may be a button, card, row, scrubber, text block, media
@@ -197,16 +199,12 @@ External references are vocabulary, not destination.
 
 ## Global Invariants
 
-The Hideaway is an editorial platform with the posture of a quiet private
-members' club.
-
-The governing tone is:
+The Hideaway is a content platform. Its visual system is:
 
 - sparse,
 - intentional,
 - typographically confident,
-- composed rather than loud,
-- discovered rather than advertised.
+- visually restrained.
 
 This does not mean:
 
@@ -214,8 +212,6 @@ This does not mean:
 - monochrome means lifeless,
 - typographic means imageless,
 - premium means glossy,
-- editorial means old magazine cosplay,
-- club-like means ornate hotel nostalgia,
 - restraint means every page must be visually quiet,
 - one accepted page means every page should copy it.
 
@@ -223,10 +219,8 @@ This does not mean:
 
 Content should feel held by the interface, not crowded by it.
 
-Editorial and reading surfaces bias toward content-forward hierarchy.
-Operational surfaces bias toward clarity and repeat-use efficiency. Campaign
-and immersive surfaces may become more atmospheric when atmosphere is part of
-the offer.
+Reading surfaces bias toward content-forward hierarchy. Operational surfaces bias toward clarity and repeat-use
+efficiency. Campaign surfaces may use a distinct visual treatment within their route boundary.
 
 ### Typography
 
@@ -234,11 +228,11 @@ Typography carries hierarchy and identity.
 
 The four type personalities are:
 
-- `font-serif`: theatrical, marketing, hero, and customer-experience moments.
+- `font-serif`: marketing and hero surfaces.
 - `font-sans`: working surfaces such as settings, vault, reading UI,
   dashboards, profiles.
-- `font-wide`: editorial weight where serif feels too soft.
-- `font-mono`: metadata, counts, captions, editorial chrome, code.
+- `font-wide`: large headings and graphic labels.
+- `font-mono`: metadata, counts, captions, and code.
 
 Do not mix all four faces on one screen unless there is a visible local reason.
 
@@ -306,7 +300,6 @@ Local grammars may define:
 - motion behavior,
 - density,
 - responsive behavior,
-- copy posture.
 
 Local grammars are allowed to differ from the rest of the site. They are not
 allowed to be internally careless.
@@ -318,10 +311,9 @@ Use the smallest boundary that fully explains the design.
 Style families describe lineage. They are not prisons. A surface may combine
 families, but the combination must be explicit.
 
-### Editorial / Magazine
+### Reading / Publication
 
-Typography-centric, content-forward, composed, literary, restrained,
-hierarchy-sensitive.
+Typography-centric, content-forward, restrained, and hierarchy-sensitive.
 
 Use for essays, Surf, archives, article lists, legal/policy reading, and
 publication-like surfaces.
@@ -333,9 +325,9 @@ Risks:
 
 - dashboard clutter on essay surfaces,
 - too many pills and badges,
-- treating "editorial" as nostalgia.
+- imitating print conventions without a functional reason.
 
-### Glass / Atmospheric Minimalism
+### Glass / Layered Interface
 
 Sleek, spatial, layered, blur-aware, depth-oriented, polished.
 
@@ -366,15 +358,14 @@ Risks:
 - loudness without hierarchy,
 - campaign language leaking globally.
 
-### Campaign / Immersive
+### Campaign / Interactive
 
-Page-local worldbuilding for product, campaign, or launch surfaces. Often
+Page-local visual systems for product, campaign, or launch surfaces. Often
 media-led, motion-heavy, WebGL-aware, or custom-interaction-aware.
 
 Use when the experience is part of the offer.
 
-Do not generalize campaign behavior into core navigation, settings, legal, or
-normal editorial components.
+Do not generalize campaign behavior into core navigation, settings, legal, or normal content components.
 
 Risks:
 
@@ -384,11 +375,11 @@ Risks:
 
 ### Formal Artifact / Receipt
 
-Printed or printable brand documents: invoices, receipts, certificates,
+Printed or printable documents: invoices, receipts, certificates,
 membership artifacts, order confirmations, and similar records.
 
-Use when the interface becomes an object of record rather than an app screen.
-Lineage may reference Cartier-like receipt typography: centered brand ritual,
+Use when the interface becomes an object of record rather than an app screen. Lineage may reference formal receipt
+typography: centered headings,
 wide margins, sparse unruled tables, precise metadata, and restrained legal
 copy.
 
@@ -425,8 +416,8 @@ Run this before generating or modifying visible UI.
 3. Decide the lineage: reuse, variant, extension, deliberate contrast, local
    invention, or system-level style.
 4. Select the relevant style family.
-5. Compare against precedent: typography, spacing, layout, color, surface,
-   texture, motion, interaction, hierarchy, density, tone, visual weight.
+5. Compare against precedent: typography, spacing, layout, color, surface, texture, motion, interaction, hierarchy,
+   density, and visual weight.
 6. Decide whether alignment or difference is intended.
 7. Declare the enforcement boundary.
 8. Enforce local consistency inside that boundary.

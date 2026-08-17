@@ -76,9 +76,9 @@ async function findOrder(
   req?: unknown
 ) {
   const result = await payload.find({
-    collection: "product-orders" as never,
+    collection: "product-orders",
     overrideAccess: true,
-    req: req as never,
+    req: req,
     depth: 0,
     limit: 1,
     where: { order_ref: { equals: paymentId } }
@@ -92,9 +92,9 @@ async function findPayment(
   req?: unknown
 ) {
   const result = await payload.find({
-    collection: "product-payments" as never,
+    collection: "product-payments",
     overrideAccess: true,
-    req: req as never,
+    req: req,
     depth: 0,
     limit: 1,
     where: { payment_ref: { equals: `${paymentId}_portone` } }
@@ -310,7 +310,7 @@ export async function syncProductPayment(input: {
 
     const paidAt = record.paidAt;
     await payload.update({
-      collection: "product-payments" as never,
+      collection: "product-payments",
       id: String(payment.id),
       overrideAccess: true,
       req: txReq,
@@ -318,7 +318,7 @@ export async function syncProductPayment(input: {
         status: "paid",
         portone_transaction_ref: lockedVerdict.transactionRef ?? undefined,
         paid_at: paidAt
-      } as never
+      }
     });
     const inventoryResult =
       order.order_mode === "standard_purchase"
@@ -346,7 +346,7 @@ export async function syncProductPayment(input: {
       actor: portOneActor
     });
     await payload.update({
-      collection: "product-orders" as never,
+      collection: "product-orders",
       id: String(order.id),
       overrideAccess: true,
       req: txReq,
@@ -354,13 +354,13 @@ export async function syncProductPayment(input: {
         payment_status: "paid",
         status: nextOrderStatus,
         paid_at: paidAt
-      } as never
+      }
     });
     if (nextOrderStatus !== "paid_inventory_review") {
       await markRequestOrderPaid({
         payload,
         order: { ...order, status: nextOrderStatus },
-        req: txReq as never
+        req: txReq
       });
     }
     await payload.db.commitTransaction(transactionID);

@@ -18,12 +18,7 @@ import { cn } from "@/lib/utils";
  * it — peeks-per-row add visual noise that competes with the masthead.
  */
 type CategoryTone =
-  | "account"
-  | "options"
-  | "support"
-  | "billing"
-  | "data"
-  | "neutral";
+  "account" | "options" | "support" | "billing" | "data" | "neutral";
 
 const TILE_TONES: Record<CategoryTone, string> = {
   // Same oklch tokens as the CLAUDE.md "Admin surfaces" categorical
@@ -71,7 +66,7 @@ export function SectionLink({
         "before:pointer-events-none before:absolute before:inset-x-2 before:top-0 before:h-px",
         "before:bg-gradient-to-r before:from-transparent before:via-foreground/10 before:to-transparent dark:before:via-foreground/12",
         "relative",
-        "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
+
         className
       )}
     >

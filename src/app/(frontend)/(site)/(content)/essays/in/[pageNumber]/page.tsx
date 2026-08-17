@@ -18,7 +18,7 @@ type Args = {
 };
 
 async function getPosts(page: number) {
-  // "use cache"
+  "use cache";
   return await paginatedPosts({
     limit: 12,
     page

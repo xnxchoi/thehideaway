@@ -9,8 +9,7 @@ import {
   ComingSoonPanel,
   ComingSoonSection,
   ComingSoonTag,
-  useComingSoon,
-  type DispatchKey
+  useComingSoon
 } from "@/components/UX/ComingSoon";
 
 export default function PageClient() {
@@ -68,8 +67,8 @@ export default function PageClient() {
       <Scene label="ComingSoonPanel — entire route not yet ready" fullBleed>
         <ComingSoonPanel
           title="Series"
-          dispatch="composing"
-          preset="wetInk"
+          dispatch="default"
+          preset="draft"
           topic="series"
         />
       </Scene>
@@ -103,7 +102,7 @@ function MockNav() {
         ))}
         <button
           type="button"
-          onClick={() => nudge("notYet")}
+          onClick={() => nudge("unavailable")}
           className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
         >
           Compilations
@@ -136,7 +135,7 @@ function MockPageHeader() {
           ))}
           <span className="flex items-center gap-1.5 font-mono text-[11px] tracking-widest text-muted-foreground/40 uppercase">
             Series
-            <ComingSoonTag preset="soon" tooltip="composition" tone="firm" />
+            <ComingSoonTag preset="soon" tooltip="inProgress" tone="firm" />
           </span>
         </nav>
       </header>
@@ -145,10 +144,10 @@ function MockPageHeader() {
           <p className="font-mono text-[11px] tracking-[0.15em] text-muted-foreground/60 uppercase">
             Long reads
           </p>
-          <ComingSoonTag preset="draft" tooltip="editor" tone="soft" />
+          <ComingSoonTag preset="draft" tooltip="draft" tone="soft" />
         </div>
         <p className="mt-1 font-mono text-sm text-muted-foreground/40">
-          — this section isn't ready yet —
+          This section is not available yet.
         </p>
       </div>
     </div>
@@ -181,7 +180,7 @@ function MockCreateToolbar() {
       <MockEssayRows />
       <ComingSoonDialog
         title="Series"
-        dispatch="composing"
+        dispatch="default"
         preset="soon"
         open={open}
         onOpenChange={setOpen}

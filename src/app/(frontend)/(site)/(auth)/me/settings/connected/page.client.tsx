@@ -119,7 +119,15 @@ export default function ConnectedSectionClient() {
   );
 }
 
-function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
+type AuthProviderSlug = "credential" | "google" | "naver" | "kakao";
+
+function ProviderRow({
+  slug,
+  isLinked
+}: {
+  slug: AuthProviderSlug;
+  isLinked: boolean;
+}) {
   // Linking happens implicitly the first time you sign in with a
   // provider, so unlinked providers show a "Sign in to link" hint rather
   // than the previous "Available" label, which read as a dead end.
@@ -131,7 +139,7 @@ function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
       <div className="flex min-w-0 flex-col">
         <span className="text-sm text-foreground">{providerName}</span>
         <span className="text-xs text-foreground/65 dark:text-foreground/60">
-          {t(`blurbs.${slug}`)}
+          {t(`descriptions.${slug}`)}
         </span>
       </div>
       <span

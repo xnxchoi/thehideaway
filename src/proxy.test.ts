@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   createLostGateCookieValue,
   LOST_GATE_COOKIE_NAME
@@ -93,6 +93,18 @@ describe("proxy routing", () => {
     expect(res.headers.get("location")).toBe(
       "https://hideaway.test/lostinseoul/auth/sign-in?redirectTo=%2Flostinseoul%2Fcheckout"
     );
+  });
+
+  it("lets anonymous development users preview LOST checkout", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    try {
+      const res = await proxy(makeRequest("/lostinseoul/checkout"));
+
+      expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+      expect(res.headers.get("location")).toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("lets signed-in users keep protected routes", async () => {
@@ -218,6 +230,50 @@ describe("proxy routing", () => {
     expect(res.headers.get("location")).toBe(
       `https://lostinseoul.com/gate?returnTo=${encodeURIComponent(pathname)}`
     );
+  });
+
+  it.each([
+    "/api/lost/cart",
+    "/api/lost/checkout/cancel",
+    "/api/lost/checkout/intent",
+    "/api/lost/checkout/verify",
+    "/api/lost/private-quotes",
+    "/api/lost/inventory/commands",
+    "/api/lost/inventory/reservations",
+    "/api/lost/webhooks/portone"
+  ])("retires the old commerce API after the gate", async (pathname) => {
+    const res = await proxy(
+      makeRequest(pathname, lostGateCookie, "https://lostinseoul.com")
+    );
+
+    expect(res.status).toBe(410);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "commerce-api-retired"
+    });
+  });
+
+  it("retires the legacy invoice API on the primary host", async () => {
+    const res = await proxy(makeRequest("/api/invoice/pdf"));
+
+    expect(res.status).toBe(410);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "commerce-api-retired"
+    });
+  });
+
+  it("lets signed card webhooks reach verification without a gate cookie", async () => {
+    const res = await proxy(
+      makeRequest(
+        "/api/commerce/payments/card/webhook",
+        undefined,
+        "https://lostinseoul.com"
+      )
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
   });
 
   it("lets gated scoped lostinseoul.com product paths pass through", async () => {

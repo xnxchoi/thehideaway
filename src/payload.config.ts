@@ -17,7 +17,6 @@ import { Header } from "@/payload/globals/Header";
 import { defaultLexical } from "@/payload/Lexical/defaultLexical";
 import { plugins } from "@/payload/plugins";
 import { payloadJobsAccess } from "@/payload/jobs/access";
-import { expireInventoryReservationsTask } from "@/payload/jobs/expireInventoryReservations";
 import { calculateSearchScore } from "@/payload/search/calculateScore";
 import { afterSchemaInit } from "@/scripts/afterSchemaInit";
 import { postgresAdapter } from "@payloadcms/db-postgres";
@@ -102,7 +101,7 @@ export default buildConfig({
   editor: defaultLexical,
   db: postgresAdapter({
     push: false,
-    migrationDir: path.resolve(dirname, "lib/migrations"),
+    migrationDir: path.resolve(dirname, "lib/migrations-baseline"),
     pool: {
       max: 15,
       connectionString: process.env.DATABASE_URI
@@ -138,7 +137,7 @@ export default buildConfig({
           }
         : false
   }),
-  collections: [...collections, Admins, EmailQuota, DeferredEmails],
+  collections: [...collections, Admins],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   onInit: async (payload) => {
@@ -261,7 +260,6 @@ export default buildConfig({
     },
     access: payloadJobsAccess,
     tasks: [
-      expireInventoryReservationsTask,
       {
         slug: "welcomeUser",
         label: "Add welcome notification & profile for new user",
@@ -454,7 +452,6 @@ export default buildConfig({
           let page = 1;
           let processed = 0;
 
-          // eslint-disable-next-line no-constant-condition
           while (true) {
             const { docs, hasNextPage } = await payload.find({
               collection: "search",
@@ -517,11 +514,6 @@ export default buildConfig({
       }
     ],
     autoRun: [
-      {
-        cron: "*/15 * * * *", // every 15 minutes
-        limit: 100, // limit jobs to process each run
-        queue: "quarterHour" // name of the queue
-      },
       {
         cron: "0 3 * * *", // daily at 03:00 UTC
         limit: 1,

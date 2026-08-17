@@ -36,6 +36,8 @@ output/**/*audit*/
 
 # Ignore node_modules folder
 node_modules/
+/reference/
+
 tests/
 # Ignore MacOS .DS_Store file
 .hintrc
@@ -76,9 +78,7 @@ test*/
 src/**/* copy*
 /src/components/layouts/Registration/Plate/ThreeCSG.ts
 
-readmes/**/*.js
-readmes/**/*.css
-readmes/**/*.html
+readmes
 !/src/components/Shells/Header/HCC.tsx
 tsconfig.tsbuildinfo
 .shit

@@ -42,21 +42,21 @@ Those gates can still create normal local build/install artifacts.
 
 ## § 1 — Scripts index
 
-| Script                           | Run from                              | Purpose                                                                   |
-| -------------------------------- | ------------------------------------- | ------------------------------------------------------------------------- |
+| Script                           | Run from                              | Purpose                                                                                |
+|----------------------------------|---------------------------------------|----------------------------------------------------------------------------------------|
 | `pnpm release:cut [target]`      | laptop                                | Plan next version, run gates, sync `package.json`, signed git tag + push. Triggers CI. |
-| `pnpm release:check [target]`    | laptop                                | Same gates as `release:cut` but read-only; no package write, tag, or push. |
-| `pnpm env:edit`                  | laptop                                | Open `.env.production.enc` in `$EDITOR` via sops. Re-encrypts on save.    |
-| `pnpm sync:deploy-rules`         | laptop                                | Regenerate `.dockerignore` / `.deployignore` from `deploy-manifest.json`. |
-| `pnpm env:template:gen`          | laptop                                | Regenerate `.env.production.template` from `src/lib/env.ts`.              |
-| `pnpm verify:env [path]`         | laptop / CI                           | Validate any `.env` file against the Zod schema.                          |
-| `.github/workflows/release.yml`  | GitHub Actions                        | On tag push: decrypt env, run gates, build, push to GHCR.                 |
-| `./scripts/deploy.sh <tag>`      | VPS (deploy)                          | Pull a tag from GHCR, rotate, smoke-test, persist tag.                    |
-| `./scripts/deploy.sh --rollback` | VPS (deploy)                          | Roll back to the previously-deployed tag.                                 |
-| `./scripts/deploy.sh --status`   | VPS (deploy)                          | Print currently deployed tag + rollback target.                           |
-| `./scripts/first-deploy.sh`      | VPS (root)                            | One-shot first-deploy wrapper (server provisioning + initial deploy).     |
-| `./scripts/server-setup.sh`      | VPS (root, called by first-deploy.sh) | OS hardening, Docker, certbot, deploy user, sops/age binaries.            |
-| `./scripts/backup.sh`            | VPS (deploy, cron)                    | `pg_dump` with 7-day retention.                                           |
+| `pnpm release:check [target]`    | laptop                                | Same gates as `release:cut` but read-only; no package write, tag, or push.             |
+| `pnpm env:edit`                  | laptop                                | Open `.env.production.enc` in `$EDITOR` via sops. Re-encrypts on save.                 |
+| `pnpm sync:deploy-rules`         | laptop                                | Regenerate `.dockerignore` / `.deployignore` from `deploy-manifest.json`.              |
+| `pnpm env:template:gen`          | laptop                                | Regenerate `.env.production.template` from `src/lib/env.ts`.                           |
+| `pnpm verify:env [path]`         | laptop / CI                           | Validate any `.env` file against the Zod schema.                                       |
+| `.github/workflows/release.yml`  | GitHub Actions                        | On tag push: decrypt env, run gates, build, push to GHCR.                              |
+| `./scripts/deploy.sh <tag>`      | VPS (deploy)                          | Pull a tag from GHCR, rotate, smoke-test, persist tag.                                 |
+| `./scripts/deploy.sh --rollback` | VPS (deploy)                          | Roll back to the previously-deployed tag.                                              |
+| `./scripts/deploy.sh --status`   | VPS (deploy)                          | Print currently deployed tag + rollback target.                                        |
+| `./scripts/first-deploy.sh`      | VPS (root)                            | One-shot first-deploy wrapper (server provisioning + initial deploy).                  |
+| `./scripts/server-setup.sh`      | VPS (root, called by first-deploy.sh) | OS hardening, Docker, certbot, deploy user, sops/age binaries.                         |
+| `./scripts/backup.sh`            | VPS (deploy, cron)                    | `pg_dump` with 7-day retention.                                                        |
 
 ---
 
@@ -615,6 +615,28 @@ Installed by `bash scripts/cron-setup.sh` (run once on the VPS as `deploy`):
 
 TLS renewal (`certbot renew`) is installed by `server-setup.sh` at 03:00 UTC
 as root.
+
+### Inventory reservation expiry
+
+Payload schedules `expireInventoryReservations` on the existing `quarterHour`
+queue every 15 minutes. Each run examines at most 25 distinct orders. Each order is handled in its own transaction, and
+the inventory lock order prevents overlapping workers from expiring or consuming the same reservation twice. Payload
+retries a failed task up to three times. Reservation operations are idempotent, so a restarted run can repeat completed
+discovery safely.
+
+The expiry task remains scheduled when `LOST_INVENTORY_RESERVATIONS_LIVE` is false. The feature gate prevents new
+stocked checkout reservations; it does not strand reservations created before the gate was disabled. With no active
+reservations, the task completes without changes.
+
+`CRON_SECRET` bearer access is limited to running jobs. Queue and cancellation operations require an authenticated
+admin. To rotate the secret, update the encrypted production environment and every external caller in the same release,
+deploy, then confirm the old bearer token is rejected. Payload's internal
+`autoRun` schedule does not require the bearer token.
+
+When a run reports failed orders, check server logs for the stable error code and order ID. Do not edit reservation
+status or inventory projections directly. Fix the underlying data through a guarded inventory operation, then allow the
+next scheduled run to retry. Disabling checkout is a safe rollback; keep the expiry task enabled until all active
+reservations have reached a terminal state.
 
 Pre-migration backups are taken automatically by `./scripts/deploy.sh <tag> --migrate`
 (written to `/home/deploy/backups/pre-migrate-<ISO>.dump`).

@@ -79,7 +79,7 @@ export interface Config {
     teamMembers: TeamMember;
     members: Member;
     invitations: Invitation;
-    'admin-invitations': AdminInvitation;
+    "admin-invitations": AdminInvitation;
     assets: Asset;
     categories: Category;
     media: Media;
@@ -88,6 +88,8 @@ export interface Config {
     pages: Page;
     posts: Post;
     userMedia: UserMedia;
+    "email-quota": EmailQuota;
+    "deferred-emails": DeferredEmail;
     profile: Profile;
     albums: Album;
     tracks: Track;
@@ -99,99 +101,71 @@ export interface Config {
     citations: Citation;
     responses: Response;
     compilations: Compilation;
+    "commerce-products": CommerceProduct;
+    "commerce-orders": CommerceOrder;
     admins: Admin;
-    'email-quota': EmailQuota;
-    'deferred-emails': DeferredEmail;
     exports: Export;
     imports: Import;
     redirects: Redirect;
     search: Search;
-    plans: Plan;
-    invoices: Invoice;
-    prices: Price;
-    subscriptions: Subscription;
-    'exchange-rate': ExchangeRate;
-    currency: Currency;
-    holidays: Holiday;
-    'product-category': ProductCategory;
-    'product-sub': ProductSub;
-    'product-drops': ProductDrop;
-    products: Product;
-    'product-variants': ProductVariant;
-    'product-order-campaigns': ProductOrderCampaign;
-    'product-carts': ProductCart;
-    'product-orders': ProductOrder;
-    'product-payments': ProductPayment;
-    'commerce-commands': CommerceCommand;
-    'commerce-provider-events': CommerceProviderEvent;
-    'stock-locations': StockLocation;
-    'inventory-levels': InventoryLevel;
-    'inventory-movements': InventoryMovement;
-    'inventory-receipts': InventoryReceipt;
-    'inventory-receipt-lines': InventoryReceiptLine;
-    'inventory-lots': InventoryLot;
-    'inventory-cycle-counts': InventoryCycleCount;
-    'inventory-cycle-count-lines': InventoryCycleCountLine;
-    'inventory-reservations': InventoryReservation;
-    'inventory-reservation-operator-events': InventoryReservationOperatorEvent;
-    'inventory-reservation-entries': InventoryReservationEntry;
-    events: Event;
-    'ticket-orders': TicketOrder;
-    tickets: Ticket;
-    'payload-kv': PayloadKv;
-    'payload-jobs': PayloadJob;
-    'payload-folders': FolderInterface;
-    'payload-locked-documents': PayloadLockedDocument;
-    'payload-preferences': PayloadPreference;
-    'payload-migrations': PayloadMigration;
+    "payload-kv": PayloadKv;
+    "payload-jobs": PayloadJob;
+    "payload-folders": FolderInterface;
+    "payload-locked-documents": PayloadLockedDocument;
+    "payload-preferences": PayloadPreference;
+    "payload-migrations": PayloadMigration;
   };
   collectionsJoins: {
     users: {
-      profile: 'profile';
-      bookmarks: 'bookmarks';
-      followers: 'follows';
-      following: 'follows';
-      notifications: 'notifications';
-      account: 'accounts';
-      session: 'sessions';
+      profile: "profile";
+      bookmarks: "bookmarks";
+      followers: "follows";
+      following: "follows";
+      notifications: "notifications";
+      account: "accounts";
+      session: "sessions";
     };
     organizations: {
-      member: 'members';
-      invitation: 'invitations';
-      team: 'teams';
+      member: "members";
+      invitation: "invitations";
+      team: "teams";
     };
     categories: {
-      categorized: 'surf' | 'posts';
+      categorized: "surf" | "posts";
     };
     tags: {
-      taggedItems: 'posts' | 'surf' | 'playlists' | 'albums' | 'profile' | 'pages' | 'tracks';
+      taggedItems:
+        | "posts"
+        | "surf"
+        | "playlists"
+        | "albums"
+        | "profile"
+        | "pages"
+        | "tracks";
     };
     posts: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     userMedia: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     profile: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     albums: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     tracks: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     playlists: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
     surf: {
-      bookmarks: 'bookmarks';
+      bookmarks: "bookmarks";
     };
-    products: {
-      skus: 'product-variants';
-    };
-    'payload-folders': {
-      documentsAndFolders: 'payload-folders' | 'userMedia';
+    "payload-folders": {
+      documentsAndFolders: "payload-folders" | "userMedia";
     };
   };
   collectionsSelect: {
@@ -206,7 +180,8 @@ export interface Config {
     teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
-    'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
+    "admin-invitations":
+      AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
     assets: AssetsSelect<false> | AssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -215,6 +190,8 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     userMedia: UserMediaSelect<false> | UserMediaSelect<true>;
+    "email-quota": EmailQuotaSelect<false> | EmailQuotaSelect<true>;
+    "deferred-emails": DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
     profile: ProfileSelect<false> | ProfileSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     tracks: TracksSelect<false> | TracksSelect<true>;
@@ -226,74 +203,48 @@ export interface Config {
     citations: CitationsSelect<false> | CitationsSelect<true>;
     responses: ResponsesSelect<false> | ResponsesSelect<true>;
     compilations: CompilationsSelect<false> | CompilationsSelect<true>;
+    "commerce-products":
+      CommerceProductsSelect<false> | CommerceProductsSelect<true>;
+    "commerce-orders": CommerceOrdersSelect<false> | CommerceOrdersSelect<true>;
     admins: AdminsSelect<false> | AdminsSelect<true>;
-    'email-quota': EmailQuotaSelect<false> | EmailQuotaSelect<true>;
-    'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
-    plans: PlansSelect<false> | PlansSelect<true>;
-    invoices: InvoicesSelect<false> | InvoicesSelect<true>;
-    prices: PricesSelect<false> | PricesSelect<true>;
-    subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
-    'exchange-rate': ExchangeRateSelect<false> | ExchangeRateSelect<true>;
-    currency: CurrencySelect<false> | CurrencySelect<true>;
-    holidays: HolidaysSelect<false> | HolidaysSelect<true>;
-    'product-category': ProductCategorySelect<false> | ProductCategorySelect<true>;
-    'product-sub': ProductSubSelect<false> | ProductSubSelect<true>;
-    'product-drops': ProductDropsSelect<false> | ProductDropsSelect<true>;
-    products: ProductsSelect<false> | ProductsSelect<true>;
-    'product-variants': ProductVariantsSelect<false> | ProductVariantsSelect<true>;
-    'product-order-campaigns': ProductOrderCampaignsSelect<false> | ProductOrderCampaignsSelect<true>;
-    'product-carts': ProductCartsSelect<false> | ProductCartsSelect<true>;
-    'product-orders': ProductOrdersSelect<false> | ProductOrdersSelect<true>;
-    'product-payments': ProductPaymentsSelect<false> | ProductPaymentsSelect<true>;
-    'commerce-commands': CommerceCommandsSelect<false> | CommerceCommandsSelect<true>;
-    'commerce-provider-events': CommerceProviderEventsSelect<false> | CommerceProviderEventsSelect<true>;
-    'stock-locations': StockLocationsSelect<false> | StockLocationsSelect<true>;
-    'inventory-levels': InventoryLevelsSelect<false> | InventoryLevelsSelect<true>;
-    'inventory-movements': InventoryMovementsSelect<false> | InventoryMovementsSelect<true>;
-    'inventory-receipts': InventoryReceiptsSelect<false> | InventoryReceiptsSelect<true>;
-    'inventory-receipt-lines': InventoryReceiptLinesSelect<false> | InventoryReceiptLinesSelect<true>;
-    'inventory-lots': InventoryLotsSelect<false> | InventoryLotsSelect<true>;
-    'inventory-cycle-counts': InventoryCycleCountsSelect<false> | InventoryCycleCountsSelect<true>;
-    'inventory-cycle-count-lines': InventoryCycleCountLinesSelect<false> | InventoryCycleCountLinesSelect<true>;
-    'inventory-reservations': InventoryReservationsSelect<false> | InventoryReservationsSelect<true>;
-    'inventory-reservation-operator-events': InventoryReservationOperatorEventsSelect<false> | InventoryReservationOperatorEventsSelect<true>;
-    'inventory-reservation-entries': InventoryReservationEntriesSelect<false> | InventoryReservationEntriesSelect<true>;
-    events: EventsSelect<false> | EventsSelect<true>;
-    'ticket-orders': TicketOrdersSelect<false> | TicketOrdersSelect<true>;
-    tickets: TicketsSelect<false> | TicketsSelect<true>;
-    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
-    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
-    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
-    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
-    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
-    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+    "payload-kv": PayloadKvSelect<false> | PayloadKvSelect<true>;
+    "payload-jobs": PayloadJobsSelect<false> | PayloadJobsSelect<true>;
+    "payload-folders": PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
+    "payload-locked-documents":
+      PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    "payload-preferences":
+      PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    "payload-migrations":
+      PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ko') | ('en' | 'ko')[];
+  fallbackLocale:
+    | ("false" | "none" | "null")
+    | false
+    | null
+    | ("en" | "ko")
+    | ("en" | "ko")[];
   globals: {
     header: Header;
     footer: Footer;
-    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
-    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
-  locale: 'en' | 'ko';
+  locale: "en" | "ko";
   widgets: {
     collections: CollectionsWidget;
   };
   user: User | Admin;
   jobs: {
     tasks: {
-      expireInventoryReservations: TaskExpireInventoryReservations;
       welcomeUser: TaskWelcomeUser;
       welcomeUsers: TaskWelcomeUsers;
       refreshSearchScores: TaskRefreshSearchScores;
@@ -2245,6 +2196,45 @@ export interface AdminInvitation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-quota".
+ */
+export interface EmailQuota {
+  id: string;
+  /**
+   * Date in YYYY-MM-DD format
+   */
+  date: string;
+  /**
+   * Number of emails sent on this date
+   */
+  used: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deferred-emails".
+ */
+export interface DeferredEmail {
+  id: string;
+  /**
+   * Serialized email data to be sent later
+   */
+  emailData: string;
+  category: 'notifications' | 'alerts' | 'validators' | 'authenticators' | 'misc';
+  /**
+   * When this email should be sent
+   */
+  scheduledFor: string;
+  attempts: number;
+  status: 'pending' | 'sent' | 'failed';
+  sentAt?: string | null;
+  lastError?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "userViews".
  */
 export interface UserView {
@@ -2304,40 +2294,135 @@ export interface Compilation {
   hashId: string;
   description?: string | null;
   author: string | User;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   coverImage?: (string | null) | Media;
   items?:
     | (
         | {
-            relationTo: 'posts';
+            relationTo: "posts";
             value: string | Post;
           }
         | {
-            relationTo: 'surf';
+            relationTo: "surf";
             value: string | Surf;
           }
         | {
-            relationTo: 'profile';
+            relationTo: "profile";
             value: string | Profile;
           }
         | {
-            relationTo: 'albums';
+            relationTo: "albums";
             value: string | Album;
           }
         | {
-            relationTo: 'playlists';
+            relationTo: "playlists";
             value: string | Playlist;
           }
         | {
-            relationTo: 'tracks';
+            relationTo: "tracks";
             value: string | Track;
           }
         | {
-            relationTo: 'userMedia';
+            relationTo: "userMedia";
             value: string | UserMedia;
           }
       )[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Products available through the minimal commerce system.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-products".
+ */
+export interface CommerceProduct {
+  id: string;
+  name: string;
+  slug: string;
+  active: boolean;
+  unit_amount: number;
+  currency: "KRW";
+  max_quantity: number;
+  summary?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  details?: string | null;
+  care?: string | null;
+  shipping_returns?: string | null;
+  hero_media?: (string | null) | Media;
+  gallery?: (string | Media)[] | null;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Minimal product orders and their current payment status.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-orders".
+ */
+export interface CommerceOrder {
+  id: string;
+  ref: string;
+  user: string | User;
+  product: string | CommerceProduct;
+  product_name_snapshot: string;
+  product_slug_snapshot: string;
+  quantity: number;
+  unit_amount_snapshot: number;
+  total_amount: number;
+  currency: "KRW";
+  payment_method: "card" | "bank_transfer";
+  payment_status: "pending" | "paid" | "failed" | "canceled";
+  status:
+    | "awaiting_payment"
+    | "paid"
+    | "preparing"
+    | "shipped"
+    | "completed"
+    | "canceled";
+  contact:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  shipping:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  idempotency_key: string;
+  request_hash: string;
+  provider_payment_id?: string | null;
+  provider_transaction_id?: string | null;
+  bank_transfer_reference?: string | null;
+  tracking_number?: string | null;
+  paid_at?: string | null;
+  shipped_at?: string | null;
+  completed_at?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2349,7 +2434,7 @@ export interface Admin {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'cofounder' | 'editor' | 'author' | 'patron' | 'resident' | 'user';
+  role: "admin";
   /**
    * Upload your profile picture here.
    */
@@ -2369,46 +2454,7 @@ export interface Admin {
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
-  collection: 'admins';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "email-quota".
- */
-export interface EmailQuota {
-  id: string;
-  /**
-   * Date in YYYY-MM-DD format
-   */
-  date: string;
-  /**
-   * Number of emails sent on this date
-   */
-  used: number;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "deferred-emails".
- */
-export interface DeferredEmail {
-  id: string;
-  /**
-   * Serialized email data to be sent later
-   */
-  emailData: string;
-  category: 'notifications' | 'alerts' | 'validators' | 'authenticators' | 'misc';
-  /**
-   * When this email should be sent
-   */
-  scheduledFor: string;
-  attempts: number;
-  status: 'pending' | 'sent' | 'failed';
-  sentAt?: string | null;
-  lastError?: string | null;
-  updatedAt: string;
-  createdAt: string;
+  collection: "admins";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2607,1134 +2653,6 @@ export interface Search {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "plans".
- */
-export interface Plan {
-  id: string;
-  /**
-   * Internal admin label (e.g. 'Resident · Yearly · KRW'). Not shown to users.
-   */
-  name: string;
-  /**
-   * The subscriber role this plan grants while active. Cofounder plans are admin-created only — they are filtered out of the public /plans surface by getPlansData().
-   */
-  tier: 'resident' | 'patron' | 'cofounder';
-  /**
-   * User-facing display label (e.g. 'Member', 'Patron').
-   */
-  tier_label: string;
-  /**
-   * Yearly: expires 1 year after start unless waiver criteria met. Lifetime: never expires.
-   */
-  validity: 'yearly' | 'lifetime';
-  /**
-   * All Hideaway plans are one-time payments at launch (manual bank transfer).
-   */
-  type: 'one_time';
-  /**
-   * Accepted checkout methods. 'card' enables the PortOne one-time card flow; bank_transfer / cash use the manual receipt-confirm flow. The plans checkout surfaces only the methods enabled here.
-   */
-  payment_methods: ('card' | 'bank_transfer' | 'cash')[];
-  /**
-   * Short marketing line under the price.
-   */
-  description?: string | null;
-  features?:
-    | {
-        label: string;
-        included?: boolean | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Max active subscriptions for this plan (0 / blank = unlimited). When reached, the plan card shows 'Closed' and the CTA is disabled.
-   */
-  seat_limit?: number | null;
-  /**
-   * Pill text shown on the card when a deal applies (e.g. 'LIMITED 5').
-   */
-  discount_label?: string | null;
-  sort?: number | null;
-  state: 'active' | 'ended';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "invoices".
- */
-export interface Invoice {
-  id: string;
-  /**
-   * Auto-incremented at issue time.
-   */
-  invoice_number: number;
-  client: string | User;
-  /**
-   * The subscription this invoice receipts.
-   */
-  subscription: string | Subscription;
-  plan: string | Plan;
-  /**
-   * The Price doc the customer transacted. Nullable for legacy / hand-issued invoices that predate the Product/Price split.
-   */
-  price?: (string | null) | Price;
-  /**
-   * Total invoice amount in the chosen currency's primary unit (won, dollars, euros).
-   */
-  amount: number;
-  /**
-   * The currency this invoice is denominated in. Points at the canonical `currency` collection (was an enum pre-Sprint 2).
-   */
-  currency: string | Currency;
-  /**
-   * Forward-looking: rate applied when the invoice currency differs from the Plan's base currency. Null at launch (KRW-only).
-   */
-  fx_rate_used?: number | null;
-  /**
-   * Stripe-style FSM: draft → open → paid | void. The issuance hook writes 'paid' directly on bank-confirmed flow; hand-authored invoices may start as 'draft'.
-   */
-  status: 'draft' | 'open' | 'paid' | 'void' | 'pending';
-  /**
-   * Set when admin marks the related Subscription as paid. Mirrors the bank-receipt date.
-   */
-  paid_at?: string | null;
-  /**
-   * Snapshot of subscription.start_date at issue time.
-   */
-  cycle_start?: string | null;
-  /**
-   * Snapshot of subscription.expires_at at issue time (null = lifetime plan).
-   */
-  cycle_end?: string | null;
-  /**
-   * Admin's free-text note: bank transaction id, last-4 digits, or 'cash receipt' tag.
-   */
-  bank_reference?: string | null;
-  /**
-   * Single entry for cash-flow at launch; array shape preserved for future split-payment / multi-currency cases.
-   */
-  payment_method?:
-    | {
-        method: 'bank_transfer' | 'cash';
-        amount: number;
-        currency: string | Currency;
-        payment_date: string;
-        reference?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscriptions".
- */
-export interface Subscription {
-  id: string;
-  user: string | User;
-  plan: string | Plan;
-  /**
-   * The specific Price (currency × amount × cadence) the subscriber transacted. Captured at checkout; never rewritten.
-   */
-  price: string | Price;
-  /**
-   * Snapshot of the selected Price amount at checkout. Invoice issuance must use this, not mutable catalog prices.
-   */
-  amount: number;
-  /**
-   * Snapshot of the selected Price currency at checkout. Invoice issuance must use this, not mutable catalog prices.
-   */
-  currency: string | Currency;
-  start_date: string;
-  /**
-   * Date the subscription expires (null = lifetime). Set on activation; extended quarterly when waiver criteria are met.
-   */
-  expires_at?: string | null;
-  subscription_status: 'pending' | 'active' | 'expired' | 'canceled';
-  /**
-   * Set true once admin confirms bank-transfer / cash receipt. Activating triggers role sync.
-   */
-  paid?: boolean | null;
-  /**
-   * Admin flag — at the next quarterly check, extend the subscription 90 days for free (Member tier merit waiver).
-   */
-  validity_waived?: boolean | null;
-  /**
-   * System: most recent quarterly waiver evaluation timestamp.
-   */
-  last_waiver_check?: string | null;
-  /**
-   * Method the user requested at checkout. bank_transfer / cash are confirmed manually by admin; card is confirmed automatically by PortOne verification.
-   */
-  request_method: 'bank_transfer' | 'cash' | 'card';
-  /**
-   * manual = bank transfer / cash (admin confirms receipt). portone = one-time card payment (server verifies the payment before marking paid).
-   */
-  provider: 'manual' | 'portone';
-  /**
-   * PortOne paymentId captured at card-checkout start. Unique — the verify route and webhook reconcile the pending→paid edge idempotently against this ref.
-   */
-  payment_ref?: string | null;
-  /**
-   * Settled PortOne transaction id, stamped on verification.
-   */
-  portone_transaction_ref?: string | null;
-  /**
-   * Free-text note attached at checkout.
-   */
-  request_note?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "prices".
- */
-export interface Price {
-  id: string;
-  /**
-   * Internal admin label (e.g. 'Member · Yearly · KRW'). Not shown to users.
-   */
-  nickname: string;
-  /**
-   * The Plan this Price is attached to.
-   */
-  plan: string | Plan;
-  currency: string | Currency;
-  /**
-   * Amount in the currency's primary unit (won, dollars, euros).
-   */
-  unit_amount: number;
-  /**
-   * All Hideaway prices are one-time at launch. 'recurring' reserved for future cadenced billing.
-   */
-  type: 'one_time' | 'recurring';
-  /**
-   * Populated only when type='recurring'. Leave blank for one-time prices.
-   */
-  recurring?: {
-    interval?: ('day' | 'week' | 'month' | 'year') | null;
-    interval_count?: number | null;
-    trial_period_days?: number | null;
-  };
-  /**
-   * When false, this Price is hidden from public reads but kept for invoice history.
-   */
-  active: boolean;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "currency".
- */
-export interface Currency {
-  id: string;
-  name: string;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  kr_nm: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "exchange-rate".
- */
-export interface ExchangeRate {
-  id: string;
-  date: string;
-  rates: {
-    currency: string | Currency;
-    rate: number;
-    id?: string | null;
-  }[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "holidays".
- */
-export interface Holiday {
-  id: string;
-  dates: {
-    date: string;
-    name: string;
-    id?: string | null;
-  }[];
-  period: number;
-  country: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-category".
- */
-export interface ProductCategory {
-  id: string;
-  name: string;
-  slug: string;
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-sub".
- */
-export interface ProductSub {
-  id: string;
-  name: string;
-  slug: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * LOSTINSEOUL seasonal drops and collections.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-drops".
- */
-export interface ProductDrop {
-  id: string;
-  title: string;
-  slug: string;
-  active: boolean;
-  kicker?: string | null;
-  lede?: string | null;
-  hero_media?: (string | null) | Media;
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * LOSTINSEOUL storefront products.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
- */
-export interface Product {
-  id: string;
-  name: string;
-  /**
-   * URL-safe product slug used at /products/{slug}.
-   */
-  slug: string;
-  active: boolean;
-  storefront: string;
-  drop?: (string | null) | ProductDrop;
-  category?: (string | null) | ProductCategory;
-  /**
-   * Short catalog/card copy.
-   */
-  summary?: string | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Product detail accordion copy.
-   */
-  details?: string | null;
-  /**
-   * Care instructions.
-   */
-  care?: string | null;
-  /**
-   * Shipping and returns copy.
-   */
-  shipping_returns?: string | null;
-  hero_media?: (string | null) | Media;
-  /**
-   * Product gallery images shown on detail pages.
-   */
-  gallery?: (string | Media)[] | null;
-  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
-  unit_amount: number;
-  compare_at_amount?: number | null;
-  max_order_quantity: number;
-  min_order_quantity: number;
-  skus?: {
-    docs?: (string | ProductVariant)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  standard_enabled: boolean;
-  request_to_order_enabled: boolean;
-  private_order_enabled: boolean;
-  private_preset_price_enabled: boolean;
-  /**
-   * Optional private-order price. Blank means the buyer requests a quote first.
-   */
-  private_unit_amount?: number | null;
-  private_tier_gate: 'anyone' | 'resident' | 'patron' | 'cofounder' | 'staff';
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Stable product SKUs used by checkout.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-variants".
- */
-export interface ProductVariant {
-  id: string;
-  product: string | Product;
-  active: boolean;
-  identity_locked: boolean;
-  sku?: string | null;
-  label?: string | null;
-  options?:
-    | {
-        key: string;
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
-  option_key: string;
-  price_override_amount?: number | null;
-  barcode?: string | null;
-  weight_grams?: number | null;
-  length_mm?: number | null;
-  width_mm?: number | null;
-  height_mm?: number | null;
-  tax_category?: string | null;
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Request-to-order campaigns that convert paid commitments into orders.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-order-campaigns".
- */
-export interface ProductOrderCampaign {
-  id: string;
-  title: string;
-  product: string | Product;
-  state: 'draft' | 'open' | 'met' | 'failed' | 'converted' | 'canceled';
-  minimum_commitments: number;
-  maximum_commitments?: number | null;
-  /**
-   * System-maintained count of paid commitments.
-   */
-  paid_commitments?: number | null;
-  deadline: string;
-  /**
-   * Controls buyer-facing commitment progress display.
-   */
-  progress_visibility: 'hidden' | 'percentage' | 'count';
-  /**
-   * SKUs allowed for this campaign.
-   */
-  eligible_skus?: (string | ProductVariant)[] | null;
-  /**
-   * Legacy campaign data retained during the SKU transition.
-   */
-  eligible_variants?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Buyer-facing explanation for failed-campaign refunds or manual refunds.
-   */
-  refund_policy?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Synced authenticated carts for LOSTINSEOUL.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-carts".
- */
-export interface ProductCart {
-  id: string;
-  user: string | User;
-  storefront: string;
-  status: 'active' | 'converted' | 'abandoned';
-  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
-  line_schema_version: number;
-  lines:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * LOSTINSEOUL orders, commitments, and private quotes.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-orders".
- */
-export interface ProductOrder {
-  id: string;
-  order_ref: string;
-  user: string | User;
-  storefront: string;
-  order_mode: 'standard_purchase' | 'request_to_order' | 'private_order';
-  status:
-    | 'draft'
-    | 'quote_requested'
-    | 'quote_ready'
-    | 'pending_payment'
-    | 'paid'
-    | 'paid_inventory_review'
-    | 'committed'
-    | 'confirmed'
-    | 'converted'
-    | 'failed'
-    | 'canceled'
-    | 'refunded';
-  payment_status: 'unpaid' | 'pending' | 'paid' | 'pending_manual' | 'failed' | 'refunded' | 'partially_refunded';
-  fulfillment_status: 'unfulfilled' | 'reserved' | 'in_production' | 'fulfilled' | 'canceled';
-  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
-  subtotal_amount: number;
-  total_amount: number;
-  campaign?: (string | null) | ProductOrderCampaign;
-  line_snapshot_version: number;
-  lines:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  shipping?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  contact?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Private-order quote state: amount, currency, expires_at, notes.
-   */
-  quote?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  paid_at?: string | null;
-  expires_at?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * PortOne and manual payment records for LOSTINSEOUL.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-payments".
- */
-export interface ProductPayment {
-  id: string;
-  payment_ref: string;
-  order: string | ProductOrder;
-  user: string | User;
-  provider: 'portone' | 'manual';
-  status: 'initiated' | 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded' | 'manual_pending';
-  amount: number;
-  currency: 'KRW' | 'USD' | 'JPY' | 'EUR';
-  portone_order_ref?: string | null;
-  portone_transaction_ref?: string | null;
-  payment_channel?: string | null;
-  payment_method?: string | null;
-  request_payload?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  events?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  paid_at?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Durable idempotency records for LOSTINSEOUL commerce.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-commands".
- */
-export interface CommerceCommand {
-  id: string;
-  command_key: string;
-  business_key: string;
-  request_hash: string;
-  status: 'in_progress' | 'succeeded';
-  attempt_count: number;
-  lease_token_hash?: string | null;
-  lease_expires_at?: string | null;
-  safe_response?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  resource_type?: string | null;
-  resource_id?: string | null;
-  completed_at?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-provider-events".
- */
-export interface CommerceProviderEvent {
-  id: string;
-  dedupe_key: string;
-  provider: 'portone';
-  event_key: string;
-  event_type?: string | null;
-  payment_ref?: string | null;
-  payload_hash?: string | null;
-  provider_status?: string | null;
-  transaction_ref?: string | null;
-  product_payment?: (string | null) | ProductPayment;
-  occurred_at?: string | null;
-  received_at: string;
-  processing_status: 'received' | 'processing' | 'retryable' | 'processed' | 'rejected';
-  attempt_count: number;
-  lease_token_hash?: string | null;
-  lease_expires_at?: string | null;
-  last_attempt_at?: string | null;
-  processed_at?: string | null;
-  outcome_code?: string | null;
-  last_error_code?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "stock-locations".
- */
-export interface StockLocation {
-  id: string;
-  code: string;
-  name: string;
-  active: boolean;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-levels".
- */
-export interface InventoryLevel {
-  id: string;
-  aggregate_key: string;
-  sku: string | ProductVariant;
-  location: string | StockLocation;
-  disposition: 'available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded';
-  quantity: number;
-  movement_count: number;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-movements".
- */
-export interface InventoryMovement {
-  id: string;
-  idempotency_key: string;
-  request_hash: string;
-  sku: string | ProductVariant;
-  kind: 'inbound' | 'outbound' | 'transfer';
-  quantity: number;
-  from_location?: (string | null) | StockLocation;
-  from_disposition?:
-    ('available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded') | null;
-  to_location?: (string | null) | StockLocation;
-  to_disposition?:
-    ('available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded') | null;
-  reason_code: string;
-  source_type:
-    | 'inventory_command'
-    | 'inventory_receipt'
-    | 'inventory_lot_release'
-    | 'inventory_adjustment'
-    | 'inventory_cycle_count'
-    | 'inventory_reservation';
-  source_ref?: string | null;
-  receipt?: (string | null) | InventoryReceipt;
-  receipt_line?: (string | null) | InventoryReceiptLine;
-  lot?: (string | null) | InventoryLot;
-  cycle_count?: (string | null) | InventoryCycleCount;
-  cycle_count_line?: (string | null) | InventoryCycleCountLine;
-  actor?: string | null;
-  effective_at?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-receipts".
- */
-export interface InventoryReceipt {
-  id: string;
-  location: string | StockLocation;
-  status: 'draft' | 'open' | 'closed' | 'cancelled';
-  supplier_name?: string | null;
-  external_reference?: string | null;
-  opened_at?: string | null;
-  opened_by?: (string | null) | User;
-  closed_at?: string | null;
-  closed_by?: (string | null) | User;
-  cancelled_at?: string | null;
-  cancelled_by?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-receipt-lines".
- */
-export interface InventoryReceiptLine {
-  id: string;
-  receipt_sku_key: string;
-  receipt: string | InventoryReceipt;
-  sku: string | ProductVariant;
-  expected_quantity?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-lots".
- */
-export interface InventoryLot {
-  id: string;
-  operation_key: string;
-  receipt_line: string | InventoryReceiptLine;
-  external_lot_code?: string | null;
-  received_quantity: number;
-  received_at: string;
-  actor: string | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-cycle-counts".
- */
-export interface InventoryCycleCount {
-  id: string;
-  location: string | StockLocation;
-  status: 'draft' | 'submitted' | 'applied' | 'rejected' | 'cancelled';
-  submitted_at?: string | null;
-  submitted_by?: (string | null) | User;
-  applied_at?: string | null;
-  applied_by?: (string | null) | User;
-  rejected_at?: string | null;
-  rejected_by?: (string | null) | User;
-  cancelled_at?: string | null;
-  cancelled_by?: (string | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-cycle-count-lines".
- */
-export interface InventoryCycleCountLine {
-  id: string;
-  count_aggregate_key: string;
-  count: string | InventoryCycleCount;
-  sku: string | ProductVariant;
-  disposition: 'available' | 'quarantine' | 'damaged' | 'inspection_pending' | 'returned_pending_release' | 'discarded';
-  counted_quantity: number;
-  system_quantity: number;
-  movement_count_snapshot: number;
-  variance: number;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-reservations".
- */
-export interface InventoryReservation {
-  id: string;
-  reservation_key: string;
-  request_hash: string;
-  order: string | ProductOrder;
-  sku: string | ProductVariant;
-  location: string | StockLocation;
-  quantity: number;
-  status: 'active' | 'consumed' | 'released' | 'expired';
-  expires_at: string;
-  reserved_at: string;
-  terminal_at?: string | null;
-  policy_version: number;
-  ttl_minutes: number;
-  safety_stock: number;
-  consume_point: 'payment_confirmed';
-  expiry_boundary: 'at_or_after';
-  payment_time_source: 'provider_paid_at';
-  late_payment_policy: 'manual_review';
-  backorder_mode: 'disabled';
-  recovery_of?: (string | null) | InventoryReservation;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-reservation-operator-events".
- */
-export interface InventoryReservationOperatorEvent {
-  id: string;
-  event_key: string;
-  command_key: string;
-  source: 'manual_operator';
-  correlation_key: string;
-  causation_key: string;
-  action: 'release' | 'expire' | 'reconcile' | 'run_expiry';
-  outcome_code: string;
-  actor: string | User;
-  order?: (string | null) | ProductOrder;
-  payment?: (string | null) | ProductPayment;
-  reservation?: (string | null) | InventoryReservation;
-  reason_code: string;
-  evidence_reference: string;
-  expected_state_hash: string;
-  observed_state_hash: string;
-  affected_count: number;
-  effective_at: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-reservation-entries".
- */
-export interface InventoryReservationEntry {
-  id: string;
-  idempotency_key: string;
-  request_hash: string;
-  reservation: string | InventoryReservation;
-  operation: 'reserve' | 'consume' | 'release' | 'expire' | 'late_payment_detected';
-  quantity: number;
-  payment?: (string | null) | ProductPayment;
-  provider_event_ref?: string | null;
-  provider_paid_at?: string | null;
-  evidence_code?:
-    | (
-        | 'provider_timestamp_missing'
-        | 'provider_timestamp_before_reservation'
-        | 'provider_payment_late'
-        | 'physical_inventory_unavailable'
-      )
-    | null;
-  actor?: string | null;
-  effective_at: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events".
- */
-export interface Event {
-  id: string;
-  /**
-   * Event name (e.g. 'Hideaway Spring Salon · 2026').
-   */
-  name: string;
-  /**
-   * URL-safe identifier used in /tickets/{slug}. Lowercase, hyphens only.
-   */
-  slug: string;
-  /**
-   * Short marketing line shown on the event page.
-   */
-  description?: string | null;
-  /**
-   * Event start date and time.
-   */
-  date: string;
-  /**
-   * Optional event end date/time.
-   */
-  end_date?: string | null;
-  /**
-   * Venue name and/or address.
-   */
-  location?: string | null;
-  /**
-   * Password required to access the purchase page. Share privately with the intended audience.
-   */
-  gate_password: string;
-  /**
-   * Total tickets available across all users (0 = unlimited). When reached, the page shows 'Sold out'.
-   */
-  capacity?: number | null;
-  /**
-   * Maximum tickets a single user can purchase for this event.
-   */
-  max_per_user: number;
-  /**
-   * Price per ticket in KRW (whole numbers only).
-   */
-  ticket_price: number;
-  /**
-   * Free-form instructions shown to the buyer after they reserve. e.g. 'Send {amount} to KEB Hana 123-456-789012, account holder Sean Choi. Include your name in the memo.'
-   */
-  payment_instructions?: string | null;
-  /**
-   * draft = hidden; open = accepting purchases; closed = no new purchases; ended = past, exclusive content live.
-   */
-  state: 'draft' | 'open' | 'closed' | 'ended';
-  /**
-   * Event cover image.
-   */
-  image?: (string | null) | Media;
-  /**
-   * Post-event content shown only to checked-in attendees on /tickets/{slug}/exclusive.
-   */
-  exclusive_content?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Links shown on the exclusive content page.
-   */
-  exclusive_links?:
-    | {
-        label: string;
-        url: string;
-        type: 'link' | 'form';
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Show a delivery address form on the exclusive content page (for free-goods drops).
-   */
-  goods_drop_enabled?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ticket-orders".
- */
-export interface TicketOrder {
-  id: string;
-  /**
-   * Account that initiated the order (and to which the password mail is sent).
-   */
-  purchaser: string | User;
-  /**
-   * Event this order is for. Denormalized from the sibling tickets for admin filtering.
-   */
-  event: string | Event;
-  /**
-   * Name supplied during the 4-step flow. Surfaced on /day-n-night/my.
-   */
-  purchaser_name?: string | null;
-  /**
-   * Name the purchaser says will appear on the bank transfer. Used by hosts to match pending Toss transfers.
-   */
-  sender_name?: string | null;
-  /**
-   * Number of sibling Tickets created for this order. Snapshotted at purchase.
-   */
-  quantity: number;
-  /**
-   * Per-ticket amount in the order currency. Snapshotted at purchase.
-   */
-  unit_amount: number;
-  /**
-   * Total order amount in the order currency. Snapshotted at purchase.
-   */
-  total_amount: number;
-  /**
-   * Currency used for this ticket order.
-   */
-  currency: 'KRW';
-  /**
-   * Admin-only. Flip this after confirming the bank transfer. Triggers password issuance + email.
-   */
-  paid?: boolean | null;
-  /**
-   * Stamped when the purchaser says the bank transfer has been sent. This is not payment confirmation; admins still verify Toss and flip Paid.
-   */
-  payment_submitted_at?: string | null;
-  /**
-   * Set automatically when `paid` is flipped to true.
-   */
-  paid_at?: string | null;
-  /**
-   * Generated by the paid hook. Stored in plaintext because it's a short-lived (48h) shared secret that the purchaser needs to read; treat like a coupon code, not an auth credential. Never echo to the purchaser through the admin UI.
-   */
-  password?: string | null;
-  password_issued_at?: string | null;
-  /**
-   * 48 hours after `paid_at`. The /day-n-night/claim/[token] route refuses to validate after this timestamp.
-   */
-  password_expires_at?: string | null;
-  /**
-   * Set automatically when the password mail has been delivered to the purchaser. Null means the mailer will (re)try on the next save. Cleared whenever `password` is regenerated so admin re-issue triggers a fresh mail.
-   */
-  mailed_at?: string | null;
-  /**
-   * Locale used to render the password mail. Snapshotted from the purchaser's session locale at order creation. Admin-editable as fallback when the snapshot is wrong.
-   */
-  locale?: ('ko' | 'en') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tickets".
- */
-export interface Ticket {
-  id: string;
-  /**
-   * System: auto-incremented ticket number. Set on creation by the purchase API.
-   */
-  ticket_number?: number | null;
-  event: string | Event;
-  /**
-   * Account this ticket is bound to. Null for unclaimed gift tickets.
-   */
-  user?: (string | null) | User;
-  /**
-   * User who paid for this ticket.
-   */
-  purchaser: string | User;
-  status: 'pending' | 'active' | 'used' | 'canceled';
-  /**
-   * Set true once admin confirms Toss receipt. Activating the ticket runs onTicketPaid hook.
-   */
-  paid?: boolean | null;
-  paid_at?: string | null;
-  /**
-   * Single-use nanoid for gift ticket claim URLs. Null after claim or for the purchaser's own ticket.
-   */
-  claim_token?: string | null;
-  /**
-   * Optional: restrict claim to this email. If set, only the matching account can claim the ticket.
-   */
-  claim_email?: string | null;
-  /**
-   * Name the purchaser typed for the intended recipient. Surfaced on /day-n-night/my next to the unclaimed link. Editable by the purchaser until the admin sets gift_name_locked.
-   */
-  gift_initial_name?: string | null;
-  /**
-   * Admin-only lock. Prevents the purchaser from changing gift_initial_name after the host has confirmed the recipient (e.g. on the door list).
-   */
-  gift_name_locked?: boolean | null;
-  /**
-   * Parent TicketOrders row this ticket belongs to. Null for tickets created outside the 4-step purchase flow.
-   */
-  order?: (string | null) | TicketOrder;
-  claimed_at?: string | null;
-  /**
-   * System: nanoid encoded into the QR code for check-in.
-   */
-  check_in_code?: string | null;
-  checked_in?: boolean | null;
-  checked_in_at?: string | null;
-  /**
-   * Admin/editor who performed the check-in.
-   */
-  checked_in_by?: (string | null) | User;
-  /**
-   * Optional: passkey credential ID bound to this ticket for device verification.
-   */
-  passkey_credential_id?: string | null;
-  /**
-   * System: timestamp the pre-event reminder cron last sent for this ticket. Guards against double-sends when the cron is re-run inside the 23–25h window.
-   */
-  reminder_sent_at?: string | null;
-  /**
-   * Submitted by attendee on the exclusive content page.
-   */
-  delivery_address?: {
-    recipient_name?: string | null;
-    address?: string | null;
-    phone?: string | null;
-    submitted_at?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -3803,7 +2721,6 @@ export interface PayloadJob {
         completedAt: string;
         taskSlug:
           | 'inline'
-          | 'expireInventoryReservations'
           | 'welcomeUser'
           | 'welcomeUsers'
           | 'refreshSearchScores'
@@ -3846,7 +2763,6 @@ export interface PayloadJob {
   taskSlug?:
     | (
         | 'inline'
-        | 'expireInventoryReservations'
         | 'welcomeUser'
         | 'welcomeUsers'
         | 'refreshSearchScores'
@@ -3858,15 +2774,6 @@ export interface PayloadJob {
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
-  meta?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
   id: string;
   updatedAt: string;
   createdAt: string;
@@ -3879,241 +2786,141 @@ export interface PayloadLockedDocument {
   id: string;
   document?:
     | ({
-        relationTo: 'users';
+        relationTo: "users";
         value: string | User;
       } | null)
     | ({
-        relationTo: 'sessions';
+        relationTo: "sessions";
         value: string | Session;
       } | null)
     | ({
-        relationTo: 'accounts';
+        relationTo: "accounts";
         value: string | Account;
       } | null)
     | ({
-        relationTo: 'verifications';
+        relationTo: "verifications";
         value: string | Verification;
       } | null)
     | ({
-        relationTo: 'twoFactors';
+        relationTo: "twoFactors";
         value: string | TwoFactor;
       } | null)
     | ({
-        relationTo: 'passkeys';
+        relationTo: "passkeys";
         value: string | Passkey;
       } | null)
     | ({
-        relationTo: 'organizations';
+        relationTo: "organizations";
         value: string | Organization;
       } | null)
     | ({
-        relationTo: 'teams';
+        relationTo: "teams";
         value: string | Team;
       } | null)
     | ({
-        relationTo: 'teamMembers';
+        relationTo: "teamMembers";
         value: string | TeamMember;
       } | null)
     | ({
-        relationTo: 'members';
+        relationTo: "members";
         value: string | Member;
       } | null)
     | ({
-        relationTo: 'invitations';
+        relationTo: "invitations";
         value: string | Invitation;
       } | null)
     | ({
-        relationTo: 'admin-invitations';
+        relationTo: "admin-invitations";
         value: string | AdminInvitation;
       } | null)
     | ({
-        relationTo: 'assets';
+        relationTo: "assets";
         value: string | Asset;
       } | null)
     | ({
-        relationTo: 'categories';
+        relationTo: "categories";
         value: string | Category;
       } | null)
     | ({
-        relationTo: 'media';
+        relationTo: "media";
         value: string | Media;
       } | null)
     | ({
-        relationTo: 'notifications';
+        relationTo: "notifications";
         value: string | Notification;
       } | null)
     | ({
-        relationTo: 'pages';
+        relationTo: "pages";
         value: string | Page;
       } | null)
     | ({
-        relationTo: 'posts';
+        relationTo: "posts";
         value: string | Post;
       } | null)
     | ({
-        relationTo: 'userMedia';
+        relationTo: "userMedia";
         value: string | UserMedia;
       } | null)
     | ({
-        relationTo: 'profile';
-        value: string | Profile;
-      } | null)
-    | ({
-        relationTo: 'bookmarks';
-        value: string | Bookmark;
-      } | null)
-    | ({
-        relationTo: 'userViews';
-        value: string | UserView;
-      } | null)
-    | ({
-        relationTo: 'responses';
-        value: string | Response;
-      } | null)
-    | ({
-        relationTo: 'compilations';
-        value: string | Compilation;
-      } | null)
-    | ({
-        relationTo: 'admins';
-        value: string | Admin;
-      } | null)
-    | ({
-        relationTo: 'email-quota';
+        relationTo: "email-quota";
         value: string | EmailQuota;
       } | null)
     | ({
-        relationTo: 'deferred-emails';
+        relationTo: "deferred-emails";
         value: string | DeferredEmail;
       } | null)
     | ({
-        relationTo: 'redirects';
+        relationTo: "profile";
+        value: string | Profile;
+      } | null)
+    | ({
+        relationTo: "bookmarks";
+        value: string | Bookmark;
+      } | null)
+    | ({
+        relationTo: "userViews";
+        value: string | UserView;
+      } | null)
+    | ({
+        relationTo: "responses";
+        value: string | Response;
+      } | null)
+    | ({
+        relationTo: "compilations";
+        value: string | Compilation;
+      } | null)
+    | ({
+        relationTo: "commerce-products";
+        value: string | CommerceProduct;
+      } | null)
+    | ({
+        relationTo: "commerce-orders";
+        value: string | CommerceOrder;
+      } | null)
+    | ({
+        relationTo: "admins";
+        value: string | Admin;
+      } | null)
+    | ({
+        relationTo: "redirects";
         value: string | Redirect;
       } | null)
     | ({
-        relationTo: 'search';
+        relationTo: "search";
         value: string | Search;
       } | null)
     | ({
-        relationTo: 'plans';
-        value: string | Plan;
-      } | null)
-    | ({
-        relationTo: 'invoices';
-        value: string | Invoice;
-      } | null)
-    | ({
-        relationTo: 'prices';
-        value: string | Price;
-      } | null)
-    | ({
-        relationTo: 'subscriptions';
-        value: string | Subscription;
-      } | null)
-    | ({
-        relationTo: 'exchange-rate';
-        value: string | ExchangeRate;
-      } | null)
-    | ({
-        relationTo: 'currency';
-        value: string | Currency;
-      } | null)
-    | ({
-        relationTo: 'holidays';
-        value: string | Holiday;
-      } | null)
-    | ({
-        relationTo: 'product-category';
-        value: string | ProductCategory;
-      } | null)
-    | ({
-        relationTo: 'product-sub';
-        value: string | ProductSub;
-      } | null)
-    | ({
-        relationTo: 'product-drops';
-        value: string | ProductDrop;
-      } | null)
-    | ({
-        relationTo: 'products';
-        value: string | Product;
-      } | null)
-    | ({
-        relationTo: 'product-variants';
-        value: string | ProductVariant;
-      } | null)
-    | ({
-        relationTo: 'product-order-campaigns';
-        value: string | ProductOrderCampaign;
-      } | null)
-    | ({
-        relationTo: 'product-carts';
-        value: string | ProductCart;
-      } | null)
-    | ({
-        relationTo: 'product-orders';
-        value: string | ProductOrder;
-      } | null)
-    | ({
-        relationTo: 'product-payments';
-        value: string | ProductPayment;
-      } | null)
-    | ({
-        relationTo: 'commerce-commands';
-        value: string | CommerceCommand;
-      } | null)
-    | ({
-        relationTo: 'commerce-provider-events';
-        value: string | CommerceProviderEvent;
-      } | null)
-    | ({
-        relationTo: 'stock-locations';
-        value: string | StockLocation;
-      } | null)
-    | ({
-        relationTo: 'inventory-levels';
-        value: string | InventoryLevel;
-      } | null)
-    | ({
-        relationTo: 'inventory-receipts';
-        value: string | InventoryReceipt;
-      } | null)
-    | ({
-        relationTo: 'inventory-receipt-lines';
-        value: string | InventoryReceiptLine;
-      } | null)
-    | ({
-        relationTo: 'inventory-cycle-counts';
-        value: string | InventoryCycleCount;
-      } | null)
-    | ({
-        relationTo: 'inventory-cycle-count-lines';
-        value: string | InventoryCycleCountLine;
-      } | null)
-    | ({
-        relationTo: 'events';
-        value: string | Event;
-      } | null)
-    | ({
-        relationTo: 'ticket-orders';
-        value: string | TicketOrder;
-      } | null)
-    | ({
-        relationTo: 'tickets';
-        value: string | Ticket;
-      } | null)
-    | ({
-        relationTo: 'payload-folders';
+        relationTo: "payload-folders";
         value: string | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user:
     | {
-        relationTo: 'users';
+        relationTo: "users";
         value: string | User;
       }
     | {
-        relationTo: 'admins';
+        relationTo: "admins";
         value: string | Admin;
       };
   updatedAt: string;
@@ -4911,6 +3718,33 @@ export interface UserMediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "email-quota_select".
+ */
+export interface EmailQuotaSelect<T extends boolean = true> {
+  id?: T;
+  date?: T;
+  used?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deferred-emails_select".
+ */
+export interface DeferredEmailsSelect<T extends boolean = true> {
+  id?: T;
+  emailData?: T;
+  category?: T;
+  scheduledFor?: T;
+  attempts?: T;
+  status?: T;
+  sentAt?: T;
+  lastError?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "profile_select".
  */
 export interface ProfileSelect<T extends boolean = true> {
@@ -5178,6 +4012,59 @@ export interface CompilationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-products_select".
+ */
+export interface CommerceProductsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  active?: T;
+  unit_amount?: T;
+  currency?: T;
+  max_quantity?: T;
+  summary?: T;
+  description?: T;
+  details?: T;
+  care?: T;
+  shipping_returns?: T;
+  hero_media?: T;
+  gallery?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-orders_select".
+ */
+export interface CommerceOrdersSelect<T extends boolean = true> {
+  ref?: T;
+  user?: T;
+  product?: T;
+  product_name_snapshot?: T;
+  product_slug_snapshot?: T;
+  quantity?: T;
+  unit_amount_snapshot?: T;
+  total_amount?: T;
+  currency?: T;
+  payment_method?: T;
+  payment_status?: T;
+  status?: T;
+  contact?: T;
+  shipping?: T;
+  idempotency_key?: T;
+  request_hash?: T;
+  provider_payment_id?: T;
+  provider_transaction_id?: T;
+  bank_transfer_reference?: T;
+  tracking_number?: T;
+  paid_at?: T;
+  shipped_at?: T;
+  completed_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins_select".
  */
 export interface AdminsSelect<T extends boolean = true> {
@@ -5195,33 +4082,6 @@ export interface AdminsSelect<T extends boolean = true> {
   enableAPIKey?: T;
   apiKey?: T;
   apiKeyIndex?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "email-quota_select".
- */
-export interface EmailQuotaSelect<T extends boolean = true> {
-  id?: T;
-  date?: T;
-  used?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "deferred-emails_select".
- */
-export interface DeferredEmailsSelect<T extends boolean = true> {
-  id?: T;
-  emailData?: T;
-  category?: T;
-  scheduledFor?: T;
-  attempts?: T;
-  status?: T;
-  sentAt?: T;
-  lastError?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5355,672 +4215,6 @@ export interface SearchSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "plans_select".
- */
-export interface PlansSelect<T extends boolean = true> {
-  name?: T;
-  tier?: T;
-  tier_label?: T;
-  validity?: T;
-  type?: T;
-  payment_methods?: T;
-  description?: T;
-  features?:
-    | T
-    | {
-        label?: T;
-        included?: T;
-        id?: T;
-      };
-  seat_limit?: T;
-  discount_label?: T;
-  sort?: T;
-  state?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "invoices_select".
- */
-export interface InvoicesSelect<T extends boolean = true> {
-  invoice_number?: T;
-  client?: T;
-  subscription?: T;
-  plan?: T;
-  price?: T;
-  amount?: T;
-  currency?: T;
-  fx_rate_used?: T;
-  status?: T;
-  paid_at?: T;
-  cycle_start?: T;
-  cycle_end?: T;
-  bank_reference?: T;
-  payment_method?:
-    | T
-    | {
-        method?: T;
-        amount?: T;
-        currency?: T;
-        payment_date?: T;
-        reference?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "prices_select".
- */
-export interface PricesSelect<T extends boolean = true> {
-  nickname?: T;
-  plan?: T;
-  currency?: T;
-  unit_amount?: T;
-  type?: T;
-  recurring?:
-    | T
-    | {
-        interval?: T;
-        interval_count?: T;
-        trial_period_days?: T;
-      };
-  active?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscriptions_select".
- */
-export interface SubscriptionsSelect<T extends boolean = true> {
-  user?: T;
-  plan?: T;
-  price?: T;
-  amount?: T;
-  currency?: T;
-  start_date?: T;
-  expires_at?: T;
-  subscription_status?: T;
-  paid?: T;
-  validity_waived?: T;
-  last_waiver_check?: T;
-  request_method?: T;
-  provider?: T;
-  payment_ref?: T;
-  portone_transaction_ref?: T;
-  request_note?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "exchange-rate_select".
- */
-export interface ExchangeRateSelect<T extends boolean = true> {
-  date?: T;
-  rates?:
-    | T
-    | {
-        currency?: T;
-        rate?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "currency_select".
- */
-export interface CurrencySelect<T extends boolean = true> {
-  name?: T;
-  slugKey?: T;
-  hashId?: T;
-  slugLock?: T;
-  slug?: T;
-  kr_nm?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "holidays_select".
- */
-export interface HolidaysSelect<T extends boolean = true> {
-  dates?:
-    | T
-    | {
-        date?: T;
-        name?: T;
-        id?: T;
-      };
-  period?: T;
-  country?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-category_select".
- */
-export interface ProductCategorySelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  sort?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-sub_select".
- */
-export interface ProductSubSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-drops_select".
- */
-export interface ProductDropsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  active?: T;
-  kicker?: T;
-  lede?: T;
-  hero_media?: T;
-  sort?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products_select".
- */
-export interface ProductsSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  active?: T;
-  storefront?: T;
-  drop?: T;
-  category?: T;
-  summary?: T;
-  description?: T;
-  details?: T;
-  care?: T;
-  shipping_returns?: T;
-  hero_media?: T;
-  gallery?: T;
-  currency?: T;
-  unit_amount?: T;
-  compare_at_amount?: T;
-  max_order_quantity?: T;
-  min_order_quantity?: T;
-  skus?: T;
-  standard_enabled?: T;
-  request_to_order_enabled?: T;
-  private_order_enabled?: T;
-  private_preset_price_enabled?: T;
-  private_unit_amount?: T;
-  private_tier_gate?: T;
-  sort?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-variants_select".
- */
-export interface ProductVariantsSelect<T extends boolean = true> {
-  product?: T;
-  active?: T;
-  identity_locked?: T;
-  sku?: T;
-  label?: T;
-  options?:
-    | T
-    | {
-        key?: T;
-        value?: T;
-        id?: T;
-      };
-  option_key?: T;
-  price_override_amount?: T;
-  barcode?: T;
-  weight_grams?: T;
-  length_mm?: T;
-  width_mm?: T;
-  height_mm?: T;
-  tax_category?: T;
-  sort?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-order-campaigns_select".
- */
-export interface ProductOrderCampaignsSelect<T extends boolean = true> {
-  title?: T;
-  product?: T;
-  state?: T;
-  minimum_commitments?: T;
-  maximum_commitments?: T;
-  paid_commitments?: T;
-  deadline?: T;
-  progress_visibility?: T;
-  eligible_skus?: T;
-  eligible_variants?: T;
-  refund_policy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-carts_select".
- */
-export interface ProductCartsSelect<T extends boolean = true> {
-  user?: T;
-  storefront?: T;
-  status?: T;
-  currency?: T;
-  line_schema_version?: T;
-  lines?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-orders_select".
- */
-export interface ProductOrdersSelect<T extends boolean = true> {
-  order_ref?: T;
-  user?: T;
-  storefront?: T;
-  order_mode?: T;
-  status?: T;
-  payment_status?: T;
-  fulfillment_status?: T;
-  currency?: T;
-  subtotal_amount?: T;
-  total_amount?: T;
-  campaign?: T;
-  line_snapshot_version?: T;
-  lines?: T;
-  shipping?: T;
-  contact?: T;
-  quote?: T;
-  paid_at?: T;
-  expires_at?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-payments_select".
- */
-export interface ProductPaymentsSelect<T extends boolean = true> {
-  payment_ref?: T;
-  order?: T;
-  user?: T;
-  provider?: T;
-  status?: T;
-  amount?: T;
-  currency?: T;
-  portone_order_ref?: T;
-  portone_transaction_ref?: T;
-  payment_channel?: T;
-  payment_method?: T;
-  request_payload?: T;
-  events?: T;
-  paid_at?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-commands_select".
- */
-export interface CommerceCommandsSelect<T extends boolean = true> {
-  command_key?: T;
-  business_key?: T;
-  request_hash?: T;
-  status?: T;
-  attempt_count?: T;
-  lease_token_hash?: T;
-  lease_expires_at?: T;
-  safe_response?: T;
-  resource_type?: T;
-  resource_id?: T;
-  completed_at?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-provider-events_select".
- */
-export interface CommerceProviderEventsSelect<T extends boolean = true> {
-  dedupe_key?: T;
-  provider?: T;
-  event_key?: T;
-  event_type?: T;
-  payment_ref?: T;
-  payload_hash?: T;
-  provider_status?: T;
-  transaction_ref?: T;
-  product_payment?: T;
-  occurred_at?: T;
-  received_at?: T;
-  processing_status?: T;
-  attempt_count?: T;
-  lease_token_hash?: T;
-  lease_expires_at?: T;
-  last_attempt_at?: T;
-  processed_at?: T;
-  outcome_code?: T;
-  last_error_code?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "stock-locations_select".
- */
-export interface StockLocationsSelect<T extends boolean = true> {
-  code?: T;
-  name?: T;
-  active?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-levels_select".
- */
-export interface InventoryLevelsSelect<T extends boolean = true> {
-  aggregate_key?: T;
-  sku?: T;
-  location?: T;
-  disposition?: T;
-  quantity?: T;
-  movement_count?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-movements_select".
- */
-export interface InventoryMovementsSelect<T extends boolean = true> {
-  idempotency_key?: T;
-  request_hash?: T;
-  sku?: T;
-  kind?: T;
-  quantity?: T;
-  from_location?: T;
-  from_disposition?: T;
-  to_location?: T;
-  to_disposition?: T;
-  reason_code?: T;
-  source_type?: T;
-  source_ref?: T;
-  receipt?: T;
-  receipt_line?: T;
-  lot?: T;
-  cycle_count?: T;
-  cycle_count_line?: T;
-  actor?: T;
-  effective_at?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-receipts_select".
- */
-export interface InventoryReceiptsSelect<T extends boolean = true> {
-  location?: T;
-  status?: T;
-  supplier_name?: T;
-  external_reference?: T;
-  opened_at?: T;
-  opened_by?: T;
-  closed_at?: T;
-  closed_by?: T;
-  cancelled_at?: T;
-  cancelled_by?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-receipt-lines_select".
- */
-export interface InventoryReceiptLinesSelect<T extends boolean = true> {
-  receipt_sku_key?: T;
-  receipt?: T;
-  sku?: T;
-  expected_quantity?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-lots_select".
- */
-export interface InventoryLotsSelect<T extends boolean = true> {
-  operation_key?: T;
-  receipt_line?: T;
-  external_lot_code?: T;
-  received_quantity?: T;
-  received_at?: T;
-  actor?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-cycle-counts_select".
- */
-export interface InventoryCycleCountsSelect<T extends boolean = true> {
-  location?: T;
-  status?: T;
-  submitted_at?: T;
-  submitted_by?: T;
-  applied_at?: T;
-  applied_by?: T;
-  rejected_at?: T;
-  rejected_by?: T;
-  cancelled_at?: T;
-  cancelled_by?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-cycle-count-lines_select".
- */
-export interface InventoryCycleCountLinesSelect<T extends boolean = true> {
-  count_aggregate_key?: T;
-  count?: T;
-  sku?: T;
-  disposition?: T;
-  counted_quantity?: T;
-  system_quantity?: T;
-  movement_count_snapshot?: T;
-  variance?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-reservations_select".
- */
-export interface InventoryReservationsSelect<T extends boolean = true> {
-  reservation_key?: T;
-  request_hash?: T;
-  order?: T;
-  sku?: T;
-  location?: T;
-  quantity?: T;
-  status?: T;
-  expires_at?: T;
-  reserved_at?: T;
-  terminal_at?: T;
-  policy_version?: T;
-  ttl_minutes?: T;
-  safety_stock?: T;
-  consume_point?: T;
-  expiry_boundary?: T;
-  payment_time_source?: T;
-  late_payment_policy?: T;
-  backorder_mode?: T;
-  recovery_of?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-reservation-operator-events_select".
- */
-export interface InventoryReservationOperatorEventsSelect<T extends boolean = true> {
-  event_key?: T;
-  command_key?: T;
-  source?: T;
-  correlation_key?: T;
-  causation_key?: T;
-  action?: T;
-  outcome_code?: T;
-  actor?: T;
-  order?: T;
-  payment?: T;
-  reservation?: T;
-  reason_code?: T;
-  evidence_reference?: T;
-  expected_state_hash?: T;
-  observed_state_hash?: T;
-  affected_count?: T;
-  effective_at?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inventory-reservation-entries_select".
- */
-export interface InventoryReservationEntriesSelect<T extends boolean = true> {
-  idempotency_key?: T;
-  request_hash?: T;
-  reservation?: T;
-  operation?: T;
-  quantity?: T;
-  payment?: T;
-  provider_event_ref?: T;
-  provider_paid_at?: T;
-  evidence_code?: T;
-  actor?: T;
-  effective_at?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events_select".
- */
-export interface EventsSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  description?: T;
-  date?: T;
-  end_date?: T;
-  location?: T;
-  gate_password?: T;
-  capacity?: T;
-  max_per_user?: T;
-  ticket_price?: T;
-  payment_instructions?: T;
-  state?: T;
-  image?: T;
-  exclusive_content?: T;
-  exclusive_links?:
-    | T
-    | {
-        label?: T;
-        url?: T;
-        type?: T;
-        id?: T;
-      };
-  goods_drop_enabled?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ticket-orders_select".
- */
-export interface TicketOrdersSelect<T extends boolean = true> {
-  purchaser?: T;
-  event?: T;
-  purchaser_name?: T;
-  sender_name?: T;
-  quantity?: T;
-  unit_amount?: T;
-  total_amount?: T;
-  currency?: T;
-  paid?: T;
-  payment_submitted_at?: T;
-  paid_at?: T;
-  password?: T;
-  password_issued_at?: T;
-  password_expires_at?: T;
-  mailed_at?: T;
-  locale?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tickets_select".
- */
-export interface TicketsSelect<T extends boolean = true> {
-  ticket_number?: T;
-  event?: T;
-  user?: T;
-  purchaser?: T;
-  status?: T;
-  paid?: T;
-  paid_at?: T;
-  claim_token?: T;
-  claim_email?: T;
-  gift_initial_name?: T;
-  gift_name_locked?: T;
-  order?: T;
-  claimed_at?: T;
-  check_in_code?: T;
-  checked_in?: T;
-  checked_in_at?: T;
-  checked_in_by?: T;
-  passkey_credential_id?: T;
-  reminder_sent_at?: T;
-  delivery_address?:
-    | T
-    | {
-        recipient_name?: T;
-        address?: T;
-        phone?: T;
-        submitted_at?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -6056,7 +4250,6 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
-  meta?: T;
   id?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -6383,24 +4576,6 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs-stats".
- */
-export interface PayloadJobsStat {
-  id: string;
-  stats?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -6514,16 +4689,6 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs-stats_select".
- */
-export interface PayloadJobsStatsSelect<T extends boolean = true> {
-  stats?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -6531,19 +4696,6 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskExpireInventoryReservations".
- */
-export interface TaskExpireInventoryReservations {
-  input?: unknown;
-  output: {
-    ordersExamined: number;
-    ordersExpired: number;
-    ordersFailed: number;
-    reservationsExpired: number;
-  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -6591,35 +4743,37 @@ export interface TaskCreateCollectionExport {
     name: string;
     batchSize?: number | null;
     collectionSlug:
-      | 'users'
-      | 'assets'
-      | 'categories'
-      | 'media'
-      | 'tags'
-      | 'notifications'
-      | 'pages'
-      | 'posts'
-      | 'userMedia'
-      | 'profile'
-      | 'albums'
-      | 'tracks'
-      | 'playlists'
-      | 'follows'
-      | 'bookmarks'
-      | 'userViews'
-      | 'surf'
-      | 'citations'
-      | 'responses'
-      | 'compilations'
-      | 'admins'
-      | 'email-quota'
-      | 'deferred-emails'
-      | 'exports'
-      | 'imports';
-    drafts?: ('yes' | 'no') | null;
+      | "users"
+      | "assets"
+      | "categories"
+      | "media"
+      | "tags"
+      | "notifications"
+      | "pages"
+      | "posts"
+      | "userMedia"
+      | "email-quota"
+      | "deferred-emails"
+      | "profile"
+      | "albums"
+      | "tracks"
+      | "playlists"
+      | "follows"
+      | "bookmarks"
+      | "userViews"
+      | "surf"
+      | "citations"
+      | "responses"
+      | "compilations"
+      | "commerce-products"
+      | "commerce-orders"
+      | "admins"
+      | "exports"
+      | "imports";
+    drafts?: ("yes" | "no") | null;
     exportCollection: string;
     fields?: string[] | null;
-    format: 'csv' | 'json';
+    format: "csv" | "json";
     limit?: number | null;
     locale?: string | null;
     maxLimit?: number | null;

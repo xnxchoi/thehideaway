@@ -8,6 +8,7 @@ import { useRPTransition } from "@/providers/TransitionProvider";
 import {
   FrontEndCollections,
   PageType,
+  pageTypeToPublicPath,
   useVoyageur
 } from "@/stores/Routing/RP_Voyageur";
 import { useIsMobile } from "@/utilities/getBreakpoints";
@@ -296,7 +297,7 @@ export const PageRedirect = ({
       onAnimationStart={() => {
         (toR.current && clearTimeout(toR.current),
           (toR.current = setTimeout(() => {
-            router.push(`/${pageType}/${slug}`);
+            router.push(pageTypeToPublicPath(pageType, slug));
           }, 50)));
       }}
       onAnimationComplete={() => {
@@ -329,7 +330,7 @@ export type TransitionWrapperProps = {
   internalClassName?: string;
   children: ReactNode;
   headerVisibility?: boolean;
-  theme?: Theme;
+  theme?: Theme | null;
 } & HTMLMotionProps<"div">;
 // Main PageTransition Component
 export const RPage = (props: TransitionWrapperProps) => {
@@ -544,12 +545,14 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   //   { dependencies: [navIsOpen] }
   // );
   const setHeaderVisibility = useRPStore((l) => l.setHeaderVisibility);
+  const clearPageTheme = useTheme((r) => r.clearPageTheme);
   const onComplete = useCallback(
-    (headerVisible: boolean = true, theme?: Theme) => {
+    (headerVisible: boolean = true, theme?: Theme | null) => {
       setHeaderVisibility(headerVisible);
-      theme && setPageTheme(theme, true);
+      if (theme === null) clearPageTheme();
+      else if (theme) setPageTheme(theme, true);
     },
-    [setHeaderVisibility, setPageTheme]
+    [clearPageTheme, setHeaderVisibility, setPageTheme]
   );
 
   return (

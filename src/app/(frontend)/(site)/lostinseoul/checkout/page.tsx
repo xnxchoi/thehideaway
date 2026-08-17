@@ -1,15 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
-import {
-  getPortOneSdkVersion,
-  isPortOneCheckoutEnabled
-} from "@/lib/lost-commerce/portone";
+import { getPortOneSdkVersion } from "@/lib/lost-commerce/portone";
 import { CheckoutColophon } from "@/components/Shells/Footer/CheckoutColophon";
-import { isManualPaymentEnabled } from "@/lib/lost-commerce/payment-methods";
-import { isLostCommercePaymentPreviewEnabled } from "@/lib/lost-commerce/payment-preview";
 import { LostCheckoutPageClient } from "./page.client";
-
-export const dynamic = "force-dynamic";
 
 export default async function LostCheckoutPage() {
   const t = await getTranslations("LOSTINSEOUL");
@@ -17,9 +10,9 @@ export default async function LostCheckoutPage() {
     <RPage slug={["lostinseoul", "checkout"]} theme="dark" type="pages">
       <LostCheckoutPageClient
         colophon={<CheckoutColophon />}
-        manualPaymentEnabled={isManualPaymentEnabled()}
-        paymentPreviewEnabled={isLostCommercePaymentPreviewEnabled()}
-        portOneEnabled={isPortOneCheckoutEnabled()}
+        manualPaymentEnabled={false}
+        paymentPreviewEnabled={false}
+        portOneEnabled={false}
         portOneSdkVersion={getPortOneSdkVersion()}
         labels={{
           title: t("checkout.title"),

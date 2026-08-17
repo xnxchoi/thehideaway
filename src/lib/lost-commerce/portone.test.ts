@@ -175,7 +175,9 @@ describe("PortOne payment payloads", () => {
       payMethod: "CARD",
       redirectUrl: "https://lostinseoul.com/payment/return?order=lis_2",
       forceRedirect: true,
-      noticeUrls: ["https://lostinseoul.com/api/lost/webhooks/portone"],
+      noticeUrls: [
+        "https://lostinseoul.com/api/commerce/payments/card/webhook"
+      ],
       products: [
         {
           id: "product-1:variant-1",

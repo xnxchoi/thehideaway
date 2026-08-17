@@ -29,20 +29,33 @@ This applies at every level of the schema: tables, columns, indices, compound in
 
 ## Procedure
 
-### Step 1 — Generation
+### Step 1 — Define the schema through Payload, then generate
 
-Two paths:
+The default and required path is Payload-native:
 
-**A. Payload-native (`payload generate` or equivalent)**
+**A. Payload-native (`pnpm micreate`)**
 
-1. Run the generator.
-2. Integrate any pre- or post-migration tasks into the Payload workflow (`payload-config.ts` hooks, collection-level hooks, plugin lifecycle hooks) — this is the "native · official" approach.
-3. Then proceed to Step 2.
+1. Define the schema in collection, global, field, or plugin config and register it through `src/payload.config.ts`.
+2. Run `pnpm micreate` so Payload generates the migration from the config diff.
+3. Review the generated TypeScript migration. Edit it only for the mandatory safeguards in Step 2 or a documented
+   generator limitation.
+4. Run `pnpm generate:schema` and `pnpm generate:types`.
+5. Review the regenerated schema and type artifacts, but never hand-edit `src/payload-generated-schema.ts` or
+   `src/types/payload-types.ts`.
+6. Integrate pre- or post-migration behavior through Payload hooks or plugin lifecycle where possible.
+7. Then proceed to Step 2.
 
-**B. Hand-written migration**
+**B. Exceptional hand-written operation**
 
-1. Author the migration file directly in `src/lib/migrations/YYYYMMDD_HHMMSS_label.ts`.
-2. Include safeguards from the start (Step 2).
+Do not create a migration file manually when a collection/global/field/plugin config change can generate the intended
+shape. A manual operation is allowed only when Payload cannot express it, such as a partial index, functional index,
+sequence, bulk data backfill, or cleanup of orphaned relationship rows.
+
+1. Generate the surrounding Payload schema migration first when applicable.
+2. Document the exact generator limitation with `WHY-OVERRIDE-PAYLOAD` in the config and migration.
+3. Add only the unsupported operation to the generated migration, with the safeguards from Step 2.
+4. If no Payload schema change exists, document why a standalone hand-written migration is unavoidable before creating
+   it.
 
 ### Step 2 — Add safeguards to every operation
 
@@ -169,7 +182,9 @@ From `src/payload-generated-schema.ts` and existing migrations:
 ### When you see something that looks wrong in Payload's output
 
 1. Document the observation (in this readme, or in a `// WHY-PAYLOAD:` comment).
-2. **Mirror it anyway.** Do not fix it unless it blocks shipping.
+2. **Mirror it unless doing so violates this project's migration safety rules.** Idempotency and existence-guard
+   corrections from Step 2 are mandatory even when Payload generated the unsafe statement. Otherwise, do not fix a
+   Payload quirk unless it blocks shipping.
 3. If you must override, flag with a `// WHY-OVERRIDE-PAYLOAD:` comment in both the collection config and the migration, explaining what specifically broke.
 
 ### When Payload-native and raw-SQL both achieve the same outcome
@@ -183,7 +198,7 @@ Always prefer the Payload field config. If the generator is later re-run, the re
 1. **Payload field/collection config** — first choice. Hooks, plugins, virtual fields, access rules, custom field components.
 2. **Payload `req.payload.*` API calls** — `find`, `create`, `update`, `delete`. Honors access rules and lifecycle hooks.
 3. **Drizzle queries** — second choice. Use when Payload's API is missing the operation or insufficient for performance.
-4. **Raw SQL in migrations** — last resort, but acceptable for:
+4. **Raw SQL in generated migrations** — last resort, only when Payload cannot express the operation:
    - Column-type changes
    - Sequences
    - Partial / functional indices
@@ -242,6 +257,9 @@ src/lib/migrations/99999999_000000_initial_seed.ts
 
 ## Checklist Before Committing a Migration
 
+- [ ] The schema change was defined through Payload config first and generated with `pnpm micreate`.
+- [ ] No migration was authored manually when Payload could generate the same shape.
+- [ ] Any manual SQL has a documented generator limitation and `WHY-OVERRIDE-PAYLOAD` where applicable.
 - [ ] File name matches `YYYYMMDD_HHMMSS_label.ts` and is included in `src/lib/migrations/index.ts`.
 - [ ] Every `CREATE` has `IF NOT EXISTS` (or `DO $$` for enums / constraints).
 - [ ] Every `DROP` has `IF EXISTS`.

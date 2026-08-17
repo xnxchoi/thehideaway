@@ -13,8 +13,6 @@ import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea
 import { default as default_84c3b182ef03cfd4e4075c6c76043f7a } from '@/payload/fields/Tabs/index.tsx'
 import { AdminInviteButton as AdminInviteButton_98163d55ae591a15d446d874780a3951 } from '@payload-auth/better-auth/plugin/client'
 import { AdminButtons as AdminButtons_98163d55ae591a15d446d874780a3951 } from '@payload-auth/better-auth/plugin/client'
-import { GenerateUuidButton as GenerateUuidButton_cd6be0e681a931618b786e1160774168 } from '@payload-auth/shared/payload/fields'
-import { FieldCopyButton as FieldCopyButton_cd6be0e681a931618b786e1160774168 } from '@payload-auth/shared/payload/fields'
 import { default as default_222f33787f0b5cffae682877d1dacd9e } from '@/payload/elements/SidebarControls'
 import { ImageSearch as ImageSearch_93dc10d2bce5ec3b5bf50b2a1ef5fb64 } from '@/payload/plugins/image-search/components/ImageSearch/index.tsx'
 import { default as default_6dc69a10b796174b9c998c2abb43f5fb } from '@/AccessControlled/Number'
@@ -82,7 +80,6 @@ import { ImportPreview as ImportPreview_cdf7e044479f899a31f804427d568b36 } from 
 import { ImportSaveButton as ImportSaveButton_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { LinkToDoc as LinkToDoc_5a428ee7a0cd28377f19123b74baab92 } from '@/payload/plugins/plugin-search/Search/ui/LinkToDoc/index'
 import { ReindexButton as ReindexButton_4f4fa227fe49d0313e6fa90dfd314724 } from '@/payload/plugins/plugin-search/Search/ui/ReindexButton/index'
-import { default as default_eeff621e84949b27a2928fa5fbd73b58 } from '@/payload/collections/(consumption)/Tickets/components/RefundAction'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { LogoutButton as LogoutButton_98163d55ae591a15d446d874780a3951 } from '@payload-auth/better-auth/plugin/client'
 import { Icon as Icon_537d74cd4b75d6c420c521af18c7f707 } from '@/graphics/Icon/index.tsx'
@@ -117,8 +114,6 @@ export const importMap = {
   "@/payload/fields/Tabs/index.tsx#default": default_84c3b182ef03cfd4e4075c6c76043f7a,
   "@payload-auth/better-auth/plugin/client#AdminInviteButton": AdminInviteButton_98163d55ae591a15d446d874780a3951,
   "@payload-auth/better-auth/plugin/client#AdminButtons": AdminButtons_98163d55ae591a15d446d874780a3951,
-  "@payload-auth/shared/payload/fields#GenerateUuidButton": GenerateUuidButton_cd6be0e681a931618b786e1160774168,
-  "@payload-auth/shared/payload/fields#FieldCopyButton": FieldCopyButton_cd6be0e681a931618b786e1160774168,
   "@/payload/elements/SidebarControls#default": default_222f33787f0b5cffae682877d1dacd9e,
   "@/payload/plugins/image-search/components/ImageSearch/index.tsx#ImageSearch": ImageSearch_93dc10d2bce5ec3b5bf50b2a1ef5fb64,
   "@/AccessControlled/Number#default": default_6dc69a10b796174b9c998c2abb43f5fb,
@@ -186,7 +181,6 @@ export const importMap = {
   "@payloadcms/plugin-import-export/rsc#ImportSaveButton": ImportSaveButton_cdf7e044479f899a31f804427d568b36,
   "@/payload/plugins/plugin-search/Search/ui/LinkToDoc/index#LinkToDoc": LinkToDoc_5a428ee7a0cd28377f19123b74baab92,
   "@/payload/plugins/plugin-search/Search/ui/ReindexButton/index#ReindexButton": ReindexButton_4f4fa227fe49d0313e6fa90dfd314724,
-  "@/payload/collections/(consumption)/Tickets/components/RefundAction#default": default_eeff621e84949b27a2928fa5fbd73b58,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@payload-auth/better-auth/plugin/client#LogoutButton": LogoutButton_98163d55ae591a15d446d874780a3951,
   "@/graphics/Icon/index.tsx#Icon": Icon_537d74cd4b75d6c420c521af18c7f707,

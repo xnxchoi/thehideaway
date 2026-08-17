@@ -98,15 +98,15 @@ export async function findReservationDocs(
   let page = 1;
   for (;;) {
     const result = (await payload.find({
-      collection: collection as never,
+      collection: collection,
       depth: 0,
       limit: 1000,
       page,
       pagination: true,
       overrideAccess: true,
       req,
-      sort: (sort ? [sort, "id"] : ["id"]) as never,
-      where: where as never
+      sort: sort ? [sort, "id"] : ["id"],
+      where: where
     })) as unknown as {
       docs: ReservationStored[];
       hasNextPage?: boolean;
@@ -132,7 +132,7 @@ export async function findReservationDocById(
   id: string
 ): Promise<ReservationStored> {
   const doc = (await payload.findByID({
-    collection: collection as never,
+    collection: collection,
     id,
     depth: 0,
     overrideAccess: true,

@@ -1,4 +1,4 @@
-import { Link } from "../../../../../../src/components/core/Link/Link";
+import { Link } from "../../../../../../../src/components/core/Link/Link";
 import { FACTS } from "./content";
 
 /**

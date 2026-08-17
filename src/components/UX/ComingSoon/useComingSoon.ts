@@ -12,7 +12,7 @@ interface NudgeOptions {
 export function useComingSoon() {
   const t = useTranslations("ComingSoon.toasts");
   const nudge = useCallback(
-    (key: ToastKey = "notYet", options?: NudgeOptions) => {
+    (key: ToastKey = "unavailable", options?: NudgeOptions) => {
       toast(t(key), options);
     },
     [t]

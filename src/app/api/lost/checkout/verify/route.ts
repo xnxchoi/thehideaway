@@ -8,8 +8,6 @@ import { isSameOrigin } from "@/lib/api/isSameOrigin";
 import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { syncProductPayment } from "@/lib/lost-commerce/product-payment";
 
-export const runtime = "nodejs";
-
 const BodySchema = z.object({ payment_id: z.string().min(1) });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

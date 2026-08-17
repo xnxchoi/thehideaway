@@ -21,25 +21,23 @@ export default async function LostOrderPage({ params }: Props) {
 
   const payload = await getPayload({ config });
   const result = await payload.find({
-    collection: "product-orders" as never,
+    collection: "commerce-orders" as never,
     depth: 0,
     limit: 1,
     overrideAccess: true,
     where: {
-      and: [
-        { order_ref: { equals: ref } },
-        { user: { equals: session.user.id } }
-      ]
-    } as never
+      and: [{ ref: { equals: ref } }, { user: { equals: session.user.id } }]
+    }
   });
   const order = result.docs[0] as
     | {
-        order_ref: string;
+        ref: string;
         status: string;
         payment_status: string;
         currency: "KRW" | "USD" | "JPY" | "EUR";
         total_amount: number;
-        lines?: Array<{ productName?: string; quantity?: number }>;
+        product_name_snapshot: string;
+        quantity: number;
       }
     | undefined;
   if (!order) notFound();
@@ -57,7 +55,7 @@ export default async function LostOrderPage({ params }: Props) {
             {t("title")}
           </h1>
           <p className="mt-4 font-mono text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
-            {order.order_ref}
+            {order.ref}
           </p>
           <dl className="mt-8 grid gap-4 border-y border-[oklch(from_var(--fg)_l_c_h_/_0.15)] py-6 sm:grid-cols-3">
             <div>
@@ -87,14 +85,12 @@ export default async function LostOrderPage({ params }: Props) {
             </div>
           </dl>
           <div className="mt-8 divide-y divide-[oklch(from_var(--fg)_l_c_h_/_0.15)]">
-            {order.lines?.map((line, index) => (
-              <div className="flex justify-between py-4" key={index}>
-                <span>{line.productName}</span>
-                <span className="font-mono text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
-                  x {line.quantity ?? 1}
-                </span>
-              </div>
-            ))}
+            <div className="flex justify-between py-4">
+              <span>{order.product_name_snapshot}</span>
+              <span className="font-mono text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
+                x {order.quantity}
+              </span>
+            </div>
           </div>
         </section>
       </main>

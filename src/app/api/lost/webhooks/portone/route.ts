@@ -14,8 +14,6 @@ import {
   recordCommerceProviderEventStandalone
 } from "@/lib/lost-commerce/provider-events";
 
-export const runtime = "nodejs";
-
 /**
  * Extract the paymentId a PortOne webhook carries, from every shape we might
  * receive: V2 Standard-Webhook (`data.paymentId`), and the legacy / echoed

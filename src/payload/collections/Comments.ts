@@ -18,7 +18,8 @@ import {
 import { uuidv7 } from "uuidv7";
 import { Post, Response, Surf } from "../../payload-types";
 import { ACField } from "../fields/AccessControlled/plugin";
-import { PROPS_COLLAPSIBLE } from "./constants";
+
+import { PROPS_COLLAPSIBLE } from "@/constants/navigation";
 
 // Access control functions
 const isAdminOrAuthor: Access = ({ req: { user } }) => {

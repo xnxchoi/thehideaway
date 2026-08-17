@@ -39,14 +39,14 @@ export default async function Page({ params: paramsPromise }: Args) {
     nextPage,
     prevPage
   } = await getPostsWithCategory({ id: cat.id, page: pageFromParams });
-  const firstFive = docs.slice(0, 5).map(
-    ({ slug, author, category, ...posts }): OverviewAgnosticItem => ({
+  const firstFive = docs
+    .slice(0, 5)
+    .map(({ slug, author, category, ...posts }): OverviewAgnosticItem => ({
       category: category.title,
       author: author.name,
       url: formatCollectionURL({ relationTo: "posts", slug }),
       ...posts
-    })
-  );
+    }));
   const rest = docs.slice(5);
   return (
     <RPage type="categories" slug={[cat.slug]}>
@@ -118,7 +118,7 @@ async function getPostsWithCategory({
   id: string;
   page: `${number}`;
 }) {
-  // "use cache";
+  "use cache";
   return await queryPostOverviews({
     limit: 12,
     page: Number(page),

@@ -114,7 +114,7 @@ export async function cancelPendingPlanPayment(input: {
     const locked = await payload.find({
       collection: "subscriptions",
       overrideAccess: true,
-      req: txReq as never,
+      req: txReq,
       depth: 0,
       limit: 1,
       where: { payment_ref: { equals: paymentId } }
@@ -244,7 +244,7 @@ export async function syncPlanPayment(input: {
     const locked = await payload.find({
       collection: "subscriptions",
       overrideAccess: true,
-      req: txReq as never,
+      req: txReq,
       depth: 0,
       limit: 1,
       where: { payment_ref: { equals: paymentId } }
@@ -288,7 +288,7 @@ export async function syncPlanPayment(input: {
         ...(verdict.transactionRef
           ? { portone_transaction_ref: verdict.transactionRef }
           : {})
-      } as never
+      }
     });
 
     await payload.db.commitTransaction(transactionID);

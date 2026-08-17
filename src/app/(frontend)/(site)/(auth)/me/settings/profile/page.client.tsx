@@ -11,7 +11,7 @@ import {
   PanelHeader,
   SubRouteHeader
 } from "@/components/UX/Settings";
-import type { User } from "@/payload-types";
+import type { User } from "@payload-types";
 import { searchPlaces } from "../_helpers/searchPlaces";
 import { updateUserField } from "../_helpers/updateProfile";
 import { RPage } from "@/components/UX/Transition";

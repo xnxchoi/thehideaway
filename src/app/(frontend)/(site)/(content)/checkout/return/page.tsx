@@ -4,8 +4,6 @@ import { RPage } from "@/components/UX/Transition";
 import { CheckoutColophon } from "@/components/Shells/Footer/CheckoutColophon";
 import { CheckoutReturnClient } from "./CheckoutReturnClient";
 
-export const runtime = "nodejs";
-
 type SearchParams = Promise<{ payment?: string }>;
 
 /**

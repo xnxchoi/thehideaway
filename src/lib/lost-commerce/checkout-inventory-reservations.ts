@@ -51,7 +51,7 @@ export async function reserveCheckoutOrderInventoryInTransaction(input: {
   effectiveAt: string;
 }) {
   const locations = await input.payload.find({
-    collection: "stock-locations" as never,
+    collection: "stock-locations",
     depth: 0,
     limit: 2,
     pagination: false,

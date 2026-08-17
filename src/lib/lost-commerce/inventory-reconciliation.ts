@@ -56,13 +56,13 @@ async function readAll(
   req?: PayloadRequest
 ): Promise<AnyDoc[]> {
   const result = (await payload.find({
-    collection: collection as never,
+    collection: collection,
     depth: 0,
     pagination: false,
     overrideAccess: true,
     ...(req ? { req } : {}),
     sort: "id"
-  } as never)) as unknown as { docs: AnyDoc[] };
+  })) as unknown as { docs: AnyDoc[] };
   return result.docs;
 }
 

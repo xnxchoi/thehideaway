@@ -115,18 +115,11 @@ export function getLostBagChromeTransition(bagOpen: boolean) {
 }
 
 export function getLostBagRegularChromeState(bagOpen: boolean) {
-  const chrome = bagOpen
-    ? lostBagSourceChoreography.desktop.regularChrome.cartOpen
-    : lostBagSourceChoreography.desktop.regularChrome.cartClosed;
-
-  return {
-    opacity: chrome.opacity,
-    y: chrome.y
-  };
+  return {};
 }
 
 export function getLostBagAnnouncementChromeState(bagOpen: boolean) {
-  return getLostBagRegularChromeState(bagOpen);
+  return { opacity: bagOpen ? 0 : 1, y: bagOpen ? "-100%" : "0%" };
 }
 
 export function getLostBagAnnouncementChromeTransition(bagOpen: boolean) {

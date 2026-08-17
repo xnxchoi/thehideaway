@@ -3,7 +3,7 @@ import {
   OverviewAgnosticItem
 } from "../../../../../../components/content/archive-view/ArchiveFeature/ArchiveFeatureCard";
 import { Link } from "@/components/core/Link/Link";
-import { CatTitle, ArticleArchiveItem } from "@/components/layouts/Tagged/Item";
+import { ArticleArchiveItem, CatTitle } from "@/components/layouts/Tagged/Item";
 import { TagButton } from "@/components/UX/TagButton";
 import { RPage } from "@/components/UX/Transition";
 import { getImageOverviewByID } from "@/payload/collections/Posts/api/getImageMedia";
@@ -17,6 +17,7 @@ import type { Metadata } from "next/types";
 import { getPayload } from "payload";
 
 import PageClient from "./page.client";
+import { cacheTag } from "next/cache";
 
 type Args = {
   params: Promise<{
@@ -137,8 +138,8 @@ export default async function Page({ params: paramsPromise }: Args) {
 }
 
 async function getTag({ slug }: { slug: string }) {
-  // "use cache";
-  // cacheTag("tag-" + slug);
+  "use cache";
+  cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
 
   const tag = await payload
@@ -162,8 +163,8 @@ async function getTag({ slug }: { slug: string }) {
 }
 
 async function getTags({ slug }: { slug: string }) {
-  // "use cache";
-  // cacheTag("tag-" + slug);
+  "use cache";
+  cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
   const tags = await payload.find({
     collection: "tags",
@@ -201,8 +202,8 @@ async function getTagPosts({
     value: OverviewAgnosticItem;
   }[]
 > {
-  // "use cache";
-  // cacheTag("tag-" + slug);
+  "use cache";
+  cacheTag("tag-" + slug);
   const payload = await getPayload({ config });
   const tagged = await payload
     .find({
@@ -306,7 +307,7 @@ async function getTagPosts({
 export async function generateMetadata({
   params: paramsPromise
 }: Args): Promise<Metadata> {
-  // "use cache";
+  "use cache";
   const { slug } = await paramsPromise;
   const tag = await getTag({ slug });
   if (!tag) {

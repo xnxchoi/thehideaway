@@ -4,7 +4,7 @@ import { ConsentGate } from "@/components/UX/Consent/ConsentGate";
 import { VGradientModule } from "@/components/UX/Gradient/Gradient_M";
 import { Logo } from "@/components/core/Logo";
 import { RPage } from "@/components/UX/Transition";
-import { AuthView as AuthCard } from "@/lib/external/betterauth-ui/src";
+import { AuthView as AuthCard } from "@betterauth-ui";
 import { Suspense } from "react";
 
 export default function Page() {

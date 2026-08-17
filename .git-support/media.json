@@ -82,230 +82,6 @@
       "gitTracked": true
     },
     {
-      "id": "asset_d68be4cf31bd3a471cf7",
-      "path": "public/assets/day-n-night/hosts/ingyu.jpeg",
-      "sha256": "f2f5ec2c6ae3d35ebe3113f01e9e9fcabf002ec91b896a5608e9e7570c7e136c",
-      "bytes": 517015,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_f39fe02ee7b9602524a7",
-      "path": "public/assets/day-n-night/hosts/sean.png",
-      "sha256": "7f1a0f72157eef73c50278a5cb5024131fe81c4c060e78d273908c737b3b05a7",
-      "bytes": 9989620,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_78b3f93daed1fb723b5b",
-      "path": "public/assets/day-n-night/IMG_5282.png",
-      "sha256": "d37894f79c4a2770f06e7da60748f7fbf397463c4beca59a7e84b435b8e16c4c",
-      "bytes": 4080872,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_d43f6837c880afb6d5e3",
-      "path": "public/assets/day-n-night/IMG_6339.png",
-      "sha256": "d61f290ade0dc540cd91b1df5605e0cd86bd3aa410fe3120df51da3aed971337",
-      "bytes": 3962634,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c1e808ad1193326cd812",
-      "path": "public/assets/day-n-night/IMG_8543.png",
-      "sha256": "5b03c3f59a61f8c23a89297ff2aeae128a135905bd3df4a476317e6324e31cc7",
-      "bytes": 3641013,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_95faf7461a71ba7ba9b5",
-      "path": "public/assets/day-n-night/IMG_9520.png",
-      "sha256": "f95ec46800dda022eb6c357b1cf07dac4a533fd03c318b0d00a35fea190d4b7f",
-      "bytes": 4044952,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_e92b1f7d726b0405a882",
-      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-19_001.jpeg",
-      "sha256": "da5ab27ba850939c19eb0e7edd792965e5807b7b5c39c0fb8dfd21f7f2b3139c",
-      "bytes": 589602,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_216b7dc8eda41113b9aa",
-      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-19_002.jpeg",
-      "sha256": "95a538a0c75edf979ce3653451b89cc92c54bb755414edbc115231a219d38cce",
-      "bytes": 585037,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_5316f16400a90d199a8a",
-      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-19_003.jpeg",
-      "sha256": "68c376c0977417cba065cef33e093835852f92fe2ee09209b8de26b9b680d52b",
-      "bytes": 632340,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_b7310fade9df46821b33",
-      "path": "public/assets/day-n-night/past-events/KakaoTalk_Image_2026-05-21-03-03-20_004.jpeg",
-      "sha256": "0b856aee6587493d1de4570dabd23007ba9cdcad8ccb9c5f6f9e70dab2373c6e",
-      "bytes": 564246,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_0e3fa212ae917534cd86",
-      "path": "public/assets/day-n-night/past-events/partypic - 1.png",
-      "sha256": "e45bd6194256a780ef67b700c382751f61da57eb94c3bbf12a6e26e75af246a4",
-      "bytes": 11153902,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_b6e8c9ee845eb20b7d42",
-      "path": "public/assets/day-n-night/past-events/partypic - 10.png",
-      "sha256": "8257209eddd24d5d4927b7618e5efa99c9ea8291903dc7a1dc76dac751eab1db",
-      "bytes": 19485852,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c465467a201b491c5a4c",
-      "path": "public/assets/day-n-night/past-events/partypic - 11.png",
-      "sha256": "439e42776dd5171299dc93f8d84a6f0ba2f10e841b676fdc65ba5d128add6a82",
-      "bytes": 8244173,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_62d381c421e48d8ba793",
-      "path": "public/assets/day-n-night/past-events/partypic - 12.png",
-      "sha256": "fedc19085386a8e578924bd93d81042d64baddaeb8539433ee8a41e0c1d17aa0",
-      "bytes": 1690570,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_ba79278d52179a9ce6df",
-      "path": "public/assets/day-n-night/past-events/partypic - 13.png",
-      "sha256": "4ef337714d83a3ad42617102cc2ebbac55b71da4ba7e77b5f4ed20a3971e013a",
-      "bytes": 24817612,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_4ab6cf6baae1c9012506",
-      "path": "public/assets/day-n-night/past-events/partypic - 2.png",
-      "sha256": "8861fba37f9f501b5296aee3eeffbb11ac5149f52fb7faf39cfb3f337dbb0870",
-      "bytes": 915353,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_5f3ff1cdefc87db5483b",
-      "path": "public/assets/day-n-night/past-events/partypic - 3.png",
-      "sha256": "df4ffc0ff59a0a71bb437f4593464c0f1f679c8309432dc08b5a0596858ee8e6",
-      "bytes": 8287348,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_01a4005effda2ca667e9",
-      "path": "public/assets/day-n-night/past-events/partypic - 4.png",
-      "sha256": "868eb240c43e68b9bdcf359ad94e2625334e3ec7e185f7163c200483afc0dfd8",
-      "bytes": 14772407,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_8b72fc8869ed76c84666",
-      "path": "public/assets/day-n-night/past-events/partypic - 5.mov",
-      "sha256": "f51e20a61952abdd56b7ab85d6027d6ae96e3ea38499a6282214a3308f7dbd2f",
-      "bytes": 8746279,
-      "mimeType": "video/quicktime",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_61f79b52ebcda32aea21",
-      "path": "public/assets/day-n-night/past-events/partypic - 6.png",
-      "sha256": "628485197e3c2e7ea18d960813fcd99e3a3a990353e4c585795c670d58af2409",
-      "bytes": 18878183,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_b2546567f87e84d0e503",
-      "path": "public/assets/day-n-night/past-events/partypic - 7.png",
-      "sha256": "6a1f9fac0f2aab75f914a5aa5427950c38b25185aea6846fca2d4b784905ce53",
-      "bytes": 14544746,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_4d0d4cf2584a8e3e536b",
-      "path": "public/assets/day-n-night/past-events/partypic - 8.png",
-      "sha256": "a9f5ca7cc48a211e4cbbd488db1233920ff54c0ffe9ef5ffd126abee65062374",
-      "bytes": 18783262,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_7938070f96f0b5fc18fb",
-      "path": "public/assets/day-n-night/past-events/partypic - 9.png",
-      "sha256": "53741c99b77f29a5608e6584264fc7557e84068e82f05bd893559eeee3f6b649",
-      "bytes": 19793794,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_53967f8a67a6c4d50c4f",
-      "path": "public/assets/day-n-night/past-events/partypica - 1.mov",
-      "sha256": "a9f2b798ed7338700c536db5156fa78fbc29604346003b914019aa2011dce89b",
-      "bytes": 2959446,
-      "mimeType": "video/quicktime",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_945f18fdce32a0007034",
-      "path": "public/assets/day-n-night/past-events/partypica - 2.png",
-      "sha256": "77afb32028dc70da822ef709265d1af3c19e73d9a48997d389e7ae5a874f8d3d",
-      "bytes": 3358108,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_d321588f700ab44c5ffc",
-      "path": "public/assets/day-n-night/past-events/partypica - 3.png",
-      "sha256": "9f4e10a2939fe635b8dc7b369f2bf2376e02de1787ae3ec86f71b9b489a20c3f",
-      "bytes": 848559,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_282dedded07eeedce00b",
-      "path": "public/assets/day-n-night/past-events/partypica - 4.png",
-      "sha256": "6557d40197fa7c939bbcfd3848f6e767e62ff283060bc964b150a4a1df6beca5",
-      "bytes": 1874604,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_07782254b6d213d7ae85",
-      "path": "public/assets/day-n-night/past-events/partypica - 5.png",
-      "sha256": "446e9f4413b4e273b843ca256aac88974d1f4cf1b49c4e79fc2b0a087856cbd4",
-      "bytes": 10182870,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
       "id": "asset_ee4852170d75473d03bf",
       "path": "public/assets/env_hdr1-gainmap.webp",
       "sha256": "fb0b71b96264e0dd6eedd92d9e966ba48655d8ea2c1824b84b7d127489f2e59e",
@@ -1290,6 +1066,70 @@
       "gitTracked": true
     },
     {
+      "id": "asset_0654f08752bf8bf676e7",
+      "path": "public/assets/lostinseoul/products/damaged-love-the-damaged/damaged-love-the-damaged-back.webp",
+      "sha256": "7a94ad507b9ad24c98092fd541094bbd57aca0aa1b877a323522bbb9d08fdb96",
+      "bytes": 250924,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_14a01963965353eaa931",
+      "path": "public/assets/lostinseoul/products/damaged-love-the-damaged/damaged-love-the-damaged-front.webp",
+      "sha256": "630d989c2f6029c36bdaa3ce35004c158bcb9238a937fcc5107a5cb891d04b97",
+      "bytes": 235138,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_a653ddfa9ec0492c198e",
+      "path": "public/assets/lostinseoul/products/de-seoul/de-seoul.webp",
+      "sha256": "aeb7077ec63de06e16ce3f5c4d2063ccf70bd8a92d4229cef37dedf7a8985735",
+      "bytes": 238396,
+      "mimeType": "image/webp",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_e7c42faf741f7e0c7b54",
+      "path": "public/assets/lostinseoul/retail-church/scene.gltf",
+      "sha256": "33ec661a766004ad213d0db8dd1bad88a7a10a35fc5d70ba05771035e703c830",
+      "bytes": 19566,
+      "mimeType": "model/gltf+json",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_3b5d1b0571ddeeaf552c",
+      "path": "public/assets/lostinseoul/retail-church/textures/concrete_tile_basecolor.png",
+      "sha256": "c915178955e869c10d9ac4bf570c15e69d769c16abae22e43bb03e19990edf43",
+      "bytes": 19615178,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_cbbed3a10af407af71a5",
+      "path": "public/assets/lostinseoul/retail-church/textures/concrete_tile_normal.png",
+      "sha256": "b7240325247e1c7d65f1f063daba28a2861dd16525d0ec00f321b4a7448848cc",
+      "bytes": 22041706,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_0067f33efa73e5b635fe",
+      "path": "public/assets/lostinseoul/retail-church/textures/concrete_tile_roughness.png",
+      "sha256": "a4164c14cb2e2cea9ac290b39937eb1aadcd7dfb51fcafc1e98ed48b5aca5c58",
+      "bytes": 7858692,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_02344f992ffc646b5b77",
+      "path": "public/assets/lostinseoul/retail-church/textures/lightmap_static.png",
+      "sha256": "e6b35c80cac3bc9c1661734b2303451f960be03ca1a67417e8ad705e2c8fea1e",
+      "bytes": 4002658,
+      "mimeType": "image/png",
+      "gitTracked": true
+    },
+    {
       "id": "asset_7e3f7a2b24d26fb32774",
       "path": "public/assets/lostinseoul/retail-church/walle_ando.bin",
       "sha256": "7e9ff5a4205499052e32ba1f21aede67ac5210dfbba4d6c98997f8f75c232a7f",
@@ -1319,22 +1159,6 @@
       "sha256": "2886837b22ede014c1a7a95c4e5272cb4298d3924a430074a784f00fb2a30e90",
       "bytes": 3183,
       "mimeType": "application/octet-stream",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_0f6a4bab771c562f53c5",
-      "path": "public/assets/lp_effects.png",
-      "sha256": "810ce62672af32eb0359ee1c03d3fb991a6fbc380e9793e16746d09d11b1e44c",
-      "bytes": 27904,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_5976202368f131d09156",
-      "path": "public/assets/lp_grooves.png",
-      "sha256": "53665ea1f763c6043697a16f19bb4239ff392a837b56dc0b0d1cb3608fe4b86e",
-      "bytes": 22590,
-      "mimeType": "image/png",
       "gitTracked": true
     },
     {
@@ -1506,26 +1330,10 @@
       "gitTracked": true
     },
     {
-      "id": "asset_43dd620c357a8669ce2d",
-      "path": "public/assets/plate/apr25_textures/badge/Badge_prodce.jsx",
-      "sha256": "525700576350a8f91d005ed33e5cb63df00717d4b67bc9bbd0905cf4b6e47b45",
-      "bytes": 1109,
-      "mimeType": "application/octet-stream",
-      "gitTracked": true
-    },
-    {
       "id": "asset_0f641713afef5facecc2",
       "path": "public/assets/plate/apr25_textures/badge/badge_produce.glb",
       "sha256": "4206e7d16f7c6ef2f0173f3535c969c985553d64e36818902b733feaaeeaa516",
       "bytes": 6517556,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_64793458531b428e264a",
-      "path": "public/assets/plate/apr25_textures/badge/BADGE-transformed.glb",
-      "sha256": "c00e1ff25fc8cc74e8bb010f6418e0745b7d96e8d3757bee2ffef962c9a9734b",
-      "bytes": 245848,
       "mimeType": "model/gltf-binary",
       "gitTracked": true
     },
@@ -1551,46 +1359,6 @@
       "sha256": "9d4aa9ddc5aa71d0766b76be99d059685a37a9b6ca12bbb01f69ea6dca095cbc",
       "bytes": 26432732,
       "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_31e2fc0cd0323d1f719f",
-      "path": "public/assets/plate/apr25_textures/badge/BADGEd.jsx",
-      "sha256": "9d5c62189a4a55fd7f64e80bf458b7b63e8450213ecc975115ab6f17575994f9",
-      "bytes": 1357,
-      "mimeType": "application/octet-stream",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_a7a14a37c0a7aa984d71",
-      "path": "public/assets/plate/apr25_textures/badge/badgerr.glb",
-      "sha256": "f774d38959fa6f583575f776c2f898c94111f09431ae9417893d7ad7e83fbfee",
-      "bytes": 33462476,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_cab259723f2474155444",
-      "path": "public/assets/plate/apr25_textures/badge/Bagmje-transformed.glb",
-      "sha256": "84ba7ec925b641a67b7712112f306690b32247deee71dd2e4d758f2168ba185c",
-      "bytes": 1088148,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_1df31c5c8caad260459d",
-      "path": "public/assets/plate/apr25_textures/badge/Bagmje.glb",
-      "sha256": "8bba619b914dae19c5025ebea29a17eb0e08b97e8f6592cb87fc4f2a5a7a22d1",
-      "bytes": 46430716,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_56767e013cdc7f9e1d97",
-      "path": "public/assets/plate/apr25_textures/badge/Bagmje.jsx",
-      "sha256": "3d1d7032dcb6d778c113d78bb55256516b589bcff3451549967ee0fc7cc8ccb0",
-      "bytes": 1015,
-      "mimeType": "application/octet-stream",
       "gitTracked": true
     },
     {
@@ -1850,22 +1618,6 @@
       "gitTracked": true
     },
     {
-      "id": "asset_39067b73dd8b53629cd5",
-      "path": "public/assets/plate/badge/BADGE-transformed.glb",
-      "sha256": "e96fa2b418cd433fe191f292004203038df55e71e2579d9a54a8feb60bd28672",
-      "bytes": 205092,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_25e6ed0e4a8dd7a5d705",
-      "path": "public/assets/plate/badge/BADGE.glb",
-      "sha256": "13fcddcbbff4b041c9557df0309d46e144d42fa7dc7d1532fce2fe533c75687f",
-      "bytes": 4862072,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
       "id": "asset_f8cf9950c6a5e7d2b838",
       "path": "public/assets/plate/badge/btm_engraving_colors.png",
       "sha256": "6e775c22b1952e63405f43b0a81613882feb0d1339932bce5999f06f5294fc46",
@@ -2002,22 +1754,6 @@
       "gitTracked": true
     },
     {
-      "id": "asset_c8d7c0e14bfe07d4aacf",
-      "path": "public/assets/plate/badge/tagme-transformed.glb",
-      "sha256": "da93a6911780f8efe80063fa13bd319f3664786e133b7bc7faf01c8eefe96574",
-      "bytes": 207596,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_d6e31516396db6fb0627",
-      "path": "public/assets/plate/badge/tagme.glb",
-      "sha256": "7b9dfc22b8e776e405c93c1948c2c365e53d5813c120f26bd735e3e1bd639b77",
-      "bytes": 6914356,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
       "id": "asset_c900f12f88b7bffdc5e8",
       "path": "public/assets/plate/pl/col.png",
       "sha256": "fddbeedc9cd453963510de701cb99468d66eb254912314ad209dc8981573e318",
@@ -2074,22 +1810,6 @@
       "gitTracked": true
     },
     {
-      "id": "asset_5ba59d8022e0a67f425e",
-      "path": "public/assets/plate/pl/tag (3).glb",
-      "sha256": "0e98c648156a6c39b27327c640e47ba3235add87afa1c88e998c8fa6f80f208a",
-      "bytes": 261320,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_cd43f2821664be6c40d7",
-      "path": "public/assets/rp_plaque/model/Plat.tsx",
-      "sha256": "afd45888a9f82e3f84569030b67a8e006a34f10c3cd008e6015fd6a055a051b2",
-      "bytes": 2602,
-      "mimeType": "application/octet-stream",
-      "gitTracked": true
-    },
-    {
       "id": "asset_dd7c3d281b8660eb39ae",
       "path": "public/assets/rp_plaque/model/plate.glb",
       "sha256": "9566d4564e651d6db07010957f4852b15df7166f5ef075ccff4914d1a1928e3c",
@@ -2098,27 +1818,11 @@
       "gitTracked": true
     },
     {
-      "id": "asset_3fee60c214c52dd0f29c",
-      "path": "public/assets/rp_plaque/model/Plate.jsx",
-      "sha256": "80d88667518f858e36649ad09bf62f6477d21b44c3c02a8910f2c3462deda69d",
-      "bytes": 1701,
-      "mimeType": "application/octet-stream",
-      "gitTracked": true
-    },
-    {
       "id": "asset_ef8fad922ae9d4592184",
       "path": "public/assets/rp_plaque/model/pp.glb",
       "sha256": "427d94902d6562de625a3d1084efeff556273661d7ab66f143da974db7e6102a",
       "bytes": 4017468,
       "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_e14226a0477de00ce346",
-      "path": "public/assets/rp_plaque/model/Pp.tsx",
-      "sha256": "b27a793b1f749c1de3490403b8757dc2accbf63dc6071515a236c488b109e2cf",
-      "bytes": 3300,
-      "mimeType": "application/octet-stream",
       "gitTracked": true
     },
     {
@@ -2746,50 +2450,10 @@
       "gitTracked": true
     },
     {
-      "id": "asset_a1eb7c02f628d856f845",
-      "path": "public/assets/three/Asset 27.svg",
-      "sha256": "dab61d1bca98600121f738dc71c6e500cdd07954efba43c9169ffdba7e7db522",
-      "bytes": 21012,
-      "mimeType": "image/svg+xml",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c8e6908628d5ad343878",
-      "path": "public/assets/three/Asset 28.svg",
-      "sha256": "91dfc058af44bb7cc331e9c221a03f76c50d319bd54f4611ea6b8a9f33f91740",
-      "bytes": 718,
-      "mimeType": "image/svg+xml",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_594602a33454177e5e05",
-      "path": "public/assets/three/Asset 29.svg",
-      "sha256": "fac1d36bb1a741e73bda51feb9c4693d02786406eea660d2025c90f81dc11198",
-      "bytes": 878,
-      "mimeType": "image/svg+xml",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_1663b5cf3041776ead3d",
-      "path": "public/assets/three/Asset 30.svg",
-      "sha256": "92f879185c544a01b3ab79ac994211cf5f2b7a07853862778687f9c62827c8e2",
-      "bytes": 882,
-      "mimeType": "image/svg+xml",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_faf337c7c7c0a04885ee",
-      "path": "public/assets/three/badge/badgeblend.glb",
-      "sha256": "db78a6377fc601094dbeaec424169c39a47171e4fdc559a39690f958ab3821a3",
-      "bytes": 8851504,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
       "id": "asset_f7b6812aa1a88595de7a",
       "path": "public/assets/three/badge/model.glb",
-      "sha256": "3f487268857fa1f20e7b9ac79524bc9ff930b092ca2897bd55d837c9195bad22",
-      "bytes": 1770280,
+      "sha256": "ca0041a5c548fd5062c9e1693d54a55d040d1c9eacce42084585353de3e57fb0",
+      "bytes": 2713264,
       "mimeType": "model/gltf-binary",
       "gitTracked": true
     },
@@ -3042,75 +2706,11 @@
       "gitTracked": true
     },
     {
-      "id": "asset_5373ca3b4c903d52e5d3",
-      "path": "public/assets/three/displacement.png",
-      "sha256": "daddbcb2cd73caabc3766c4d7135c56ef5834c1711b899439a8ec5804d5c6726",
-      "bytes": 421362,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_18e704920d6213390a2a",
-      "path": "public/assets/three/dpi.png",
-      "sha256": "b664cd31769f42eb683e97637f32fef4a33f2489a2d4f352816779aa452ded68",
-      "bytes": 485007,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_a326e0ae2c97bbe7e29c",
-      "path": "public/assets/three/ggh.png",
-      "sha256": "ea143cd99134640dcad74a36efdb32ed84f214bfb62b3d5108dfa87dafadcef9",
-      "bytes": 186110,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_4f768ea4cd5610a16c8c",
-      "path": "public/assets/three/ggh2.png",
-      "sha256": "bc7d75cad3856e6ad1dbab8479c3ea2bef4826d87a5478643fc01a5c90f1a349",
-      "bytes": 186196,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_64ecdb3d3ffe65508804",
-      "path": "public/assets/three/gghn.png",
-      "sha256": "02962e2e952f5a65e2bcdc9e66ab23da94c68a7114e21ae6c2e849d4155b0312",
-      "bytes": 1407194,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_1adfffbe2ea553bd7898",
-      "path": "public/assets/three/gght.png",
-      "sha256": "9d9c2cdb83bfb531813324fee8e7e38b58665b9ae86665b5f0f99ad4f6a1ad9f",
-      "bytes": 282790,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_553deb8e351fff987a15",
-      "path": "public/assets/three/height.png",
-      "sha256": "1585c0bc5990c7333ed318930b1439452f5b0e9ead541b9f07a7d766e22f8842",
-      "bytes": 217098,
-      "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
       "id": "asset_ecbcaf8599155af040a0",
       "path": "public/assets/three/het.png",
       "sha256": "ae6098738f4079a56fc3f363f33e32932268499ae3be958fcea45ea8bb5c4185",
       "bytes": 1163398,
       "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c4043d79147c228473de",
-      "path": "public/assets/three/mat.glb",
-      "sha256": "12a9578ff56eaf871d1a89729cfa03518c4289f35d99fea512db9913cfd708ee",
-      "bytes": 132,
-      "mimeType": "model/gltf-binary",
       "gitTracked": true
     },
     {
@@ -3255,62 +2855,6 @@
       "sha256": "5e344ce273beac52e4bf06891b528593b20a6f9fe62e919e97503c91c0919d0d",
       "bytes": 725126,
       "mimeType": "image/png",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_28334a7425f83cd7586b",
-      "path": "public/assets/three/plate/model.glb",
-      "sha256": "ca0041a5c548fd5062c9e1693d54a55d040d1c9eacce42084585353de3e57fb0",
-      "bytes": 2713264,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_e93f5676e3177aabe2c7",
-      "path": "public/assets/three/t2.glb",
-      "sha256": "0e98c648156a6c39b27327c640e47ba3235add87afa1c88e998c8fa6f80f208a",
-      "bytes": 261320,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_f89e0e575ab22bd16e4a",
-      "path": "public/assets/three/tag.glb",
-      "sha256": "0e98c648156a6c39b27327c640e47ba3235add87afa1c88e998c8fa6f80f208a",
-      "bytes": 261320,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_22d2410b39f2ddbf7a41",
-      "path": "public/assets/three/tag2.glb",
-      "sha256": "8d49cef2031955447f6de267a955567d53b09618fbc8f660fc8151495faefcce",
-      "bytes": 15810040,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_7c1d9d5168fd92073d20",
-      "path": "public/assets/three/tag3.glb",
-      "sha256": "dc4454d7b6f3a84872184c1667d5343da01d6d81cfd5d2b62bed873e222515f3",
-      "bytes": 10320072,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_076aa324785dfa5714d9",
-      "path": "public/assets/three/tag4.glb",
-      "sha256": "401cf8418c50a09b54b177b4c832e51968f5e9c6e9b657c7bfc85ee8ef4e795f",
-      "bytes": 10527304,
-      "mimeType": "model/gltf-binary",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_21887f1cdcc114df7111",
-      "path": "public/assets/three/tagdis.glb",
-      "sha256": "bfee1c7a6e249a0c64f2fa4f8324a933ce975534fefa27511ac9a4b3043cb86b",
-      "bytes": 8199684,
-      "mimeType": "model/gltf-binary",
       "gitTracked": true
     },
     {
@@ -4279,310 +3823,6 @@
       "sha256": "f83c2f12589846d827c327c22836f84ecb42128eb9abb26ca39e1b134214fc4f",
       "bytes": 126324,
       "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_7786a4584861bd6aa4e7",
-      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-1920x2880.jpg",
-      "sha256": "38bbfb5ab738d2dbc93e9d34641b45be861000ee5b9eb0b1fc74929445a99aba",
-      "bytes": 212281,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_0c4699841504eb0f605f",
-      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-300x450.jpg",
-      "sha256": "fd10095f63600ec71fbabd22f6c3ad0234a4b682564cc91bb26eb612ba7bc77a",
-      "bytes": 10346,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_e2ea57325e01882a388f",
-      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-500x500.jpg",
-      "sha256": "9a527a16d8dba4aaac194fe927e20f74a0d19e14308ef1b59385782139f66d4a",
-      "bytes": 18129,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_664943da5daf44d1e8e1",
-      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-600x900.jpg",
-      "sha256": "850e33c1347b8ef3d4981487d37012b108e14a62c1496c5e01278901983d0871",
-      "bytes": 31657,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c019f875c764ab8b12d3",
-      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash-900x1350.jpg",
-      "sha256": "bdfe3efa17a9eeb90c72024671cc33642908b5911e51d03424a3d73f9089db9d",
-      "bytes": 61913,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_6902bfcdc34bfa868df0",
-      "path": "public/media/logan-weaver-lgnwvr-kKfM1PJ8g5k-unsplash.jpg",
-      "sha256": "b81e0d2ae82df6390d18b6f547cef7120bbe99e1484b6f11b382b5aaf8dc43ec",
-      "bytes": 696429,
-      "mimeType": "image/jpeg",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_26aaccdf3dbb2796a2b1",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-1200x630.webp",
-      "sha256": "587abd6b5665d4df655ca43cb0365cced2cac6450c943e5ff316b57b3f824a80",
-      "bytes": 46350,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_36676082283cdb965a60",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-1400x2099.webp",
-      "sha256": "f7d0ede8dd31786b6aa5c9def3c51c2d790a7ff12677b14cd9f532dd116ed8f5",
-      "bytes": 176310,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c40b4056623e9d329f59",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-1920x2879.webp",
-      "sha256": "2cad4add18dbfd3cdcb05021c99eae3991c255aa953d50614a88b494db16669e",
-      "bytes": 282568,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_b7b9cd7972a27d715a2b",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-300x450.webp",
-      "sha256": "34d14650008ee8b64bfd0f4867bc82575bdc411dba815f6883dbfd49221f13fb",
-      "bytes": 17618,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_87b6dc3abe9bbee08e04",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-500x500.webp",
-      "sha256": "effdbe13a7fd1c058aab7e78ba5645172de7d178f84e4865579acd33c7a51e48",
-      "bytes": 27224,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_96e6643d2d05a759173f",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-600x900.webp",
-      "sha256": "de38439b53f6ee7b7d61e3f011c0fca9c56e8cbe61926c67af9cba47b9d06c2f",
-      "bytes": 47310,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_f50a74a7238711b9981f",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1-900x1349.webp",
-      "sha256": "a20f678ca9db1f855ec01991eba320b16a859c00abf42925fe67319007eb3181",
-      "bytes": 88928,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_a25a389a9e4880988e23",
-      "path": "public/media/photo-1742933779258-066ced2b3c2fcrop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTMwMjY0Mjl8&ixlib=rb-4.1.webp",
-      "sha256": "fde73c49c5cb36d2a241e627b2f6c7b4fca4a52418f61bb63db31f1101ccb051",
-      "bytes": 1357430,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_22aab3a97a923d21529f",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1200x630.webp",
-      "sha256": "590336af476440c7cc88ea1418ab7bb17b045be8a942a404433e3cb3d05b0815",
-      "bytes": 15722,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_8ba9bd1249ea70373bae",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1400x886.webp",
-      "sha256": "de735e02e5ea25a1910906e13ee19c03e18c71de602d330589f5d7226cabcfa7",
-      "bytes": 23154,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c273db9351702feb4e7a",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1920x1215.webp",
-      "sha256": "977baff9e1292067e095ec53a196525eab00e91a32ccd0ba8727cea1d5e56274",
-      "bytes": 35922,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_abefec4e471d72f7a71f",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-300x189.webp",
-      "sha256": "b6c9b5f909d20ec255082c1c06c67d37abbedd1cb197cf27e2ba4766e6f66b00",
-      "bytes": 3194,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_603a01eadf91ed4ecb0f",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-500x500.webp",
-      "sha256": "0d5a09cdd1f393d0cf9e2f18a7ac57957a33355c653cec62959bec876cece3cf",
-      "bytes": 7146,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_c31bf2236a1b5ec97c04",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-600x379.webp",
-      "sha256": "ac68eaa8685755046b9a9578ec7137a98212311e261860469d81250cc0737e8f",
-      "bytes": 7516,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_860d93f704b13e78e14c",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-900x569.webp",
-      "sha256": "ad1f6f72403eafc9f3e3eee88e08206027d03de9b741dfa01af0762c61822025",
-      "bytes": 12884,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_4785c65568bd83ac7b29",
-      "path": "public/media/photo-1744649781353-8a1b70c37a77crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1.webp",
-      "sha256": "0ef7f0f1402660816ed7e9c46a249bf887ca92f017b07d18b6e83faf60a299cd",
-      "bytes": 1378114,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_af448f9c105b02336976",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1200x630.webp",
-      "sha256": "98cf756179416bce2fce6db1e52ca33deeebf06753d0bf1a691d75b605bb328b",
-      "bytes": 138060,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_b81395676133ca81e65f",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1400x933.webp",
-      "sha256": "8aa6c1b2b7310abc7d022af94dc7264fe4f3d7a3bd3a6013d1793eba014fb2f9",
-      "bytes": 211846,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_2cb85e51e190050b06da",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1920x1280.webp",
-      "sha256": "5dec3d47ce515c7f868c0147fb074c860c7ce327cb365ee58847dbc6c11a6be2",
-      "bytes": 383438,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_8884225f05b79474b1bb",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-300x200.webp",
-      "sha256": "eac3a26bc48162af52f4b2d8fef9beaaae3d70283c7e5dfb7cc5fc8b2cc7da36",
-      "bytes": 10602,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_a8e73d2f8c351ac212ac",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-500x500.webp",
-      "sha256": "d11dcd2a97b7256db0692febcb99e68c4082bf3ec06014e5267bba82d7c85c95",
-      "bytes": 64624,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_aa62d49b23c61996c5c0",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-600x400.webp",
-      "sha256": "56276c683101fa0bbb1fbde78e6ae1d53948b38bdf5a7d5c4dffc9a5b8a82fea",
-      "bytes": 40374,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_4e2e4a7bd13633923479",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-900x600.webp",
-      "sha256": "e498fe0922acb2fc47af2022ac043f1579d0ddbc20d5f02ab68ea61fcda12bcb",
-      "bytes": 88500,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_83e8c4bc500c68df1b48",
-      "path": "public/media/photo-1745933115134-9cd90e3efcc7crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1.webp",
-      "sha256": "66e8effd298eb846d0a1979901110313da1afdb924ff9c82c005eec884d6cfe0",
-      "bytes": 1922242,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_ad3561afdba7453c12f7",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1200x630.webp",
-      "sha256": "58b5d289f8bd37fa5873534468886478f0eb113952c434d5760f72b41fb028a8",
-      "bytes": 62552,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_48194319e4fba0ec4a47",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1400x2100.webp",
-      "sha256": "b673eb3a9785239e1f88cb7f3e4ce8e8390e0a4f5b87879ed5b80b24cd875219",
-      "bytes": 163878,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_7f35b9ac97054534f64a",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-1920x2880.webp",
-      "sha256": "1059eb817a2dc7b67b0fa2a4011bca63e2199d0ce2e42e2b500134fd03b7dd5e",
-      "bytes": 239602,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_23888959d9df5409280b",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-300x450.webp",
-      "sha256": "112558414eab46f1b4261fcbe0377bf2a5ef29f006eb1526f41b37f74d1a54f7",
-      "bytes": 20288,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_a7b79c5c26a7e854d673",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-500x500.webp",
-      "sha256": "2229d3137ed12cba01c527348f766560232944b284c010d83a883c97838d609e",
-      "bytes": 28252,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_352c65561a60bb7a6add",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-600x900.webp",
-      "sha256": "431993b0d15fc0ec87258d6855b14f4eefb3020d3110f377c593f019e7680fa8",
-      "bytes": 53262,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_e63d40cc8baf89f621ce",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1-900x1350.webp",
-      "sha256": "febd99c32e5c00c766873959b8aa5050b823148d27de78be886d158d179b2d2b",
-      "bytes": 93188,
-      "mimeType": "image/webp",
-      "gitTracked": true
-    },
-    {
-      "id": "asset_0758df0fb1bad84be910",
-      "path": "public/media/photo-1749909551094-a03dee3ff334crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NjkwODF8MHwxfHJhbmRvbXx8fHx8fHx8fDE3NTI1ODM4ODl8&ixlib=rb-4.1.webp",
-      "sha256": "e9217391a17299a89c2771dc32b432764f52e08ee4a28991e236232e8b73cc1f",
-      "bytes": 358528,
-      "mimeType": "image/webp",
       "gitTracked": true
     },
     {

@@ -29,7 +29,7 @@ import {
   SubRouteHeader
 } from "@/components/UX/Settings";
 import { authClient } from "@/lib/auth/client";
-import type { User } from "@/payload-types";
+import type { User } from "@payload-types";
 import { RPage } from "@/components/UX/Transition";
 
 interface AccountSectionClientProps {
@@ -66,10 +66,7 @@ export default function AccountSectionClient({
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-8">
-        <SubRouteHeader
-          title="Account"
-          blurb="Handle, sign-in email, password, address, and subscriptions."
-        />
+        <SubRouteHeader title="Account" />
 
         <PanelBento>
           {/* Identity (administrative) — handle is administratively
@@ -117,10 +114,7 @@ export default function AccountSectionClient({
           {/* Password */}
           <Panel>
             <PanelGrid>
-              <PanelHeader
-                eyebrow="Password"
-                blurb="Used only when you sign in with email and password. Passkeys and OAuth bypass this."
-              />
+              <PanelHeader eyebrow="Password" />
               <PanelControls>
                 <ChangePasswordField />
               </PanelControls>
@@ -131,10 +125,7 @@ export default function AccountSectionClient({
             structured address block. */}
           <Panel>
             <PanelGrid>
-              <PanelHeader
-                eyebrow="Address"
-                blurb="For invoicing and country-specific tax handling. Editing opens with the structured-address schema."
-              />
+              <PanelHeader eyebrow="Address" />
               <PanelControls>
                 <LockedField
                   label="Address"
@@ -153,7 +144,6 @@ export default function AccountSectionClient({
             <PanelGrid>
               <PanelHeader
                 eyebrow="Subscriptions"
-                blurb="Self-service tools are in preparation; concierge handles changes manually for now."
                 meta={
                   <span className="text-foreground/85">{ROLE_LABEL[role]}</span>
                 }

@@ -46,7 +46,7 @@ function makePayload(sub: FakeSub | null) {
       update,
       db: { beginTransaction, commitTransaction, rollbackTransaction },
       logger: { error: vi.fn(), info: vi.fn() }
-    } as never,
+    },
     update,
     find,
     commitTransaction,

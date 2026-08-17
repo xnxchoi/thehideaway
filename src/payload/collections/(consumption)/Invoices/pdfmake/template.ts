@@ -1,14 +1,21 @@
 import {
+  Content,
   ContentColumns,
   ContentStack,
-  ContentText,
   ContentTable,
+  ContentText,
   Margins,
   PageSize,
   TableCell,
-  TDocumentDefinitions,
-  Content
+  TDocumentDefinitions
 } from "pdfmake/interfaces";
+import { DateTime } from "luxon";
+import { Currency, Invoice, Subscription, User } from "@/payload-types";
+import {
+  CRESTS_SVG_MARKUP,
+  CRESTS_SVG_WIDTH,
+  HIDEAWAY_LOGO_DATA_URL
+} from "@/components/UX/Invoice/branding";
 
 type RecurringPlan = {
   id: string;
@@ -21,25 +28,12 @@ type InvoiceLineItem = RecurringPlan & {
   tax?: string;
 };
 
-type InvoiceCurrencyCode = "usd" | "krw" | "eur";
 
-const toCurrencyCode = (value: unknown): InvoiceCurrencyCode => {
-  const raw =
-    typeof value === "string"
-      ? value
-      : value && typeof value === "object" && "name" in value
-        ? String((value as { name?: string }).name ?? "")
-        : "";
+const toCurrencyCode = (value: Currency | string): InvoiceCurrencyCode => {
+  const raw = typeof value === "string" ? value : value.name;
   const lower = raw.toLowerCase();
   return lower === "usd" || lower === "eur" ? lower : "krw";
 };
-import { DateTime } from "luxon";
-import { Invoice, Subscription, User } from "@/payload-types";
-import {
-  CRESTS_SVG_MARKUP,
-  CRESTS_SVG_WIDTH,
-  HIDEAWAY_LOGO_DATA_URL
-} from "@/components/UX/Invoice/branding";
 
 /**
  * Translatable strings the invoice template consumes. The shape mirrors the
@@ -378,14 +372,12 @@ const customerField = (
             lineHeight: 1.35
           },
           {
-            text: info.name,
-            // Names may contain Hangul or Latin; the per-locale default
+            text: info.name, // Names may contain Hangul or Latin; the per-locale default
             // font already handles both.
             lineHeight: 1.1,
             bold: true,
             margin: [0, 0, 0, 0.5]
-          },
-          // Email and URL are always Latin — pin to Joly so they stay in the
+          }, // Email and URL are always Latin — pin to Joly so they stay in the
           // editorial face regardless of the active locale.
           { text: info.email, font: "Joly", fontSize: 9, lineHeight: 1 },
           {
@@ -664,8 +656,7 @@ const totalTable = (
       ]
     },
     {
-      text: value,
-      // Force values into Joly so the figures stay tabular and consistent
+      text: value, // Force values into Joly so the figures stay tabular and consistent
       // with the line-item column above.
       font: "Joly",
       alignment: "right" as const,
@@ -710,7 +701,12 @@ export const invoiceTemplate = (
   const items =
     info.items && info.items.length > 0
       ? info.items
-      : [{ ...info.item, name: info.item.name || strings.planFallback }];
+      : [
+          {
+            ...info.item,
+            name: info.item.name || strings.planFallback
+          }
+        ];
   const subtotal = sumLineAmounts(items, (item) => item.price);
   const tax = sumLineAmounts(items, (item) => item.tax);
   const template: TDocumentDefinitions & { content: Content[] } = {

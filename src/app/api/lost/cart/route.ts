@@ -8,8 +8,6 @@ import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { productCartLock } from "@/lib/db/sequences";
 import { resolveLostCheckout } from "@/lib/lost-commerce/cart";
 
-export const runtime = "nodejs";
-
 const LineSchema = z
   .object({
     productId: z.string().min(1),
@@ -72,7 +70,7 @@ async function findActiveCart(
   req?: TransactionRequest
 ) {
   const res = await payload.find({
-    collection: "product-carts" as never,
+    collection: "product-carts",
     depth: 0,
     limit: 1,
     overrideAccess: true,
@@ -152,7 +150,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
           payload,
           user,
           lines: parsed.data.lines,
-          req: txReq as never
+          req: txReq
         })
       : { currency: "KRW" as const, lines: [] };
     const existing = await findActiveCart(payload, userId, txReq);
@@ -167,17 +165,17 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
 
     const cart = existing
       ? await payload.update({
-          collection: "product-carts" as never,
+          collection: "product-carts",
           id: existing.id,
           overrideAccess: true,
           req: txReq,
-          data: data as never
+          data: data
         })
       : await payload.create({
-          collection: "product-carts" as never,
+          collection: "product-carts",
           overrideAccess: true,
           req: txReq,
-          data: data as never
+          data: data
         });
 
     await payload.db.commitTransaction(transactionID);

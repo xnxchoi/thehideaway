@@ -28,14 +28,14 @@ export default async function Page({ params: paramsPromise }: Args) {
     notFound();
   }
   const posts = await getCategoryPosts({ id: cat.id });
-  const firstFive = posts.slice(0, 5).map(
-    ({ slug, author, category, ...posts }): OverviewAgnosticItem => ({
+  const firstFive = posts
+    .slice(0, 5)
+    .map(({ slug, author, category, ...posts }): OverviewAgnosticItem => ({
       category: category.title,
       author: author.name,
       url: formatCollectionURL({ relationTo: "posts", slug }),
       ...posts
-    })
-  );
+    }));
   const rest = posts.slice(5);
   const identity = getCategoryAccent(cat);
   return (
@@ -122,7 +122,7 @@ export async function generateMetadata({
 }
 
 async function getCategory({ slug }: { slug: string }) {
-  // "use cache";
+  "use cache";
   const payload = await getPayload({ config });
 
   const cat = await payload
@@ -147,7 +147,7 @@ async function getCategory({ slug }: { slug: string }) {
 }
 
 async function getCategoryPosts({ id }: { id: string }) {
-  // "use cache";
+  "use cache";
   const payload = await getPayload({ config });
   const postSel = payload
     .find({

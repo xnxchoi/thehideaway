@@ -9,8 +9,6 @@ import { rateLimitOr429 } from "@/lib/api/rateLimit";
 import { cancelUnpaidProductOrder } from "@/lib/lost-commerce/orders";
 import { syncProductPayment } from "@/lib/lost-commerce/product-payment";
 
-export const runtime = "nodejs";
-
 const BodySchema = z.object({
   order_ref: z.string().min(1)
 });
@@ -44,7 +42,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (rl) return rl;
 
   const result = await payload.find({
-    collection: "product-orders" as never,
+    collection: "product-orders",
     depth: 0,
     limit: 1,
     overrideAccess: true,
@@ -53,7 +51,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { order_ref: { equals: parsed.data.order_ref } },
         { user: { equals: String(auth.user.id) } }
       ]
-    } as never
+    }
   });
 
   const order = result.docs[0] as Record<string, unknown> | undefined;
@@ -66,7 +64,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     const payments = await payload.find({
-      collection: "product-payments" as never,
+      collection: "product-payments",
       depth: 0,
       limit: 1,
       overrideAccess: true,

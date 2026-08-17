@@ -33,26 +33,24 @@ Read this before touching `/lostinseoul/fragrance/*` or the fragrance fields on 
 Full analysis lives in the 2026-07-02 session; the load-bearing abstractions:
 
 **OFLYN (oflyn.fr, Awwwards SOTD 2025 — Shopify under WebGL):**
-- Narrative envelope: a season-concept governs a tiny SKU set; each product is a named
-  chapter with a one-line poem and a forensic material biography.
 - **Ceremony at the boundary, efficiency at the core** — 3D budget spent on loader/hero/
   transitions; the PDP is flat photos and fast. ← the structural insight we adopt.
 - A silent monochrome canvas makes one moving thing feel alive.
 - Costs: usability is its lowest award score; the grammar collapses past ~15 SKUs.
 
 **Bleu de Chanel L'Exclusif (studio 60fps, Awwwards HM 2025):**
-- The product as real matter: glass refraction, liquid mass, light as narrative agent,
+
+- The product as real matter: glass refraction, liquid mass, directed lighting,
   one continuous camera, dark ground as *physics necessity* (refraction needs low
   luminance), restrained interactivity (input perturbs, never controls).
 - Scroll as directed cinematography: **user drives the clock, author drives the camera.**
 - Depth-ladder merchandising: one scent at several concentrations = the page structure.
-- Conversion as narrative resolution: one CTA, at the end, earned.
+- One CTA at the end.
 - Costs: specialist-grade shader work (plasticky glass is worse than none); fragile past
   one hero SKU; Chanel-sized trust lets them defer commerce — a young house cannot.
 
-**Triangulation:** Aesop (motion as courtesy; nav restock path), Byredo (name + still
-life carry the story; KR localization precedent), Le Labo (the transaction as ritual —
-your name on the label; enforced scarcity).
+**Triangulation:** Aesop (motion and restock path), Byredo (still-life treatment and Korean localization), Le Labo
+(personalized labels and release constraints).
 
 ## 3. Council verdict (4-voice, 2026-07-02)
 
@@ -103,19 +101,11 @@ was overruled 3:1 and revised.
   (3) editorial twin (static imagery + full DOM text) — tier 3 is the reduced-motion
   and no-JS truth, and every beat's copy exists in DOM regardless of tier.
 
-## 5. Voice profile (derived from live site copy)
+## 5. Copy
 
-Source: LOSTINSEOUL namespace in `messages/en.json` ("Objects, editions, and small
-commitments from the city…", "Limited runs, Seoul dispatch", "Made in Seoul").
-
-- Declarative, compressed sentences. No exclamation, no persuasion vocabulary.
-- Nouns over adjectives: "objects," "editions," "commitments," "dispatch."
-- Scarcity stated as fact, never as urgency ("Some only happen if enough people commit").
-- Lowercase sentence case for prose; uppercase reserved for the wordmark and chrome.
-- Fragrance copy extends this: accord/material language stays forensic (Le Labo-plain),
-  narrative lines stay one-breath short (OFLYN-fragment), never both in one block.
-- KO copy is written as KO, not translated EN — same register: 담백한 서술형, no 존댓말
-  marketing filler.
+All user-facing text follows `readmes/VOICE.md`. Default to standard, compact, neutral English and Korean. Do not infer
+a writing style from the visuals, reference brands, existing campaign copy, or prior drafts. Do not add scarcity,
+product behavior, availability, or launch claims unless confirmed.
 
 ## 6. Architecture (implementation)
 
@@ -222,12 +212,6 @@ The perfume is **Catalyst**, first movement of LOSTINSEOUL's return as a
   harmonizes** the whole. It **projects to others, not to the wearer** ("자신보다
   타인에게 강하게 발향"). Defined *through the other* (타자). The fragrance has no
   fixed self; it becomes what it meets, louder.
-- **Persona:** Seoul as a teenager — hypercompetitive, deferential, untamed;
-  brilliant, magnetic, driven; and anxious, imposter-ridden, **directionless**
-  ("success at all cost" / no answer to "for what?"). *"I'm ready to burn baby,
-  light me up."* Contradiction is the engine, and its beauty.
-- **Emotional payload (conveyed, NEVER stated literally):** *"buy this, spray
-  it — let me burn the world for you."* Reckless, incandescent, offered outward.
 
 ### Visual thesis (chemistry leads, but NON-literal — no bunsen flame)
 
@@ -247,30 +231,20 @@ Three movements = the chemistry and the psychology at once:
    louder, outward, for the world. Object surfaces here (withheld till this beat,
    Chanel). → commerce resolution.
 
-### Copy rule (the founder's register, not the caption-writer's)
+### Copy rule
 
-- **Two registers, NEVER mixed in one block** (existing house discipline, §5):
-  - *Art/narrative register* (the movements) — oblique, one-breath, speaks
-    *from* the concept's mouth (first-person, reckless, adolescent — the
-    "light me up" voice), never a how-to, never narrating the visual.
-  - *Forensic register* (one small plain block near the buy) — states the
-    catalyzer function flatly so no one misreads the purchase (layering,
-    projects-to-others). Le-Labo-dry.
-- **Copy is the founder's strength and is PARKED** until the visuals exist.
-  Do NOT pitch aphoristic design-captions (e.g. "Alone, inert. On you, a
-  reaction.") — they read as an AI fragrance-ad impression. Write copy LAST,
-  against the finished world, in the reckless first-person voice or near-silence.
+- Copy remains parked until the user requests it.
+- When copy is requested without further direction, write literal product facts in the neutral style defined by
+  `readmes/VOICE.md`.
+- Do not draft narrative captions, slogans, riddles, first-person product voice, or explanations of the visual sequence.
+- English and Korean must contain the same confirmed information.
 
 ### Reference houses (Stage 0 dossiers — distilled; full research in session 2026-07-06)
 
-- **D.S. & Durga:** smell-as-displacement — write *an object under a condition*,
-  let the nose infer; three-layer copy (riddle logline → scene sentence →
-  first-person essay); riddle names. Steal the message-first engine; avoid
-  literal travelogue + whimsy-without-craft.
-- **Chanel (Bleu / Les Exclusifs):** one idea stated once; negation/self-
-  authorship rhetoric; **name-as-object**; monochrome + one event; withhold the
-  bottle; Soulages "paint not product." Skip the auteur/celebrity/licensed-music
-  apparatus a young house can't afford.
+- **D.S. & Durga:** study the spatial and material presentation only; do not use its naming or copy structure as a
+  writing reference.
+- **Chanel (Bleu / Les Exclusifs):** monochrome treatment, one visual event, and delayed bottle reveal. Do not use its
+  campaign rhetoric as a writing reference.
 - **Maison Crivelli:** **contrast IS the grammar** (irreconcilable sensations
   forced together); one captured moment, location withheld, wearer completes it;
   brief perfumers with a moodboard. Do it in **value/texture, monochrome** — not
@@ -426,7 +400,10 @@ Run: `node <script>.mjs`  → writes `f_000..f_100.png`; `Read` them.
 
 1. ~~**Black-dot bug**~~ — DONE: proved to be the custom-cursor capture artifact (see above); capture script fixed to park the mouse. No scene change needed.
 2. ~~**Backdrop**~~ — DONE (2026-07-06 eve): re-timed reaction curve (colourless-early, ignite-late) + contained bloom shader, both grounded in the Stage 3 deck; verified via capture. 27 fragrance tests green.
-3. **Copy recast (NEXT)** — messages en+ko + page.tsx + page.client `PHASE_ORDER` → 5 Catalyst scene IDs (dormant/contact/ignition/peak/held). STRUCTURAL ONLY: fix the phase-id mismatch (page.client still `open/bloom/suspend/resolve` — resolves the transient type errors), strip the dead 빛/Bloom/Suspension copy, drop in near-silent placeholders. Keep the founder's-register narrative copy PARKED (writing Catalyst captions is banned until visuals are final). The one real copy is the forensic Held block — use the deck §S5 draft verbatim, don't invent: *"A catalyzer, not a soloist. Worn under or over what's already yours — skin, or another scent — it strengthens and harmonises the whole. It carries to others, not to you."* then *"Catalyst. Limited run, Seoul dispatch."*
+3. **Copy recast (NEXT)** — messages en+ko + page.tsx + page.client `PHASE_ORDER` → 5 Catalyst scene IDs
+   (dormant/contact/ignition/peak/held). STRUCTURAL ONLY: fix the phase-id mismatch (page.client still
+   `open/bloom/suspend/resolve`), remove the old 빛/Bloom/Suspension copy, and use empty or neutral placeholders. Do not
+   add product claims until they are confirmed.
 4. **Layout rebuild** — page.client + fragrance.css to the deck composition (bottle-hero, dark, editorial).
 5. **Animation** — real reaction choreography; verify via capture each change.
 6. **Verify** — `pnpm vitest run "…/lostinseoul/fragrance"` (26 tests currently green), capture frames, and a real-browser check.
@@ -457,7 +434,9 @@ stage. On resume, re-check `git status` before editing.
 - Moodboard: https://claude.ai/code/artifact/802fc32a-3fed-46db-bcd6-0a9023661606
 - Bottle study: https://claude.ai/code/artifact/9f8850cc-73f6-4941-a90c-69569e94b1f2
 - Scene deck (5 scenes, the design target): https://claude.ai/code/artifact/63d8e9bf-2b95-4bcc-80a0-fd6762485734
-- **Reaction look-candidate (ember plume): https://claude.ai/code/artifact/d927c1de-b40c-42d2-b1ea-225d069bf162** — **BLESSED 2026-07-12 ("It looks good")** and ported into the route (see §10.1). The artifact keeps its tune panel for future dialing; its v12 values are the baked production look.
+- **Reaction look-candidate (ember plume): https://claude.ai/code/artifact/d927c1de-b40c-42d2-b1ea-225d069bf162** —
+  **BLESSED 2026-07-12 ("It looks good")**; v12 values live in the three.js scene per §11. Look-dev sandbox only — never
+  a production scene (see §10.1 for the wrong turn).
 
 ---
 
@@ -587,30 +566,31 @@ pierced by one event; the object is not the subject, the reaction is.
 **Next gate:** founder reacts to look-candidate v1 (yes / no / adjust). Only then
 blueprint the real build. No scene code until a look is pointed at.
 
-### 10.1 BLESSED + PORTED (2026-07-12/13)
+### 10.1 The 2D-port wrong turn — REVERTED (2026-07-12/13)
 
-The gate cleared: founder blessed v12 ("It looks good. Go ahead to the next
-phase") and the reaction is now the live showcase scene on the route.
+After the v12 bless, a session ported the raw 2D look-candidate shader into the route as `fragrance-reaction-scene.tsx`
+(raw WebGL1, no three.js), replacing `LostFragranceScene` in showcase mode. **That was a mistake made on stale
+context:** §11's three.js integration had ALREADY baked the blessed plume+water values into the real scene — fire
+curtain + planar-reflection water + camera spring rig + material flacon. The 2D swap read as a massive regression (flat
+frame, no camera orchestration, no real water, no bottle)
+and the founder called it immediately.
 
-- **`fragrance-reaction.ts`** — single source of the look: v12 values +
-  intensity-curve constants baked into generated GLSL (only `uRes`/`uTime`/
-  `uProg` uniforms survive; no tuner, no bottle). TS twin
-  `getLostFragranceReactionIntensity()` for tests/DOM.
-- **`fragrance-reaction-scene.tsx`** — raw WebGL1 (no three.js), same props
-  contract as the old scene (`progress` MotionValue, `onReady`), renders into
-  `.lost-fragrance-canvas`. **Gotcha fixed:** the canvas must be created
-  imperatively per mount — dev StrictMode remounts hand a JSX canvas its
-  already-lost GL context (symptom: `ready:false`, two `error: null` logs).
-- **`page.client.tsx`** — dynamic import swapped to the reaction scene.
-  `LostFragranceScene` (three.js) remains ONLY for `product-stage/` "product"
-  mode (Level 6); its showcase mode is dead — do not resurrect.
-- **The bottle silhouette the founder axed twice must never return** — it was
-  deleted from the artifact's shader outright (no toggle left), and the
-  production shader has a test asserting the source contains no bottle.
-- Verified 2026-07-13 headless against dev server (gate cookie + parked
-  mouse): colourless at 25%, ignition + ring at 50%, peak plume behind the
-  reveal at 75%. 66/66 fragrance tests green, lint clean. Real-GPU signoff
-  still owed per Level 7.
+- **Resolution (2026-07-13):** `page.client.tsx` reverted to the three.js
+  `LostFragranceScene`; the 2D port (`fragrance-reaction.ts`,
+  `fragrance-reaction-scene.tsx`, test) atticked under
+  `.attic/src/…/fragrance/`.
+- **Disambiguation that caused the churn:** what the founder axed was the flat SDF **bottle-silhouette overlay inside
+  the 2D plume shader** (deleted from the artifact outright, no toggle left). The **3D glass flacon in the three.js
+  scene stays** — it was never the reject.
+- **The rule going forward: the showcase scene is three.js.** The artifact is a look-development sandbox only; blessed
+  values flow into the three.js objects (fragrance-light / -water / -scene-objects), never into a parallel 2D scene.
+- Worth keeping from the attic: the warm-shifted ember ramp (founder: pure red reads as regression on a real display)
+  and the dormant "dark but visible" sheen — fold both into the three.js field/water when tuning resumes. Gotcha for any
+  raw-WebGL work: create the canvas imperatively per mount; dev StrictMode remounts hand a JSX canvas an already-lost
+  context.
+- Gate note: `lostinseoul.gate` cookie is now signed (`v1.<exp>.<hmac>`, secret from `.env.local`) — headless capture
+  scripts must mint it, see
+  `shot-fragrance.mjs`.
 
 ---
 
@@ -777,10 +757,8 @@ Also confirmed still-open from §9's founder flags: **copy was never recast** �
 ### Level 5 — Composition & copy (the founder's two remaining flags)
 
 - **Copy recast** (§429) — `messages/{en,ko}.json` + `page.tsx` `copyFrom` +
-  `page.client.tsx` `PHASE_ORDER` → `dormant / contact / ignition / peak / held`.
-  STRUCTURAL ONLY. Narrative copy stays parked; writing Catalyst captions is banned until
-  visuals are final. The single real block is the forensic Held text — use the deck §S5
-  draft verbatim, never invent.
+  `page.client.tsx` `PHASE_ORDER` → `dormant / contact / ignition / peak / held`. STRUCTURAL ONLY. Copy stays parked.
+  Use empty or neutral placeholders and do not add product claims until they are confirmed.
 - **Layout rebuild** (§419) — `page.client` + `fragrance.css` to the deck's cinematic dark
   composition; retire the generic template.
 
@@ -801,5 +779,82 @@ Also confirmed still-open from §9's founder flags: **copy was never recast** �
 ### Standing constraints
 
 - No D&G / CdG brand assets ever ship — code patterns and generic technical textures only.
-- Copy is the founder's register: propose, never overwrite.
+- Copy follows `readmes/VOICE.md` unless the user supplies specific text or direction.
 - Shared `main`: stage by explicit path, re-check `git status`, commit only when asked.
+
+---
+
+## 14. R3F migration candidate (2026-07-13, in flight)
+
+Founder mandate: the showcase must move to the house stack (r3f/drei — both already installed and used repo-wide). First
+swap attempt went live before visual parity and regressed everything — **reverted same day. Rule: the candidate only
+ships after side-by-side parity blessing.**
+
+**LIVE:** `fragrance-scene.tsx` (imperative, founder-tuned) via
+`page.client.tsx`. Carries today's dials: dormant re-anchored DARK (exposure 0.85 / bg ~[0.012,0.009,0.012] —
+Bleu-de-Chanel-and-darker ref), drop-ring GLSL in `fragrance-water.ts` (founder still unhappy with ripples).
+
+**CANDIDATE (off-path):** `fragrance-scene-r3f.tsx` — Canvas + useFrame rig over the same pure modules; drei
+MeshReflectorMaterial water; drei CameraControls (founder-directed) with `setLookAt` damping replacing the hand-rolled
+velocity spring (`stageProgress` staging retained); drop rings as REAL ring meshes (`RING_MAX_RADIUS_M`, metres,
+WYSIWYG); flacon = §11 golden-ratio silhouette (`LOST_FLACON_SILHOUETTE` from fragrance-bottle) in the drei
+MeshTransmissionMaterial clear glass the founder liked (roughness 0.32 vs the old frost 0.53 — dialable); baked
+ember-back/cap-rim light coefficients ported.
+
+**Gotchas learned:** (1) ref on wrapped `<Bloom>` crashes under React 19 (ref-in-props + JSON.stringify memo →
+circular); use raw `BloomEffect` via
+`<primitive>`. (2) NEVER lathe `BOTTLE_PROFILE` — that's the rejected
+"lipstick tube" (§10); founder caught it instantly. (3) A parallel diff had retyped `fragrance-camera.ts` tuples as
+THREE `Vector3` (class) — reverted to `LostFragranceVec3` tuple; latent silent-NaN camera vanish. (4)
+`@react-three/postprocessing`'s `<EffectComposer>` forces
+`gl.toneMapping = NoToneMapping` for its whole mounted lifetime — any
+`gl.toneMappingExposure` writes are silently inert and the ACES rolloff is gone. Fix: a
+`<ToneMapping mode={ACES_FILMIC}>` composer child (three's own GLSL chunk; three binds `toneMappingExposure` to any
+program declaring it, so the fragrance-light exposure curve drives it directly). (5) r3f's `<Canvas>` inner wrapper div
+sets inline pointer-events, quietly overriding an ancestor's `pointer-events:none` — pass
+`style={{ pointerEvents: "none" }}` to Canvas or CameraControls can eat page scroll in any uncovered region. (6) **r3f
+CLONES a JSX `uniforms` prop while applying it** — shared mutable uniform objects (`{ value }` refs the rig writes per
+frame) never reach the ShaderMaterial; the shader silently freezes at its mount snapshot (the fire curtain rendered
+NOTHING because uProg stayed 0). Diagnosed via a temp uniform-identity log (`sameRef: false`). Fix: build
+ShaderMaterials imperatively in `useMemo` (three's constructor keeps the references) and pass them via the mesh
+`material` prop — same reasoning as DrivenBloom's `<primitive>`.
+
+**Adversarial dual-review (`/council /santa-method`):** reviewer 1 (quality) returned FAIL → camera type break (FIXED) +
+a dead-code map that went stale mid-review after the revert (old scene is live again; ignore that finding's direction,
+but the duplication list is valid: motes generator + `seeded()` — extract when the candidate ships). Reviewer 2
+(react/r3f) returned FAIL (2026-07-13): HIGH tone-mapping-forced-off (FIXED, gotcha 4); MEDIUM canvas pointer-events
+(FIXED, gotcha 5); MEDIUM transmission/reflector per-frame FBO cost (MITIGATED — `resolution={256}`
+`samples={4}` on both transmission materials); LOW dead className on Canvas (REMOVED); LOW one-frame-stale
+`live.current` in children (FIXED — rig useFrame at priority `-0.5`: after CameraControls at −1, before consumers at 0,
+below r3f's >0 render-takeover). Confirmation re-review of the fixes is in flight. The same sweep cleared all fragrance
+tsc errors:
+page copy phases decoupled from the scene's `LostFragrancePhaseId`
+(editorial `open|bloom|suspend` union — the two vocabularies drifted apart deliberately); dead `footerMediaLabel`
+dropped (LostFooter no longer declares it); `fragranceTranslator` rebuilt without `as never` casts. **CONVERGED (
+2026-07-13):** both confirmation passes returned PASS (reviewer 2: zero findings; reviewer 1: zero CRITICAL/HIGH/MEDIUM,
+two LOWs — `inViewport` hardcoded true → FIXED with an IntersectionObserver mirroring the live scene's 120px rootMargin;
+`LiveReaction.key`/`juice`
+damped-but-unread in BOTH scenes → shared pre-existing dead state, clean up when the candidate ships).
+
+**Parity captures (headless, 5 stops, 2.2s dwell):** `?scene=r3f` toggle added to `page.client.tsx` (window.location
+read, default path untouched). First sweep caught gotcha 6 (plume entirely missing) plus:
+mote colour wrongly tracking ember (live uses fixed 0.95/0.5/0.24 — restored), bloom `mipmapBlur` not in the live config
+(removed), water plane far edge printing a seam (80→300 m), ring spawn envelope reaching the camera (z clamped behind
+1). Post-fix captures are compositionally aligned at every stop; camera provably settles on the authored keys (diag:
+want 0.12,2.30,7.20 / have 0.12,2.29,7.22). Remaining deltas are taste dials: plume texture grit vs halo softness,
+reflector blur/tone vs the live GLSL water, CameraControls smoothTime vs old spring momentum. Frames: job-tmp
+`parity-live2/` vs `parity-r3f-final/`.
+
+**Tuning wired (2026-07-13):** the candidate reuses the EXISTING bus (`fragrance-tuning.ts` + `FragranceTunerPanel`,
+same `?tune=1` gate) — a first attempt shadowed it with a duplicate module (atticked;
+`fragrance-tuning.ts` beats a new `.tsx` in module resolution, which is how it surfaced). Panel gained an optional
+`defaults` prop because the candidate bakes clearer glass (roughness 0.32 / envMapIntensity 1) than the bus defaults
+(0.53 frost) — without it the panel's first apply repaints the flacon. Candidate wiring: glass knobs apply to the body
+transmission material then mirror onto the neck; light knobs multiply after the reaction writes (same frame, same
+ordering contract as live); exposure multiplies the rig's grade write; bloomIntensity multiplies DrivenBloom.
+Water-folder knobs are inert on the candidate (they target the live GLSL water); reflector mix/blur + ring +
+camSmoothTime dials are NOT in the bus yet — extend it after the founder's first pass if wanted.
+
+Remaining before swap-in: founder side-by-side blessing on a real GPU (`?scene=r3f`, optionally `&tune=1`; transmission
+glass renders opaque headless). On ship: attic the old showcase branch + `fragrance-water.ts`
+per convention.

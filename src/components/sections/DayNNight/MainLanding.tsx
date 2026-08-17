@@ -6,7 +6,7 @@ import { useLenis } from "lenis/react";
 import * as m from "motion/react-m";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { FriendsTorrent } from "./Immersive/FriendsTorrent";
 import { useRuntimeFriendsPhotos } from "./friendsPhotos";
 
@@ -459,15 +459,6 @@ function TorrentRsvp({ rsvpState }: { rsvpState: DayNNightRsvpState }) {
     setProgress(next);
   };
   useLenis(() => updateProgress());
-  useEffect(() => {
-    updateProgress();
-    window.addEventListener("scroll", updateProgress, { passive: true });
-    window.addEventListener("resize", updateProgress);
-    return () => {
-      window.removeEventListener("scroll", updateProgress);
-      window.removeEventListener("resize", updateProgress);
-    };
-  }, []);
 
   if (rsvpState === "confirmed") return <ConfirmedRsvp />;
 

@@ -6,7 +6,7 @@ import {
   currentUser,
   getDeviceSessions
 } from "@/lib/auth/context/get-context-props";
-import type { User } from "@/payload-types";
+import type { User } from "@payload-types";
 import { readLocaleCookie } from "@/i18n/cookie";
 
 import SettingsHubClient from "./page.client";

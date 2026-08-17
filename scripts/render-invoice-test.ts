@@ -7,9 +7,9 @@ import pdfmake from "pdfmake";
 import enMessages from "../messages/en.json" with { type: "json" };
 import koMessages from "../messages/ko.json" with { type: "json" };
 import {
-  invoiceTemplate,
   type InvoiceLocale,
-  type InvoiceStrings
+  type InvoiceStrings,
+  invoiceTemplate
 } from "@/payload/collections/(consumption)/Invoices/pdfmake/template";
 
 const fontPath = (family: string, file: string) =>
@@ -78,8 +78,7 @@ const templateInput = {
     paid: true,
     plan: "Annual Membership",
     user: ""
-  },
-  // Template field is `item` (the renamed single-line concept) — for a
+  }, // Template field is `item` (the renamed single-line concept) — for a
   // membership invoice the item IS the plan, so the shape is the same.
   item: { id: "", name: "Annual Membership", price: "90,000" }
 };
@@ -111,7 +110,7 @@ type RawInvoiceNamespace = {
 const buildStrings = (raw: RawInvoiceNamespace): InvoiceStrings => ({
   ...raw,
   cycleLabel: raw.panel.cycleLabel,
-  memberSince: (year: number) => raw.memberSince.replace("{year}", String(year))
+  memberSince: (year: number) => raw.memberSince.replace("{year}", `${year}`)
 });
 
 const renderFor = async (

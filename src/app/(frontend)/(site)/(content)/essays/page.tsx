@@ -4,6 +4,7 @@ import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOve
 import { formatCollectionURL } from "@/utilities/formatCollectionURL";
 import type { Metadata } from "next/types";
 import PageClient from "./page.client";
+import { cacheTag } from "next/cache";
 
 export default async function Page() {
   const posts = await getFrontPagePosts();
@@ -49,8 +50,8 @@ export default async function Page() {
   );
 }
 async function getFrontPagePosts() {
-  // "use cache";
-  // cacheTag("posts-sitemap");
+  "use cache";
+  cacheTag("posts-sitemap");
   return await queryPostOverviews({
     limit: 12,
     page: 1

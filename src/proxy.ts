@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasLostGateCookie } from "@/lib/lostinseoul/gate";
+import { isLostCommercePaymentPreviewEnabled } from "@/lib/lost-commerce/payment-preview";
 import { signInRedirectPath } from "@/lib/routes/auth";
 
 /**
@@ -25,6 +26,21 @@ const LOST_PUBLIC_ROUTE_REWRITES = new Map([
   ["/terms", "/lostinseoul/terms"],
   ["/refund", "/lostinseoul/refund"]
 ]);
+
+const RETIRED_COMMERCE_API_PREFIXES = [
+  "/api/invoice",
+  "/api/lost/cart",
+  "/api/lost/checkout",
+  "/api/lost/private-quotes",
+  "/api/lost/inventory",
+  "/api/lost/webhooks/portone"
+] as const;
+
+function isRetiredCommerceApiPath(pathname: string): boolean {
+  return RETIRED_COMMERCE_API_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
 
 function hostnameFromHostHeader(host: string): string {
   const value = host.trim().toLowerCase();
@@ -108,7 +124,11 @@ function isLostGatePath(pathname: string): boolean {
 }
 
 function isLostGateExemptPath(pathname: string): boolean {
-  return isLostGatePath(pathname) || pathname === "/api/health";
+  return (
+    isLostGatePath(pathname) ||
+    pathname === "/api/health" ||
+    pathname === "/api/commerce/payments/card/webhook"
+  );
 }
 
 function isLostGateProtectedPath(pathname: string): boolean {
@@ -246,6 +266,13 @@ export async function proxy(request: NextRequest) {
     );
   }
 
+  if (isRetiredCommerceApiPath(pathname)) {
+    return NextResponse.json(
+      { success: false, error: "commerce-api-retired" },
+      { status: 410 }
+    );
+  }
+
   // --- 1. Rate limiting on API routes ---
   if (pathname.startsWith("/api/")) {
     maybeEvict();
@@ -324,8 +351,15 @@ export async function proxy(request: NextRequest) {
   const isProtected = protectedPrefixes.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
+  const isDevelopmentCheckoutPreview =
+    pathname === "/lostinseoul/checkout" &&
+    isLostCommercePaymentPreviewEnabled();
 
-  if (isProtected && !hasSessionCookie(request)) {
+  if (
+    isProtected &&
+    !isDevelopmentCheckoutPreview &&
+    !hasSessionCookie(request)
+  ) {
     const redirectPath = isLostRequest
       ? lostHostSignInRedirectPath(pathname)
       : signInRedirectPath(pathname);

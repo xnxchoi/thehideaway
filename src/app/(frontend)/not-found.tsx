@@ -3,6 +3,7 @@ import { LinkUnderlined } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 
 import { MissingLayout } from "../../components/layouts/Missing/lays.client";
+import { Missingv } from "@/components/layouts/Missing/Missing_anew";
 
 const ItemNotFound = () => {
   return (

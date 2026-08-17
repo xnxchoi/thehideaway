@@ -162,33 +162,33 @@ export async function createInventoryPostgresHarness(databaseUri: string) {
     const suffix = randomUUID();
     const actorIds = [randomUUID(), randomUUID()];
     const product = (await payload.create({
-      collection: "products" as never,
+      collection: "products",
       overrideAccess: true,
       data: {
         name: `Ledger ${suffix}`,
         slug: `ledger-${suffix}`,
         currency: "KRW",
         unit_amount: 1
-      } as never
+      }
     })) as unknown as { id: string | number };
     const sku = (await payload.create({
-      collection: "product-variants" as never,
+      collection: "product-variants",
       overrideAccess: true,
       data: {
         product: product.id,
         active: true,
         sku: `LIS-${suffix}`.toUpperCase(),
         options: []
-      } as never
+      }
     })) as unknown as { id: string | number };
     const location = (await payload.create({
-      collection: "stock-locations" as never,
+      collection: "stock-locations",
       overrideAccess: true,
       data: {
         code: `LOC-${suffix}`.toUpperCase(),
         name: `Location ${suffix}`,
         active: true
-      } as never
+      }
     })) as unknown as { id: string | number };
     const fixture = {
       productId: String(product.id),
@@ -210,7 +210,7 @@ export async function createInventoryPostgresHarness(databaseUri: string) {
 
   async function createLocation(suffix: string, label: string) {
     const location = (await payload.create({
-      collection: "stock-locations" as never,
+      collection: "stock-locations",
       overrideAccess: true,
       data: {
         code: `LOC-${label}-${suffix}`.toUpperCase(),

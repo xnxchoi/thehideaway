@@ -44,17 +44,15 @@ import React, {
   useCallback,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState
 } from "react";
 import { useShallow } from "zustand/shallow";
-import { clamp } from "@/utilities/mathUtilities";
 
 type VerticalDirection = "up" | "down";
 type TransitionType =
-  | "animate-to-full"
-  | "transition-wipe"
-  | "animate-to-previous";
+  "animate-to-full" | "transition-wipe" | "animate-to-previous";
 export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const showHeader = useRPStore(useShallow((store) => store.showHeader));
   const setHeaderVisibility = useRPStore((store) => store.setHeaderVisibility);
@@ -101,8 +99,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const [toogled, setToogled] = useState(false);
 
   const docInnerRef = useRef<HTMLElement>(null!);
-
-  useEffect(() => {
+  const setupInnerListener = useEffectEvent(() => {
     const onEnter = () => setToogled(true);
     const onLeave = () => setToogled(false);
 
@@ -118,6 +115,9 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
         docInnerRef.current.removeEventListener("mouseleave", onLeave);
       }
     };
+  });
+  useLayoutEffect(() => {
+    setupInnerListener();
   }, []);
 
   const navIsOpen = useRPStore(useShallow((store) => store.navIsOpen));
@@ -212,7 +212,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
   const innerVisibility = useTransform<
     number,
     NonNullable<CSSProperties["visibility"]>
-  >(innerOpacity, [0, 0.2], ["hidden", "visible"]);
+  >(() => (innerOpacity.get() > 0.2 ? "visible" : "hidden"));
 
   useMotionValueEvent(transitionVariant, "change", (latestValue) => {
     const iss = latestValue === "slide";
@@ -379,7 +379,6 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
     });
   });
   useEffect(() => {
-    console.log("resized!");
     instantiator();
   }, [lastResize]);
 

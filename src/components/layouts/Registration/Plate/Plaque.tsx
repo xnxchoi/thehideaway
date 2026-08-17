@@ -54,7 +54,7 @@ import {
 } from "three";
 const ASSETS_BASE_PATH = "/assets/three";
 const TEXTURE_BASE_PATH = `${ASSETS_BASE_PATH}/materials`;
-const OBJ_BASE_PATH = `${ASSETS_BASE_PATH}/plate`;
+const OBJ_BASE_PATH = `${ASSETS_BASE_PATH}/badge`;
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 

@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { AuthView as AuthCard } from "@/lib/external/betterauth-ui/src";
+import { AuthView as AuthCard } from "@betterauth-ui";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 import { signInRedirectTarget } from "@/lib/routes/auth";
@@ -26,11 +26,11 @@ export default async function LostSignInPage(props: {
           <section className="max-w-2xl">
             <Link
               href="/lostinseoul"
-              className="font-mono text-xs uppercase tracking-[0.2em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)] transition-opacity hover:opacity-75"
+              className="font-mono text-xs tracking-[0.2em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)] uppercase transition-opacity hover:opacity-75"
             >
               {t("home.eyebrow")}
             </Link>
-            <h1 className="mt-6 text-6xl font-serif font-bold tracking-tight md:text-7xl">
+            <h1 className="mt-6 font-serif text-6xl font-bold tracking-tight md:text-7xl">
               {t("home.title")}
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.68)] md:text-lg">

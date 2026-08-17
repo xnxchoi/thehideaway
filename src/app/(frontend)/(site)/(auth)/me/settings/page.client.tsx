@@ -15,7 +15,8 @@ import {
   SectionLink
 } from "@/components/UX/Settings";
 import { RPage } from "@/components/UX/Transition";
-import type { User } from "@/payload-types";
+import type { User } from "@payload-types";
+import { useIsMobile } from "@/providers/MiddleMan";
 
 interface SettingsHubClientProps {
   user: User;
@@ -51,6 +52,7 @@ export default function SettingsHubClient({
   initialLocale,
   activeSessionsCount
 }: SettingsHubClientProps) {
+  const { isMobile } = useIsMobile();
   const displayName =
     user.name ??
     [user.firstName, user.lastName].filter(Boolean).join(" ") ??
@@ -91,54 +93,56 @@ export default function SettingsHubClient({
         {/* Mobile/tablet only: hub-as-navigation. Desktop uses the rail
             in layout.tsx, so showing this stack on xl+ would just
             duplicate it. */}
-        <div className="flex flex-col gap-10 xl:hidden">
-          <SectionGroup label="Preferences">
-            <SectionLink
-              href="/me/settings/general"
-              title="General"
-              description="Language, theme, and other interface preferences."
-              tone="data"
-              icon={<Sliders size={14} strokeWidth={1.4} />}
-            />
-          </SectionGroup>
+        {isMobile && (
+          <div className="flex flex-col gap-10 xl:hidden">
+            <SectionGroup label="Preferences">
+              <SectionLink
+                href="/me/settings/general"
+                title="General"
+                description="Language, theme, and other interface preferences."
+                tone="data"
+                icon={<Sliders size={14} strokeWidth={1.4} />}
+              />
+            </SectionGroup>
 
-          <SectionGroup label="You">
-            <SectionLink
-              href="/me/settings/profile"
-              title="Profile"
-              description="Public-facing fields — name, bio, location, link."
-              tone="account"
-              icon={<UserRound size={14} strokeWidth={1.4} />}
-            />
-            <SectionLink
-              href="/me/settings/account"
-              title="Account"
-              description="Handle, sign-in email, password, address, subscriptions."
-              tone="billing"
-              icon={<IdCard size={14} strokeWidth={1.4} />}
-            />
-          </SectionGroup>
+            <SectionGroup label="You">
+              <SectionLink
+                href="/me/settings/profile"
+                title="Profile"
+                description="Public-facing fields — name, bio, location, link."
+                tone="account"
+                icon={<UserRound size={14} strokeWidth={1.4} />}
+              />
+              <SectionLink
+                href="/me/settings/account"
+                title="Account"
+                description="Handle, sign-in email, password, address, subscriptions."
+                tone="billing"
+                icon={<IdCard size={14} strokeWidth={1.4} />}
+              />
+            </SectionGroup>
 
-          <SectionGroup label="Access">
-            <SectionLink
-              href="/me/settings/security"
-              title="Security"
-              description="Two-factor, sessions, providers, passkeys, danger zone."
-              tone="support"
-              icon={<ShieldCheck size={14} strokeWidth={1.4} />}
-            />
-          </SectionGroup>
+            <SectionGroup label="Access">
+              <SectionLink
+                href="/me/settings/security"
+                title="Security"
+                description="Two-factor, sessions, providers, passkeys, danger zone."
+                tone="support"
+                icon={<ShieldCheck size={14} strokeWidth={1.4} />}
+              />
+            </SectionGroup>
 
-          <SectionGroup label="Communication">
-            <SectionLink
-              href="/me/settings/notifications"
-              title="Notifications"
-              description="What you hear from us — and how often."
-              tone="options"
-              icon={<Bell size={14} strokeWidth={1.4} />}
-            />
-          </SectionGroup>
-        </div>
+            <SectionGroup label="Communication">
+              <SectionLink
+                href="/me/settings/notifications"
+                title="Notifications"
+                description="What you hear from us — and how often."
+                tone="options"
+                icon={<Bell size={14} strokeWidth={1.4} />}
+              />
+            </SectionGroup>
+          </div>
+        )}
       </div>
     </RPage>
   );

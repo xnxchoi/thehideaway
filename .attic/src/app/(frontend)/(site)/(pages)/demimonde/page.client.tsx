@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useShallow } from "zustand/shallow";
-import { useTheme } from "../../../../../../src/providers/Theme";
+import { useTheme } from "../../../../../../../src/providers/Theme";
 
 /**
  * Locks the page to the light/cream theme — the cookout surface is

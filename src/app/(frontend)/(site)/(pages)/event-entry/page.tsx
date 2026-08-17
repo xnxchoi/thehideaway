@@ -17,8 +17,8 @@ export default async function EventEntryPage() {
 
   const eventResult = await payload
     .find({
-      collection: "events" as never,
-      where: { slug: { equals: "day-n-night" } } as never,
+      collection: "events",
+      where: { slug: { equals: "day-n-night" } },
       limit: 1,
       overrideAccess: true,
       depth: 0
@@ -30,7 +30,7 @@ export default async function EventEntryPage() {
 
   const ticketResult = await payload
     .count({
-      collection: "tickets" as never,
+      collection: "tickets",
       overrideAccess: true,
       where: {
         and: [
@@ -42,7 +42,7 @@ export default async function EventEntryPage() {
             ]
           }
         ]
-      } as never
+      }
     })
     .catch(() => null);
 

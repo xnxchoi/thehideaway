@@ -6,7 +6,7 @@ import { getPayload } from "payload";
 
 import { RPage } from "@/components/UX/Transition";
 import PageClient from "./page.client";
-import type { User } from "@/payload-types";
+import type { User } from "@payload-types";
 
 const LIMIT = 24;
 

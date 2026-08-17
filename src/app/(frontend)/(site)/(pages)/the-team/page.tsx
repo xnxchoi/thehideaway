@@ -1,4 +1,4 @@
-import { Credited, Credits } from "src/components/sections/Credits";
+import { Credited, Credits } from "@/components/sections/Credits";
 import { getPayload } from "payload";
 import config from "@payload-config";
 

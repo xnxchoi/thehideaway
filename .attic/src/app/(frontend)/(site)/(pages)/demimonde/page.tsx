@@ -1,8 +1,8 @@
 import { Metadata } from "next";
-import { RPage } from "../../../../../../src/components/UX/Transition";
+import { RPage } from "../../../../../../../src/components/UX/Transition";
 import DemimondePageClient from "./page.client";
 import { DemimondeCursor } from "./DemimondeCursor";
-import { DemimondeHero } from "./DemimondeHero";
+import { DemimondeHero } from "../../../../../../app/(frontend)/(site)/(pages)/demimonde/DemimondeHero";
 import { DemimondeFacts } from "./DemimondeFacts";
 import { DemimondeWelcome } from "./DemimondeWelcome";
 import { DemimondeTurntable } from "./DemimondeTurntable";

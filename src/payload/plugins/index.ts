@@ -389,6 +389,4 @@ export const plugins: Plugin[] = [
       "citations"
     ]
   }),
-  MembershipPlugin({ enabled: true }),
-  TicketingPlugin({ enabled: true })
 ];

@@ -9,6 +9,7 @@ import {CollectionConfig} from "payload";
 import {fileURLToPath} from "url";
 import {uuidv7} from "uuidv7";
 import { idField } from "@/payload/fields/IDField";
+import { createHash } from "node:crypto";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -98,8 +99,18 @@ export const Media: CollectionConfig = {
               throw new Error("This user is banned.");
             }
 
-            const file = req.file as unknown as { md5: string };
-            const hash = file.md5;
+            const file = req.file as unknown as {
+              data?: Buffer;
+              md5?: string;
+            };
+            const hash =
+              file.md5 ??
+              (file.data
+                ? createHash("md5").update(file.data).digest("hex")
+                : null);
+            if (!hash) {
+              throw new Error("Upload checksum not found.");
+            }
             req.file.name = `${targetUserDoc.id.toString()}_${hash.slice(
               0,
               2

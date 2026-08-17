@@ -1443,8 +1443,7 @@ function MapArc<T extends MapArcDatum = MapArcDatum>({
   useEffect(() => {
     if (!isLoaded || !map) return;
     const source = map.getSource(sourceId) as
-      | MapLibreGL.GeoJSONSource
-      | undefined;
+      MapLibreGL.GeoJSONSource | undefined;
     source?.setData(geoJSON);
   }, [isLoaded, map, geoJSON, sourceId]);
 
@@ -1452,18 +1451,10 @@ function MapArc<T extends MapArcDatum = MapArcDatum>({
   useEffect(() => {
     if (!isLoaded || !map || !map.getLayer(layerId)) return;
     for (const [key, value] of Object.entries(mergedPaint)) {
-      map.setPaintProperty(
-        layerId,
-        key as keyof MapArcLinePaint,
-        value as never
-      );
+      map.setPaintProperty(layerId, key as keyof MapArcLinePaint, value);
     }
     for (const [key, value] of Object.entries(mergedLayout)) {
-      map.setLayoutProperty(
-        layerId,
-        key as keyof MapArcLineLayout,
-        value as never
-      );
+      map.setLayoutProperty(layerId, key as keyof MapArcLineLayout, value);
     }
     if (map.getLayer(hitLayerId)) {
       map.setPaintProperty(hitLayerId, "line-width", hitWidth);
@@ -1867,10 +1858,4 @@ export {
   MapClusterLayer
 };
 
-export type {
-  MapRef,
-  MapViewport,
-  MapInitialState,
-  MapArcDatum,
-  MapArcEvent
-};
+export type { MapRef, MapViewport, MapInitialState, MapArcDatum, MapArcEvent };

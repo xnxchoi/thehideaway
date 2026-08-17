@@ -4,6 +4,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";
 
+import { cacheTag } from "next/cache";
+
 type Args = {
   params: Promise<{
     slug: string;
@@ -25,8 +27,8 @@ export default async function SurfPage({ params }: Args) {
 }
 
 async function getSurf({ slug }: { slug: string }) {
-  // "use cache";
-  // cacheTag("surf-" + slug);
+  "use cache";
+  cacheTag("surf-" + slug);
   const payload = await getPayload({ config: configPromise });
   const surfs = await payload.find({
     collection: "surf",

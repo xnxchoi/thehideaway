@@ -33,7 +33,7 @@ const chipClass = (
 export function ComingSoonTag({
   label,
   preset = "default",
-  tooltip = "composition",
+  tooltip = "inProgress",
   tooltipTitle,
   tone = "soft",
   className,

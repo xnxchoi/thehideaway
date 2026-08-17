@@ -97,8 +97,6 @@ Masthead + QuickStrip on every breakpoint; the SectionGroup stack is `xl:hidden`
 ### Mapbox
 `/api/places/search` proxy holds the secret token, applies city-grade filter. Client helper at `_helpers/searchPlaces.ts`. Wired into `<EditableLocation/>` on Profile.
 
-### Copy discipline
-PanelHeader API: `eyebrow` is the heading (required). `title` and `blurb` are optional and only used when they carry real meaning. Filler like "Your real-world name and voice" / "Where to find you" / "Both fields are public" was stripped.
 
 ### i18n
 Settings pages are migrating to `next-intl` with the `Settings.*` namespace. `messages/{en,ko}.json` is the canonical place for copy. `sections.ts` is structural data only — labels live in i18n.
@@ -117,9 +115,10 @@ These are patterns the user has corrected me on more than once. Internalize:
 
 4. **Don't put visual preferences in Account.** Account = sign-in / credential identity. Theme + motion belong in General. Categorize by axis, not by the nearest non-empty page.
 
-5. **Editorial primitives ≠ admin primitives.** `<TableOfContents/>` (numbers + mono caps + gradient pill) is for long-form documents. `<SettingsRail/>` (icon tile + label + rounded active) is for admin. Keep them as separate components even when they're visually adjacent in the design system.
+5. **Reading primitives ≠ admin primitives.** `<TableOfContents/>` is for long-form documents. `<SettingsRail/>` is for
+   admin. Keep them separate when their functions differ.
 
-6. **Drop filler titles + blurbs.** Eyebrow is the heading. Title/blurb only when they carry behaviour worth explaining. "What gets sent today," "Hardware-backed sign-in," "Devices currently signed in" — all dropped.
+6. **Drop filler text.** Use one clear heading. Add a description only when it explains behavior the user needs to know.
 
 7. **The user is doing a lot of in-flight i18n + lint integration in parallel.** Their lint passes are real edits — don't revert them. The system reminder messages about "modified, either by the user or by a linter" mean exactly that.
 
@@ -181,7 +180,8 @@ Three iterations on the surface based on user critique:
 
 **Iteration C — editorial pressroom (current).** `max-w-5xl 2xl:max-w-6xl` reading-width column. Rail bound to content width (no full-bleed chrome) — only chrome is hairline-gradient top + bottom edges, fading at the ends. List = editorial newspaper-stack rows: PUBLISHED · date · 2w eyebrow (DRAFT · italic title for drafts), large sans title, subtitle, mono-caps tags, trailing thumbnail (md+) or initial-letter fallback. Read/Edit chips inline at the bottom of the title block (NOT absolute top-right — that collided with the thumbnail). Below md, sticky disengages, tabs flow inline.
 
-**Tone discipline (post-iteration C critique).** User flagged manufactured taglines as falling into two patterns: passive subject-omission ("Nothing under your byline yet — the shelf is waiting.") and noun-stack ("4 in your name — 3 published, 1 in draft."). Reference register: Bret Easton Ellis's *Less Than Zero* — dry, declarative, factual, simple subject + verb. Outcome:
+**Copy rule (post-iteration C critique).** The user rejected manufactured taglines, passive subject-omission, and noun
+stacks. Use standard, factual sentences with a clear subject and verb. Outcome:
 - Masthead tagline removed entirely. Tab counts already show "All N · Published M · Drafts K"; the prose tagline was redundant.
 - Empty-state copy rewritten:
   - "You haven't written anything yet." / "Your drafts and published posts will show up on this page."
@@ -205,7 +205,8 @@ The editorial-pressroom direction shipped (current state) but isn't loved. Holdi
 - **Project uses 10px-rem.** Tailwind `rem`-tokens resolve at 10px/rem here, so `max-w-7xl` (80rem) is 800px not 1280px. Use `[px]` arbitrary values when an exact width matters. Logged in project memory.
 - **The site has a floating capsule global header** (animated width, ~645–full viewport, fixed position). Page sticky chrome that uses `border-b backdrop-blur` competes with the capsule visually. Pages should use hairline-gradient edges + `bg-background` (not `bg-background/90`).
 - **`(auth)/me/*` is not strictly Fey direction.** CLAUDE.md's "Admin surfaces (Fey direction)" applies to settings-cohort surfaces (`/me/settings`, `/vault`). `/me/posts` is editorial-author cohort — Fey panels don't fit. The CLAUDE.md scope rule is broad; the user's content surfaces (posts list, library) are editorial, not admin-table.
-- **Tone register: Less Than Zero, not editorial-magazine.** Plain declarative subject + verb. No "shelf is waiting", no "[noun]. [noun], [noun]." tagline patterns. Drop manufactured taglines if the count strip already says it.
+- **Copy:** plain declarative subject + verb. No "shelf is waiting" and no noun-stack taglines. Drop taglines when the
+  interface already provides the same information.
 - **Layout shift on hover is non-negotiable.** Reserved space + opacity beats `display: none` + hover.
 - **Page chrome anchors viewport, content reads at editorial cap.** All content elements (masthead, rail, rows, footer) share one `max-w-[1280px]` left-anchored cap; structural rules (hairlines) attach to the outer full-width container so they extend to viewport edges.
 - **Asymmetric outer padding on lg+** clears the SideDrawer/SideNotch peek. `lg:pl-24 xl:pl-32 2xl:pl-40 lg:pr-12`.

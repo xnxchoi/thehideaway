@@ -70,7 +70,10 @@ export function SettingsRail() {
   const tSections = useTranslations("Settings.sections");
 
   return (
-    <nav aria-label={t("navAria")} className="flex w-full flex-col gap-0.5">
+    <nav
+      aria-label={t("navAria")}
+      className="flex w-full flex-col justify-around"
+    >
       {SETTINGS_SECTION_SLUGS.map((slug) => {
         const active = isActive(pathname, slug);
         const decor = RAIL_DECOR[slug];
@@ -82,28 +85,25 @@ export function SettingsRail() {
             href={`${SETTINGS_BASE}/${slug}`}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "group flex items-center gap-3 rounded-md px-2 py-2 transition-colors duration-150 ease-out-power2",
-              active
-                ? "bg-foreground/[0.06] dark:bg-foreground/[0.08]"
-                : "hover:bg-foreground/[0.03] dark:hover:bg-foreground/[0.04]",
-              "focus-visible:ring-1 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+              "group flex items-center gap-9 rounded-2xl px-6 py-6 transition-colors duration-150 ease-out-power2",
+              active ? "bg-foreground/10" : "hover:bg-foreground/5"
             )}
           >
             <span
               aria-hidden="true"
               className={cn(
-                "flex size-7 shrink-0 items-center justify-center rounded-[7px]",
+                "flex size-14 shrink-0 items-center justify-center rounded-[14px]",
                 TILE_TONES[decor.tone]
               )}
             >
-              <Icon size={14} strokeWidth={1.4} />
+              <Icon size={35} strokeWidth={1.4} />
             </span>
             <span
               className={cn(
-                "text-sm tracking-tight transition-colors duration-150",
+                "text-base tracking-tight transition-colors duration-150",
                 active
                   ? "font-medium text-foreground"
-                  : "font-normal text-foreground/75 group-hover:text-foreground dark:text-foreground/65"
+                  : "text-foreground/75 group-hover:text-foreground dark:text-foreground/65"
               )}
             >
               {label}

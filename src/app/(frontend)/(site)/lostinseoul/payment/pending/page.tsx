@@ -20,28 +20,26 @@ export default async function LostPaymentPendingPage({ searchParams }: Props) {
 
   const payload = await getPayload({ config });
   const orders = await payload.find({
-    collection: "product-orders",
+    collection: "commerce-orders" as never,
     depth: 0,
     limit: 1,
     overrideAccess: true,
     where: {
       and: [
-        { order_ref: { equals: order } },
+        { ref: { equals: order } },
         { user: { equals: String(session.user.id) } }
       ]
     }
   });
-  const ownedOrder = orders.docs[0];
-  if (!ownedOrder || ownedOrder.payment_status !== "pending_manual") notFound();
-
-  const payments = await payload.find({
-    collection: "product-payments",
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-    where: { order: { equals: ownedOrder.id } }
-  });
-  if (payments.docs[0]?.provider !== "manual") notFound();
+  const ownedOrder = orders.docs[0] as
+    { payment_method?: string; payment_status?: string } | undefined;
+  if (
+    !ownedOrder ||
+    ownedOrder.payment_method !== "bank_transfer" ||
+    ownedOrder.payment_status !== "pending"
+  ) {
+    notFound();
+  }
 
   return (
     <RPage slug={["lostinseoul", "payment", "pending"]} type="pages">

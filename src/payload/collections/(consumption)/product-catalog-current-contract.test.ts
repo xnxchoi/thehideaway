@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { getTableColumns } from "drizzle-orm";
 
-import { product_variants, products } from "@/payload-generated-schema";
-import { ProductVariants } from "./ProductVariants";
-import { Products } from "./Products";
+import { commerce_products } from "@/payload-generated-schema";
+import { CommerceProducts } from "../commerce/Products";
 
 function fieldNames(config: { fields: readonly unknown[] }): string[] {
   return config.fields.flatMap((field) => {
@@ -12,9 +11,9 @@ function fieldNames(config: { fields: readonly unknown[] }): string[] {
   });
 }
 
-describe("current LOSTINSEOUL product catalog schema", () => {
+describe("current minimal commerce product catalog schema", () => {
   it("contains no compatibility fields on products", () => {
-    expect(fieldNames(Products)).not.toEqual(
+    expect(fieldNames(CommerceProducts)).not.toEqual(
       expect.arrayContaining([
         "inventory",
         "stock_state",
@@ -24,45 +23,19 @@ describe("current LOSTINSEOUL product catalog schema", () => {
     );
   });
 
-  it("contains no compatibility fields on SKUs", () => {
-    expect(fieldNames(ProductVariants)).not.toEqual(
-      expect.arrayContaining([
-        "inventory",
-        "legacy_key",
-        "legacy_variant_ref",
-        "stock_state"
-      ])
-    );
-  });
-
-  it("does not expose compatibility fields in admin listings or population", () => {
-    expect(Products.defaultPopulate).not.toHaveProperty("stock_state");
-    expect(Products.admin?.defaultColumns).not.toEqual(
-      expect.arrayContaining(["inventory", "stock_state"])
-    );
-    expect(ProductVariants.defaultPopulate).not.toEqual(
-      expect.objectContaining({ inventory: true, stock_state: true })
-    );
-    expect(ProductVariants.admin?.defaultColumns).not.toEqual(
+  it("does not expose compatibility fields in admin listings", () => {
+    expect(CommerceProducts.admin?.defaultColumns).not.toEqual(
       expect.arrayContaining(["inventory", "stock_state"])
     );
   });
 
   it("contains no compatibility columns in the generated PostgreSQL schema", () => {
-    expect(Object.keys(getTableColumns(products))).not.toEqual(
+    expect(Object.keys(getTableColumns(commerce_products))).not.toEqual(
       expect.arrayContaining([
         "inventory",
         "stock_state",
         "variant_source",
         "variants"
-      ])
-    );
-    expect(Object.keys(getTableColumns(product_variants))).not.toEqual(
-      expect.arrayContaining([
-        "inventory",
-        "legacy_key",
-        "legacy_variant_ref",
-        "stock_state"
       ])
     );
   });

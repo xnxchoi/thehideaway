@@ -7,8 +7,9 @@ import { generateMeta } from "@/utilities/generateMeta";
 import { randomNumber } from "@/utilities/randomNumber";
 import config from "@payload-config";
 import type { Metadata } from "next";
+import { cacheTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { getPayload, PaginatedDocs } from "payload";
+import { getPayload } from "payload";
 import React from "react";
 
 type Args = {
@@ -82,8 +83,8 @@ export async function generateMetadata({
 }
 
 async function getUserPage({ userSlug }: { userSlug: string }) {
-  // "use cache";
-  // cacheTag("user-" + userSlug);
+  "use cache";
+  cacheTag("user-" + userSlug);
   const payload = await getPayload({ config });
   const page = await payload
     .find({
@@ -110,8 +111,8 @@ async function getUserPage({ userSlug }: { userSlug: string }) {
 }
 
 async function getSlidesProfile({ id, user }: { id: string; user: string }) {
-  // "use cache";
-  // cacheTag("user-" + user);
+  "use cache";
+  cacheTag("user-" + user);
   const payload = await getPayload({ config });
 
   const slides = await payload

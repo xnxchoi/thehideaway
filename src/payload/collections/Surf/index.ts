@@ -17,11 +17,11 @@ import {
 	PreviewField
 } from "@payloadcms/plugin-seo/fields";
 import type {CollectionConfig, CollectionSlug, Where} from "payload";
-import {PROPS_COLLAPSIBLE} from "../constants";
 import {RichTitle} from "../Posts/richTitle";
 import {getSurfBookMarks} from "./endpoints/getSurfBookmarks";
 import {afterDelete} from "./hooks/afterDelete";
 import { idField } from "@/payload/fields/IDField";
+import { PROPS_COLLAPSIBLE } from "@/constants/navigation";
 
 export const Surfs: CollectionConfig = {
 	slug: "surf",

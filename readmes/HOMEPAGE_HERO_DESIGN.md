@@ -1,6 +1,8 @@
 # Homepage Hero — Design Reference & Plan
 
-> **Purpose.** Persistent cross-session reference for the design of The Hideaway's flagship hero (the topmost editorial zone of `/`, owned by [`src/components/layouts/ArticleFrontpage/index.tsx`](../src/components/layouts/ArticleFrontpage/index.tsx)). Built on a structured deconstruction of Inverse + The Verge (deep) and The Atlantic + The New Yorker (light, future reference).
+> **Purpose.** Persistent cross-session reference for the visual layout of the homepage hero, owned by [
+`src/components/layouts/ArticleFrontpage/index.tsx`](../src/components/layouts/ArticleFrontpage/index.tsx). This
+> document does not govern copy. User-facing text follows `readmes/VOICE.md`.
 >
 > **Scope of current sprint.** Rewrite of `ArticleFrontpage` and the `HomeSquare` slot it embeds. **Out of scope:** archive/paginated index pages, category/tag landing pages — see *Future Work* at end.
 >
@@ -14,7 +16,8 @@
 
 ### 1.1 Hero Anatomy
 One zone, **four content slots** in a single grid composition before the page rhythm changes (next zone is an "Inverse Recommends" tabbed cylinder):
-- **Slot 1 — Lead** — single image-led story with caption + dek + byline. Image-dominant.
+
+- **Slot 1 — Lead** — single image-led story with caption + subtitle + byline. Image-dominant.
 - **Slot 2 — Secondary A** — square-image card with image-left / type-right mini-layout.
 - **Slot 3 — Secondary B** — same shape as Secondary A.
 - **Slot 4 — "The Latest"** — type-led headline list (~8 dated headlines, no images).
@@ -38,15 +41,15 @@ One zone, **four content slots** in a single grid composition before the page rh
 - Negative-margin glue: `margin-left: calc(--halfGutter * -.5)` and `margin-right: calc(--halfGutter * -.5)` so slots butt-join at the gutter line — no double gap.
 
 ### 1.4 Type Ladder
-| Element | Family | Size (desktop / mobile) | Weight | Tracking | Line-height |
-|---|---|---|---|---|---|
-| Lead headline | SuisseWorks (serif) | 2.5rem (~40px) / 1.5rem (~24px) | 400 | -.01em | 1.2 |
-| Lead dek | sans (inherit) | 1rem / 0.875rem | 400 | — | 1.2 (max-width 70%, `mt: -10px`) |
-| Secondary headline | sans | 1.25rem (~20px) | 600+ | -.01em | tight |
-| Eyebrow chip | Obviously (display sans) | 0.625rem (~10px) | — | wide | — (uppercase, `border: 1px solid` pill) |
-| Byline | SuisseIntl (sans) | ~0.75rem | — | — | uppercase |
-| "Latest" list item | sans | 1.25rem | 800 (extrabold) | -.01em | 1.1 |
-| "Latest" eyebrow | Obviously | 1.75rem | 800 | — | 1.1 |
+| Element                | Family                   | Size (desktop / mobile)         | Weight          | Tracking | Line-height                             |
+|------------------------|--------------------------|---------------------------------|-----------------|----------|-----------------------------------------|
+| Lead headline          | SuisseWorks (serif)      | 2.5rem (~40px) / 1.5rem (~24px) | 400             | -.01em   | 1.2                                     |
+| Lead subtitle          | sans (inherit)           | 1rem / 0.875rem                 | 400             | —        | 1.2 (max-width 70%, `mt: -10px`)        |
+| Secondary headline     | sans                     | 1.25rem (~20px)                 | 600+            | -.01em   | tight                                   |
+| Eyebrow chip           | Obviously (display sans) | 0.625rem (~10px)                | —               | wide     | — (uppercase, `border: 1px solid` pill) |
+| Byline                 | SuisseIntl (sans)        | ~0.75rem                        | —               | —        | uppercase                               |
+| "Latest" list item     | sans                     | 1.25rem                         | 800 (extrabold) | -.01em   | 1.1                                     |
+| "Latest" section label | Obviously                | 1.75rem                         | 800             | —        | 1.1                                     |
 
 No type-on-image overlays — text always sits below the image. The wavy mask handles the "blend" instead.
 
@@ -89,15 +92,19 @@ No type-on-image overlays — text always sits below the image. The wavy mask ha
 **Single dominant lead + 4 stacked secondaries** to its right — the classic "featured well + rail" pattern. Slot count: **5** (1 lead + 4 secondaries). The hero ends where a second tier of equal-weight stories begins, flowing into a **"Most Popular"** numbered widget that acts as the visual rule separating curated hero from chronological mid-section. Below, a labeled **"Latest / Following"** tab divides curation from the chronological "quickposts" stream.
 
 ### 2.2 Slot Hierarchy
-The **lead** is the only story with a **dek**. It carries a large image. The four secondaries are byline + headline only, no dek, much smaller / no image. Within the secondaries one is differentiated by a **red "LIVE" pill**. Otherwise peer. Hierarchy is enforced by:
+
+The **lead** is the only story with a **subtitle**. It carries a large image. The four secondaries are byline + headline
+only, no subtitle, much smaller / no image. Within the secondaries one is differentiated by a **red "LIVE" pill**.
+Otherwise peer. Hierarchy is enforced by:
 - Image presence
-- Dek presence
+- Subtitle presence
 - Headline scale
 - A single live-status chip — **not** by color or category badging.
 
 ### 2.3 Curation Signals (KEY)
 Visible mix:
-- **Lead:** long-form feature/explainer (internet-culture reporting). Signaled by length, dek, magazine-y headline.
+
+- **Lead:** long-form feature or explainer. Signaled by length, subtitle, and headline scale.
 - **Slot 2:** live news event with `LIVE` badge and **plural byline**. Plural byline itself signals "ongoing coverage."
 - **Slot 3:** review — declarative-superlative headline. No "Review" badge — grammar carries the type.
 - **Slot 4:** first-person column — "It's time to let my iPhone Mini go." Voice signals column.
@@ -111,21 +118,21 @@ Story type is **rarely badged explicitly**. Type is encoded in:
 Per slot: byline + relative timestamp ("11:00 AM UTC", "An hour ago"). **No comment counts, no reaction counts, no "X reading now," no source attribution words** in the hero. Tags pushed to bottom of page. The hero is deliberately **clean of taxonomy noise.** Only chip in the hero: `LIVE`.
 
 ### 2.5 Visual Weight Distribution
-Lead: large image (~16:9 or 4:5), headline + dek + byline below. Secondaries: text-dominant, image absent or thumbnail-scale. **Image-to-text ratio collapses sharply between slot 1 and slots 2–5 — that ratio shift IS the hierarchy.**
 
-### 2.6 Editorial Voice
-Headlines lean **conversational-declarative with attitude**, not clickbait. Examples observed:
-- "My $5,000 smart bed needs to shut the hell up"
-- "Google's AI architect lived rent-free in Elon Musk's head"
-- "All these smart glasses and nothing to do"
+Lead: large image (~16:9 or 4:5), headline + subtitle + byline below. Secondaries: text-dominant, image absent or
+thumbnail-scale. **Image-to-text ratio collapses sharply between slot 1 and slots 2–5 — that ratio shift IS the
+hierarchy.**
 
-Voice is opinionated, first-person-friendly, assumes a tech-literate reader.
+### 2.6 Copy
+
+Do not use the reference site's headline style as a writing reference. Copy follows `readmes/VOICE.md`.
 
 ### 2.7 Layout Topology
 Desktop: lead-left + secondary-rail-right, two-column. Tablet/mobile: clean stack inferred from markup order. The "Latest/Following" stream is a single-column river underneath, separated by "Most Popular" as a rule.
 
 ### 2.8 What's Worth Stealing (for The Hideaway)
-1. **Dek as a hierarchy weapon, not a default.** Only the lead gets a dek. Secondaries are headline-only. Fits Hideaway's sparse rhythm.
+
+1. **Subtitle as hierarchy, not a default.** Only the lead gets a subtitle. Secondaries are headline-only.
 2. **Author identity as the badge.** Hideaway can lean into prominent author handles (`@username` is already routed) on featured essays.
 3. **A single semantic chip type** rather than a colored taxonomy garden. Reserve one chip — e.g. a small `NEW` or `STAFF PICK` mark in mono — and let everything else be unbadged.
 4. **Headline grammar encodes story type.** Editors adopt patterns instead of building a category-pill system.
@@ -143,24 +150,30 @@ Desktop: lead-left + secondary-rail-right, two-column. Tablet/mobile: clean stac
 > ⚠️ **Caveat.** WebFetch on `theatlantic.com` failed during audit (likely paywalled / bot-blocked). Notes below are prior-knowledge synthesis. **Verify against live site before porting any specific class/value.**
 
 ### 3.1 Layout shape
-Single dominant lead occupies the top zone, paired with a tight stack of 2–3 secondary headlines in a narrow right rail. Lead pairs a large landscape image with a stacked headline-and-dek block beneath or beside it — not overlaid.
+
+Single dominant lead occupies the top zone, paired with a tight stack of 2–3 secondary headlines in a narrow right rail.
+Lead pairs a large landscape image with a stacked headline-and-subtitle block beneath or beside it — not overlaid.
 
 ### 3.2 Type strategy
-Custom serif display ("Atlantic Serif" / similar) for headlines; sans-serif (geometric-humanist hybrid) for kickers, deks, and bylines. Lead headline ~40–56px desktop, regular weight, with a smaller italic dek below in the same serif. Strong scale contrast — secondary headlines drop to ~22–26px.
+
+Custom serif display ("Atlantic Serif" / similar) for headlines; sans-serif for section labels, subtitles, and bylines.
+Lead headline ~40–56px desktop, regular weight, with a smaller italic subtitle below in the same serif. Strong scale
+contrast — secondary headlines drop to ~22–26px.
 
 ### 3.3 What's distinctive (worth borrowing eventually)
-- All-caps sans-serif **section kicker** above the headline (e.g. "POLITICS", "IDEAS"), tightly tracked, often colored or rule-separated.
-- **Italic dek** in the same serif family carrying real editorial weight — not throwaway subtitle, often two full lines.
+
+- All-caps sans-serif **section label** above the headline, tightly tracked, often colored or rule-separated.
+- **Italic subtitle** in the same serif family, often two full lines.
 - Byline + read-time as a single quiet line of small caps or sans, no avatar clutter.
 
 ### 3.4 What NOT to borrow
 - Sponsored / native ad units jammed into the hero stack — disrupts editorial signal.
-- Heavy red brand-color accents on kickers — would clash with monochrome restraint.
+- Heavy red accents on section labels — would clash with the monochrome palette.
 
 ### 3.5 Note for future session
-Steal from this when designing the **Essays index / archive landing page** — kicker → headline → italic dek → byline rhythm. **Not** the main feed.
 
-Representative tone: *"The Quiet Crisis in American Adulthood"*
+Use this visual hierarchy for the **Essays index / archive landing page** — section label → headline → italic subtitle →
+byline. **Not** the main feed.
 
 ---
 
@@ -194,19 +207,19 @@ Representative tone: *"What We Lose When We Stop Reading Letters"*
 ## 5. Synthesis — The Hideaway's Top Hero
 
 ### 5.1 Inheritance map
-| Source | What we inherit |
-|---|---|
-| **Inverse** | Grid topology (6-col asymmetric two-row + tall type-only rail), card-of-cards wrapper, small radii, image silhouette dissolution via gradient (not wave), pill eyebrow |
-| **Verge** | Editorial principles: dek-as-hierarchy, author identity as badge, single chip type, headline grammar over taxonomy chips, numbered Headliners as terminator |
-| **Atlantic** *(future)* | Italic-serif dek, all-caps kicker rhythm, quiet small-caps byline — for archive / longread index |
-| **New Yorker** *(future)* | Illustration-as-lead, hairline rules, light-weight headline at small sizes — for compilation / cover-style landings |
+| Source                    | What we inherit                                                                                                                                               |
+|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Inverse**               | Grid topology (6-col asymmetric two-row + tall type-only rail), card-of-cards wrapper, small radii, image silhouette dissolution via gradient, category label |
+| **Verge**                 | Subtitle hierarchy, author identity, single chip type, headline structure, numbered-list terminator                                                           |
+| **Atlantic** *(future)*   | Italic-serif subtitle, all-caps section-label rhythm, small-caps byline — for archive / longread index                                                        |
+| **New Yorker** *(future)* | Illustration-as-lead, hairline rules, light-weight headline at small sizes — for compilation / cover-style landings                                           |
 
 ### 5.2 Topology decision
 Adopt Inverse's exact 6-col asymmetric two-row structure. The current `ArticleFrontpage` already attempts this (`lg:grid-cols-[repeat(6,1fr)]` + lead `lg:col-[1/5]` + secondaries `lg:col-[1/3]` and `lg:col-[3/5]` row 2 + rail `lg:col-[5/-1]`) — so this is **execution refinement, not topology overhaul**. The "rethink" lever pulls hardest on chrome, type, ratios, breakpoint behavior, and the Headliners rail design.
 
 > **Design-system alignment note.** v2 — adjusted to comply with...(deleted; originally Design System) after a deeper read. Specifically:
 > - All content cards use `rounded-sm` (4px). **`rounded-md` is forbidden** on cards (§6.2).
-> - Eyebrow tracking is `tracking-[0.2em]`, not `tracking-widest` (§4.6 canonical eyebrow snippet).
+> - Category-label tracking is `tracking-[0.2em]`, not `tracking-widest`.
 > - Forbidden weights: `font-semibold`, `font-bold`, `font-extrabold` (§4.2). Hideaway does not shout.
 > - Banned text opacities: `/50`, `/80`, `/90`. Use `/70`, `/60`, `/40` (§3.3).
 > - Edge gutters: `px-5 sm:px-6 xl:px-10` (§5.4). `px-5` at base is part of spec.
@@ -231,7 +244,7 @@ Adopt Inverse's exact 6-col asymmetric two-row structure. The current `ArticleFr
 **Secondary A & B (slots 2 & 3)** — each `lg:col-span-2 lg:row-span-1` in row 2
 - Mini-grid: image-left (`aspect-square`, ~120px desktop, flush to slot edge top + left) + type-right with `p-4 xl:p-5`.
 - **Headline**: `font-medium text-base xl:text-lg tracking-tight leading-snug` (per §4.6 card-title snippet, slightly bumped — secondaries are still hero-zone, not generic grid cards).
-- Eyebrow chip + byline mono — **no dek** (Verge hierarchy rule).
+- Category label + byline mono — **no subtitle**.
 - Hover: image scales `1.02` at `duration-150 ease-[cubic-bezier(.4,0,.2,1)]`; surrounding type stays still.
 
 **Headliners rail (slot 4)** — `lg:col-span-2 lg:row-span-2`
@@ -290,7 +303,8 @@ The harsh critic flagged that adopting Inverse's information topology (8-slot fe
 ### 5.9 Cuts and additions (post-review)
 
 **Cut from v2:**
-- Italic-serif dek → sans dek (defer Atlantic flavor).
+
+- Italic-serif subtitle → sans subtitle.
 - `text-7xl` 2xl option → cap at `text-6xl`.
 - Absolute-positioned circular rank badges in Headliners → inline `01 — Headline` mono prefix on all breakpoints (Builder F3).
 - Per-slot multi-property hover transitions → single `group-hover:scale-[1.02]` on image + one `transition-colors` on the link (Builder F4).
@@ -318,11 +332,11 @@ Stored here so the next session inherits the trail.
 
 ### 6.1 Archive / paginated index pages
 - Apply the **type-only-rail** pattern to archive index headers (Inverse-derived).
-- Consider Atlantic's kicker → headline → italic-dek → small-caps byline rhythm for individual archive items.
+- Consider section label → headline → italic subtitle → small-caps byline for individual archive items.
 
 ### 6.2 Category / tag landing pages
 - Each category gets its own "front page" that is a *quieter* version of the homepage hero (single column, no rail).
-- The category name itself acts as the kicker — promoted from chip to display-scale.
+- The category name itself acts as the section label, promoted from chip to display scale.
 
 ### 6.3 Single-essay "cover" page (Compilations)
 - New Yorker-style: illustration over photography where editorially appropriate.

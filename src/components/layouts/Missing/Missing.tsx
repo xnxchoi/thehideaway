@@ -5,12 +5,10 @@ import { TWEEN_EASE } from "@/constants/animations";
 import { useRPStore } from "@/providers/RP_Pro";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
 import { motionCallback } from "@/utilities/motionHelpers";
-import { useTexture } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { gsap } from "gsap/all";
-import { animate, AnimatePresence } from "motion/react";
+import { animate, useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import "./mis.css";
 import {
   CanvasTexture,
@@ -26,12 +24,14 @@ import {
   WebGLRenderer
 } from "three";
 import { useShallow } from "zustand/shallow";
-
+const Manvas = m.create(Canvas);
 export function Missing() {
   const is404 = useVoyageur(useShallow((l) => l.is404));
   const has = useRef(false);
   const setHeaderTransition = useRPStore((r) => r.setHeaderTransition);
   const curt = useRef<HTMLDivElement>(null!);
+  const [aspectRatio, setAspectRatio] = useState(1);
+  const canvasEl = useRef(document.createElement("canvas"));
   const initializeSignage = useEffectEvent(() => {
     const canvas = curt.current;
     // extract "variation" parameter from the url
@@ -68,7 +68,7 @@ export function Missing() {
       u_mouse: { value: vMouseDamp },
       u_pixelRatio: { value: vPixelRatio }
     };
-    const canvass = document.createElement("canvas");
+    const canvass = canvasEl.current;
     ((canvass.width = canvas.clientWidth),
       (canvass.height = canvas.clientHeight));
     const ctx = canvass.getContext("2d", { alpha: true });
@@ -226,7 +226,6 @@ export function Missing() {
 
   return (
     <>
-      <Canvas></Canvas>
       {is404 && (
         <m.div
           ref={curt}

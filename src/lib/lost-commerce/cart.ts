@@ -59,7 +59,7 @@ async function resolveSku(
     id: line.skuId,
     depth: 0,
     disableErrors: true,
-    req: req as never,
+    req: req,
     overrideAccess: true
   })) as AnyDoc | null;
   if (!sku) throw new Error("sku-not-found");
@@ -111,11 +111,11 @@ async function assertCampaign(
   if (!line.campaignId) throw new Error("campaign-required");
 
   const campaign = (await payload.findByID({
-    collection: "product-order-campaigns" as never,
+    collection: "product-order-campaigns",
     id: line.campaignId,
     depth: 0,
     disableErrors: true,
-    req: req as never,
+    req: req,
     overrideAccess: true
   })) as AnyDoc | null;
 
@@ -171,11 +171,11 @@ export async function resolveLostCheckout(input: {
     mode = line.mode;
 
     const product = (await input.payload.findByID({
-      collection: "products" as never,
+      collection: "products",
       id: line.productId,
       depth: 0,
       disableErrors: true,
-      req: input.req as never,
+      req: input.req,
       overrideAccess: true
     })) as AnyDoc | null;
 

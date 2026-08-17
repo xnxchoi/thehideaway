@@ -1,4 +1,4 @@
-import { Link } from "../../../../../../src/components/core/Link/Link";
+import { Link } from "../../../../../../../src/components/core/Link/Link";
 import { SCHEDULE } from "./content";
 
 export function DemimondeSchedule() {

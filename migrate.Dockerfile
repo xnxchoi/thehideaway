@@ -40,5 +40,6 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 # tsconfig.json is required so path aliases (@/) resolve correctly.
 COPY tsconfig.json ./
 COPY src/ ./src/
+COPY public/assets/lostinseoul/products/ ./public/assets/lostinseoul/products/
 
 CMD ["pnpm", "migrate"]

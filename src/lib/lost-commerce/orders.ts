@@ -77,11 +77,11 @@ export async function cancelUnpaidProductOrder(input: {
     await paymentWebhookLock(input.payload, transactionID, orderRef);
 
     const locked = await input.payload.find({
-      collection: "product-orders" as never,
+      collection: "product-orders",
       depth: 0,
       limit: 1,
       overrideAccess: true,
-      req: txReq as never,
+      req: txReq,
       where: { order_ref: { equals: orderRef } }
     });
     const order = locked.docs[0] as ProductOrder | undefined;
@@ -101,11 +101,11 @@ export async function cancelUnpaidProductOrder(input: {
     });
 
     const payments = await input.payload.find({
-      collection: "product-payments" as never,
+      collection: "product-payments",
       depth: 0,
       pagination: false,
       overrideAccess: true,
-      req: txReq as never,
+      req: txReq,
       where: { order: { equals: order.id } }
     });
     for (const payment of payments.docs as ProductPayment[]) {
@@ -129,7 +129,7 @@ export async function cancelUnpaidProductOrder(input: {
     });
 
     await input.payload.update({
-      collection: "product-orders" as never,
+      collection: "product-orders",
       id: order.id,
       overrideAccess: true,
       req: txReq,
@@ -137,16 +137,16 @@ export async function cancelUnpaidProductOrder(input: {
         status: "failed",
         payment_status: "failed",
         fulfillment_status: "canceled"
-      } as never
+      }
     });
 
     for (const payment of payments.docs as ProductPayment[]) {
       await input.payload.update({
-        collection: "product-payments" as never,
+        collection: "product-payments",
         id: String(payment.id),
         overrideAccess: true,
         req: txReq,
-        data: { status: "failed" } as never
+        data: { status: "failed" }
       });
     }
 

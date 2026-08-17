@@ -20,7 +20,7 @@ interface ComingSoonDialogProps {
   onOpenChange?: (open: boolean) => void;
   dispatch?: DispatchKey;
   dispatchBody?: ReactNode;
-  eyebrow?: string;
+  statusLabel?: string;
   label?: string;
   preset?: ChipLabel;
   notify?: boolean;
@@ -35,7 +35,7 @@ export function ComingSoonDialog({
   onOpenChange,
   dispatch = "default",
   dispatchBody,
-  eyebrow,
+  statusLabel,
   label,
   preset = "default",
   notify = true,
@@ -45,7 +45,7 @@ export function ComingSoonDialog({
   const t = useTranslations("ComingSoon");
   const chip = label ?? t(`chips.${preset}`);
   const body = dispatchBody ?? t(`dispatches.${dispatch}`);
-  const eyebrowText = eyebrow ?? t("eyebrow");
+  const statusText = statusLabel ?? t("label");
 
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>
@@ -55,7 +55,7 @@ export function ComingSoonDialog({
       <DialogContent className={cn("max-w-[520px]", className)}>
         <div className="flex items-center gap-3">
           <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
-            {eyebrowText}
+            {statusText}
           </span>
           <span className="h-px flex-1 bg-border/30" />
           <span className="inline-flex items-center gap-1.5 border border-dashed border-border/40 px-2 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase">

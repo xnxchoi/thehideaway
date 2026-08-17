@@ -7,8 +7,7 @@
  *
  *  This file is the **human-readable source** for every row that must
  *  exist for the app to function at all: the concierge admin user, the
- *  "uncategorized" Category bucket, the default tag taxonomy, the KRW
- *  Currency, and the two launch Plans + their Prices.
+ *  "uncategorized" Category bucket, and the default tag taxonomy.
  *
  *  These rows used to live inside `payload.config.ts:onInit`. That
  *  pattern deadlocks: when Payload is mid-initialization, the slug /
@@ -42,18 +41,11 @@
  *  map. Keep that map in sync if you add a new seeded collection here.
  */
 
-import type { Payload } from "payload";
+import { CollectionSlug, Payload } from "payload";
 import { nanoid } from "nanoid";
 import { uuidv7 } from "uuidv7";
 
-import type {
-  Plan,
-  Price,
-  Category,
-  Tag,
-  Currency,
-  User
-} from "@/payload-types";
+import type { Category, User } from "@/payload-types";
 
 /* ── Defaults ──────────────────────────────────────────────────── */
 
@@ -105,97 +97,23 @@ const DEFAULT_TAGS: ReadonlyArray<readonly [title: string, slug: string]> = [
   ["Sports", "sports"]
 ];
 
-type SeedPlan = {
-  name: string;
-  tier: "resident" | "patron" | "cofounder";
-  tier_label: string;
-  validity: "yearly" | "lifetime";
-  description: string;
-  features: ReadonlyArray<{ label: string; included: boolean }>;
-  seat_limit?: number;
-  discount_label?: string;
-  sort: number;
-  payment_methods: ("bank_transfer" | "cash")[];
-  /** KRW amount in the currency's primary unit (won). */
-  unit_amount: number;
-};
-
-const PLANS: ReadonlyArray<SeedPlan> = [
-  {
-    name: "Resident · Yearly · KRW",
-    tier: "resident",
-    tier_label: "Resident",
-    validity: "yearly",
-    description:
-      "Pay once. Read everything Resident-locked for a year. Stay in for free if your work earns it.",
-    features: [
-      { label: "Read all Resident-locked essays", included: true },
-      { label: "Highlight + memo", included: true },
-      { label: "Comment + bookmark", included: true },
-      { label: "Renews free if your work earns it", included: true },
-      { label: "Patron-only drops & events", included: false }
-    ],
-    seat_limit: 50,
-    discount_label: "LIMITED 50",
-    sort: 10,
-    payment_methods: ["bank_transfer", "cash"],
-    unit_amount: 33_000
-  },
-  {
-    name: "Patron · Lifetime · KRW",
-    tier: "patron",
-    tier_label: "Patron",
-    validity: "lifetime",
-    description:
-      "Pay once. The door stays open. Founders get drop priority and quarterly print, no expiry.",
-    features: [
-      { label: "Everything in Resident, forever", included: true },
-      { label: "Read all Patron-locked essays", included: true },
-      { label: "Priority access to drops", included: true },
-      { label: "Exclusive event invites", included: true },
-      { label: "Patron-only quarterly print", included: true }
-    ],
-    seat_limit: 5,
-    discount_label: "LIMITED 5 · LIFETIME",
-    sort: 20,
-    payment_methods: ["bank_transfer", "cash"],
-    unit_amount: 390_000
-  }
-];
-
-const DAY_N_NIGHT_EVENT = {
-  name: "Day n Night",
-  slug: "day-n-night",
-  description: "An intimate late-night gathering at The Hideaway.",
-  date: "2026-05-24T18:30:00+09:00",
-  end_date: "2026-05-25T00:00:00+09:00",
-  location: "Haebangchon · Itaewon",
-  gate_password: "seoul2026",
-  capacity: 30,
-  max_per_user: 3,
-  ticket_price: 65_000,
-  state: "open" as const
-};
-
 /* ── Idempotent helpers ─────────────────────────────────────────── */
 
-const findFirst = async <
-  Slug extends "users" | "categories" | "tags" | "currency" | "plans" | "prices"
->(
+const findFirst = async <T extends CollectionSlug>(
   payload: Payload,
-  collection: Slug,
+  collection: T,
   whereField: string,
   value: string
-): Promise<{ id: string } | null> => {
+): Promise<{
+  id: string;
+} | null> => {
   const res = await payload.find({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    collection: collection as any,
+    collection: collection,
     where: { [whereField]: { equals: value } } as never,
     limit: 1,
     pagination: false,
     overrideAccess: true,
-    depth: 0,
-    // Restrict the outer SELECT to scalar fields only. For Tags this
+    depth: 0, // Restrict the outer SELECT to scalar fields only. For Tags this
     // sidesteps the polymorphic-join `taggedItems` virtual-field SQL
     // generator (Payload 3.84 + Drizzle 0.45.2), which emits a
     // malformed UNION subquery — `select "id",  as "tagged"` with an
@@ -204,7 +122,7 @@ const findFirst = async <
     select: { id: true } as never
   });
   const doc = res.docs[0] as { id: string } | undefined;
-  return doc ? { id: doc.id } : null;
+  return doc ?? null;
 };
 
 const ensureConcierge = async (payload: Payload): Promise<string> => {
@@ -266,126 +184,9 @@ const ensureTags = async (
         slugLock: true,
         tagCount: 0,
         author: authorId
-      } as Partial<Tag> as never
+      } as never
     });
   }
-};
-
-const ensureKrwCurrency = async (payload: Payload): Promise<string> => {
-  const existing = await findFirst(payload, "currency", "name", "KRW");
-  if (existing) return existing.id;
-  const id = uuidv7();
-  const created = (await payload.create({
-    collection: "currency",
-    overrideAccess: true,
-    data: {
-      id,
-      name: "KRW",
-      kr_nm: "원"
-    } as Partial<Currency> as never
-  })) as { id: string };
-  return created.id;
-};
-
-const ensurePlanWithPrice = async (
-  payload: Payload,
-  plan: SeedPlan,
-  krwCurrencyId: string
-): Promise<void> => {
-  let planId: string;
-  const existing = await findFirst(payload, "plans", "name", plan.name);
-  if (existing) {
-    planId = existing.id;
-  } else {
-    const id = uuidv7();
-    const created = (await payload.create({
-      collection: "plans",
-      overrideAccess: true,
-      data: {
-        id,
-        name: plan.name,
-        tier: plan.tier,
-        tier_label: plan.tier_label,
-        validity: plan.validity,
-        type: "one_time",
-        description: plan.description,
-        // Explicit uuidv7() per array sub-row. Payload's default array-id
-        // generator emits Mongo-style 24-hex ObjectIds, which the UUID-
-        // typed `id` column on `plans_features` rejects with
-        // "invalid input syntax for type uuid".
-        features: plan.features.map((f) => ({
-          id: uuidv7(),
-          label: f.label,
-          included: f.included
-        })),
-        ...(plan.seat_limit ? { seat_limit: plan.seat_limit } : {}),
-        ...(plan.discount_label ? { discount_label: plan.discount_label } : {}),
-        sort: plan.sort,
-        state: "active",
-        payment_methods: plan.payment_methods
-      } as Partial<Plan> as never
-    })) as { id: string };
-    planId = created.id;
-  }
-
-  // Price idempotency: composite key (plan, currency).
-  const existingPrice = await payload.find({
-    collection: "prices",
-    where: {
-      and: [
-        { plan: { equals: planId } },
-        { currency: { equals: krwCurrencyId } }
-      ]
-    },
-    limit: 1,
-    pagination: false,
-    overrideAccess: true,
-    depth: 0
-  });
-  if (existingPrice.docs[0]) return;
-
-  await payload.create({
-    collection: "prices",
-    overrideAccess: true,
-    data: {
-      id: uuidv7(),
-      nickname: `${plan.name} · KRW`,
-      plan: planId,
-      currency: krwCurrencyId,
-      unit_amount: plan.unit_amount,
-      type: "one_time",
-      active: true
-    } as Partial<Price> as never
-  });
-};
-
-const ensureDayNNightEvent = async (payload: Payload): Promise<string> => {
-  const existing = await payload.find({
-    collection: "events" as never,
-    where: { slug: { equals: "day-n-night" } } as never,
-    limit: 1,
-    pagination: false,
-    overrideAccess: true,
-    depth: 0,
-    select: { id: true } as never
-  });
-  const doc = existing.docs[0] as { id: string } | undefined;
-  if (doc) {
-    await payload.update({
-      collection: "events" as never,
-      id: doc.id,
-      overrideAccess: true,
-      data: DAY_N_NIGHT_EVENT as never
-    });
-    return doc.id;
-  }
-  const id = uuidv7();
-  const created = (await payload.create({
-    collection: "events" as never,
-    overrideAccess: true,
-    data: { id, ...DAY_N_NIGHT_EVENT } as never
-  })) as { id: string };
-  return created.id;
 };
 
 /* ── Public entry point ─────────────────────────────────────────── */
@@ -394,8 +195,7 @@ const ensureDayNNightEvent = async (payload: Payload): Promise<string> => {
  * Run the full initial seed against a fully-initialized Payload
  * instance. Idempotent — safe to re-run on a partially-seeded DB.
  *
- * Order matters: Concierge → Category → Tags (need author=concierge)
- * → Currency → Plans + Prices (Price needs plan_id + currency_id).
+ * Order matters: Concierge → Category → Tags (need author=concierge).
  */
 export async function runInitialSeed(payload: Payload): Promise<void> {
   payload.logger.info("[seed] starting initial seed");
@@ -408,17 +208,6 @@ export async function runInitialSeed(payload: Payload): Promise<void> {
 
   await ensureTags(payload, conciergeId);
   payload.logger.info(`[seed] tags ok (${DEFAULT_TAGS.length} entries)`);
-
-  const krwId = await ensureKrwCurrency(payload);
-  payload.logger.info(`[seed] currency KRW ok: ${krwId}`);
-
-  for (const plan of PLANS) {
-    await ensurePlanWithPrice(payload, plan, krwId);
-    payload.logger.info(`[seed] plan + price ok: ${plan.name}`);
-  }
-
-  const dayNNightId = await ensureDayNNightEvent(payload);
-  payload.logger.info(`[seed] day-n-night event ok: ${dayNNightId}`);
 
   payload.logger.info("[seed] done");
 }

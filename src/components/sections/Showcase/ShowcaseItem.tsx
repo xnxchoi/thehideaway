@@ -24,7 +24,7 @@ export const ShowcaseItem = (props: {
 
   const titleToUse = titleFromProps || title;
 
-  const href = `/${relationTo}/${slug}`;
+  const href = relationTo === "posts" && slug ? `/essays/${slug}` : "/";
   return (
     <li className="showcaseItem relative">
       <article className="post-card">

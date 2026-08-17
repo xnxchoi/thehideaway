@@ -4,16 +4,15 @@ import config from "@payload-config";
 import { headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import { syncProductPayment } from "./product-payment";
+import { createPayloadCommerceRepository } from "@/lib/commerce/payload-repository";
+import { settleCardPayment } from "@/lib/commerce/settle-payment";
+import { getPortOnePayment, requiresLiveChannel } from "./verify-payment";
 
 export async function verifyReturnedProductPayment(input: {
   orderRef?: string;
   paymentId?: string;
 }) {
-  if (input.orderRef && input.paymentId && input.orderRef !== input.paymentId) {
-    return { ok: false, status: 400, reason: "order-not-found" } as const;
-  }
-  const paymentId = input.paymentId || input.orderRef;
+  const paymentId = input.paymentId;
   if (!paymentId) {
     return { ok: false, status: 400, reason: "order-not-found" } as const;
   }
@@ -25,9 +24,30 @@ export async function verifyReturnedProductPayment(input: {
   }
 
   const payload = await getPayload({ config });
-  return syncProductPayment({
-    payload,
-    paymentId,
-    expectedUserId: String(session.user.id)
-  });
+  try {
+    const order = await settleCardPayment({
+      repository: createPayloadCommerceRepository(payload),
+      gateway: {
+        getPayment: getPortOnePayment,
+        requireLiveChannel: requiresLiveChannel()
+      },
+      paymentId,
+      userId: String(session.user.id),
+      isAdmin: session.user.role === "admin"
+    });
+    if (input.orderRef && input.orderRef !== order.ref) {
+      return { ok: false, status: 404, reason: "order-not-found" } as const;
+    }
+    return { ok: true, status: 200, orderRef: order.ref } as const;
+  } catch (error) {
+    const reason =
+      error instanceof Error ? error.message : "verify-unavailable";
+    if (reason === "not-paid") {
+      return { ok: false, status: 402, reason: "payment-failed" } as const;
+    }
+    if (reason === "order-not-found") {
+      return { ok: false, status: 404, reason } as const;
+    }
+    return { ok: false, status: 503, reason: "verify-unavailable" } as const;
+  }
 }

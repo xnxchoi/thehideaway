@@ -98,6 +98,8 @@ services:
       postgres:
         condition: service_healthy
     restart: "no"
+    volumes:
+      - payload_media:/app/public/media
     networks:
       - hideaway
     profiles:

@@ -44,7 +44,7 @@ import {
 } from "@/components/UX/Settings";
 import { useBetterAuth } from "@/lib/auth/context";
 import { authClient, signOut } from "@/lib/auth/client";
-import type { User } from "@/payload-types";
+import type { User } from "@payload-types";
 import { RPage } from "@/components/UX/Transition";
 
 interface SecuritySectionClientProps {
@@ -349,7 +349,15 @@ function RevokeOthers() {
   );
 }
 
-function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
+type AuthProviderSlug = "credential" | "google" | "naver" | "kakao";
+
+function ProviderRow({
+  slug,
+  isLinked
+}: {
+  slug: AuthProviderSlug;
+  isLinked: boolean;
+}) {
   const t = useTranslations("Settings.providers");
   const providerName = t(`labels.${slug}`);
   return (
@@ -357,7 +365,7 @@ function ProviderRow({ slug, isLinked }: { slug: string; isLinked: boolean }) {
       <div className="flex min-w-0 flex-col">
         <span className="text-sm text-foreground">{providerName}</span>
         <span className="text-xs text-foreground/65 dark:text-foreground/60">
-          {t(`blurbs.${slug}`)}
+          {t(`descriptions.${slug}`)}
         </span>
       </div>
       <span

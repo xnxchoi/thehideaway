@@ -73,6 +73,7 @@ export function getPortOneConfig() {
     key: process.env.PORTONE_CLIENT_KEY ?? "",
     secret: process.env.PORTONE_SECRET_KEY ?? "",
     apiSecret: process.env.PORTONE_API_SECRET ?? "",
+    webhookSecret: process.env.PORTONE_WEBHOOK_SECRET ?? "",
     apiJwt: process.env.PORTONE_API_JWT ?? "",
     storeId: process.env.PORTONE_STORE_ID,
     channelKey: process.env.PORTONE_CHANNEL_KEY,
@@ -89,6 +90,8 @@ export function getPortOneConfig() {
     cardCheckoutLive: process.env.PORTONE_CARD_CHECKOUT_LIVE === "true"
   } as const;
 }
+
+export type PortOneConfig = ReturnType<typeof getPortOneConfig>;
 
 function hasPortOneValue(value: string | undefined): value is string {
   const trimmed = value?.trim();
@@ -225,7 +228,7 @@ export function buildPortOnePaymentPayload(input: {
       payMethod: input.paymentMethod ?? cfg.defaultMethod ?? "CARD",
       redirectUrl: returnUrl,
       forceRedirect: true,
-      noticeUrls: [`${input.origin}/api/lost/webhooks/portone`],
+      noticeUrls: [`${input.origin}/api/commerce/payments/card/webhook`],
       products:
         input.products && input.products.length > 0
           ? input.products

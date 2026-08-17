@@ -39,7 +39,6 @@ export const SIDE_DRAWER_LINKS: NavLink[] = [
 
 export const DEV_LINKS: NavLink[] = [
   link("/dev", "DEV", "dev"),
-  link("/dodo", "DoDo", "dev")
 ];
 
 const LOCAL_DEV_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "0.0.0.0"]);
@@ -58,3 +57,5 @@ export function getMenuLinksForRuntime(hostname?: string): NavLink[] {
     ...(shouldShowDevNavigationLinks(hostname) ? DEV_LINKS : [])
   ];
 }
+
+export const PROPS_COLLAPSIBLE = "Meta";

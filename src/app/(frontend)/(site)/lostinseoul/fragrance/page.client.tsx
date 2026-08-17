@@ -399,7 +399,7 @@ export function LostFragranceChapter({
                       {canUseActions && needsProductPage ? (
                         <Link
                           className="lost-fragrance-cta"
-                          href={`/lostinseoul/products/${product.slug}`}
+                          href={`/products/${product.slug}`}
                         >
                           {isQuoteOnly
                             ? labels.requestQuoteLabel
@@ -421,7 +421,7 @@ export function LostFragranceChapter({
                       {!needsProductPage || !canUseActions ? (
                         <Link
                           className="lost-fragrance-eyebrow !mb-0 underline-offset-4 hover:underline"
-                          href={`/lostinseoul/products/${product.slug}`}
+                          href={`/products/${product.slug}`}
                         >
                           {reading.reveal.viewObject}
                         </Link>

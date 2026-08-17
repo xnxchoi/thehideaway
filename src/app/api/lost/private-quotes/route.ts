@@ -20,8 +20,6 @@ import {
 import { createPrivateQuoteLineSnapshot } from "@/lib/lost-commerce/contracts";
 import { hasPositivePrivateOrderPreset } from "@/lib/lost-commerce/product-skus";
 
-export const runtime = "nodejs";
-
 const BodySchema = z
   .object({
     productId: z.string().min(1),
@@ -207,11 +205,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
     const product = (await payload.findByID({
-      collection: "products" as never,
+      collection: "products",
       id: line.productId,
       depth: 0,
       disableErrors: true,
-      req: txReq as never,
+      req: txReq,
       overrideAccess: true
     })) as unknown as {
       id: string;
@@ -234,7 +232,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       payload,
       user: auth.user,
       lines: [line],
-      req: txReq as never,
+      req: txReq,
       allowUnpricedPrivateOrder: true
     });
 
@@ -246,7 +244,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const hasPresetPrice = quoteLine.unitAmount !== null;
 
     const order = (await payload.create({
-      collection: "product-orders" as never,
+      collection: "product-orders",
       overrideAccess: true,
       req: txReq,
       data: {
@@ -265,7 +263,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         shipping: parsed.data.shipping,
         contact: parsed.data.contact,
         quote: { state: "requested", note: parsed.data.note }
-      } as never
+      }
     })) as unknown as { id: string | number; order_ref: string };
 
     const response = {

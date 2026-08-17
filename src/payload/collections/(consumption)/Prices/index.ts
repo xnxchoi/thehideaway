@@ -26,8 +26,7 @@ export const Prices: CollectionConfig = {
       "type",
       "active"
     ]
-  },
-  // Public catalog reads stay open — the pricing page reads Prices through
+  }, // Public catalog reads stay open — the pricing page reads Prices through
   // Plans without a session. Writes are admin-only; without this guard
   // Payload's default lets any authenticated user mutate the price table,
   // which is catalog tampering as a money-flow attack.
@@ -39,21 +38,13 @@ export const Prices: CollectionConfig = {
   },
   fields: [
     {
-      name: "nickname",
-      type: "text",
-      required: true,
-      admin: {
-        description:
-          "Internal admin label (e.g. 'Member · Yearly · KRW'). Not shown to users."
-      }
-    },
-    {
       name: "plan",
       type: "relationship",
       relationTo: "plans",
       hasMany: false,
       required: true,
       index: true,
+      maxDepth: 0,
       admin: {
         description: "The Plan this Price is attached to."
       }
@@ -63,6 +54,7 @@ export const Prices: CollectionConfig = {
       type: "relationship",
       relationTo: "currency",
       hasMany: false,
+
       required: true,
       index: true
     },
@@ -70,22 +62,14 @@ export const Prices: CollectionConfig = {
       name: "unit_amount",
       type: "number",
       required: true,
-      min: 0,
-      admin: {
-        description:
-          "Amount in the currency's primary unit (won, dollars, euros)."
-      }
+      min: 0
     },
     {
       name: "type",
       type: "select",
       required: true,
       defaultValue: "one_time",
-      options: ["one_time", "recurring"],
-      admin: {
-        description:
-          "All Hideaway prices are one-time at launch. 'recurring' reserved for future cadenced billing."
-      }
+      options: ["one_time", "recurring"]
     },
     {
       name: "recurring",
@@ -121,11 +105,7 @@ export const Prices: CollectionConfig = {
       type: "checkbox",
       defaultValue: true,
       required: true,
-      index: true,
-      admin: {
-        description:
-          "When false, this Price is hidden from public reads but kept for invoice history."
-      }
+      index: true
     }
   ]
 };
