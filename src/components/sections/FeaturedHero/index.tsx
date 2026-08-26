@@ -3,8 +3,9 @@ import { FrontImage } from "@/components/core/Media/FrontImage";
 import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
 import { cn } from "@/lib/utils";
 import { PostOverview } from "@/types/collections/posts";
-import { DateTime } from "luxon";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
+import { RelativeTime } from "@/components/sections/FeaturedHero/RelativeTime";
+import { getLocale } from "next-intl/server";
 
 type FeaturedHeroProps = {
   article: PostOverview;
@@ -13,26 +14,24 @@ type FeaturedHeroProps = {
   className?: string;
 };
 
-export const FeaturedHero = ({
+export const FeaturedHero = async ({
   article,
   eager = false,
   className
 }: FeaturedHeroProps) => {
+  const locale = await getLocale();
   const category =
     typeof article.category === "object" && article.category?.title
       ? article.category.title
       : null;
   const subtitle = article.subtitle?.trim();
   const authorName = article.author?.name?.trim();
-  const relativeDate = article.publishedAt
-    ? (DateTime.fromISO(article.publishedAt).toRelative() ?? "")
-    : "";
 
   return (
     <article
       className={cn(
         "group relative isolate flex flex-col bg-card",
-        "transition-colors duration-150 ease-[cubic-bezier(.4,0,.2,1)]",
+        "transition-colors duration-150 ease-in-out",
         className
       )}
     >
@@ -80,12 +79,12 @@ export const FeaturedHero = ({
 
         <div className="mt-1 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
           {authorName ? `By ${authorName}` : "Hideaway"}
-          {relativeDate && (
+          {article.publishedAt && (
             <>
               <span aria-hidden className="mx-2">
                 ·
               </span>
-              <time dateTime={article.publishedAt}>{relativeDate}</time>
+              <RelativeTime isoTime={article.publishedAt} locale={locale} />
             </>
           )}
         </div>

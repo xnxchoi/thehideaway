@@ -12,6 +12,8 @@ import {
   useVoyageur
 } from "@/stores/Routing/RP_Voyageur";
 import { useIsMobile } from "@/utilities/getBreakpoints";
+import { consumeHydrationSafeInitial } from "@/utilities/pageTransitionInitial";
+import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
 import { HTMLMotionProps, useAnimate, useMotionValue } from "motion/react";
 import * as m from "motion/react-m";
@@ -352,6 +354,8 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
     theme,
     ref: pageRef
   } = props;
+  const pathname = usePathname();
+  const hydrationSafeInitial = consumeHydrationSafeInitial(pathname);
 
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const setPageTheme = useTheme((r) => r.setPageTheme);
@@ -558,9 +562,10 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   return (
     <m.div
       key="navigation"
-      initial="none"
+      initial={hydrationSafeInitial ? false : "none"}
       animate="entering"
       exit="leaving"
+      suppressHydrationWarning
       data-themed="background-color,color"
       ref={pageRef}
       variants={currentVariants}

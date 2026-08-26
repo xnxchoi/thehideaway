@@ -28,7 +28,7 @@ import "lenis/dist/lenis.css";
 import type { Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import React, { ReactNode, Suspense } from "react";
-import "../../styles/globals.css";
+import "@/styles/globals.css";
 import "./estate.scss";
 import {
   Blase,

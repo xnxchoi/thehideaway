@@ -4,9 +4,9 @@ import {
   createContext,
   type ReactNode,
   RefObject,
-  use,
   useContext,
-  useRef
+  useEffect,
+  useState
 } from "react";
 import { createStore, useStore } from "zustand";
 
@@ -54,25 +54,30 @@ export const waiting = async <T,>(tg: RefObject<T>) => {
 };
 type RangerAPI = ReturnType<typeof createRanger>;
 const RangerContext = createContext<RangerAPI>(null!);
+
+const createEmptyRanger = (): RangerAPI =>
+  createStore<RangerStore>()(() => ({
+    ranger: null as unknown as rangy.RangyStatic,
+    highlighter: null as unknown as rangy.RangyHighlighter,
+    classApplier: null as unknown as rangy.RangyClassApplier,
+    targetContainer: null as unknown as HTMLElement,
+    setTargetContainer: () => undefined
+  }));
+
 export const RangerProvider = ({ children }: { children: ReactNode }) => {
-  return <A ranger={ranger}>{children}</A>;
-};
-const A = ({
-  children,
-  ranger
-}: {
-  children: ReactNode;
-  ranger: Promise<rangy.RangyStatic>;
-}) => {
-  const rangerRef = useRef<RangerAPI>(null!);
-  const rangey = use(ranger);
-  if (!rangerRef.current) {
-    rangerRef.current = createRanger({ ranger: rangey });
-  }
+  const [store, setStore] = useState<RangerAPI>(createEmptyRanger);
+  useEffect(() => {
+    let cancelled = false;
+    ranger.then((rangey) => {
+      if (cancelled) return;
+      setStore(createRanger({ ranger: rangey }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   return (
-    <RangerContext.Provider value={rangerRef.current}>
-      {children}
-    </RangerContext.Provider>
+    <RangerContext.Provider value={store}>{children}</RangerContext.Provider>
   );
 };
 export const useRanger = <T,>(

@@ -240,6 +240,11 @@ html[data-theme="light"] {
   opacity: initial;
 }
 
+html.theme-animating [data-themed] {
+  transition-property: background-color, color, fill, border-color, opacity;
+  transition-duration: 0.2s;
+}
+
 body[data-enable-interaction="false"] {
   pointer-events: none !important;
 }
@@ -391,7 +396,7 @@ Colors
 
   --neutral-white: oklch(78.94% 0.008 176.48);
   --transparent-white: oklch(from var(--neutral-white) l c h / 0.25);
-  --white: oklch(98.5% 0.001 23.79);
+     --white: oklch(98.5% 0.001 23.79);
   --opaque-white: oklch(91% 0 0);
   --cold-white: oklch(97.8% 0.01 243.4);
   --off-white: oklch(97.5% 0.001 218.99);

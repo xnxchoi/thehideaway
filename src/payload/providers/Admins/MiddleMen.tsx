@@ -6,7 +6,6 @@ import {useTheme} from "@/providers/Theme";
 import {themeIsValid} from "@/providers/Theme/types";
 import canUseDOM from "@/utilities/canUseDOM";
 import {storageAvailable} from "@/utilities/isLocalStorageAvailable";
-import {useWindowResize} from "@/utilities/use_window_resize";
 
 import {
 	defaultTheme,
@@ -17,22 +16,23 @@ import {useTheme as useThemePayload} from "@payloadcms/ui";
 import dynamic from "next/dynamic";
 import {useEffect, useState, type ReactNode} from "react";
 
+
 const AdminCursor = dynamic(
 	() => import("@/payload/components/Cursor/index").then((r) => r.default),
 	{ssr: false}
 );
 const AdminMobileProvider = ({children}: { children: ReactNode }) => {
-	const [isTouch, setIsTouch] = useState<boolean>(false);
-	const [isMobile, setIsMobile] = useState<boolean>(false);
+	const [isTouch, setIsTouch] = useState(false);
+	const [isMobile, setIsMobile] = useState(false);
+	const [pointerReady, setPointerReady] = useState(false);
 	const MOBILE_BREAKPOINT = 640;
 
-	const resize = useWindowResize({
-		debounce: 100,
-		detectVisibilityChange: false
-	});
 	useEffect(() => {
 		const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
 		const touchQ = window.matchMedia("(hover:none)");
+		setIsTouch(touchQ.matches);
+		setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+		setPointerReady(true);
 		const onChange = () => {
 			setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
 		};
@@ -46,11 +46,11 @@ const AdminMobileProvider = ({children}: { children: ReactNode }) => {
 			mql.removeEventListener("change", onChange);
 			touchQ.removeEventListener("change", onTouchChange);
 		};
-	}, [resize]);
+	}, []);
 
 	return (
 		<MobileContext.Provider value={{isTouch, isMobile}}>
-			{!isTouch && <AdminCursor/>}
+			{pointerReady && !isTouch && <AdminCursor/>}
 			{children}
 		</MobileContext.Provider>
 	);

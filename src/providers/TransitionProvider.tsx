@@ -26,7 +26,8 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef
+  useRef,
+  useState
 } from "react";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/shallow";
@@ -993,16 +994,24 @@ const TransContextProvider = ({ children }: { children: ReactNode }) => {
   }
   return (
     <TransContext.Provider value={storeRef.current}>
-      {children}{" "}
+      {children}
     </TransContext.Provider>
   );
 };
 export const TransitionProvider = ({ children }: { children: ReactNode }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <TransContextProvider>
-      <TransitionManager>
-        <NavEventsProvider>{children}</NavEventsProvider>
-      </TransitionManager>
+      {mounted ? (
+        <TransitionManager>
+          <NavEventsProvider>{children}</NavEventsProvider>
+        </TransitionManager>
+      ) : (
+        children
+      )}
     </TransContextProvider>
   );
 };

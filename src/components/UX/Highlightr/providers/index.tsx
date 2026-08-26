@@ -4,17 +4,8 @@ import { HighlighterProvider } from "./HighlighterProvider";
 import { SideBarProvider } from "./sideBarProvider";
 import { type ReactNode } from "react";
 import { CitationProvider } from "./CitationProvider";
-import dynamic from "next/dynamic";
 import { PrivateMemoizer } from "../PrivateHighlights";
-const RangerProvider = dynamic(
-  () =>
-    import("@/components/UX/Highlightr/providers/RangerProvider").then(
-      (r) => r.RangerProvider
-    ),
-  {
-    ssr: false
-  }
-);
+import { RangerProvider } from "./RangerProvider";
 export const ContentProvider = ({ children }: { children: ReactNode }) => {
   return (
     <RangerProvider>

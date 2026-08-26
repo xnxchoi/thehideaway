@@ -5,15 +5,17 @@ import { FeaturedHero } from "@/components/sections/FeaturedHero";
 import { HeadlinersRail } from "@/components/sections/HeadlinersRail";
 import { cn } from "@/lib/utils";
 import { PostOverview } from "@/types/collections/posts";
-import { DateTime } from "luxon";
+import { formatRelativeTime } from "@/utilities/formatRelativeTime";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
+import { getLocale } from "next-intl/server";
 
 type ArticleHeroProps = {
   posts: PostOverview[];
   className?: string;
 };
 
-export const ArticleHero = ({ posts, className }: ArticleHeroProps) => {
+export const ArticleHero = async ({ posts, className }: ArticleHeroProps) => {
+  const locale = await getLocale();
   if (!posts || posts.length === 0) return null;
 
   const lead = posts[0];
@@ -45,6 +47,7 @@ export const ArticleHero = ({ posts, className }: ArticleHeroProps) => {
           {secondaryA && (
             <SecondaryArticleCard
               article={secondaryA}
+              locale={locale}
               className={showRail ? "lg:col-span-2" : "lg:col-span-3"}
             />
           )}
@@ -52,6 +55,7 @@ export const ArticleHero = ({ posts, className }: ArticleHeroProps) => {
           {secondaryB && (
             <SecondaryArticleCard
               article={secondaryB}
+              locale={locale}
               className={showRail ? "lg:col-span-2" : "lg:col-span-3"}
             />
           )}
@@ -59,6 +63,7 @@ export const ArticleHero = ({ posts, className }: ArticleHeroProps) => {
           {showRail && (
             <HeadlinersRail
               items={headliners}
+              locale={locale}
               className="md:col-span-2 lg:col-span-2 lg:col-start-5 lg:row-span-2 lg:row-start-1"
             />
           )}
@@ -70,11 +75,13 @@ export const ArticleHero = ({ posts, className }: ArticleHeroProps) => {
 
 type SecondaryArticleCardProps = {
   article: PostOverview;
+  locale: string;
   className?: string;
 };
 
 const SecondaryArticleCard = ({
   article,
+  locale,
   className
 }: SecondaryArticleCardProps) => {
   const category =
@@ -83,7 +90,7 @@ const SecondaryArticleCard = ({
       : null;
   const authorName = article.author?.name?.trim();
   const relative = article.publishedAt
-    ? (DateTime.fromISO(article.publishedAt).toRelative() ?? "")
+    ? formatRelativeTime(article.publishedAt, locale)
     : "";
 
   return (

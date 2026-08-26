@@ -1,6 +1,5 @@
 "use client";
 import type { ViewportSizes } from "@/components/core/Media/types";
-import { cssVariables } from "@/cssVariables";
 import { useDeviceInfo, useFrameState, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import {
@@ -9,25 +8,20 @@ import {
   themeLocalStorageKey
 } from "@/providers/Theme/shared";
 import { themeIsValid } from "@/providers/Theme/types";
+import { applyDocumentTheme } from "@/utilities/applyDocumentTheme";
 import canUseDOM from "@/utilities/canUseDOM";
 import { getIsMobile } from "@/utilities/getBreakpoints";
+import { getViewportSize } from "@/utilities/getViewportSize";
 import { storageAvailable } from "@/utilities/isLocalStorageAvailable";
-import { useWindowResize } from "@/utilities/use_window_resize";
-import {
-  useMotionValue,
-  useMotionValueEvent,
-  useTransform
-} from "motion/react";
 import dynamic from "next/dynamic";
 import {
   createContext,
   type ReactNode,
-  useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useState
 } from "react";
-
 const RP_Cursor = dynamic(
   () => import("@/components/UX/Cursor").then((m) => m.default),
   {
@@ -43,116 +37,53 @@ export const MobileContext = createContext<{
 });
 
 export const MobileProvider = ({ children }: { children: ReactNode }) => {
-  const [isTouch, setIsTouch] = useState<boolean>(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(hover:none)").matches
-      : false
-  );
-  const [isMobile, setIsMobile] = useState<boolean>(
-    getIsMobile(window.innerWidth)
-  );
-  const mobileState = useMotionValue(isMobile);
-  useEffect(() => {
-    mobileState.set(isMobile);
-  }, [isMobile, mobileState]);
+  const [isTouch, setIsTouch] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [pointerReady, setPointerReady] = useState(false);
   const MOBILE_BREAKPOINT = 640;
   const setViewportDimensions = useRPStore((r) => r.setViewportDimensions);
   const setViewportSize = useRPStore((r) => r.setViewportSize);
   const [vs, setVs] = useState<ViewportSizes>("lg");
   const setSnapPoints = useRPStore((r) => r.setSnapPoints);
   const { left, bottom } = useFrameState();
-  const vw = useMotionValue(window.innerWidth);
-  const vh = useMotionValue(window.innerHeight);
 
-  const onResize = useCallback(() => {
-    setViewportDimensions({
-      width: window.innerWidth,
-      height: window.innerHeight
-    });
-    vw.set(window.innerWidth);
-    vh.set(window.innerHeight);
-    const v = getIsMobile(window.innerWidth)
-      ? window.innerHeight * 0.35 + bottom.get()
-      : window.innerWidth * 0.76 + left.get();
+  const onResize = useEffectEvent(() => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    setViewportDimensions({ width, height });
+    setVs(getViewportSize(width));
+    setIsMobile(width < MOBILE_BREAKPOINT);
+
+    const v = getIsMobile(width)
+      ? height * 0.35 + bottom.get()
+      : width * 0.76 + left.get();
     setSnapPoints([`${v}px`, 1]);
-  }, [bottom, left, setSnapPoints, setViewportDimensions, vh, vw]);
+  });
 
-  // useEffect(() => {
-  //   if (!isMobile) {
-  //     setSnapPoints([viewportWidth * 0.76 + left + "px", 1]);
-  //   } else {
-  //     setSnapPoints([viewportHeight * 0.35 + bottom + "px", 1]);
-  //   }
-  // }, [bottom, isMobile, viewportWidth, left, setSnapPoints, viewportHeight]);
   useEffect(() => {
     window.addEventListener("resize", onResize);
     onResize();
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [onResize]);
+  }, []);
 
-  // useEffect(() => {
-  //   if (viewportWidth > MOBILE_BREAKPOINT) {
-  //     setSnapPoints([viewportWidth * 0.76 + 10 + "px", 1]);
-  //   } else {
-  //     setSnapPoints([viewportHeight * 0.26 + 20 + "px", 1]);
-  //   }
-  // }, [viewportWidth, viewportHeight, setSnapPoints]);
-
-  const resize = useWindowResize({
-    debounce: 50,
-    detectVisibilityChange: false
-  });
   useEffect(() => {
     setViewportSize(vs);
   }, [setViewportSize, vs]);
 
   useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const mqqq = Object.entries(cssVariables.breakpoints).map(([k, value]) => {
-      console.log(k, value);
-      const mq = window.matchMedia(`(max-width: ${value - 1}px)`);
-      const onChange = (e: MediaQueryListEventMap["change"]) => {
-        if (e.matches) {
-          setVs((r) => {
-            const key = k as ViewportSizes;
-            const prev = cssVariables.breakpoints[r];
-            const next = cssVariables.breakpoints[key];
-            if (next > prev) {
-              return key;
-            }
-            return r;
-          });
-        }
-      };
-      mq.addEventListener("change", onChange);
-      return () => {
-        mq.removeEventListener("change", onChange);
-      };
-    });
     const touchQ = window.matchMedia("(hover:none)");
-    // Sync once on mount — coarse-pointer devices already match,
-    // so the `change` listener would otherwise never fire.
     setIsTouch(touchQ.matches);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
+    setPointerReady(true);
     const onTouchChange = () => {
       setIsTouch(touchQ.matches);
     };
-    mql.addEventListener("change", onChange);
     touchQ.addEventListener("change", onTouchChange);
-
     return () => {
-      mql.removeEventListener("change", onChange);
       touchQ.removeEventListener("change", onTouchChange);
-      mqqq.forEach((r) => r());
     };
-  }, [resize]);
-  useEffect(() => {
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-  }, [resize]);
+  }, []);
 
   // iOS Safari ignores `maximum-scale=1` for accessibility, so the viewport
   // meta alone does not stop pinch-zoom or double-tap-zoom. Block them
@@ -185,10 +116,10 @@ export const MobileProvider = ({ children }: { children: ReactNode }) => {
   }, [isTouch]);
 
   return (
-    <MobileContext.Provider value={{ isTouch, isMobile }}>
-      {!isTouch && <RP_Cursor />}
+    <MobileContext value={{ isTouch, isMobile }}>
+      {pointerReady && !isTouch && <RP_Cursor />}
       {children}
-    </MobileContext.Provider>
+    </MobileContext>
   );
 };
 export const useIsMobile = () => {
@@ -223,8 +154,9 @@ export const MiddleMan = ({ children }: { children: ReactNode }) => {
     }
   }, [saveTheme, setLocalStorageEnabled]);
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    applyDocumentTheme(document.documentElement, theme, {
+      armTransitions: false
+    });
   }, [theme]);
   useEffect(() => {
     setTheme(locked ? pageTheme || defaultTheme : savedTheme || defaultTheme);

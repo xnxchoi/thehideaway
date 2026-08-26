@@ -1,55 +1,33 @@
 "use client";
-import InAppSpy from "inapp-spy";
-import {
-  BrowserName,
-  BrowserType,
-  DeviceType,
-  DeviceVendor
-} from "ua-parser-js/enums";
 import { createStore } from "zustand/vanilla";
+import {
+  cloneDevice,
+  DEFAULT_DEVICE,
+  type HA_DEVICE
+} from "./detectDevice";
 
-type IVendor = typeof DeviceVendor;
-type Vendorr = IVendor[keyof IVendor];
-type IAppName = NonNullable<ReturnType<typeof InAppSpy>["appName"]>;
-type UBName = NonNullable<(typeof BrowserName)[keyof typeof BrowserName]>;
-type BType = NonNullable<(typeof BrowserType)[keyof typeof BrowserType]>;
-type DType = NonNullable<(typeof DeviceType)[keyof typeof DeviceType]>;
-type FallbackName = "Unknown";
-export const fallbackName: FallbackName = "Unknown";
-export type HA_DEVICE = {
-  fingerprint: string | null;
-  device: {
-    model: string;
-    type: DType | FallbackName;
-    vendor: string | Vendorr | FallbackName;
-  };
-  browser: {
-    name: IAppName | UBName | string | FallbackName;
-    type: BType | FallbackName;
-  } & {
-    inApp: boolean;
-    isChrome: boolean;
-    isSafari: boolean;
-  };
-  os: {
-    name: string | FallbackName;
-    isIOS: boolean;
-    isAndroid: boolean;
-  };
-  isBot: boolean;
-  isTouchDevice: boolean;
-  isMobile: boolean;
-};
+export type { HA_DEVICE };
+export { DEFAULT_DEVICE };
+
 export type DeviceStore = HA_DEVICE & {
   localStorage: boolean;
   setFingerPrint: (l: string) => void;
   setStorageAvailable: (l: boolean) => void;
+  hydrateDevice: (detected: HA_DEVICE) => void;
 };
-export const createDeviceStore = (l: HA_DEVICE) => {
+export const createDeviceStore = (l: HA_DEVICE = DEFAULT_DEVICE) => {
   return createStore<DeviceStore>()((set, get) => ({
-    ...l,
+    ...cloneDevice(l),
     localStorage: false,
-    setFingerPrint: (l) => set({ fingerprint: l }),
-    setStorageAvailable: (l) => set({ localStorage: l })
+    setFingerPrint: (fingerprint) => set({ fingerprint }),
+    setStorageAvailable: (available) => set({ localStorage: available }),
+    hydrateDevice: (detected) => {
+      const current = get();
+      set({
+        ...cloneDevice(detected),
+        localStorage: current.localStorage,
+        fingerprint: current.fingerprint ?? detected.fingerprint
+      });
+    }
   }));
 };

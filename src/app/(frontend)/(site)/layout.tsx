@@ -1,4 +1,4 @@
-import "@/styles/globals.css";
+
 import "@/app/(frontend)/estate.scss";
 import { Layout } from "@/app/(frontend)/(site)/layout.client";
 import { Footer } from "../../../components/Shells/Footer/Footer";
@@ -6,15 +6,13 @@ import { LegalFooterGate } from "../../../components/Shells/Footer/LegalFooterGa
 import { getServerSideURL } from "@/utilities/getURL";
 import { mergeOpenGraph } from "@/utilities/mergeOpenGraph";
 import type { Metadata } from "next";
-import { draftMode } from "next/headers";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 
 export default async function RootLayout({
   children
 }: {
   children: ReactNode;
 }) {
-  const { isEnabled } = await draftMode();
   getServerSideURL();
   return (
     <>
@@ -22,9 +20,11 @@ export default async function RootLayout({
       {/* Path-gated: hidden by default on auth, reading, and checkout
           routes; pages can override via `useFooterVisibility` from
           `@/components/core/LegalFooter/footer-visibility`. */}
-      <LegalFooterGate>
-        <Footer />
-      </LegalFooterGate>
+      <Suspense fallback={null}>
+        <LegalFooterGate>
+          <Footer />
+        </LegalFooterGate>
+      </Suspense>
     </>
   );
 }

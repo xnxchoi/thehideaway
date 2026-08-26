@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
 import { useVoyageur } from "@/stores/Routing/RP_Voyageur";
+import { applyDocumentTheme, clearThemedTransitions } from "@/utilities/applyDocumentTheme";
 import {
   HTMLMotionProps,
   useMotionTemplate,
@@ -63,23 +64,6 @@ export const DarkmodeButton = ({
 
   const is404 = useVoyageur(useShallow((l) => l.is404)),
     isHome = useVoyageur(useShallow((r) => r.isHome));
-  const animateAllComponents = useCallback((reset: boolean = false) => {
-    const targetNodes = document.querySelectorAll("[data-themed]");
-    if (!targetNodes || targetNodes.length === 0) return;
-    const targets = Array.from(targetNodes).filter(isOneOf);
-    for (const c of targets) {
-      if (!c) return;
-      if (reset) {
-        c.style.removeProperty("transition");
-        continue;
-      }
-      if (!c.dataset.themed) return;
-      const d = c.dataset.themed.split(",");
-      c.style.transition = d
-        .map((l) => "".concat(l, " ").concat("" + 0.2, "s"))
-        .join(",");
-    }
-  }, []);
   const themeValue = useMotionValue(theme);
 
   const themeToDarkTransform = useTransform(() =>
@@ -99,24 +83,29 @@ export const DarkmodeButton = ({
   const darkY = useMotionTemplate`${_darkY}%`,
     lightY = useMotionTemplate`${_lightY}%`;
   useEffect(() => {
-    (toRef.current && clearTimeout(toRef.current),
-      animateAllComponents(),
-      themeValue.set(theme),
-      (toRef.current = setTimeout(() => {
-        animateAllComponents(!0);
-      }, 1100 * 0.2)));
-  }, [animateAllComponents, theme, themeValue]);
+    if (toRef.current) clearTimeout(toRef.current);
+    themeValue.set(theme);
+    toRef.current = setTimeout(() => {
+      clearThemedTransitions(document.documentElement);
+    }, 220);
+    return () => {
+      if (toRef.current) clearTimeout(toRef.current);
+    };
+  }, [theme, themeValue]);
 
   const uid = useId();
   const onClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       const enabled = !e.currentTarget.disabled;
       if (enabled) {
+        applyDocumentTheme(document.documentElement, theme === "dark" ? "light" : "dark", {
+          armTransitions: true
+        });
         togggleTheme();
         onClickFromProps?.(e);
       }
     },
-    [onClickFromProps, togggleTheme]
+    [onClickFromProps, theme, togggleTheme]
   );
   return (
     (navIsOpen || (!isHome && !is404)) && (

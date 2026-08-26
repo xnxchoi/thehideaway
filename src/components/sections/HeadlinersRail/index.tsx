@@ -1,16 +1,21 @@
 import { Link } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
 import { PostOverview } from "@/types/collections/posts";
-import { DateTime } from "luxon";
+import { formatRelativeTime } from "@/utilities/formatRelativeTime";
 
 type HeadlinersRailProps = {
   items: PostOverview[];
+  locale: string;
   className?: string;
 };
 
 const formatRank = (n: number) => String(n + 1).padStart(2, "0");
 
-export const HeadlinersRail = ({ items, className }: HeadlinersRailProps) => {
+export const HeadlinersRail = ({
+  items,
+  locale,
+  className
+}: HeadlinersRailProps) => {
   if (!items.length) return null;
 
   return (
@@ -28,7 +33,7 @@ export const HeadlinersRail = ({ items, className }: HeadlinersRailProps) => {
         {items.map((item, i) => {
           const authorName = item.author?.name?.trim();
           const relative = item.publishedAt
-            ? (DateTime.fromISO(item.publishedAt).toRelative() ?? "")
+            ? formatRelativeTime(item.publishedAt, locale)
             : "";
 
           return (

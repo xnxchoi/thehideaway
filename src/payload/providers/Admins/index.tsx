@@ -576,8 +576,7 @@ export const useWriter = <T,>(selector: (store: WriterStore) => T) => {
   return useStore(w, selector);
 };
 const CoordinatorCtx = dynamic(
-  () => import("@/providers/CoordinatorCtx").then((r) => r.CoordinatorCtx),
-  { ssr: false }
+  () => import("@/providers/CoordinatorCtx").then((r) => r.CoordinatorCtx)
 );
 const features = () => import("@/providers/Motion").then((r) => r.default);
 const AdminsProviders: FC<{

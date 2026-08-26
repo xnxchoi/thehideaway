@@ -2,8 +2,6 @@ import type { MetadataRoute } from "next";
 import configPromise from "@payload-config";
 import { getPayload } from "payload";
 
-export const revalidate = 0;
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl =
     process.env.NEXT_PUBLIC_SERVER_URL || "https://hideawayseoul.com";

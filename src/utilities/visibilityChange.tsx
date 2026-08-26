@@ -31,12 +31,13 @@ const createTabMessageStore = (initState: TabMessageStore) => {
 };
 type TabMessengerAPI = ReturnType<typeof createTabMessageStore>;
 const TabMessageContext = createContext<TabMessengerAPI | undefined>(undefined);
+const FALLBACK_TITLE = "THE HIDEAWAY";
 const TabMessengerProvider = ({ children }: { children: React.ReactNode }) => {
   const store = useRef<TabMessengerAPI>(undefined!);
 
   if (!store.current) {
     store.current = createTabMessageStore({
-      title: document.title,
+      title: FALLBACK_TITLE,
       screenSaverTitle: ""
     });
   }
@@ -59,8 +60,7 @@ export const useTabMessenger = <T,>(
   return useStore(store, selector);
 };
 const InternalTabMessenger = () => {
-  const ogDocTitle = useRef(document.title);
-  const FALLBACK_TITLE = "THE HIDEAWAY";
+  const ogDocTitle = useRef(FALLBACK_TITLE);
   const emojis = useMemo(() => tabMessages.icons, []);
   const messages = useMemo(() => tabMessages.messages, []);
 

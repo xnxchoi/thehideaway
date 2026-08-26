@@ -13,27 +13,18 @@ import {
 } from "@/providers/RP_Pro";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { NotificationProvider } from "@/providers/Notifications";
+import { MiddleMan } from "@/providers/MiddleMan";
 import { Voyageur } from "@/stores/Routing/RP_Voyageur";
 import { LazyMotion } from "motion/react";
-import dynamic from "next/dynamic";
 import React from "react";
 import { useShallow } from "zustand/shallow";
 import { HeaderThemeProvider } from "./HeaderTheme";
 import { QueryProvider } from "./QueryProvider";
 import { SessionProvider } from "./Session/providers";
 import { CMDKeyManager, ThemeProvider } from "./Theme";
-const TransitionProvider = dynamic(
-  () => import("./TransitionProvider").then((r) => r.TransitionProvider),
-  { ssr: false }
-);
+import { TransitionProvider } from "./TransitionProvider";
 
 const motion = () => import("./Motion").then((r) => r.default);
-const MiddleMan = dynamic(
-  () => import("@/providers/MiddleMan").then((m) => m.MiddleMan),
-  {
-    ssr: false
-  }
-);
 
 /**
  * Mounts NotificationProvider once at the top of the tree so any client

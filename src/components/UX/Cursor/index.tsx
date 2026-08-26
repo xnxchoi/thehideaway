@@ -24,8 +24,8 @@ type DEFAULT = null;
 export type CursorStates = FOCUS | DRAG | DEFAULT;
 // Initialize cursor
 export default function RP_Cursor() {
-  const cursorX = useMotionValue(window.innerWidth / 2);
-  const cursorY = useMotionValue(window.innerHeight / 2);
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
   const { isMobile } = useIsMobile();
   const textWidth = useRef(12);
   const c = useMemo(
@@ -38,6 +38,8 @@ export default function RP_Cursor() {
   );
 
   useEffect(() => {
+    cursorX.set(window.innerWidth / 2);
+    cursorY.set(window.innerHeight / 2);
     const updatePosition = (e: PointerEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -69,8 +71,8 @@ export default function RP_Cursor() {
   const colors = useMemo(
     () => ({
       rouge: "62.41% 0.246 28.34",
-      light: "0.9735 0.0013 218.99",
-      dark: "10.17% 0.0013 218.99"
+      light: "10.17% 0.0013 218.99",
+      dark: "97.5% 0.0013 218.99"
     }),
     []
   );
@@ -292,9 +294,9 @@ export default function RP_Cursor() {
 
   useEffect(() => {
     if (!theme) return;
-    const baseCursorTheme = theme === "light" ? "dark" : "light";
-    setBaseCursorTheme(baseCursorTheme);
-    if (!navIsOpen) resetCursorTheme();
+
+    setBaseCursorTheme(navIsOpen?(theme==='light'?'dark':'light'):theme);
+     resetCursorTheme();
   }, [
     navIsOpen,
     resetCursorTheme,
@@ -387,7 +389,7 @@ export default function RP_Cursor() {
               >
                 <m.circle
                   ref={oCircle}
-                  className="inline bg-transparent fill-transparent stroke-nav-button transition-[stroke] duration-150 ease-out-power3 data-[FOCUS]:stroke-rouge-400"
+                  className={"inline bg-transparent fill-transparent transition-[stroke] duration-150 ease-out-power3 data-[focus=true]:stroke-rouge-400"}
                   cx={50}
                   cy={50}
                   r={outerRadius}

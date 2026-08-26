@@ -347,7 +347,7 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
       return -20 * scrub + 20;
     }
   });
-  const windowWidthValue = useMotionValue(window.innerWidth);
+  const windowWidthValue = useMotionValue(0);
 
   const mainWidth = useTransform(() => {
     const progress = scrubPosition.get(),
@@ -552,14 +552,14 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
               opacity: scrubPosition
             }}
             className={
-              "absolute top-0 left-0 z-[1] h-full w-full bg-off-l-gray/35 opacity-[0.00001] dark:bg-faded-l-gray/35"
+              "absolute top-0 left-0 z-1 h-full w-full bg-off-l-gray/35 opacity-[0.00001] dark:bg-faded-l-gray/35"
             }
           />
           <m.div
             key={"blur-fx"}
             style={{ opacity: scrubPosition }}
             className={
-              "absolute top-0 left-0 z-[2] h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
+              "absolute top-0 left-0 z-2 h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
             }
           />
           <m.div
@@ -657,7 +657,6 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
                   <CheckInButton
                     key="signed-out"
                     style={{
-                      color: themeColour,
                       backgroundColor: btBackground,
                       backdropFilter: btBlur
                     }}

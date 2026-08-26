@@ -136,7 +136,8 @@ const tz = {
   width: "100%",
   height: "100%",
   pointerEvents: "none",
-  overflow: "hidden"
+  overflowX: "hidden",
+  overflowY: "hidden"
 };
 
 const tU = {
@@ -146,7 +147,8 @@ const tU = {
   width: "100%",
   height: "auto",
   pointerEvents: "auto",
-  overflow: "visible"
+  overflowX: "visible",
+  overflowY: "visible"
 };
 const dlay = 0.7;
 type TransitionAnimation =
@@ -159,24 +161,12 @@ type TransitionMap = Record<PageTransitionType, SingleTransition>;
 const transitionMappings: TransitionMap = {
   FADE: {
     none: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none",
-      overflow: "hidden",
-      opacity: 0
+      ...tz,
+      opacity: "0"
     },
     entering: {
-      position: "relative",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "auto",
-      pointerEvents: "auto",
-      overflow: "visible",
-      opacity: 1,
+      ...tU,
+      opacity: "1",
       transition: {
         ease: "easeIn",
         duration: 0.3,
@@ -184,15 +174,8 @@ const transitionMappings: TransitionMap = {
       }
     },
     leaving: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none",
-      overflow: "hidden",
-      opacity: 0,
-
+      ...tz,
+      opacity: "0",
       transition: {
         delay: dlay,
         duration: 0.3,
@@ -202,23 +185,11 @@ const transitionMappings: TransitionMap = {
   },
   FROM_MENU: {
     none: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none",
-      overflow: "hidden"
+      ...tz
     },
     entering: {
-      position: "relative",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "auto",
-      pointerEvents: "auto",
-      overflow: "visible",
-      opacity: 1,
+      ...tU,
+      opacity: "1",
       transition: {
         duration: 0,
         delay: 0
@@ -233,22 +204,10 @@ const transitionMappings: TransitionMap = {
   },
   CURTAIN: {
     none: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      pointerEvents: "none",
-      overflow: "hidden"
+      ...tz
     },
     entering: {
-      position: "relative",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "auto",
-      pointerEvents: "auto",
-      overflow: "visible",
+      ...tU,
       transition: {
         delay: 0,
         duration: 0
@@ -256,7 +215,7 @@ const transitionMappings: TransitionMap = {
     },
     leaving: {
       pointerEvents: "none",
-      opacity: 0,
+      opacity: "0",
       position: "relative",
       transition: {
         delay: 0,
@@ -269,13 +228,12 @@ const transitionMappings: TransitionMap = {
       ...tz,
       y: "100svh",
       zIndex: 0,
-      borderRadius: "4px",
-      overflow: "hidden"
+      borderRadius: "4px"
     },
     entering: {
       ...tU,
       y: 0,
-      opacity: 1,
+      opacity: "1",
       zIndex: 1,
       transition: {
         delay: 0,
@@ -288,8 +246,7 @@ const transitionMappings: TransitionMap = {
       scale: 0.5,
       scaleX: 0.9,
       borderRadius: "4px",
-      overflow: "hidden",
-      opacity: 1,
+      opacity: "1",
       transition: {
         delay: 0,
         duration: 1.28,
@@ -301,7 +258,7 @@ const transitionMappings: TransitionMap = {
     none: {},
     entering: {
       pointerEvents: "auto",
-      opacity: 1,
+      opacity: "1",
       transition: {
         delay: 0,
         duration: 0.1,
@@ -310,7 +267,7 @@ const transitionMappings: TransitionMap = {
     },
     leaving: {
       pointerEvents: "none",
-      opacity: 0,
+      opacity: "0",
       transition: {
         delay: 0,
         duration: 0.1,

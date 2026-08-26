@@ -1,18 +1,14 @@
 "use client";
 
 import { InitiateHeader } from "./InitiateHeader";
+import { HeaderClient as HeaderWrapper } from "./HeaderClient";
 import type { Header } from "src/payload-types";
-import dynamic from "next/dynamic";
 import { FC } from "react";
 
 interface HeaderClientProps {
   header: Header;
 }
 
-const HeaderWrapper = dynamic(
-  () => import("./HeaderClient").then((r) => r.HeaderClient),
-  { ssr: false }
-);
 export const HeaderClient: FC<HeaderClientProps> = (props) => {
   const { header } = props;
 

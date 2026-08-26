@@ -2,12 +2,11 @@
 
 import { createSearchBarStore, RP_SearchBar } from "@/stores/CMDK/SearchStore";
 import { createCursorStore, HA_CURS } from "@/stores/Cursor/CursorStore";
-import { OSNames } from "@/stores/Device/browserNames";
 import {
   createDeviceStore,
-  DeviceStore,
-  HA_DEVICE
+  DeviceStore
 } from "@/stores/Device/DeviceStore";
+import { detectDevice, readClientDeviceEnv } from "@/stores/Device/detectDevice";
 import {
   createMenuStructure,
   FrameSide,
@@ -19,7 +18,6 @@ import { createHAStore, HA_VAULT } from "@/stores/RP_Ui";
 import { createId } from "@paralleldrive/cuid2";
 import { getThumbmark } from "@thumbmarkjs/thumbmarkjs";
 
-import InAppSpy from "inapp-spy";
 import { MotionValue, useMotionValue, useTransform } from "motion/react";
 import { useTransitionState } from "next-transition-router";
 import {
@@ -31,7 +29,6 @@ import {
   useRef
 } from "react";
 
-import { UAParser } from "ua-parser-js";
 import { useStore } from "zustand";
 import { shallow, useShallow } from "zustand/shallow";
 import { useStoreWithEqualityFn } from "zustand/traditional";
@@ -56,140 +53,16 @@ export interface CurProviderProps {
   children: ReactNode;
 }
 
-type OSEnvTestTargets =
-  | "ios"
-  | "android"
-  | "mac"
-  | "windows"
-  | "linux"
-  | "node";
-type InAppTestTargets =
-  | "instagram"
-  | "pinterest"
-  | "facebook"
-  | "whatsApp"
-  | "twitter"
-  | "kakaotalk"
-  | "weChat"
-  | "naver"
-  | "threads"
-  | "messenger"
-  | "line"
-  | "tikTok";
 const IntDeviceProvider = ({ children }: DeviceProviderProps) => {
   const storeRef = useRef<DeviceAPI>(null!);
   if (!storeRef.current) {
-    const uap = new UAParser();
-    const isSpoofedIpad =
-      /iPad/.test(navigator.platform) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    const supportedBots = [
-      "facebookexternalhit",
-      "skypeuripreview",
-      "baiduspider",
-      "linkedinbot",
-      "ia_archiver",
-      "duckduckbot",
-      "twitterbot",
-      "googlebot",
-      "yandexbot",
-      "bingbot",
-      "facebot",
-      "tumblr",
-      "slurp",
-      "google (+https://developers.google.com/+/web/snippet/)",
-      "https://developers.google.com/+/web/snippet/"
-    ];
-    const browser = uap.getBrowser();
-    const os = uap.getOS() as UAParser.IOS & { name: OSNames };
-    const device = uap.getDevice();
-    const { isInApp, appName } = InAppSpy();
-    const isKakaoTalkUA = /kakaotalk/i.test(navigator.userAgent);
-    const majorBrowsers = {
-      chrome: browser.name === "Chrome",
-      firefox: browser.name === "Firefox",
-      safari: browser.name === "Safari"
-    };
-    const apps: Record<InAppTestTargets, boolean> = {
-      instagram: appName === "Instagram",
-      pinterest: /pinterest/i.test(navigator.userAgent),
-      facebook: appName === "Facebook",
-      whatsApp: /whatsapp/i.test(navigator.userAgent),
-      twitter:
-        browser.name === "Twitter" ||
-        appName === "Twitter" ||
-        /twitter/i.test(navigator.userAgent),
-      kakaotalk: browser.name === "KakaoTalk" || isKakaoTalkUA,
-      weChat: browser.name === "WeChat" || appName === "WeChat",
-      naver: browser.name === "Naver",
-      threads: appName === "Threads",
-      messenger: appName === "Facebook Messenger",
-      line: appName === "Line" || browser.name === "Line",
-      tikTok: appName === "TikTok" || browser.name === "TikTok"
-    };
-    const oss: Record<OSEnvTestTargets, boolean> = {
-      ios: false,
-      android: false,
-      mac: false,
-      windows: false,
-      linux: false,
-      node: false
-    };
-    switch (os.name) {
-      case "iOS":
-        oss.ios = true;
-        break;
-      case "Android":
-        oss.android = true;
-        break;
-      case "macOS":
-        oss.mac = true;
-        break;
-      case "Windows":
-        oss.windows = true;
-        break;
-      case "Linux":
-        oss.linux = true;
-        break;
-      case "node":
-        oss.node = true;
-        break;
-    }
-
-    const inApp: boolean =
-      isInApp ||
-      browser.type === "inapp" ||
-      Object.values(apps).some((v) => v) ||
-      false;
-    const l: HA_DEVICE = {
-      fingerprint: null,
-      device: {
-        model: device.model || "Unknown",
-        vendor: device.vendor || "Unknown",
-        type: device.type || "Unknown"
-      },
-      browser: {
-        type: inApp ? "inapp" : browser.type || "Unknown",
-        name: isKakaoTalkUA
-          ? "KakaoTalk"
-          : browser.name || appName || "Unknown",
-        inApp,
-        isChrome: majorBrowsers.chrome,
-        isSafari: majorBrowsers.safari
-      },
-      os: {
-        name: isSpoofedIpad ? "ios" : (os.name ?? "Unknown"),
-        isAndroid: oss.android,
-        isIOS: oss.ios
-      },
-      isTouchDevice: navigator.maxTouchPoints > 0,
-      isMobile: device.type === "mobile",
-      isBot: !!supportedBots.filter((bot: string) =>
-        navigator.userAgent.toLowerCase().includes(bot.toLowerCase())
-      ).length
-    };
-    storeRef.current = createDeviceStore({ ...l });
+    storeRef.current = createDeviceStore();
   }
+  useEffect(() => {
+    storeRef.current
+      .getState()
+      .hydrateDevice(detectDevice(readClientDeviceEnv()));
+  }, []);
   return (
     <DeviceContext.Provider value={storeRef.current}>
       {children}
@@ -238,7 +111,7 @@ export const CursorProvider = ({ children }: CurProviderProps) => {
     sRef.current = createCursorStore();
   }
   return (
-    <CurContext.Provider value={sRef.current}>{children}</CurContext.Provider>
+    <CurContext value={sRef.current}>{children}</CurContext>
   );
 };
 
@@ -373,12 +246,8 @@ const AMG = ({ children }: { children: ReactNode }) => {
   const right = useTransform(() => (fsVal.get() ? 0 : 10) as number);
 
   const syncViewport = useMenu((s) => s.syncViewport);
-  const viewportWidth = useMotionValue(
-    typeof window !== "undefined" ? window.innerWidth : 0
-  );
-  const viewportHeight = useMotionValue(
-    typeof window !== "undefined" ? window.innerHeight : 0
-  );
+  const viewportWidth = useMotionValue(0);
+  const viewportHeight = useMotionValue(0);
   useEffect(() => {
     if (typeof window === "undefined") return;
     let raf = 0;

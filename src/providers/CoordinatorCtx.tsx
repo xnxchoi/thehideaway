@@ -1,6 +1,6 @@
 "use client"
 import {MotionValue, useMotionValue} from "motion/react";
-import {createContext, ReactNode, useCallback, useContext} from "react";
+import {createContext, ReactNode, useCallback, useContext, useEffect} from "react";
 
 type CRDNTS = {
 	x: MotionValue<number>;
@@ -13,8 +13,12 @@ type CRDNTSACT = {
 export type CRDNTSAPI = CRDNTS & CRDNTSACT
 const CRDNTSCTX = createContext<CRDNTSAPI | null>(null)
 export const CoordinatorCtx = ({children}: { children: ReactNode }) => {
-	const xValue = useMotionValue(window.innerWidth / 2);
-	const yValue = useMotionValue(window.innerHeight / 2);
+	const xValue = useMotionValue(0);
+	const yValue = useMotionValue(0);
+	useEffect(() => {
+		xValue.set(window.innerWidth / 2);
+		yValue.set(window.innerHeight / 2);
+	}, [xValue, yValue]);
 	const _updateFn = useCallback((e: { x: number, y: number }) => {
 		xValue.set(e.x);
 		yValue.set(e.y);
