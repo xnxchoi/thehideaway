@@ -22,10 +22,7 @@ type SearchParams = Promise<{
   redirect?: string | string[];
 }>;
 
-export default async function Page(props: { searchParams?: SearchParams }) {
-  const searchParams = props.searchParams ? await props.searchParams : {};
-  const redirectTo = signInRedirectTarget(searchParams);
-
+export default function Page(props: { searchParams?: SearchParams }) {
   return (
     <RPage slug={["sign-in"]} type={"account"}>
       <div className="relative z-[100] flex min-h-svh flex-col items-center justify-center gap-10 p-9 md:p-16">
@@ -44,7 +41,9 @@ export default async function Page(props: { searchParams?: SearchParams }) {
             </div>
             The Hideaway.
           </Link>
-          <AuthCard view="SIGN_IN" redirectTo={redirectTo} />
+          <Suspense>
+            <SignInCard searchParams={props.searchParams} />
+          </Suspense>
           {isDev ? (
             <DevButlerButton enabled={butlerEnabled} reason={butlerReason} />
           ) : null}
@@ -66,4 +65,10 @@ export default async function Page(props: { searchParams?: SearchParams }) {
       </div>
     </RPage>
   );
+}
+
+async function SignInCard({ searchParams }: { searchParams?: SearchParams }) {
+  const params = searchParams ? await searchParams : {};
+  const redirectTo = signInRedirectTarget(params);
+  return <AuthCard view="SIGN_IN" redirectTo={redirectTo} />;
 }

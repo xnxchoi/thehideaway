@@ -9,8 +9,21 @@ import {
 } from "@/payload/plugins/locker/fields/authority/utils";
 import { merge } from "lodash-es";
 import { RP_Roles } from "@/stores/Notification/NotificationStore";
+import { cacheLife, cacheTag } from "next/cache";
 
 export default async function TheTeamPage() {
+  const teams = await getTheTeam();
+  return (
+    <RPage type="pages" slug={["the-team"]} theme={"dark"}>
+      <Credits people={teams}></Credits>
+    </RPage>
+  );
+}
+
+async function getTheTeam() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("the-team");
   const payload = await getPayload({ config });
   const users = await payload.find({
     collection: "users",
@@ -84,9 +97,5 @@ export default async function TheTeamPage() {
       teams.push(merge({}, person, { portrait: null }));
     }
   }
-  return (
-    <RPage type="pages" slug={["the-team"]} theme={"dark"}>
-      <Credits people={teams}></Credits>
-    </RPage>
-  );
+  return teams;
 }

@@ -2,6 +2,7 @@ import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
 import { RPage } from "@/components/UX/Transition";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
 import { Metadata } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
 
 /**
@@ -33,6 +34,9 @@ export default async function HomePage() {
 }
 
 async function getHomePosts() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("posts-sitemap");
   const posts = await queryPostOverviews({
     limit: 8,
     where: {

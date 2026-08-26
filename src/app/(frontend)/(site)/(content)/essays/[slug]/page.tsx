@@ -4,7 +4,11 @@ import { RPage } from "@/components/UX/Transition";
 import { queryPostBySlug } from "@/payload/collections/Posts/api/queryPostBySlug";
 import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
 import { generateMeta } from "@/utilities/generateMeta";
+import configPromise from "@payload-config";
 import type { Metadata } from "next";
+import { cacheLife, cacheTag } from "next/cache";
+import { getPayload } from "payload";
+import { Suspense } from "react";
 import PageClient from "./page.client";
 
 type Args = {
@@ -13,8 +17,16 @@ type Args = {
   }>;
 };
 
-export default async function Post({ params: paramsPromise }: Args) {
-  const { slug } = await paramsPromise;
+export default function Post({ params }: Args) {
+  return (
+    <Suspense>
+      <PostBody params={params} />
+    </Suspense>
+  );
+}
+
+async function PostBody({ params }: Args) {
+  const { slug } = await params;
   if (!slug) {
     return <></>;
   }
@@ -37,24 +49,56 @@ export default async function Post({ params: paramsPromise }: Args) {
   );
 }
 
-// queuedIDs={post.post.queuedIDs}
-
 export async function generateMetadata({
   params: paramsPromise
 }: Args): Promise<Metadata> {
-  const { slug = "" } = await paramsPromise;
-  const p = await queryPostBySlug({ slug });
-  if (!p)
+  const { slug: encoded = "" } = await paramsPromise;
+  return getPostMetadata(decodeURIComponent(encoded));
+}
+
+async function getPostMetadata(slug: string) {
+  "use cache";
+  cacheTag("posts-sitemap");
+  cacheLife("hours");
+  const payload = await getPayload({ config: configPromise });
+  const post = await payload
+    .find({
+      collection: "posts",
+      draft: false,
+      limit: 1,
+      pagination: false,
+      overrideAccess: true,
+      depth: 1,
+      where: {
+        slug: {
+          equals: slug
+        }
+      },
+      select: {
+        title: true,
+        slug: true,
+        author: true
+      }
+    })
+    .then((result) => result.docs[0] ?? null);
+
+  if (!post) {
     return {
       title: "The Hideaway",
       description: "The Hideaway"
     };
-  const { post } = p;
-  const { author, title, image } = post;
+  }
+
+  const authorName =
+    typeof post.author === "object" &&
+    post.author !== null &&
+    "name" in post.author
+      ? post.author.name
+      : null;
+
   return generateMeta({
     doc: {
-      title: `${title} | @${author.name}`,
-      image: !!image ? image.value.thumbnailURL || image.value.url : null
+      title: authorName ? `${post.title} | @${authorName}` : post.title
     }
   });
 }

@@ -2,6 +2,7 @@ import configPromise from "@payload-config";
 
 import { Pagination } from "@/payload/components/Pagination";
 import type { Metadata } from "next/types";
+import { cacheLife, cacheTag } from "next/cache";
 import { getPayload } from "payload";
 
 import { RPage } from "@/components/UX/Transition";
@@ -16,28 +17,7 @@ type MemberCard = Pick<
 >;
 
 export default async function Page() {
-  const payload = await getPayload({ config: configPromise });
-
-  const users = await payload.find({
-    collection: "users",
-    depth: 0,
-    limit: LIMIT,
-    overrideAccess: true,
-    select: {
-      slug: true,
-      name: true,
-      username: true,
-      bio: true,
-      portrait: true,
-      role: true
-    },
-    where: {
-      banned: {
-        not_equals: true
-      }
-    }
-  });
-
+  const users = await getMembers();
   const members = users.docs as MemberCard[];
 
   return (
@@ -130,6 +110,32 @@ function MemberCardItem({ user }: { user: MemberCard }) {
       </a>
     </li>
   );
+}
+
+async function getMembers() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("users");
+  const payload = await getPayload({ config: configPromise });
+  return payload.find({
+    collection: "users",
+    depth: 0,
+    limit: LIMIT,
+    overrideAccess: true,
+    select: {
+      slug: true,
+      name: true,
+      username: true,
+      bio: true,
+      portrait: true,
+      role: true
+    },
+    where: {
+      banned: {
+        not_equals: true
+      }
+    }
+  });
 }
 
 export function generateMetadata(): Metadata {
