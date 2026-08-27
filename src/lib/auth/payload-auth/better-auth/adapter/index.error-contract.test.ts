@@ -422,4 +422,56 @@ describe("payloadAdapter error propagation", () => {
     expect(commitTransaction).not.toHaveBeenCalled();
     expect(rollbackTransaction).toHaveBeenCalledWith("tx-1");
   });
+
+  it("bypasses collection access when deleting OAuth state inside a transaction", async () => {
+    const beginTransaction = vi.fn(async () => "tx-1");
+    const commitTransaction = vi.fn(async () => undefined);
+    const rollbackTransaction = vi.fn(async () => undefined);
+    const remove = vi.fn(async () => ({
+      docs: [{ id: "state-1" }],
+      errors: []
+    }));
+    const payload = {
+      ...buildPayload(),
+      delete: remove,
+      db: {
+        beginTransaction,
+        commitTransaction,
+        rollbackTransaction,
+        sessions: { "tx-1": { db: {} } }
+      }
+    };
+
+    vi.doMock("./transform", () => ({
+      createTransform: () => buildTransform(() => "state-1")
+    }));
+
+    const { payloadAdapter } = await import("./index");
+    const adapter = payloadAdapter({
+      payloadClient: payload as never,
+      adapterConfig: { idType: "text" }
+    })({} as never);
+
+    await adapter.transaction(async (transaction) => {
+      await transaction.delete({
+        model: "user",
+        where: [{ field: "id", value: "state-1" }]
+      });
+    });
+
+    expect(remove).toHaveBeenCalledWith(
+      expect.objectContaining({
+        overrideAccess: true,
+        req: expect.objectContaining({
+          payload,
+          transactionID: "tx-1",
+          context: expect.objectContaining({
+            "payload-db-adapter": expect.objectContaining({
+              operation: "deleteByID"
+            })
+          })
+        })
+      })
+    );
+  });
 });

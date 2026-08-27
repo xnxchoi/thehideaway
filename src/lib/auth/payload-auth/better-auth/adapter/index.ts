@@ -98,6 +98,28 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       [BETTER_AUTH_CONTEXT_KEY]: { ...data }
     }) as unknown as RequestContext;
 
+  function getTransactionRequest(
+    payload: any,
+    context: RequestContext
+  ): Partial<PayloadRequest> | undefined {
+    const activeTransaction = payloadTransactionStorage.getStore();
+    if (!activeTransaction) return undefined;
+    return {
+      payload,
+      transactionID: activeTransaction.transactionID,
+      context
+    };
+  }
+
+  function localApiExtras(payload: any, data: Record<string, any>) {
+    const context = createAdapterContext(data);
+    return {
+      context,
+      req: getTransactionRequest(payload, context),
+      overrideAccess: true as const
+    };
+  }
+
   /**
    * Resolves the Payload client, handling both function and direct references
    * @returns The resolved Payload client
@@ -236,18 +258,6 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
       };
     }
 
-    function getTransactionRequest(
-      payload: any
-    ): Partial<PayloadRequest> | undefined {
-      const activeTransaction = payloadTransactionStorage.getStore();
-      if (!activeTransaction) return undefined;
-      return {
-        payload,
-        transactionID: activeTransaction.transactionID,
-        context: {} as RequestContext
-      };
-    }
-
     function buildAtomicUpdateValues({
       table,
       increment,
@@ -353,8 +363,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             collection: collectionSlug,
             data: transformedInput,
             select: convertSelect(model as ModelKey, select),
-            context: createAdapterContext({ model, operation: "create" }),
-            req: getTransactionRequest(payload),
+            ...localApiExtras(payload, { model, operation: "create" }),
             depth: CREATE_QUERY_DEPTH
           });
 
@@ -421,11 +430,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
                 }),
-              context: createAdapterContext({
+              ...localApiExtras(payload, {
                 model,
                 operation: "findOneByID"
               }),
-              req: getTransactionRequest(payload),
               depth: PAYLOAD_QUERY_DEPTH
             } as never)) as unknown as Record<string, any>;
           } else {
@@ -438,11 +446,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                 Object.keys(payloadJoins).length > 0 && {
                   joins: payloadJoins
                 }),
-              context: createAdapterContext({
+              ...localApiExtras(payload, {
                 model,
                 operation: "findOneByWhere"
               }),
-              req: getTransactionRequest(payload),
               depth: PAYLOAD_QUERY_DEPTH,
               limit: 1
             } as never)) as unknown as { docs: Record<string, any>[] };
@@ -529,11 +536,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                   joins: payloadJoins
                 }),
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
+              ...localApiExtras(payload, {
                 model,
                 operation: "findManyBySingleID"
-              }),
-              req: getTransactionRequest(payload)
+              })
             } as never)) as unknown as Record<string, any> | null;
             result = { docs: doc ? [doc] : [], totalDocs: doc ? 1 : 0 };
           } else {
@@ -553,11 +559,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
                   joins: payloadJoins
                 }),
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
+              ...localApiExtras(payload, {
                 model,
                 operation: "findManyByWhere"
-              }),
-              req: getTransactionRequest(payload)
+              })
             } as never)) as unknown as {
               docs: Record<string, any>[];
               totalDocs: number;
@@ -642,8 +647,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               id,
               data: transformedInput,
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: "updateByID" }),
-              req: getTransactionRequest(payload)
+              ...localApiExtras(payload, { model, operation: "updateByID" })
             } as never)) as unknown as Record<string, any>;
           } else {
             debugLog(["updateByWhere", { collectionSlug, payloadWhere }]);
@@ -652,11 +656,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               where: payloadWhere,
               data: transformedInput,
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
+              ...localApiExtras(payload, {
                 model,
                 operation: "updateByWhere"
-              }),
-              req: getTransactionRequest(payload)
+              })
             } as never)) as unknown as { docs: Record<string, any>[] };
             result = doc.docs[0];
           }
@@ -727,8 +730,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             where: payloadWhere,
             data: transformedInput,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: "updateMany" }),
-            req: getTransactionRequest(payload)
+            ...localApiExtras(payload, { model, operation: "updateMany" })
           } as never)) as unknown as { docs: Record<string, any>[] };
 
           debugLog([
@@ -899,8 +901,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               id: singleId,
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({ model, operation: "deleteByID" }),
-              req: getTransactionRequest(payload)
+              ...localApiExtras(payload, { model, operation: "deleteByID" })
             } as never)) as unknown as Record<string, any>;
             deleteResult = { doc, errors: [] };
           } else {
@@ -909,11 +910,10 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
               collection: collectionSlug,
               where: payloadWhere,
               depth: PAYLOAD_QUERY_DEPTH,
-              context: createAdapterContext({
+              ...localApiExtras(payload, {
                 model,
                 operation: "deleteByWhere"
-              }),
-              req: getTransactionRequest(payload)
+              })
             } as never)) as unknown as { docs: Record<string, any>[] };
             deleteResult = { doc: doc.docs[0], errors: [] };
           }
@@ -966,8 +966,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
             collection: collectionSlug,
             where: payloadWhere,
             depth: PAYLOAD_QUERY_DEPTH,
-            context: createAdapterContext({ model, operation: "deleteMany" }),
-            req: getTransactionRequest(payload)
+            ...localApiExtras(payload, { model, operation: "deleteMany" })
           } as never)) as unknown as { docs: Record<string, any>[] };
 
           debugLog([
@@ -1019,8 +1018,7 @@ const payloadAdapter: PayloadAdapter = ({ payloadClient, adapterConfig }) => {
           const result = await payload.count({
             collection: collectionSlug,
             where: payloadWhere,
-            context: createAdapterContext({ model, operation: "count" }),
-            req: getTransactionRequest(payload)
+            ...localApiExtras(payload, { model, operation: "count" })
           });
 
           debugLog([

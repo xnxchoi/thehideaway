@@ -19,7 +19,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       navigate={router.push}
       replace={router.replace}
       signUp={{
-        fields: ["name", "email", "password", "location", "bio", "link"]
+        fields: ["name", "location", "bio", "link"]
       }}
       passkey={!hidePasskeys}
       credentials={{
