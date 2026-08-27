@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { queryUserPosts, type UserPostStatus } from "./_helpers/queryUserPosts";
 import MyPostsClient from "./page.client";
+import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Your Posts" };
 
@@ -67,11 +68,19 @@ const parseDateRange = (
   };
 };
 
-export default async function MyPostsPage({
+export default function MyPostsPage({
   searchParams
 }: {
   searchParams: SearchParams;
 }) {
+  return (
+    <Suspense>
+      <MyPostsBody searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function MyPostsBody({ searchParams }: { searchParams: SearchParams }) {
   const user = await currentUser();
   if (!user) return redirect("/sign-in");
 

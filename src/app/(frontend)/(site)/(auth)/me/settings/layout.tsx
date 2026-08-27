@@ -1,7 +1,7 @@
 import { currentUser } from "@/lib/auth/context/get-context-props";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { SettingsRail } from "@/components/UX/Settings";
 
@@ -30,14 +30,7 @@ export const metadata: Metadata = {
  * at viewport width, which would otherwise overflow the constrained main
  * column).
  */
-export default async function SettingsLayout({
-  children
-}: {
-  children: ReactNode;
-}) {
-  const user = await currentUser();
-  if (!user) return redirect("/sign-in?next=/me/settings");
-
+export default function SettingsLayout({ children }: { children: ReactNode }) {
   return (
     <div className="relative isolate min-h-screen overflow-x-clip bg-background text-foreground">
       {/* Atmosphere — kept very low. The expensive feel comes from canvas
@@ -52,13 +45,24 @@ export default async function SettingsLayout({
         className="pointer-events-none fixed inset-0 -z-10 bg-[url('/assets/noise.png')] bg-[length:45px_45px] opacity-[0.03] mix-blend-overlay dark:opacity-[0.05]"
       />
 
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-x-8 px-6 pt-24 pb-20 xl:grid-cols-[224px_minmax(0,1fr)] xl:gap-x-8 xl:px-10 xl:pt-32 2xl:max-w-[1440px] 2xl:gap-x-10 2xl:px-12">
-        <aside className="hidden xl:sticky xl:top-32 xl:block xl:self-start">
-          <SettingsRail />
-        </aside>
+      <Suspense>
+        <SettingsChrome>{children}</SettingsChrome>
+      </Suspense>
+    </div>
+  );
+}
 
-        <main className="min-w-0">{children}</main>
-      </div>
+async function SettingsChrome({ children }: { children: ReactNode }) {
+  const user = await currentUser();
+  if (!user) return redirect("/sign-in?next=/me/settings");
+
+  return (
+    <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-x-8 px-6 pt-24 pb-20 xl:grid-cols-[224px_minmax(0,1fr)] xl:gap-x-8 xl:px-10 xl:pt-32 2xl:max-w-[1440px] 2xl:gap-x-10 2xl:px-12">
+      <aside className="hidden xl:sticky xl:top-32 xl:block xl:self-start">
+        <SettingsRail />
+      </aside>
+
+      <main className="min-w-0">{children}</main>
     </div>
   );
 }

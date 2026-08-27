@@ -3,6 +3,7 @@ import { RPage } from "@/components/UX/Transition";
 import { BUSINESS } from "@/constants/business";
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Refund Policy — The Hideaway",
@@ -28,31 +29,39 @@ const TOC_EN = [
   { id: "disputes", label: "Disputes" }
 ];
 
-export default async function RefundPage() {
+export default function RefundPage() {
+  return (
+    <RPage type="pages" slug={["refund"]}>
+      <Suspense>
+        <RefundBody />
+      </Suspense>
+    </RPage>
+  );
+}
+
+async function RefundBody() {
   const locale = await getLocale();
   const isKo = locale === "ko";
 
   return (
-    <RPage type="pages" slug={["refund"]}>
-      <DocsShell
-        eyebrow={isKo ? "법적 고지" : "Legal"}
-        title={isKo ? "취소·환불 정책" : "Refund Policy"}
-        lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
-        lastUpdated={REFUND_LAST_UPDATED}
-        toc={isKo ? TOC_KO : TOC_EN}
-        tocLabel={isKo ? "목차" : "Contents"}
-        relatedLabel={isKo ? "관련 문서" : "Related"}
-        related={[
-          { href: "/terms", label: isKo ? "이용약관" : "Terms of Service" },
-          {
-            href: "/privacy",
-            label: isKo ? "개인정보처리방침" : "Privacy Policy"
-          }
-        ]}
-      >
-        {isKo ? <RefundKo /> : <RefundEn />}
-      </DocsShell>
-    </RPage>
+    <DocsShell
+      eyebrow={isKo ? "법적 고지" : "Legal"}
+      title={isKo ? "취소·환불 정책" : "Refund Policy"}
+      lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
+      lastUpdated={REFUND_LAST_UPDATED}
+      toc={isKo ? TOC_KO : TOC_EN}
+      tocLabel={isKo ? "목차" : "Contents"}
+      relatedLabel={isKo ? "관련 문서" : "Related"}
+      related={[
+        { href: "/terms", label: isKo ? "이용약관" : "Terms of Service" },
+        {
+          href: "/privacy",
+          label: isKo ? "개인정보처리방침" : "Privacy Policy"
+        }
+      ]}
+    >
+      {isKo ? <RefundKo /> : <RefundEn />}
+    </DocsShell>
   );
 }
 

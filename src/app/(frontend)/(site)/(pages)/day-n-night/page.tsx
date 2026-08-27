@@ -8,6 +8,8 @@ import { DayNNightLanding } from "@/components/sections/DayNNight";
 import { DAY_N_NIGHT_VIEW_COOKIE } from "@/components/sections/DayNNight/useViewPref";
 import type { DayNNightView } from "@/components/sections/DayNNight/useViewPref";
 import { getServerSession } from "@/lib/auth/getServerSession";
+import { cacheLife, cacheTag } from "next/cache";
+import { Suspense } from "react";
 
 const PAGE_TITLE = "Day n Night · Haebangchon, May 24";
 const PAGE_DESCRIPTION =
@@ -80,12 +82,27 @@ const eventSchema = {
  * immersive view; returning visitors keep whatever they last selected
  * via the on-page toggle.
  */
-export default async function DayNNightPage() {
-  const store = await cookies();
-  const raw = store.get(DAY_N_NIGHT_VIEW_COOKIE)?.value;
-  const initialView: DayNNightView =
-    raw === "simplified" ? "simplified" : "immersive";
-  const session = await getServerSession(await nextHeaders());
+export default function DayNNightPage() {
+  return (
+    <RPage type="pages" slug={["day-n-night"]}>
+      <script
+        type="application/ld+json"
+        // JSON.stringify of an in-file constant — no untrusted input, so
+        // dangerouslySetInnerHTML here is the standard Next.js JSON-LD
+        // pattern with no XSS surface.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}
+      />
+      <Suspense>
+        <DayNNightBody />
+      </Suspense>
+    </RPage>
+  );
+}
+
+async function getDayNNightEventData() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("day-n-night");
   const payload = await getPayload({ config });
   const eventResult = await payload
     .find({
@@ -111,6 +128,17 @@ export default async function DayNNightPage() {
         })
         .catch(() => null)
     : null;
+
+  return { orders };
+}
+
+async function DayNNightBody() {
+  const store = await cookies();
+  const raw = store.get(DAY_N_NIGHT_VIEW_COOKIE)?.value;
+  const initialView: DayNNightView =
+    raw === "simplified" ? "simplified" : "immersive";
+  const session = await getServerSession(await nextHeaders());
+  const { orders } = await getDayNNightEventData();
   const orderDocs = (orders?.docs ?? []) as Array<{
     purchaser?: string | { id?: string } | null;
     purchaser_name?: string | null;
@@ -136,21 +164,12 @@ export default async function DayNNightPage() {
     .filter((name): name is string => Boolean(name));
 
   return (
-    <RPage type="pages" slug={["day-n-night"]}>
-      <script
-        type="application/ld+json"
-        // JSON.stringify of an in-file constant — no untrusted input, so
-        // dangerouslySetInnerHTML here is the standard Next.js JSON-LD
-        // pattern with no XSS surface.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}
-      />
-      <DayNNightLanding
-        initialView={initialView}
-        rsvpCount={orders?.totalDocs ?? orderDocs.length}
-        rsvpState={rsvpState}
-        isSignedIn={isSignedIn}
-        guestNames={guestNames}
-      />
-    </RPage>
+    <DayNNightLanding
+      initialView={initialView}
+      rsvpCount={orders?.totalDocs ?? orderDocs.length}
+      rsvpState={rsvpState}
+      isSignedIn={isSignedIn}
+      guestNames={guestNames}
+    />
   );
 }

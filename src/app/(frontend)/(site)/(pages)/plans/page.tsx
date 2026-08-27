@@ -8,16 +8,27 @@ import { PlansRefundNote } from "@/components/sections/Pricing/PlansRefundNote";
 import s from "@/components/sections/Pricing/Pricing.module.scss";
 import PlansPageClient from "./page.client";
 import { RPage } from "@/components/UX/Transition";
+import { Suspense } from "react";
 
-export default async function PlansPage() {
+export default function PlansPage() {
+  return (
+    <RPage className={s.pricingShell} type="pages" slug={[]}>
+      <PlansPageClient />
+      <Suspense>
+        <PlansCopy />
+      </Suspense>
+    </RPage>
+  );
+}
+
+async function PlansCopy() {
   const [plans, t] = await Promise.all([
     getPlansData(),
     getTranslations("Plans")
   ]);
 
   return (
-    <RPage className={s.pricingShell} type="pages" slug={[]}>
-      <PlansPageClient />
+    <>
       <PricingHero
         eyebrow={t("eyebrow")}
         title={t("title")}
@@ -27,6 +38,6 @@ export default async function PlansPage() {
       <CofounderApply />
       <FAQAccordion />
       <PlansRefundNote />
-    </RPage>
+    </>
   );
 }

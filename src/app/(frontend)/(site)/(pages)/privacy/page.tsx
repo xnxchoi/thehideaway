@@ -6,6 +6,7 @@ import { getLocale } from "next-intl/server";
 import { PrivacyEn } from "./privacy.en";
 import { PrivacyKo } from "./privacy.ko";
 import { POLICY_LAST_UPDATED } from "../../../../../constants/policies";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — The Hideaway",
@@ -46,30 +47,38 @@ const TOC_EN = [
   { id: "business", label: "Business Information" }
 ];
 
-export default async function PrivacyPage() {
+export default function PrivacyPage() {
+  return (
+    <RPage type="pages" slug={["privacy"]}>
+      <Suspense>
+        <PrivacyBody />
+      </Suspense>
+    </RPage>
+  );
+}
+
+async function PrivacyBody() {
   const locale = await getLocale();
   const isKo = locale === "ko";
   return (
-    <RPage type="pages" slug={["privacy"]}>
-      <DocsShell
-        eyebrow={isKo ? "법적 고지" : "Legal"}
-        title={isKo ? "개인정보처리방침" : "Privacy Policy"}
-        lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
-        lastUpdated={POLICY_LAST_UPDATED}
-        toc={isKo ? TOC_KO : TOC_EN}
-        tocLabel={isKo ? "목차" : "Contents"}
-        relatedLabel={isKo ? "관련 문서" : "Related"}
-        related={[
-          { href: "/terms", label: isKo ? "이용약관" : "Terms of Service" },
-          { href: "/refund", label: isKo ? "취소·환불 정책" : "Refund Policy" }
-        ]}
-      >
-        {isKo ? (
-          <PrivacyKo business={BUSINESS} />
-        ) : (
-          <PrivacyEn business={BUSINESS} />
-        )}
-      </DocsShell>
-    </RPage>
+    <DocsShell
+      eyebrow={isKo ? "법적 고지" : "Legal"}
+      title={isKo ? "개인정보처리방침" : "Privacy Policy"}
+      lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
+      lastUpdated={POLICY_LAST_UPDATED}
+      toc={isKo ? TOC_KO : TOC_EN}
+      tocLabel={isKo ? "목차" : "Contents"}
+      relatedLabel={isKo ? "관련 문서" : "Related"}
+      related={[
+        { href: "/terms", label: isKo ? "이용약관" : "Terms of Service" },
+        { href: "/refund", label: isKo ? "취소·환불 정책" : "Refund Policy" }
+      ]}
+    >
+      {isKo ? (
+        <PrivacyKo business={BUSINESS} />
+      ) : (
+        <PrivacyEn business={BUSINESS} />
+      )}
+    </DocsShell>
   );
 }

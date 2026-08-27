@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { TermsEn } from "./terms.en";
 import { TermsKo } from "./terms.ko";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Terms of Service — The Hideaway",
@@ -45,33 +46,37 @@ const TOC_EN = [
   { id: "business", label: "Business Information" }
 ];
 
-export default async function TermsPage() {
+export default function TermsPage() {
+  return (
+    <RPage type="pages" slug={["terms"]}>
+      <Suspense>
+        <TermsBody />
+      </Suspense>
+    </RPage>
+  );
+}
+
+async function TermsBody() {
   const locale = await getLocale();
   const isKo = locale === "ko";
   return (
-    <RPage type="pages" slug={["terms"]}>
-      <DocsShell
-        eyebrow={isKo ? "법적 고지" : "Legal"}
-        title={isKo ? "이용약관" : "Terms of Service"}
-        lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
-        lastUpdated={TERMS_LAST_UPDATED}
-        toc={isKo ? TOC_KO : TOC_EN}
-        tocLabel={isKo ? "목차" : "Contents"}
-        relatedLabel={isKo ? "관련 문서" : "Related"}
-        related={[
-          {
-            href: "/privacy",
-            label: isKo ? "개인정보처리방침" : "Privacy Policy"
-          },
-          { href: "/refund", label: isKo ? "취소·환불 정책" : "Refund Policy" }
-        ]}
-      >
-        {isKo ? (
-          <TermsKo business={BUSINESS} />
-        ) : (
-          <TermsEn business={BUSINESS} />
-        )}
-      </DocsShell>
-    </RPage>
+    <DocsShell
+      eyebrow={isKo ? "법적 고지" : "Legal"}
+      title={isKo ? "이용약관" : "Terms of Service"}
+      lastUpdatedLabel={isKo ? "최종 개정: " : "Last updated: "}
+      lastUpdated={TERMS_LAST_UPDATED}
+      toc={isKo ? TOC_KO : TOC_EN}
+      tocLabel={isKo ? "목차" : "Contents"}
+      relatedLabel={isKo ? "관련 문서" : "Related"}
+      related={[
+        {
+          href: "/privacy",
+          label: isKo ? "개인정보처리방침" : "Privacy Policy"
+        },
+        { href: "/refund", label: isKo ? "취소·환불 정책" : "Refund Policy" }
+      ]}
+    >
+      {isKo ? <TermsKo business={BUSINESS} /> : <TermsEn business={BUSINESS} />}
+    </DocsShell>
   );
 }

@@ -1,9 +1,18 @@
 import { NotificationCenter } from "@/components/UX/Notifications/NotificationCenter";
 import { currentUser } from "@/lib/auth/context/get-context-props";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import PageClient from "./page.client";
 
-export default async function NotificationsPage() {
+export default function NotificationsPage() {
+  return (
+    <Suspense>
+      <InboxBody />
+    </Suspense>
+  );
+}
+
+async function InboxBody() {
   const user = await currentUser();
   if (!user) return redirect("/auth/sign-in");
   return (
