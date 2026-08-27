@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 import { getPayload } from "payload";
+import { Suspense } from "react";
 import PageClient from "./page.client";
 
 type Args = {
@@ -18,8 +19,16 @@ type Args = {
   }>;
 };
 
-export default async function Page({ params: paramsPromise }: Args) {
-  const { slug = "" } = await paramsPromise;
+export default function Page({ params }: Args) {
+  return (
+    <Suspense>
+      <CMSPage params={params} />
+    </Suspense>
+  );
+}
+
+async function CMSPage({ params }: Args) {
+  const { slug = "" } = await params;
   let querySlug = slug;
 
   if (slug.startsWith("@")) {

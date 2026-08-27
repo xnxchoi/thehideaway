@@ -6,18 +6,21 @@ type Args = {
   searchParams: Promise<{ q?: string }>;
 };
 
-export default async function Page({ searchParams: searchParamsPromise }: Args) {
-  const { q: initialQuery = "" } = await searchParamsPromise;
-
+export default function Page({ searchParams }: Args) {
   return (
     <Suspense fallback={null}>
-      <PageClient initialQuery={initialQuery} />
+      <SearchResults searchParams={searchParams} />
     </Suspense>
   );
 }
 
+async function SearchResults({ searchParams }: Args) {
+  const { q: initialQuery = "" } = await searchParams;
+  return <PageClient initialQuery={initialQuery} />;
+}
+
 export function generateMetadata(): Metadata {
   return {
-    title: "Search — The Hideaway",
+    title: "Search — The Hideaway"
   };
 }

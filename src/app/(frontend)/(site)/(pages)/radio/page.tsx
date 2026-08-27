@@ -3,6 +3,7 @@ import { BeatDetectorControls } from "@/providers/HideawayFM/BeatDetectorControl
 import { RPage } from "@/components/UX/Transition";
 import { queryAllReleases } from "@/payload/collections/Radio/api/queryAllReleases";
 import { Metadata } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 
 export const metadata: Metadata = {
   title: "Hideaway FM",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RadioPage() {
-  const releases = await queryAllReleases();
+  const releases = await getRadioReleases();
 
   return (
     <RPage slug={["radio"]} type={"pages"}>
@@ -21,4 +22,11 @@ export default async function RadioPage() {
       {process.env.NODE_ENV !== "production" && <BeatDetectorControls />}
     </RPage>
   );
+}
+
+async function getRadioReleases() {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("radio");
+  return queryAllReleases();
 }

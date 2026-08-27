@@ -3,6 +3,7 @@ import { TagButton } from "@/components/UX/TagButton";
 import { RPage } from "@/components/UX/Transition";
 import config from "@payload-config";
 import type { Metadata } from "next/types";
+import { cacheLife, cacheTag } from "next/cache";
 import { getPayload } from "payload";
 
 import PageClient from "./page.client";
@@ -15,6 +16,9 @@ type TagItem = {
 };
 
 async function getAllTags(): Promise<TagItem[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("tags");
   const payload = await getPayload({ config });
   const res = await payload.find({
     collection: "tags",
