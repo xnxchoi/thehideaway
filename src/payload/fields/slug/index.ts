@@ -1,6 +1,6 @@
 import {nanoid} from "nanoid";
 import type {CheckboxField, FieldHook, TextField} from "payload";
-import {formatSlugHook} from "./formatSlug";
+import {composeHashedSlug, formatSlugHook} from "./formatSlug";
 
 type Overrides = {
   slugOverrides?: Partial<TextField>;
@@ -172,17 +172,13 @@ export const slugField: Slug = (fieldToUse = "title", useHash = true, overrides 
       // ]
     }
   };
-	const bc: FieldHook = useHash ? ({value, siblingData}): string => {
+	const bc: FieldHook = ({value, siblingData}): string => {
+		const key = typeof value === "string" ? value : "";
 		siblingData["slug"] = encodeURIComponent(
-			value + "-" + siblingData.hashId
+			useHash ? composeHashedSlug(key, siblingData.hashId) : key
 		);
-		return value;
-	} : ({value, siblingData}): string => {
-		siblingData["slug"] = encodeURIComponent(
-			value
-		);
-		return value;
-	}
+		return key;
+	};
   // Expect ts error here because of typescript mismatching Partial<TextField> with TextField
   const slugField: TextField = {
     name: "slugKey",

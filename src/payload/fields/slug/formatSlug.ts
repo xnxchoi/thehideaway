@@ -1,5 +1,19 @@
 import type {FieldHook, FieldHookArgs} from "payload"
 
+export const isBlankSlugKey = (value: unknown): boolean => {
+	if (typeof value !== "string") return true;
+	const trimmed = value.trim();
+	return trimmed === "" || trimmed === "undefined" || trimmed === "null";
+};
+
+export const composeHashedSlug = (
+	slugKey: unknown,
+	hashId: unknown
+): string => {
+	const key = isBlankSlugKey(slugKey) ? "" : (slugKey as string).trim();
+	const hash = typeof hashId === "string" ? hashId.trim() : "";
+	return [key, hash].filter(Boolean).join("-");
+};
 
 export const formatSlug = (input: string): string => {
 	return (
@@ -33,24 +47,14 @@ export const formatSlugHook =
 	(fallback: string): FieldHook =>
 		({
 			data,
-			operation,
-			siblingData,
-			originalDoc,
 			value,
-			collection,
-		}: FieldHookArgs<any, string, any>): string | void => {
-
-
-			if (typeof value === "string") {
-				return formatSlug(value)
+		}: FieldHookArgs<any, string, any>): string => {
+			const title = data?.[fallback];
+			if (!isBlankSlugKey(value)) {
+				return formatSlug(value as string);
 			}
-			if (operation === 'create' || !data?.slug) {
-				const fallbackData = data?.[fallback] || data?.[fallback]
-
-				if (fallbackData && typeof fallbackData === 'string') {
-					return formatSlug(fallbackData)
-				}
+			if (typeof title === "string" && title.trim()) {
+				return formatSlug(title);
 			}
-
-			return value
-		}
+			return "";
+		};

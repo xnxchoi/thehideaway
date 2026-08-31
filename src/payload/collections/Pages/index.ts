@@ -22,6 +22,7 @@ import type {CollectionConfig} from "payload";
 import {uuidv7} from "uuidv7";
 import {hideIfNotAdmin} from "../helpers";
 import {revalidateDelete, revalidatePage} from "./hooks/revalidatePage";
+import {skipEmptyPageAutosave} from "./hooks/skipEmptyAutosave";
 
 export const Pages: CollectionConfig<"pages"> = {
 	slug: "pages",
@@ -212,14 +213,12 @@ export const Pages: CollectionConfig<"pages"> = {
 	],
 	hooks: {
 		afterChange: [revalidatePage,  ],
-		beforeChange: [populatePublishedAt],
+		beforeChange: [skipEmptyPageAutosave, populatePublishedAt],
 		afterDelete: [revalidateDelete]
 	},
 	versions: {
 		drafts: {
-			autosave: {
-				interval: 100 // We set this interval for optimal live preview
-			}
+			autosave: false
 		},
 		maxPerDoc: 50
 	}

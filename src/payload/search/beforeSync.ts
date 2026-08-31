@@ -2,6 +2,7 @@ import { getPayload } from "@/lib/payload";
 import { Category, Post, Profile, Search } from "@/payload-types";
 import { BeforeSync, DocToSync } from "@/payload/plugins/plugin-search/types";
 import { calculateSearchScore } from "@/payload/search/calculateScore";
+import { ensureSearchAuthor } from "@/payload/search/ensureSearchAuthor";
 import { CategoryOverview } from "@/types/collections/meta-collections";
 import { DataFromCollectionSlug } from "payload";
 import { uuidv7 } from "uuidv7";
@@ -262,6 +263,7 @@ export const beforeSyncWithSearch: BeforeSync = async (
   // regenerated after the migration — cast is safe and intentional.
   return {
     ...finalDoc,
+    author: ensureSearchAuthor(finalDoc.author),
     score,
     collection,
     doc: {

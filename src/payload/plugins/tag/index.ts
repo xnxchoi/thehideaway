@@ -2,7 +2,7 @@ import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {slugField} from "@/payload/fields/slug";
 import {mergeFields} from "@/utilities/mergeFields";
-import type {CollectionSlug, Config, JoinField, Plugin} from "payload";
+import type {CollectionSlug, Config, Plugin} from "payload";
 import {isAdminOrEditor, standardCreateAccess} from "../locker/access/accessCheckers";
 
 export interface TagPluginConfig {
@@ -56,19 +56,6 @@ export const tagPlugin =
       };
       config.collections.push(tagsCollection);
     }
-    const joinField: JoinField = {
-      name: "taggedItems",
-      type: "join",
-      on: "tagged",
-      hasMany: true,
-      collection: [...(pluginOptions.collections ?? [])],
-
-      where: {
-        _status: {
-          equals: "published"
-        }
-      }
-    };
     pluginOptions.collections.forEach((collection) => {
       const collectionConfig = config.collections?.find(
         (c) => c.slug === `${collection}`
@@ -102,12 +89,9 @@ export const tagPlugin =
       }
     });
 
-    const { mergedFields, restFields } = mergeFields({
-      path: tagsCollection.slug,
-      baseFields: [joinField],
-      patchFields: tagsCollection.fields
-    });
-    tagsCollection.fields = [...restFields, ...mergedFields];
+    // Do not add a reverse `taggedItems` join. Payload 3.88 + Drizzle
+    // cannot query polymorphic hasMany `on: "tagged"` (empty column in
+    // the UNION). Tags list/edit 500s if that field exists.
 
     return config;
   };

@@ -2,6 +2,7 @@ import {idField} from "@/payload/fields/IDField";
 import {Field} from "payload";
 import {uuidv7} from "uuidv7";
 import { populateCategory } from "@/payload/search/hooks/beforeValidate";
+import { DEFAULT_SEARCH_AUTHOR, ensureSearchAuthor } from "@/payload/search/ensureSearchAuthor";
 
 export const searchFields: Field[] = [
 	idField(),
@@ -60,12 +61,15 @@ export const searchFields: Field[] = [
 			}
 		], required: true, defaultValue: [
 			{
-				key: uuidv7(),
-				name: "The Hideaway",
-				slug: "the-hideaway",
-				image: ""
+				id: uuidv7(),
+				...DEFAULT_SEARCH_AUTHOR
 			}
 		],
+		hooks: {
+			beforeValidate: [
+				({ value }) => ensureSearchAuthor(value)
+			]
+		},
 		index: true,
 
 	},

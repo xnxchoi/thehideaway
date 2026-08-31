@@ -2,6 +2,10 @@ import {populatePublishedAt} from "@/hooks/populatePublishedAt";
 import {Surf as SurfType} from "@/payload-types";
 import {RichContent} from "@/payload/collections/Posts/richContent";
 import {validateSurf} from "@/payload/collections/Surf/hooks/validateSurf";
+import {
+	defaultRelatedSurfs,
+	filterRelatedSurfs
+} from "@/payload/collections/Surf/hooks/relatedSurfs";
 import {authorFields} from "@/payload/fields/AuthorField/AuthorField";
 import {sanitizeAuthor} from "@/payload/fields/AuthorField/hooks";
 import {slugField} from "@/payload/fields/slug";
@@ -16,7 +20,7 @@ import {
 	OverviewField,
 	PreviewField
 } from "@payloadcms/plugin-seo/fields";
-import type {CollectionConfig, CollectionSlug, Where} from "payload";
+import type {CollectionConfig} from "payload";
 import {RichTitle} from "../Posts/richTitle";
 import {getSurfBookMarks} from "./endpoints/getSurfBookmarks";
 import {afterDelete} from "./hooks/afterDelete";
@@ -218,64 +222,9 @@ export const Surfs: CollectionConfig = {
 					type: "relationship",
 
 					label: "Related",
-					filterOptions: ({id}) => {
-						return {
-							id: {
-								not_in: [id]
-							}
-						};
-					},
+					filterOptions: filterRelatedSurfs,
 					hasMany: true,
-					defaultValue: async ({user, req}) => {
-						const where = {
-							and: [
-								{
-									_status: {
-										equals: "published"
-									}
-								},
-								{
-									author: {
-										equals: user?.id
-									}
-								}
-							]
-						} as Where;
-						const surfs = await req.payload
-							.find({
-								collection: "surf",
-								where,
-								select: {
-									title: true
-								},
-								pagination: false
-							})
-							.then((res) => res.docs)
-							.then((docs) =>
-								docs.map((doc) => ({value: doc.id, relationTo: "surf"} satisfies {value:string;relationTo:CollectionSlug}))
-							)
-							.catch((err) => {
-								console.error(err);
-								return [];
-							});
-						const posts = await req.payload
-							.find({
-								collection: "posts",
-								where,
-								select: {
-									title: true
-								}
-							})
-							.then((res) => res.docs)
-							.then((docs) =>
-								docs.map((doc) => ({value: doc.id, relationTo: "posts"}))
-							)
-							.catch((err) => {
-								console.error(err);
-								return [];
-							});
-						return [...surfs, ...posts];
-					},
+					defaultValue: defaultRelatedSurfs,
 					relationTo: ["surf", "posts"],
 					maxDepth: 1
 				}

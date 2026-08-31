@@ -72,22 +72,11 @@ export const Tags: CollectionConfig<"tags"> = {
       },
       required: true,
       index: true
-    },
-    {
-      name: "taggedItems",
-      type: "join",
-      on: "tagged",
-      defaultLimit: 20,
-      collection: [
-        "posts",
-        "surf",
-        "playlists",
-        "albums",
-        "profile",
-        "pages",
-        "tracks"
-      ]
     }
+    // No reverse `taggedItems` join. Payload 3.88 + Drizzle emits
+    // `select "id",  as "tagged"` for polymorphic hasMany `on: "tagged"`
+    // (rels table, not a column) and the tags list 500s.
+    // Upstream: payload#12913, #13089, #13777. Count lives on `tagCount`.
   ],
   hooks: {
     beforeChange: [sanitizeAuthor(false)],

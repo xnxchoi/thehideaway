@@ -105,18 +105,21 @@ Butler signed in. `/vault` home and posts/surf/pages list returned 200. Custom P
 |---|---|
 | Posts list | Empty list + Create New. Honest. |
 | Posts create → Publish | Button works. Blocked by required **Content** and **Category**. No `uncategorized` row in this DB. |
-| Surf create | Same custom editor as posts. Not published. |
-| Pages list / create | Visiting `/create` autosaves an empty draft (`slug` `undefined-o-…`). Title can be edited. Clicking **Publish changes** toasted “Updated successfully”; versions stayed `_status=draft`. Preview URL exists (`/next/preview?…`). |
-| Tags list (stock) | **Broken.** Drizzle SQL `select "id",  as "tagged"` — join field `taggedItems` on `on: "tagged"` (hasMany rels, not a column). Red “1 Issue”. |
-| Tags create | Title saved (`Walk tag` / `walk-tag` in DB). Redirect after save hits the broken list (`?notFound=`). |
+| Surf list | Empty + Create New. Honest. |
+| Surf create → Publish | `relatedSurfs` prefills fixed. Create with `meta.title` publishes (`Walk published surf`). UI **Publish changes** still 400s if SEO title is empty. |
+| Pages list | Loads. Leftover empty-title drafts (`undefined-…` / `null-…` slugs) from before the autosave/slug fix remain. |
+| Pages create → Publish | Autosave off; untitled create rejected. Slug is title + hash (no `undefined-`/`null-`). Publish persists (`Walk UI published page`). Search sync fills The Hideaway when the page has no author. |
+| Tags list (stock) | Fixed: list loads (`Walk tag`). Reverse `taggedItems` join removed. |
+| Tags create | Title saved (`Walk tag` / `walk-tag` in DB). |
 
 **Blockers to fix next (still not the dashboard):**
 
 1. `uncategorized` — seeded 2026-08-31. Row is in `categories`. Helper `ensureUncategorized` runs after Payload init; baseline migration `20260831_120000_uncategorized_category` is the durable insert. Posts create now resolves the default category. Content is still required to publish.
-2. Tags list join SQL (plugin `src/payload/plugins/tag/index.ts`).
-3. Pages `/create` empty autosave + slug `undefined`/`null`; Publish vs Save not confirmed as publish.
-4. Next Instant UI overlay (“1 Insight” / uncached data on `/vault/[[...segments]]`) sits on staff chrome.
-5. Nav still ungrouped. Ghost `DefaultTemplate` forks still unwired.
+2. Tags list — fixed 2026-08-31. Removed polymorphic `taggedItems` join (`on: "tagged"` hasMany rels). Payload/Drizzle emitted `select "id",  as "tagged"`. Tagging on posts/surf/etc is unchanged; count stays on `tagCount`.
+3. Surf `relatedSurfs` — fixed 2026-08-31. Create no longer prefills published posts/surfs; filterOptions only excludes self after the doc has an id. UI publish still requires `meta.title` (SEO sidebar).
+4. Pages autosave/slug/publish — fixed 2026-08-31. `autosave: false`; skip untitled create; hashed slug skips blank/`undefined`/`null` keys; search `author` defaults to The Hideaway so publish is not rolled back.
+5. Next Instant UI overlay (“1 Insight” / uncached data on `/vault/[[...segments]]`) sits on staff chrome.
+6. Nav still ungrouped. Ghost `DefaultTemplate` forks still unwired.
 
 ---
 

@@ -13,23 +13,22 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = async ({
 	                                                                      req: {payload, context}
 }) => {
 	if (!context.disableRevalidate) {
-		if (doc._status === "published") {
-			const path = `/${doc.slug}`;
+		try {
+			if (doc._status === "published") {
+				const path = `/${doc.slug}`;
+				payload.logger.info(`Revalidating page at path: ${path}`);
+				revalidatePath(path);
+				revalidateTag("pages-sitemap", "max");
+			}
 
-			payload.logger.info(`Revalidating page at path: ${path}`);
-
-			revalidatePath(path);
-			revalidateTag("pages-sitemap", {expire: 50});
-		}
-
-		// If the page was previously published, we need to revalidate the old path
-		if (previousDoc?._status === "published" && doc._status !== "published") {
-			const oldPath = `/${previousDoc.slug}`;
-
-			payload.logger.info(`Revalidating old page at path: ${oldPath}`);
-
-			revalidatePath(oldPath);
-			revalidateTag("pages-sitemap", {expire: 50});
+			if (previousDoc?._status === "published" && doc._status !== "published") {
+				const oldPath = `/${previousDoc.slug}`;
+				payload.logger.info(`Revalidating old page at path: ${oldPath}`);
+				revalidatePath(oldPath);
+				revalidateTag("pages-sitemap", "max");
+			}
+		} catch (error) {
+			payload.logger.error(error);
 		}
 	}
 	return doc;
@@ -40,9 +39,13 @@ export const revalidateDelete: CollectionAfterDeleteHook<Page> = async ({
 	                                                                        req: {context}
 }) => {
 	if (!context.disableRevalidate) {
-		const path = `/${doc?.slug}`;
-		revalidatePath(path);
-		revalidateTag("pages-sitemap", {expire: 50});
+		try {
+			const path = `/${doc?.slug}`;
+			revalidatePath(path);
+			revalidateTag("pages-sitemap", "max");
+		} catch {
+			// Revalidation must not roll back the delete.
+		}
 	}
 
 	return doc;
