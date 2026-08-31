@@ -385,12 +385,9 @@ $templateTypes: (default, minimal);
     transform: translate(var(--nav-trans-x), var(--nav-trans-y) );
 
     width: calc(var(--nav-width) * 0.85);
-    background-color: oklch(from var(--faded-bg) l c h/0.3);
-    backdrop-filter: blur(4px);
-
-    border-right-style: solid;
-    border-width: 1px;
-    border-color: oklch(from var(--muted-faded-bg) l c h/0);
+    background-color: var(--theme-elevation-50);
+    backdrop-filter: none;
+    border: none;
 
     transition-property: transform, border-radius, border-right-color, background-color,
     outline-color, height, width;
@@ -404,8 +401,9 @@ $templateTypes: (default, minimal);
     animation-duration: 0.5s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
     overflow: hidden;
-    border-radius: 12px;
-    outline: oklch(from var(--muted-faded-fg) l c h/0.2) solid 1px;
+    border-radius: var(--style-radius-l);
+    outline: none;
+    box-shadow: 0 2px 24px -8px rgba(0, 0, 0, 0.4);
     height: calc(99vh - var(--headerTotal) - var(--footerTotal));
 
     &.hovered {
@@ -443,8 +441,9 @@ $templateTypes: (default, minimal);
       left: auto;
       right: auto;
       z-index: 10003;
-      background: oklch(from var(--faded-bg) l c h/0.3);
-      backdrop-filter: blur(8px);
+      background: var(--theme-elevation-0);
+      backdrop-filter: none;
+      box-shadow: 0 1px 0 color-mix(in oklch, var(--theme-text) 12%, transparent);
       display: flex;
       padding-block: 6px;
       padding-inline: 15px;
@@ -473,7 +472,7 @@ $templateTypes: (default, minimal);
         content: "";
         position: absolute;
         inset: 0;
-        opacity: 0.3;
+        opacity: 0.03;
         background-image: url(/assets/noise.png);
         background-size: 100px;
         background-position: center;

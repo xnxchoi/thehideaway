@@ -40,7 +40,7 @@ This is a session-handoff doc for the broader user-shell rebuild — the conveni
 | **1. Settings restructure** | Sections, rail, panels, bento layout, copy cleanup | ✅ Shipped (see "Settings — what shipped" below) |
 | **2. Link distribution** | Revise `SIDE_DRAWER_LINKS`, fix dropdown links, build `/me/posts` editorial index | ✅ Shipped (see "Phase 2 — what shipped" below) |
 | **3. ⌘K command palette upgrade** | Jump commands, recents, quick actions, context-aware suggestions | ✅ First cut shipped (context-aware deferred) |
-| **4. Admin (`/vault`) audit** | Match editorial voice so deeplink handoff from `/me/posts` doesn't feel schizophrenic | ⏳ Queued |
+| **4. Admin (`/vault`) audit** | Match editorial voice so deeplink handoff from `/me/posts` doesn't feel schizophrenic | ⏳ In progress — see `readmes/VAULT.md`. Next is e2e list/edit/publish, **not** the bird’s-eye dashboard. |
 | **5. Controlbar treatment of sub-route back-link** | Move "← Settings" from `<SubRouteHeader/>` into persistent chrome via `src/components/UX/Controlbar/` | ⏳ Queued (after 2–4) |
 
 ---

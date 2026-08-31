@@ -428,6 +428,32 @@
     }
   },
   "Vault": {
+    "home": {
+      "title": "Vault",
+      "drafts": "Drafts",
+      "recent": "Recent",
+      "locked": "Locked",
+      "emptyDrafts": "No drafts.",
+      "emptyRecent": "No recent documents.",
+      "emptyLocked": "Nothing locked.",
+      "loadError": "Could not load some queues.",
+      "columns": {
+        "title": "Title",
+        "collection": "Collection",
+        "status": "Status",
+        "lockedBy": "Locked by",
+        "updated": "Updated"
+      },
+      "collections": {
+        "posts": "Posts",
+        "surf": "Surf",
+        "pages": "Pages"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published"
+      }
+    },
     "Account": {
       "error": {
         "slug": {

@@ -359,6 +359,32 @@
     }
   },
   "Vault": {
+    "home": {
+      "title": "Vault",
+      "drafts": "초안",
+      "recent": "최근",
+      "locked": "잠김",
+      "emptyDrafts": "초안이 없습니다.",
+      "emptyRecent": "최근 문서가 없습니다.",
+      "emptyLocked": "잠긴 문서가 없습니다.",
+      "loadError": "일부 목록을 불러오지 못했습니다.",
+      "columns": {
+        "title": "제목",
+        "collection": "컬렉션",
+        "status": "상태",
+        "lockedBy": "잠근 사람",
+        "updated": "수정"
+      },
+      "collections": {
+        "posts": "글",
+        "surf": "Surf",
+        "pages": "페이지"
+      },
+      "status": {
+        "draft": "초안",
+        "published": "게시"
+      }
+    },
     "Account": {
       "error": {
         "slug": {

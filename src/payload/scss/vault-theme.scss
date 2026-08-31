@@ -1,0 +1,63 @@
+// Vault token spine.
+// Paint Payload's CSS variables. Do not restyle BEM blocks one-by-one here.
+// Delivery mechanism: Payload admin CSS library
+// (https://payloadcms.com/docs/admin/customizing-css).
+// Lineage: Glass / Layered (readmes/DESIGN_SYSTEM.md) + Fey *method*,
+// Hideaway warm oklch (not Fey/Oscura hex).
+
+@layer payload-default {
+  :root {
+    --vault-hue: 24;
+    --vault-chroma: 0.01;
+
+    --color-base-0: oklch(98.5% var(--vault-chroma) var(--vault-hue));
+    --color-base-50: oklch(94.2% var(--vault-chroma) var(--vault-hue));
+    --color-base-100: oklch(89.4% 0.008 var(--vault-hue));
+    --color-base-150: oklch(83.6% 0.007 var(--vault-hue));
+    --color-base-200: oklch(76.8% 0.007 var(--vault-hue));
+    --color-base-250: oklch(68.4% 0.006 var(--vault-hue));
+    --color-base-300: oklch(60.2% 0.006 var(--vault-hue));
+    --color-base-350: oklch(53.1% 0.006 var(--vault-hue));
+    --color-base-400: oklch(46% 0.006 var(--vault-hue));
+    --color-base-450: oklch(40.2% 0.006 var(--vault-hue));
+    --color-base-500: oklch(34.4% 0.006 var(--vault-hue));
+    --color-base-550: oklch(29.1% 0.006 var(--vault-hue));
+    --color-base-600: oklch(25% 0.006 var(--vault-hue));
+    --color-base-650: oklch(22% 0.0055 26.85);
+    --color-base-700: oklch(18.2% 0 20.06);
+    --color-base-750: oklch(15.4% 0.008 var(--vault-hue));
+    --color-base-800: oklch(13.1% 0.009 var(--vault-hue));
+    --color-base-850: oklch(11.2% 0.01 var(--vault-hue));
+    --color-base-900: oklch(9.7% 0.01 23.79);
+    --color-base-950: oklch(7.6% 0.01 var(--vault-hue));
+    --color-base-1000: oklch(5.8% 0.01 var(--vault-hue));
+
+    --font-body: var(--font-sans), "SUIT Variable", "SUIT Fallback", -apple-system,
+      BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+    --style-radius-s: 4px;
+    --style-radius-m: 8px;
+    --style-radius-l: 16px;
+
+    --nav-width: 232px;
+
+    --theme-border-color: color-mix(in oklch, var(--theme-text) 14%, transparent);
+  }
+
+  html[data-theme="dark"] {
+    --theme-bg: var(--theme-elevation-0);
+    --theme-text: var(--theme-elevation-800);
+    --theme-input-bg: var(--theme-elevation-50);
+    --theme-border-color: color-mix(in oklch, var(--theme-text) 10%, transparent);
+    --bg: var(--theme-bg);
+    --fg: var(--theme-text);
+  }
+
+  html[data-theme="light"] {
+    --theme-bg: var(--theme-elevation-0);
+    --theme-text: var(--theme-elevation-800);
+    --theme-input-bg: var(--theme-elevation-0);
+    --bg: var(--theme-bg);
+    --fg: var(--theme-text);
+  }
+}

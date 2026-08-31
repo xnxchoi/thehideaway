@@ -1,0 +1,118 @@
+#restored-vault .template-default__wrap:has(.rp-vault-home) {
+  width: 100%;
+  max-width: none;
+}
+
+#restored-vault .rp-vault-home {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: calc(var(--app-header-height, 3.5rem) + 1.25rem) var(--gutter-h, 2rem)
+    2rem;
+  color: var(--theme-text, inherit);
+}
+
+.rp-vault-home__title {
+  margin: 0 0 1rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.rp-vault-home__error {
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+  color: var(--theme-error-500, currentColor);
+}
+
+.rp-vault-home__bays {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.rp-vault-home__section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.rp-vault-home__heading {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, currentColor 60%, transparent);
+}
+
+.rp-vault-home table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.rp-vault-home th {
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, currentColor 60%, transparent);
+  border-bottom: 1px solid color-mix(in oklch, currentColor 12%, transparent);
+}
+
+.rp-vault-home td {
+  padding: 0.65rem 0.7rem;
+  font-size: 1.3rem;
+  vertical-align: top;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-top: 1px solid color-mix(in oklch, currentColor 8%, transparent);
+}
+
+.rp-vault-home tbody tr {
+  position: relative;
+}
+
+.rp-vault-home tbody tr:first-child td {
+  border-top: none;
+}
+
+.rp-vault-home tbody tr:hover td {
+  background: color-mix(in oklch, currentColor 4%, transparent);
+}
+
+.rp-vault-home tbody tr:focus-within td {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+
+.rp-vault-home__row-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rp-vault-home__row-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.rp-vault-home__row-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.rp-vault-home__empty {
+  white-space: normal;
+  color: color-mix(in oklch, currentColor 60%, transparent);
+}

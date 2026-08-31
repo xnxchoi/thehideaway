@@ -1,21 +1,32 @@
+/**
+ * Interim /vault home: Drafts / Recent / Locked queues.
+ * Bird's-eye dashboard (views, comments, likes, reader, tier, subscription)
+ * is deferred until admin is end-to-end functional. See readmes/VAULT.md.
+ */
 import type { groupNavItems } from "@payloadcms/ui/shared";
 import type {
   AdminViewServerPropsOnly,
   ClientUser,
+  CollectionSlug,
   Locale,
-  ServerProps
+  Payload
 } from "payload";
 
-import { getTranslation } from "@payloadcms/translations";
-import { Button, Card, Gutter, Locked } from "@payloadcms/ui";
-import { RenderServerComponent } from "@payloadcms/ui/elements/RenderServerComponent";
-import { EntityType } from "@payloadcms/ui/shared";
-import { formatAdminURL } from "payload/shared";
-import { ComponentType, Fragment } from "react";
-
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { ComponentType } from "react";
 
-const baseClass = "rp dashboard";
+import {
+  formatWorkDate,
+  loadVaultHomeCatalog,
+  readVaultHomeString,
+  vaultHomeLocale,
+  type VaultWorkRow
+} from "./home";
+import { loadVaultHomeWork } from "./work";
+import "./index.scss";
+
+const baseClass = "rp-vault-home";
 
 export type DashboardViewClientProps = {
   locale: Locale;
@@ -43,184 +54,133 @@ export type DashboardViewServerPropsOnly = {
 export type DashboardViewServerProps = DashboardViewClientProps &
   DashboardViewServerPropsOnly;
 
-export function DefaultDashboard(props: DashboardViewServerProps) {
-  const {
-    globalData,
-    i18n,
-    i18n: { t },
-    locale,
-    navGroups,
-    params,
-    payload: {
-      config: {
-        admin: {
-          components: { afterDashboard, beforeDashboard }
-        },
-        routes: { admin: adminRoute }
-      }
-    },
-    payload,
-    permissions,
-    searchParams,
-    user
-  } = props;
+export async function DefaultDashboard(props: DashboardViewServerProps) {
+  const { initPageResult, payload, user } = props;
   if (!user) {
     return redirect("/check-in");
   }
+
+  const adminRoute = payload.config.routes.admin;
+  const req = initPageResult?.req;
+  const locale = vaultHomeLocale(
+    props.locale?.code ?? initPageResult?.locale?.code
+  );
+  const catalog = await loadVaultHomeCatalog(locale);
+  const t = (key: string) => readVaultHomeString(catalog, key);
+  const work = await loadVaultHomeWork({
+    adminRoute,
+    find: async (args) => {
+      const result = await payload.find({
+        collection: args.collection as CollectionSlug,
+        depth: args.depth,
+        draft: args.draft,
+        limit: args.limit,
+        overrideAccess: args.overrideAccess,
+        req,
+        select: args.select,
+        sort: args.sort,
+        user: req?.user ?? user,
+        where: args.where
+      } as Parameters<Payload["find"]>[0]);
+      return { docs: result.docs as Record<string, unknown>[] };
+    },
+    user: req?.user ?? user
+  });
+
   return (
     <div className={baseClass}>
-      <Gutter className={`${baseClass}__wrap`}>
-        {beforeDashboard &&
-          RenderServerComponent({
-            Component: beforeDashboard,
-            importMap: payload.importMap,
-            serverProps: {
-              i18n,
-              locale,
-              params,
-              payload,
-              permissions,
-              searchParams,
-              user
-            } satisfies ServerProps
-          })}
-
-        <Fragment>
-          {!navGroups || navGroups?.length === 0 ? (
-            <p>no nav groups....</p>
-          ) : (
-            navGroups.map(({ entities, label }, groupIndex) => {
-              return (
-                <div className={`${baseClass}__group`} key={groupIndex}>
-                  <h2 className={`${baseClass}__label`}>{label}</h2>
-                  <ul className={`${baseClass}__card-list`}>
-                    {entities.map(({ slug, type, label }, entityIndex) => {
-                      let title: string;
-                      let buttonAriaLabel: string | undefined;
-                      let createHREF: string | undefined;
-                      let href: string | undefined;
-                      let hasCreatePermission: boolean = false;
-                      let isLocked = null;
-                      let userEditing = null;
-
-                      if (type === EntityType.collection) {
-                        title = getTranslation(label, i18n);
-
-                        buttonAriaLabel = t("general:showAllLabel", {
-                          label: title
-                        });
-
-                        href = formatAdminURL({
-                          adminRoute,
-                          path: `/collections/${slug}`
-                        });
-
-                        createHREF = formatAdminURL({
-                          adminRoute,
-                          path: `/collections/${slug}/create`
-                        });
-
-                        hasCreatePermission =
-                          permissions?.collections?.[slug]?.create || false;
-                      }
-
-                      if (type === EntityType.global) {
-                        title = getTranslation(label, i18n);
-
-                        buttonAriaLabel = t("general:editLabel", {
-                          label: getTranslation(label, i18n)
-                        });
-
-                        href = formatAdminURL({
-                          adminRoute,
-                          path: `/globals/${slug}`
-                        });
-
-                        // Find the lock status for the global
-                        const globalLockData = globalData.find(
-                          (global) => global.slug === slug
-                        );
-                        if (globalLockData) {
-                          isLocked = globalLockData.data._isLocked;
-                          userEditing = globalLockData.data._userEditing;
-
-                          // Check if the lock is expired
-                          const lockDuration =
-                            globalLockData?.lockDuration || 300;
-                          const lastEditedAt = new Date(
-                            globalLockData.data?._lastEditedAt
-                          ).getTime();
-
-                          const lockDurationInMilliseconds =
-                            lockDuration * 1000;
-                          const lockExpirationTime =
-                            lastEditedAt + lockDurationInMilliseconds;
-
-                          if (new Date().getTime() > lockExpirationTime) {
-                            isLocked = false;
-                            userEditing = null;
-                          }
-                        }
-                      }
-
-                      return (
-                        <li key={entityIndex}>
-                          <Card
-                            actions={
-                              userEditing &&
-                              typeof userEditing === "object" &&
-                              isLocked &&
-                              user?.id !== userEditing?.id ? (
-                                <Locked
-                                  className={`${baseClass}__locked`}
-                                  user={userEditing}
-                                />
-                              ) : hasCreatePermission &&
-                                createHREF &&
-                                type === EntityType.collection ? (
-                                <Button
-                                  aria-label={t("general:createNewLabel", {
-                                    label
-                                  })}
-                                  buttonStyle="icon-label"
-                                  el="link"
-                                  icon="plus"
-                                  iconStyle="with-border"
-                                  round
-                                  to={createHREF}
-                                />
-                              ) : undefined
-                            }
-                            buttonAriaLabel={buttonAriaLabel}
-                            href={href}
-                            id={`card-${slug}`}
-                            title={getTranslation(label, i18n)}
-                            titleAs="h3"
-                          />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })
-          )}
-        </Fragment>
-        {afterDashboard &&
-          RenderServerComponent({
-            Component: afterDashboard,
-            importMap: payload.importMap,
-            serverProps: {
-              i18n,
-              locale,
-              params,
-              payload,
-              permissions,
-              searchParams,
-              user
-            } satisfies ServerProps
-          })}
-      </Gutter>
+      <h1 className={`${baseClass}__title`}>{t("title")}</h1>
+      {work.errors.length > 0 ? (
+        <p className={`${baseClass}__error`} role="alert">
+          {t("loadError")}
+        </p>
+      ) : null}
+      <div className={`${baseClass}__bays`}>
+        <WorkSection
+          empty={t("emptyDrafts")}
+          heading={t("drafts")}
+          rows={work.drafts}
+          showStatus
+          t={t}
+        />
+        <WorkSection
+          empty={t("emptyRecent")}
+          heading={t("recent")}
+          rows={work.recent}
+          showStatus
+          t={t}
+        />
+        <WorkSection
+          empty={t("emptyLocked")}
+          heading={t("locked")}
+          rows={work.locked}
+          showLockedBy
+          t={t}
+        />
+      </div>
     </div>
+  );
+}
+
+function WorkSection({
+  empty,
+  heading,
+  rows,
+  showLockedBy,
+  showStatus,
+  t
+}: {
+  empty: string;
+  heading: string;
+  rows: VaultWorkRow[];
+  showLockedBy?: boolean;
+  showStatus?: boolean;
+  t: (key: string, values?: { collection?: string }) => string;
+}) {
+  const columnCount = 3 + (showStatus ? 1 : 0) + (showLockedBy ? 1 : 0);
+  const headingId = `${baseClass}-${heading.replace(/\s+/g, "-").toLowerCase()}`;
+
+  return (
+    <section className={`${baseClass}__section`} aria-labelledby={headingId}>
+      <h2 className={`${baseClass}__heading`} id={headingId}>
+        {heading}
+      </h2>
+      <table aria-labelledby={headingId}>
+        <thead>
+          <tr>
+            <th scope="col">{t("columns.title")}</th>
+            <th scope="col">{t("columns.collection")}</th>
+            {showStatus ? <th scope="col">{t("columns.status")}</th> : null}
+            {showLockedBy ? <th scope="col">{t("columns.lockedBy")}</th> : null}
+            <th scope="col">{t("columns.updated")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td className={`${baseClass}__empty`} colSpan={columnCount}>
+                {empty}
+              </td>
+            </tr>
+          ) : (
+            rows.map((row) => (
+              <tr key={`${row.collection}-${row.id}`}>
+                <td>
+                  <Link className={`${baseClass}__row-link`} href={row.href}>
+                    <span className={`${baseClass}__row-title`}>{row.title}</span>
+                  </Link>
+                </td>
+                <td>{t(`collections.${row.collection}`)}</td>
+                {showStatus ? (
+                  <td>{row.status ? t(`status.${row.status}`) : ""}</td>
+                ) : null}
+                {showLockedBy ? <td>{row.lockedBy ?? ""}</td> : null}
+                <td>{formatWorkDate(row.updatedAt)}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </section>
   );
 }

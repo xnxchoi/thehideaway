@@ -40,6 +40,7 @@ Read the matching `readmes/*.md` before working on any of these.
 - **Access (Locker plugin)** — role-based, collection + field level. Roles descending: `admin`, `cofounder`, `editor`, `author`, `patron`, `resident`, `user` (+ `guest` sentinel). `cofounder` sits in both `PAID_ROLES` (`resident`, `patron`, `cofounder`) and `STAFF_ROLES` (`editor`, `cofounder`, `admin`) by design.
 - **Image Search plugin** — admin-side search across Unsplash/Pexels/Pixabay with LRU cache.
 - **Provider SSR** — Device/Mobile/AMG hydrate after mount; `TransitionProvider` + `MiddleMan` are direct imports; TransitionManager is still client-gated. → `readmes/SSR_PROVIDER_HANDOFF.md`
+- **Vault (`/vault`)** — Payload admin. Paint Payload CSS variables; custom work-queue home is interim. Bird’s-eye dashboard is deferred until admin is end-to-end functional. → `readmes/VAULT.md`
 
 ---
 

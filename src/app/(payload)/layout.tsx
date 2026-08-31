@@ -2,6 +2,7 @@
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
 import "@/styles/payloadStyles.css";
 import "@payloadcms/next/css";
+import "@/payload/scss/vault-theme.scss";
 import "./custom.scss";
 import config from "@payload-config";
 import "@payloadcms/next/css";

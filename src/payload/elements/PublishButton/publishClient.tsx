@@ -34,7 +34,6 @@ import {
   useOperation,
   useTranslation
 } from "@payloadcms/ui";
-import { ScheduleDrawer } from "@payloadcms/ui/elements/PublishButton/ScheduleDrawer";
 import { traverseForLocalizedFields } from "@payloadcms/ui/utilities/traverseForLocalizedFields";
 import { getTranslation } from "@payloadcms/translations";
 import {
@@ -404,29 +403,10 @@ export function PublishButton({
           </Menu.Root>
         )}
       </div>
-      {canSchedulePublish && isModalOpen(drawerSlug) && (
-        <ScheduleDrawer
-          defaultType={!hasNewerVersions ? "unpublish" : "publish"}
-          schedulePublishConfig={
-            (typeof schedulePublish === "object" && schedulePublish) ||
-            undefined
-          }
-          slug={drawerSlug}
-        />
-      )}
-      {canSchedulePublish && isModalOpen(drawerSlug) && (
-        <ScheduleDrawer
-          defaultType={!hasNewerVersions ? "unpublish" : "publish"}
-          schedulePublishConfig={
-            scheduledPublishEnabled &&
-            typeof entityConfig?.versions?.drafts === "object" &&
-            typeof entityConfig.versions.drafts.schedulePublish === "object"
-              ? entityConfig.versions.drafts.schedulePublish
-              : undefined
-          }
-          slug={drawerSlug}
-        />
-      )}
+      {/* ScheduleDrawer omitted: Payload 3.88 DatePicker `library.scss`
+          (`//` comments + `@layer`) crashes Next's sass→CSS pipeline and
+          poisons the whole /vault compile. Re-enable when that file is
+          valid CSS or the pin moves off 3.88.0. */}
     </Fragment>
   );
 }

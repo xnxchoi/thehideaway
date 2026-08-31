@@ -342,6 +342,59 @@ Risks:
 - weakened contrast,
 - applying admin chrome to editorial content.
 
+### Vault / Operating Room
+
+Extension of Glass / Layered for `/vault` (Payload admin). Not a new family.
+Not a carbon copy of Fey.com.
+
+**Principle: paint Payload, do not replace it.**
+
+Fey is the method: chiaroscuro canvas, lift from luminance rather than
+borders, sparse accent, sans working type, tactile hover. Hideaway keeps its
+own warm oklch spine so the admin stays directionally consistent with the
+site. Do not import Fey/Oscura hex (`#0B0B0F`, `#479FFA`) as product color.
+
+Delivery:
+
+1. Override Payload CSS variables (`--color-base-*`, `--theme-*`, radius,
+   `--font-body`) in `src/payload/scss/vault-theme.scss`. That is the official
+   admin theming lever.
+2. Keep custom Views, Nav, Edit, fields, and live preview. Those are
+   functional shells, not a second visual system.
+3. Use Settings `Panel` primitives only on Hideaway-owned custom views
+   (dashboard cards we author). Do not wrap every Payload List/Edit field in
+   `Panel`.
+4. Tailwind on `/vault` is a utility layer for custom components. It is not a
+   parallel theme. Do not let preflight fight Payload BEM.
+
+Shell:
+
+- Live chrome is Payload’s stock template, restyled by `#restored-vault` in
+  `custom.scss` and driven by the Admins provider stack (peek nav, sidebar
+  FSM, theme). Local `DefaultTemplate` / `AppHeader` / `DefaultNav` forks
+  exist on disk and are **not registered** — do not treat them as the
+  running shell. Wire or delete them; do not restyle a ghost.
+- Custom EditView is collection-scoped (Posts, Surf). Other collections use
+  stock edit under the same CSS chrome.
+- Canvas is uniform. Grain at `/[0.02]`–`/[0.04]`, not a visible overlay.
+- Nav keeps the existing peek/hover drawer interaction. Its *surface* is a
+  lifted pool on the canvas, not glass (`backdrop-filter` is decoration here).
+- Document controls sit on the canvas with a hairline, not a frosted bar.
+- Payload inputs keep visible field affordance. Deferred-edit is for
+  settings-owned fields, not the CMS form.
+
+Preserve: `#restored-vault` layout contract (`--nav-*`, `--sidebar-width`,
+`--headerTotal`), Admins providers, Posts/Surf EditView (DocumentControls /
+DocumentFields / live preview), Lexical article chrome, Logo/Icon/logout.
+
+Force: default for `/vault`. Law for “do not add a third palette.”
+
+Current `/vault` home is an interim work queue (Drafts / Recent / Locked). That
+scope is accepted; it is not a dashboard. A bird’s-eye home (work status plus
+views, comments, likes, new reader, tier, subscription summary) is **deferred
+until the admin is end-to-end functional**. Handoff, pickup order, and traps:
+`readmes/VAULT.md`.
+
 ### Pop / Poster Modernism
 
 Bold, graphic, color-forward, poster-like, punchy, modernist or

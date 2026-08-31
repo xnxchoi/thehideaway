@@ -2,6 +2,7 @@
 // production when something is missing/malformed; warns in dev.
 import "@/lib/env";
 import { seedButler } from "@/lib/auth/dev/seedButler";
+import { ensureUncategorized } from "@/seed/initial";
 import {
   seedReaders,
   warnIfFixtureUsersInProd
@@ -162,6 +163,11 @@ export default buildConfig({
     // the slug/handle hook receives a fully-initialized payload by the
     // time it fires.
     setTimeout(() => {
+      void ensureUncategorized(payload).catch((err: unknown) => {
+        const msg =
+          err instanceof Error ? err.stack || err.message : String(err);
+        payload.logger.error(`[seed] uncategorized failed: ${msg}`);
+      });
       void seedButler(payload).catch((err: unknown) => {
         const msg =
           err instanceof Error ? err.stack || err.message : String(err);

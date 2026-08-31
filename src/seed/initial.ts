@@ -148,7 +148,9 @@ const ensureConcierge = async (payload: Payload): Promise<string> => {
   return created.id;
 };
 
-const ensureUncategorized = async (payload: Payload): Promise<string> => {
+export const ensureUncategorized = async (
+  payload: Payload
+): Promise<string> => {
   const existing = await findFirst(
     payload,
     "categories",
