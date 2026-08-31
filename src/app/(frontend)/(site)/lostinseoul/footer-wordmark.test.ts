@@ -50,6 +50,10 @@ describe("LOST footer wordmark shader", () => {
     expect(shader).toContain("mix-blend-screen");
   });
 
+  it("does not ship Three.js shader includes that WebGL cannot compile", () => {
+    expect(fragmentShader).not.toMatch(/#include\s*</);
+  });
+
   it("redraws the canvas texture when route theme tokens change", () => {
     expect(shader).toContain("themeObserver.observe(document.documentElement");
     expect(shader).toContain('attributeFilter: ["data-theme"]');

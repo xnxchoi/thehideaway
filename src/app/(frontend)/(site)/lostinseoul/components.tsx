@@ -3,6 +3,7 @@
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { useFooterVisibility } from "@/components/Shells/Footer/footer-visibility";
+import { useRPStore } from "@/providers/RP_Pro";
 import type { LostProductCard } from "@/lib/lost-commerce/queries";
 import type { LostOrderMode } from "@/lib/lost-commerce/types";
 
@@ -20,18 +21,19 @@ import {
 import { useLenis } from "lenis/react";
 import { useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
+import dynamic from "next/dynamic";
 import {
   type ComponentProps,
   type CSSProperties,
   type ReactNode,
-  type RefObject,
   useCallback,
   useEffect,
-  useLayoutEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { getLostBlurLineDelay, getLostBlurViewportAmount, splitLostBlurLines } from "./blur-motion";
 import {
   getLostBusinessDisclosure,
@@ -55,115 +57,43 @@ import { getLostProductSectionMetaLabel } from "./product-section-state";
 import { getLostProductListingPrice } from "./product-price-display";
 import {
   getLostEntryElementState,
-  getLostEntryTransition,
-  LOST_ENTRY_PHASE_EVENT,
-  parseLostEntryPhaseEvent,
-  resolveLostHeaderEntryPhase,
-  shouldFinishLostEntry,
-  shouldForceLostEntryReady,
-  type LostEntryPhase
+  getLostEntryTransition
 } from "./entry-motion";
 import { getLostHeroVideoUrl, shouldShowLostHeroVideoControls } from "./hero-media-state";
 import { LostFooterWordmark } from "./footer-wordmark";
+import {
+  useLostBag,
+  useLostEntryPhase,
+  useLostMarkSceneReady,
+  useLostSearch
+} from "./lost-page-state";
 import { LOST_HERO_VIDEO_BUTTON_LABEL_CLASS, LOST_STATEMENT_CHROME_SAFE_CLASS } from "./mobile-chrome-state";
-import { useTranslations } from "next-intl";
 
-const LOST_ENTRY_MIN_MS = 1100;
-const LOST_ENTRY_FAILSAFE_MS = 2600;
-const LOST_ENTRY_EXIT_MS = 1520;
-const LOST_ENTRY_FORCE_READY_MS =
-  LOST_ENTRY_FAILSAFE_MS + LOST_ENTRY_EXIT_MS + 500;
+const LostHeroScene = dynamic(
+  () => import("./hero-three").then((module) => module.LostHeroScene),
+  { ssr: false }
+);
 
 type ChromeLinkProps = ComponentProps<typeof Link> & {
   children: ReactNode;
 };
 
-function useLostEntryPhase(): LostEntryPhase {
-  const [phase, setPhase] = useState<LostEntryPhase>("ready");
-  useLayoutEffect(() => {
-    const onPhase = (event: Event) => {
-      const next = parseLostEntryPhaseEvent(event);
-      if (next) setPhase(next);
-    };
-    document.addEventListener(LOST_ENTRY_PHASE_EVENT, onPhase);
-    return () => document.removeEventListener(LOST_ENTRY_PHASE_EVENT, onPhase);
-  }, []);
-  return phase;
-}
-
 export function LostGlobalFooterOverride() {
   useFooterVisibility("hide");
+  const setFXFrameVisibility = useRPStore((store) => store.setFXFrameVisibility);
+
+  useEffect(() => {
+    setFXFrameVisibility(false);
+    return () => {
+      setFXFrameVisibility(true);
+    };
+  }, [setFXFrameVisibility]);
+
   return null;
 }
-export function LostEntrySequence({ sceneReady }: { sceneReady: boolean }) {
-  const [phase, setPhase] = useState<"loading" | "ending" | "ready">("loading");
-  const [minimumElapsed, setMinimumElapsed] = useState(false);
-  const [sceneTimedOut, setSceneTimedOut] = useState(false);
 
-
-  useEffect(() => {
-    const minTimer = window.setTimeout(() => {
-      setMinimumElapsed(true);
-    }, LOST_ENTRY_MIN_MS);
-    const failsafeTimer = window.setTimeout(() => {
-      setSceneTimedOut(true);
-    }, LOST_ENTRY_FAILSAFE_MS);
-
-    return () => {
-      window.clearTimeout(minTimer);
-      window.clearTimeout(failsafeTimer);
-    };
-  }, []);
-
-  useEffect(() => {
-    const startedAt = Date.now();
-    const forceReadyTimer = window.setTimeout(() => {
-      setPhase((currentPhase) =>
-        shouldForceLostEntryReady({
-          elapsedMs: Date.now() - startedAt,
-          forceReadyMs: LOST_ENTRY_FORCE_READY_MS,
-          phase: currentPhase
-        })
-          ? "ready"
-          : currentPhase
-      );
-    }, LOST_ENTRY_FORCE_READY_MS);
-
-    return () => {
-      window.clearTimeout(forceReadyTimer);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (phase !== "loading") return;
-    if (
-      shouldFinishLostEntry({
-        minimumElapsed,
-        sceneReady,
-        sceneTimedOut
-      })
-    ) {
-      setPhase("ending");
-    }
-  }, [minimumElapsed, phase, sceneReady, sceneTimedOut]);
-
-  useEffect(() => {
-    if (phase !== "ending") return;
-    const readyTimer = window.setTimeout(() => {
-      setPhase("ready");
-    }, LOST_ENTRY_EXIT_MS);
-
-    return () => {
-      window.clearTimeout(readyTimer);
-    };
-  }, [phase]);
-
-  useLayoutEffect(() => {
-    document.dispatchEvent(
-      new CustomEvent(LOST_ENTRY_PHASE_EVENT, { detail: { phase } })
-    );
-  }, [phase]);
-
+export function LostEntrySequence() {
+  const phase = useLostEntryPhase();
   return (
     <m.div
       animate={{ y: phase === "ready" || phase === "ending" ? "-100%" : "0%" }}
@@ -240,13 +170,8 @@ export function LostBrandWord({
   );
 }
 
-export function LostAnnouncementBar({
-  bagOpen,
-  children
-}: {
-  bagOpen: boolean;
-  children: ReactNode;
-}) {
+export function LostAnnouncementBar({ children }: { children: ReactNode }) {
+  const { open: bagOpen } = useLostBag();
   const entryPhase = useLostEntryPhase();
   const chromeState = getLostEntryElementState("chrome", entryPhase);
   const announcementState =
@@ -273,34 +198,14 @@ export function LostAnnouncementBar({
 }
 
 type LostHeaderProps = {
-  animateEntry?: boolean;
-
-  bagOpen: boolean;
-
-  commerceRootRef: RefObject<HTMLElement | null>;
-
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  onBagOpenChange: (open: boolean) => void;
-
   drops: Array<{ title: string; slug: string }>;
 };
 
-export function LostHeader({
-  animateEntry = false,
-
-  bagOpen,
-
-  commerceRootRef,
-  drops,
-  searchQuery,
-  setSearchQuery,
-  onBagOpenChange
-}: LostHeaderProps) {
-  const entryPhase = resolveLostHeaderEntryPhase({
-    animated: animateEntry,
-    observedPhase: useLostEntryPhase()
-  });
+export function LostHeader({ drops }: LostHeaderProps) {
+  const { open: bagOpen } = useLostBag();
+  const entryPhase = useLostEntryPhase();
+  const t = useTranslations("LOSTINSEOUL");
+  const productsLabel = t("home.products");
   const chromeState = getLostEntryElementState("chrome", entryPhase);
   const chromeTransition = getLostEntryTransition("chrome", entryPhase);
   const headerChromeState =
@@ -361,7 +266,7 @@ export function LostHeader({
               )}
               href="#products"
             >
-              Products
+              {productsLabel}
             </Link>
           </m.nav>
         </div>
@@ -375,27 +280,18 @@ export function LostHeader({
             initial={false}
             transition={headerChromeTransition}
           >
-            <LostSearchBar
-              onChange={setSearchQuery}
-
-              value={searchQuery}
-            />
-            <LostCartOverlay
-              open={bagOpen}
-
-              commerceRootRef={commerceRootRef}
-
-              onOpenChange={onBagOpenChange}
-            />
+            <LostSearchBar />
+            <LostCartOverlay />
           </m.div>
         </div>
       </div>
-      <LostHeaderLogo bagOpen={bagOpen} />
+      <LostHeaderLogo />
     </m.header>
   );
 }
 
-function LostHeaderLogo({ bagOpen }: { bagOpen: boolean }) {
+function LostHeaderLogo() {
+  const { open: bagOpen } = useLostBag();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -478,16 +374,12 @@ function LostBlurAppear({
   );
 }
 
-function LostSearchBar({
-  onChange,
-  value
-}: {
-  onChange: (query: string) => void;
-  value: string;
-}) {
+function LostSearchBar() {
+  const { query, setQuery } = useLostSearch();
+  const t = useTranslations("LOSTINSEOUL.nav");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const lenis = useLenis();
-  const hasValue = value.trim().length > 0;
+  const hasValue = query.trim().length > 0;
 
   return (
     <form
@@ -501,6 +393,7 @@ function LostSearchBar({
       role="search"
     >
       <Button
+        aria-label={t("search")}
         className="grid size-16 shrink-0 place-items-center border-0 bg-transparent p-0 text-[var(--lost-hero-ink)] transition-colors duration-500 ease-[cubic-bezier(0.6,0,0.3,1)]"
         onClick={() => inputRef.current?.focus()}
         type="button"
@@ -508,18 +401,20 @@ function LostSearchBar({
         <MagnifyingGlassIcon aria-hidden className="size-6" weight="regular" />
       </Button>
       <input
+        aria-label={t("search")}
         className="h-full min-w-0 bg-transparent pr-3 text-[1.2rem] leading-none font-medium text-[var(--lost-hero-ink)] outline-none placeholder:text-[var(--lost-hero-muted)] max-md:w-0 max-md:opacity-0 max-md:transition-[width,opacity] max-md:duration-500 max-md:ease-[cubic-bezier(0.6,0,0.3,1)] max-md:group-focus-within/search:w-full max-md:group-focus-within/search:opacity-100"
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={""}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder={t("searchPlaceholder")}
         ref={inputRef}
         type="search"
-        value={value}
+        value={query}
       />
       {hasValue ? (
         <Button
+          aria-label={t("clearSearch")}
           className="grid size-16 shrink-0 place-items-center border-0 bg-transparent p-0 text-[var(--lost-hero-muted)] transition-colors duration-300 ease-[cubic-bezier(0.6,0,0.3,1)] hover:text-[var(--lost-hero-ink)] max-md:size-12"
           onClick={() => {
-            onChange("");
+            setQuery("");
             inputRef.current?.focus();
           }}
           type="button"
@@ -532,33 +427,28 @@ function LostSearchBar({
 }
 
 type LostHeroProps = {
-  bagOpen: boolean;
-  title: string;
-  eyebrow: string;
-
+  eyebrow?: string;
   imageUrl?: string | null;
+  title?: string;
   videoUrl?: string | null;
-
-
-  onSceneReady: () => void;
-
 };
 
 export function LostHero({
-  bagOpen,
-
   eyebrow,
   imageUrl,
-
-  onSceneReady,
-
   title,
-
-  videoUrl,
-
+  videoUrl
 }: LostHeroProps) {
+  const { open: bagOpen } = useLostBag();
   const entryPhase = useLostEntryPhase();
-  const phase = entryPhase === "loading" ? "loading" : "default";
+  const onSceneReady = useLostMarkSceneReady();
+  const t = useTranslations("LOSTINSEOUL");
+  const collectionLabel = t("home.collection");
+  const resolvedEyebrow = eyebrow ?? t("home.eyebrow");
+  const productsLabel = t("home.products");
+  const resolvedTitle = title ?? t("home.title");
+  const watchLabel = t("actions.watchVideo");
+  const yearLabel = t("home.year");
   const [videoOpen, setVideoOpen] = useState(false);
   const [videoTransitioning, setVideoTransitioning] = useState(false);
   const openTimerRef = useRef<number | null>(null);
@@ -600,21 +490,11 @@ export function LostHero({
       data-lost-video-transition={videoTransitioning ? "open" : "closed"}
     >
       <m.div
-        animate={phase==='loading'?'loading':'default'}
-        variants={ {
-          loading:{
-          opacity :0.58,
-          scale :0.985,
-          y : "18svh"
-        }, default: {
-          opacity :1,
-          scale :1,
-          y :0,}
-        }
-        }
-        data-lost-stage
+        animate={getLostEntryElementState("stage", entryPhase)}
         className="col-span-full row-span-full grid min-h-svh"
+        data-lost-stage
         initial={false}
+        transition={getLostEntryTransition("stage", entryPhase)}
       >
         <LostHeroScene
           imageUrl={imageUrl}
@@ -663,10 +543,10 @@ export function LostHero({
           }
         >
           <span className="text-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_24px_var(--lost-hero-halo)]">
-            {title}
+            {resolvedTitle}
           </span>
           <span className="justify-self-end text-nav-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_18px_var(--lost-hero-halo)] md:justify-self-center">
-            {eyebrow}
+            {resolvedEyebrow}
           </span>
           <span className="hidden justify-self-center text-nav-foreground transition-colors duration-700 ease-[cubic-bezier(0.6,0,0.3,1)] [text-shadow:0_1px_18px_var(--lost-hero-halo)] md:block">
             {collectionLabel}
@@ -749,12 +629,18 @@ export function LostHero({
 function LostVideoPlayer({
   onClose,
   open,
-  src,
+  src
 }: {
   onClose: () => void;
   open: boolean;
   src: string;
 }) {
+  const t = useTranslations("LOSTINSEOUL.video");
+  const closeLabel = t("close");
+  const muteLabel = t("mute");
+  const pauseLabel = t("pause");
+  const playLabel = t("play");
+  const unmuteLabel = t("unmute");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mutedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
@@ -762,7 +648,6 @@ function LostVideoPlayer({
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const t=useTranslations("LOSTINSEOUL.video")
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -866,7 +751,7 @@ function LostVideoPlayer({
       transition={{ duration: 1, ease: "easeInOut" }}
     >
       <video
-        aria-label={t('close')}
+        aria-label={closeLabel}
         autoPlay={open}
         className="h-full w-full object-cover"
         loop
@@ -884,7 +769,7 @@ function LostVideoPlayer({
         data-lost-video-interface
       >
         <Button
-          aria-label={muted ? t('unmute') : t('mute')}
+          aria-label={muted ? unmuteLabel : muteLabel}
           className="pointer-events-auto grid size-18 place-items-center rounded-[4px] border border-[oklch(from_var(--white)_l_c_h_/_0.1)] bg-[oklch(from_var(--white)_l_c_h_/_0.08)] p-0 text-[var(--white)] backdrop-blur-md transition-[opacity,background-color] duration-200 ease-in-out hover:bg-[oklch(from_var(--white)_l_c_h_/_0.13)]"
           onClick={toggleMute}
           type="button"
@@ -963,7 +848,6 @@ type LostProductSectionProps = {
   requestModeLabel: string;
   searchLabel: string;
   searchNoResultsLabel: string;
-  searchQuery: string;
   searchResultsLabel: string;
   sectionMetaLabel?: string;
   standardModeLabel: string;
@@ -982,25 +866,53 @@ export function LostProductSection({
   requestModeLabel,
   searchLabel,
   searchNoResultsLabel,
-  searchQuery,
   searchResultsLabel,
   sectionMetaLabel,
   standardModeLabel,
   viewProductLabel
 }: LostProductSectionProps) {
+  const { query } = useLostSearch();
+  const searchQuery = layout === "recommendations" ? "" : query;
+  const visibleProducts = useMemo(() => {
+    const needle = searchQuery.trim().toLowerCase();
+    if (!needle) return products;
+
+    return products.filter((product) => {
+      const searchable = [
+        product.name,
+        product.summary,
+        product.displayPrice,
+        getLostProductListingPrice(
+          product.displayPrice,
+          requestQuoteLabel,
+          product.modes
+        ),
+        product.stockState,
+        product.campaign?.title,
+        ...product.modes
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchable.includes(needle);
+    });
+  }, [products, requestQuoteLabel, searchQuery]);
   const searching = searchQuery.trim().length > 0;
   const modeLabels: Record<LostOrderMode, string> = {
     private_order: privateModeLabel,
     request_to_order: requestModeLabel,
     standard_purchase: standardModeLabel
   };
-  const gridCount = Math.min(Math.max(products.length, 1), 5);
+  const gridCount = Math.min(Math.max(visibleProducts.length, 1), 5);
   const gridPushProduct =
-    layout === "collection" ? (products[1] ?? products[0] ?? null) : null;
+    layout === "collection"
+      ? (visibleProducts[1] ?? visibleProducts[0] ?? null)
+      : null;
   const sectionMetaText = getLostProductSectionMetaLabel({
     cartLabel,
     incomingLabel,
-    productCount: products.length,
+    productCount: visibleProducts.length,
     searchQuery,
     searchResultsLabel,
     sectionMetaLabel
@@ -1040,7 +952,7 @@ export function LostProductSection({
       </div>
 
       <div className="grid gap-y-8">
-        {products.length === 0 ? (
+        {visibleProducts.length === 0 ? (
           <div className="grid">
             <LostEmptyProductCard
               emptyLabel={searching ? searchNoResultsLabel : emptyLabel}
@@ -1058,7 +970,7 @@ export function LostProductSection({
             )}
             data-lost-collection-grid-products-count={gridCount}
           >
-            {products.map((product, index) => (
+            {visibleProducts.map((product, index) => (
               <div
                 data-lost-collection-grid-products-product
                 data-lost-collection-grid-products-product-second={index + 1}

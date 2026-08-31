@@ -45,6 +45,7 @@ export const FOOTER_HIDDEN_PATTERNS: ReadonlyArray<RegExp> = [
   /^\/radio(\/|$)/,
   /^\/me(\/|$)/,
   /^\/reset-password(\/|$)/,
+  /^\/the-team(\/|$)/,
   /^\/two-factor(\/|$)/,
   /^\/accept-invitation(\/|$)/,
   // Long-form reading — footer breaks immersion at the end of an essay.
@@ -65,6 +66,10 @@ export const FOOTER_HIDDEN_PATTERNS: ReadonlyArray<RegExp> = [
  */
 export function pathHidesFooterByDefault(pathname: string): boolean {
   return FOOTER_HIDDEN_PATTERNS.some((p) => p.test(pathname));
+}
+
+export function pathHidesHeaderByDefault(pathname: string): boolean {
+  return /^\/lostinseoul(\/|$)/.test(pathname);
 }
 
 /**

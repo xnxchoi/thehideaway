@@ -52,7 +52,6 @@ vec2 coord(in vec2 p) {
 #define st0 coord(gl_FragCoord.xy)
 #define mx coord(u_mouse * u_pixelRatio)
 
-#include < clipping_planes_pars_fragment >
 float random(vec3 scale, float seed) {
     return fract(sin(dot(gl_FragCoord.xyz + seed, scale)) * 43758.5453 + seed); }
 vec4 boxBlur(sampler2D tex, vec2 uv, vec2 surf) {

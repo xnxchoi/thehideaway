@@ -51,5 +51,6 @@ describe("LostEcommerceProvider wiring", () => {
       "utf8"
     );
     expect(layout).toContain("LostEcommerceProvider");
+    expect(layout).toContain("LostChromeProvider");
   });
 });

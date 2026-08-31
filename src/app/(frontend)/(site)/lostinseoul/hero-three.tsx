@@ -1,8 +1,8 @@
 "use client";
 
 import { lerp } from "@/utilities/rp_utils";
-import { useMotionValueEvent, useScroll } from "motion/react";
-import { useCallback, useEffect, useRef } from "react";
+import { useLenis } from "lenis/react";
+import { useEffect, useRef } from "react";
 import { useTempus } from "tempus/react";
 import {
   BlendFunction,
@@ -21,7 +21,11 @@ import {
   shouldRenderLostHeroFrame
 } from "./hero-scene-state";
 import { getLostHeroTextureMediaRatio } from "./hero-media-state";
-import { getLostHeroScrollProgress } from "./hero-scroll-motion";
+import {
+  getLostHeroScrollCameraOffset,
+  getLostHeroScrollProgress,
+  shouldUpdateLostHeroReflectors
+} from "./hero-scroll-motion";
 
 type Props = {
   bagOpen: boolean;
@@ -806,17 +810,19 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
   const runtimeRef = useRef<LostHeroSceneRuntime | null>(null);
   const sceneInViewportRef = useRef(true);
   const scrollProgressRef = useRef(0);
-  const { scrollY } = useScroll();
-  const syncScrollProgress = useCallback((scrollY: number) => {
-    scrollProgressRef.current = getLostHeroScrollProgress(
-      scrollY,
-      window.innerHeight,
-      window.innerWidth
-    );
-  }, []);
-  useMotionValueEvent(scrollY, "change", syncScrollProgress);
+  const scrollVelocityRef = useRef(0);
+  const lenis = useLenis();
+  const lenisRef = useRef(lenis);
+  lenisRef.current = lenis;
   useTempus(
     ({ time, deltaTime }) => {
+      const scroller = lenisRef.current;
+      scrollProgressRef.current = getLostHeroScrollProgress(
+        scroller?.scroll ?? window.scrollY,
+        window.innerHeight,
+        window.innerWidth
+      );
+      scrollVelocityRef.current = scroller?.velocity ?? 0;
       runtimeRef.current?.render(time, deltaTime);
     },
     { label: "lost-hero-scene", priority: 1 }
@@ -827,19 +833,6 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
     runtimeRef.current?.syncVideoState();
     runtimeRef.current?.syncPostTheme();
   }, [bagOpen]);
-
-  useEffect(() => {
-    const syncFromCurrentScroll = () => {
-      syncScrollProgress(scrollY.get());
-    };
-
-    syncFromCurrentScroll();
-    window.addEventListener("resize", syncFromCurrentScroll);
-
-    return () => {
-      window.removeEventListener("resize", syncFromCurrentScroll);
-    };
-  }, [scrollY, syncScrollProgress]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -890,12 +883,12 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
     const sceneWhiteColor = colorFromVar("--opaque-white", LOST_WHITE_FALLBACK);
     const renderer = new THREE.WebGLRenderer({
       alpha: false,
-      antialias: true,
+      antialias: false,
       canvas,
       powerPreference: "high-performance"
     });
     renderer.setClearColor(sceneBlackColor, 1);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.02;
@@ -1089,7 +1082,7 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
           mirror: 0.02,
           normalTexture,
           reflectionStrength: 0.38,
-          resolution: 1536,
+          resolution: 768,
           shadowsTexture,
           textureStrength: 0.1,
           width: 24
@@ -1331,10 +1324,12 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
         0.1,
         deltaMs
       );
-      const scrollOffset = zoom.open ? 0 : current.scroll * 2;
+      const scrollCamera = zoom.open
+        ? { lookAtY: 0, positionY: 0 }
+        : getLostHeroScrollCameraOffset(current.scroll);
       naturalPosition.set(
         breathing.x,
-        current.scroll > 0 ? -scrollOffset : breathing.y,
+        scrollCamera.positionY + breathing.y,
         breathing.z - current.x * 0.6
       );
       if (zoom.active) {
@@ -1358,17 +1353,17 @@ export function LostHeroScene({ bagOpen, imageUrl, onReady, videoUrl }: Props) {
       }
       if (videoPlane) {
         videoPlane.getWorldPosition(lookTarget);
-        if (!zoom.open) lookTarget.y += scrollOffset * 5;
+        lookTarget.y += scrollCamera.lookAtY;
         camera.lookAt(lookTarget);
       } else {
-        camera.lookAt(0, 2.05, 0);
+        camera.lookAt(0, 2.05 + scrollCamera.lookAtY, 0);
       }
 
-      if (videoTexture && video && !video.paused)
-        videoTexture.needsUpdate = true;
-      reflectors.forEach((reflector) =>
-        reflector.render(renderer, scene, camera)
-      );
+      if (shouldUpdateLostHeroReflectors(scrollVelocityRef.current)) {
+        reflectors.forEach((reflector) =>
+          reflector.render(renderer, scene, camera)
+        );
+      }
       composer.render(delta);
     };
     runtimeRef.current = {

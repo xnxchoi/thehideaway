@@ -1,10 +1,7 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   getLostEntryElementState,
-  LOST_ENTRY_PHASE_EVENT,
   lostEntryDelays,
-  parseLostEntryPhaseEvent,
   resolveLostHeaderEntryPhase,
   shouldFinishLostEntry,
   shouldForceLostEntryReady,
@@ -111,37 +108,6 @@ describe("lostinseoul entry motion", () => {
         sceneTimedOut: true
       })
     ).toBe(true);
-  });
-
-  it("reads entry-phase events so chrome can subscribe without crashing", () => {
-    expect(
-      parseLostEntryPhaseEvent(
-        new CustomEvent(LOST_ENTRY_PHASE_EVENT, { detail: { phase: "loading" } })
-      )
-    ).toBe("loading");
-    expect(
-      parseLostEntryPhaseEvent(
-        new CustomEvent(LOST_ENTRY_PHASE_EVENT, { detail: { phase: "ending" } })
-      )
-    ).toBe("ending");
-    expect(
-      parseLostEntryPhaseEvent(new CustomEvent(LOST_ENTRY_PHASE_EVENT, { detail: "ready" }))
-    ).toBe("ready");
-    expect(
-      parseLostEntryPhaseEvent(
-        new CustomEvent(LOST_ENTRY_PHASE_EVENT, { detail: { phase: "nope" } })
-      )
-    ).toBeNull();
-  });
-
-  it("exports a header hook that defaults to ready and listens for the entry event", () => {
-    const components = readFileSync(new URL("./components.tsx", import.meta.url), "utf8");
-    expect(components).toContain("function useLostEntryPhase");
-    expect(components).toContain("LOST_ENTRY_PHASE_EVENT");
-    expect(components).toContain('useState<LostEntryPhase>("ready")');
-    expect(components).toContain("parseLostEntryPhaseEvent");
-    expect(components).toContain("useLayoutEffect");
-    expect(components).toContain("document.dispatchEvent");
   });
 
   it("force-unlocks the entry sequence when runtime readiness stalls", () => {

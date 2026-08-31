@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { pathHidesFooterByDefault } from "@/components/Shells/Footer/footer-visibility";
+import {
+  pathHidesFooterByDefault,
+  pathHidesHeaderByDefault
+} from "@/components/Shells/Footer/footer-visibility";
 
 const css = readFileSync(join(__dirname, "index.css"), "utf8");
 const components = readFileSync(join(__dirname, "components.tsx"), "utf8");
@@ -39,16 +42,28 @@ const productPage = readFileSync(
 );
 
 describe("LOST footer visibility CSS", () => {
-  it("does not hide the storefront footer with the global footer suppression rule", () => {
-    expect(css).toContain("footer:not(.lost-footer)");
-    expect(css).not.toContain("body:has(.lost-commerce-root) footer,");
-    expect(css).toContain('body:has(.lost-commerce-root) [class*="z-[238]"]');
+  it("does not hide Hideaway chrome with body:has CSS", () => {
+    expect(css).not.toContain("body:has(.lost-commerce-root) #rp-header");
+    expect(css).not.toContain("body:has(.lost-commerce-root) footer:not(.lost-footer)");
+    expect(css).not.toContain('body:has(.lost-commerce-root) [class*="z-[238]"]');
   });
 
   it("hides the global Hideaway footer on internal LOST routes", () => {
     expect(pathHidesFooterByDefault("/lostinseoul")).toBe(true);
     expect(pathHidesFooterByDefault("/lostinseoul/privacy")).toBe(true);
     expect(pathHidesFooterByDefault("/lostinseoul/products/object")).toBe(true);
+  });
+
+  it("skips the Hideaway header on LOST routes without CSS display:none", () => {
+    expect(pathHidesHeaderByDefault("/lostinseoul")).toBe(true);
+    expect(pathHidesHeaderByDefault("/lostinseoul/products/object")).toBe(true);
+    expect(pathHidesHeaderByDefault("/essays/hello")).toBe(false);
+    const header = readFileSync(
+      join(process.cwd(), "src/components/Shells/Header/HeaderClient.tsx"),
+      "utf8"
+    );
+    expect(header).toContain("pathHidesHeaderByDefault");
+    expect(header).toContain("if (hideHeader) return null");
   });
 
   it("mounts a client override so public-host LOST routes do not render the Hideaway footer", () => {

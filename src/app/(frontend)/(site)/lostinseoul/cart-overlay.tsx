@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useLostCart } from "@/lib/lost-commerce/useLostCart";
 import { LostCurrency } from "@/lib/lost-commerce/types";
 import { LostCartLineImage } from "./cart-line-image";
+import { useLostBag, useLostCommerceRootRef } from "./lost-page-state";
 import {
   getLostBagFallbackFrameMetrics,
   getLostBagFixedDocumentMinHeight,
@@ -46,15 +47,6 @@ import {
 } from "./cart-frame";
 import { useTranslations } from "next-intl";
 
-type Props = {
-
-  commerceRootRef: RefObject<HTMLElement | null>;
-
-  onOpenChange: (open: boolean) => void;
-  open: boolean;
-
-};
-
 type CartLine = ReturnType<typeof useLostCart>["lines"][number];
 
 const CLOSE_MS = LOST_BAG_TIMELINE_MS;
@@ -66,14 +58,9 @@ function clearLostBagRootInlineStyles(root: HTMLElement | null) {
   root.style.removeProperty("filter");
 }
 
-export function LostCartOverlay({
-
-  commerceRootRef,
-
-  onOpenChange,
-  open,
-
-}: Props) {
+export function LostCartOverlay() {
+  const { open, setOpen } = useLostBag();
+  const commerceRootRef = useLostCommerceRootRef();
   const [mounted, setMounted] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(
     null
@@ -114,15 +101,15 @@ export function LostCartOverlay({
   useLayoutEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onOpenChange(false);
+      if (event.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [onOpenChange, open]);
+  }, [open, setOpen]);
 
-  const closeBag = () => onOpenChange(false);
+  const closeBag = () => setOpen(false);
   const overlay = (
     <AnimatePresence>
       {open ? (
@@ -151,7 +138,7 @@ export function LostCartOverlay({
       <LostBagOpenButton
 
         count={count}
-        onOpen={() => onOpenChange(true)}
+        onOpen={() => setOpen(true)}
         open={open}
       />
       {mounted ? createPortal(overlay, document.body) : null}

@@ -9,8 +9,6 @@ type LostEntryElementState = {
   y?: number | string | number[];
 };
 
-export const LOST_ENTRY_PHASE_EVENT = "lost:entry-phase";
-
 export const lostEntryDelays = {
   ending: {
     chrome: 0.51,
@@ -88,29 +86,6 @@ export function getLostEntryTransition(
       element === "stage" ? 1.25 : element === "heroButton" ? 0.8 : 0.55,
     ease: lostEntryEase
   };
-}
-
-export function isLostEntryPhase(
-  value: string | undefined
-): value is LostEntryPhase {
-  return value === "loading" || value === "ending" || value === "ready";
-}
-
-export function parseLostEntryPhaseEvent(event: Event): LostEntryPhase | null {
-  const detail = "detail" in event ? (event as CustomEvent<unknown>).detail : undefined;
-  if (typeof detail === "string") {
-    return isLostEntryPhase(detail) ? detail : null;
-  }
-  if (
-    detail !== null &&
-    typeof detail === "object" &&
-    "phase" in detail &&
-    typeof (detail as { phase?: unknown }).phase === "string"
-  ) {
-    const phase = (detail as { phase: string }).phase;
-    return isLostEntryPhase(phase) ? phase : null;
-  }
-  return null;
 }
 
 export function resolveLostHeaderEntryPhase({

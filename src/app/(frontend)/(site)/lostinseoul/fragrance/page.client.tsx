@@ -15,6 +15,7 @@ import {
   LostGlobalFooterOverride,
   LostHeader
 } from "../components";
+import { useLostBag, useLostCommerceRootRef } from "../lost-page-state";
 import type {
   LostBusinessDisclosureIdentifiers,
   LostBusinessDisclosureLabels
@@ -150,9 +151,8 @@ export function LostFragranceChapter({
   const display = copy[displayLocale];
 
   const chapterRef = useRef<HTMLDivElement>(null);
-  const commerceRootRef = useRef<HTMLElement>(null);
-  const [bagOpen, setBagOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const commerceRootRef = useLostCommerceRootRef();
+  const { open: bagOpen } = useLostBag();
   const [tier, setTier] = useState<LostFragranceRenderTier>("editorial");
   const [sceneReady, setSceneReady] = useState(false);
   // window.location instead of useSearchParams: a dev-only toggle shouldn't
@@ -262,22 +262,8 @@ export function LostFragranceChapter({
     <MotionConfig reducedMotion="user">
       <LostGlobalFooterOverride />
       <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
-        <LostAnnouncementBar bagOpen={bagOpen}>
-          {labels.announcement}
-        </LostAnnouncementBar>
-        <LostHeader
-
-          bagOpen={bagOpen}
-
-          commerceRootRef={commerceRootRef}
-          drops={drops}
-
-          onBagOpenChange={setBagOpen}
-
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-
-        />
+        <LostAnnouncementBar>{labels.announcement}</LostAnnouncementBar>
+        <LostHeader drops={drops} />
       </div>
       <main
         className="lost-commerce-root lost-fragrance-root relative z-[1001] min-h-screen"

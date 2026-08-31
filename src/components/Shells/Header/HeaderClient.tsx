@@ -35,6 +35,8 @@ import {
   useTransform
 } from "motion/react";
 import * as m from "motion/react-m";
+import { pathHidesHeaderByDefault } from "@/components/Shells/Footer/footer-visibility";
+import { usePathname } from "next/navigation";
 import { useTransitionState } from "next-transition-router";
 import React, {
   type ComponentRef,
@@ -54,6 +56,8 @@ type VerticalDirection = "up" | "down";
 type TransitionType =
   "animate-to-full" | "transition-wipe" | "animate-to-previous";
 export const HeaderClient = ({ children }: { children: ReactNode }) => {
+  const pathname = usePathname();
+  const hideHeader = pathHidesHeaderByDefault(pathname ?? "");
   const showHeader = useRPStore(useShallow((store) => store.showHeader));
   const setHeaderVisibility = useRPStore((store) => store.setHeaderVisibility);
   const _toutt = useRPStore(useShallow((store) => store.transitionOutType));
@@ -499,6 +503,8 @@ export const HeaderClient = ({ children }: { children: ReactNode }) => {
       setVisible(false);
     }, 200);
   }, []);
+
+  if (hideHeader) return null;
 
   return (
     <AnimatePresence>

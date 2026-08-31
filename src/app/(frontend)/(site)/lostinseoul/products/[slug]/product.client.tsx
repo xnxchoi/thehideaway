@@ -22,6 +22,7 @@ import {
   LostHeader,
   LostProductSection
 } from "../../components";
+import { useLostCommerceRootRef } from "../../lost-page-state";
 import {
   getLostProductPanelState,
   lostProductPanelTransition
@@ -146,9 +147,7 @@ export function LostProductDetailClient({
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [activePanel, setActivePanel] = useState<string | null>(null);
-  const [bagOpen, setBagOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const commerceRootRef = useRef<HTMLElement>(null);
+  const commerceRootRef = useLostCommerceRootRef();
   const quoteSubmissionRef = useRef<symbol | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState(
     () =>
@@ -394,28 +393,8 @@ export function LostProductDetailClient({
     <>
       <LostGlobalFooterOverride />
       <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
-        <LostAnnouncementBar bagOpen={bagOpen}>
-          {labels.announcement}
-        </LostAnnouncementBar>
-        <LostHeader
-          archiveLabel={labels.archiveLabel}
-          backLabel={labels.back}
-          bagOpen={bagOpen}
-          cartLabel={labels.cart}
-          checkoutLabel={labels.checkoutLabel}
-          clearSearchLabel={labels.clearSearchLabel}
-          commerceRootRef={commerceRootRef}
-          drops={drops}
-          emptyLabel={labels.emptyLabel}
-          removeLabel={labels.removeLabel}
-          searchLabel={labels.searchLabel}
-          searchPlaceholder={labels.searchPlaceholder}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          shopLabel={labels.shopLabel}
-          totalLabel={labels.totalLabel}
-          onBagOpenChange={setBagOpen}
-        />
+        <LostAnnouncementBar>{labels.announcement}</LostAnnouncementBar>
+        <LostHeader drops={drops} />
       </div>
       <main
         className="lost-commerce-root lost-product-page relative z-[1001] min-h-screen bg-[var(--n-s-bg)] pb-32 text-[var(--n-s-fg)] selection:bg-[var(--n-s-fg)] selection:text-[var(--n-s-bg)] lg:pb-0"
@@ -919,7 +898,7 @@ export function LostProductDetailClient({
             requestModeLabel={labels.request}
             searchLabel={labels.related}
             searchNoResultsLabel=""
-            searchQuery=""
+
             searchResultsLabel={labels.related}
             standardModeLabel={labels.standard}
             viewProductLabel={labels.viewProduct}

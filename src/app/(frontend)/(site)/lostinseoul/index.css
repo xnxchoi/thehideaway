@@ -23,23 +23,6 @@ html.lenis.lenis-smooth:has(.lost-commerce-root) [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
 
-html.lenis.lenis-smooth:has(.lost-commerce-root) iframe {
-  pointer-events: none;
-}
-
-body:has(.lost-commerce-root) #rp-header,
-body:has(.lost-commerce-root) footer:not(.lost-footer),
-body:has(.lost-commerce-root) .menu__preview-preview,
-body:has(.lost-commerce-root) .pt_mask,
-body:has(.lost-commerce-root) .pt_cornerstones,
-body:has(.lost-commerce-root) .scroll-indicator,
-body:has(.lost-commerce-root) [class*="z-[238]"],
-body:has(.lost-commerce-root) [class*="z-239"],
-body:has(.lost-commerce-root) [class*="z-[248]"],
-body:has(.lost-commerce-root) [class*="top-fx-bottom"],
-body:has(.lost-commerce-root) nextjs-portal {
-  display: none !important;
-}
 body:has(.lost-commerce-root):not([data-lost-bag-frame="open"]):not(
     [data-lost-bag-frame="closing"]
   )
@@ -78,8 +61,6 @@ body:has(.lost-checkout-root) {
   color-scheme: dark;
 }
 
-body:has(.lost-legal-root) #rp-header,
-body:has(.lost-legal-root) footer:not(.lost-footer),
 body:has(.lost-legal-root) .rp__cursor,
 body:has(.lost-legal-root) .menu__body,
 body:has(.lost-legal-root) .menu__frame,
@@ -101,8 +82,6 @@ body:has(.lost-legal-root) [class*="top-fx-bottom"] {
   display: none !important;
 }
 
-body:has(.lost-standalone-root) #rp-header,
-body:has(.lost-standalone-root) footer,
 body:has(.lost-standalone-root) .rp__cursor,
 body:has(.lost-standalone-root) .menu__body,
 body:has(.lost-standalone-root) .menu__frame,

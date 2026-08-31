@@ -1,5 +1,11 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { getLostHeroScrollProgress } from "./hero-scroll-motion";
+import {
+  getLostHeroScrollCameraOffset,
+  getLostHeroScrollProgress,
+  shouldUpdateLostHeroReflectors
+} from "./hero-scroll-motion";
 
 describe("lostinseoul hero scroll motion", () => {
   it("matches the source scroll range formula", () => {
@@ -20,5 +26,33 @@ describe("lostinseoul hero scroll motion", () => {
   it("disables source scroll-follow below the desktop breakpoint", () => {
     expect(getLostHeroScrollProgress(400, 1000, 767)).toBe(0);
     expect(getLostHeroScrollProgress(400, 1000, 768)).toBe(0.5);
+  });
+
+  it("moves the camera and look target together so scroll does not pitch the scene", () => {
+    expect(getLostHeroScrollCameraOffset(0)).toEqual({
+      lookAtY: 0,
+      positionY: 0
+    });
+
+    const mid = getLostHeroScrollCameraOffset(0.5);
+    expect(mid.lookAtY).toBe(mid.positionY);
+    expect(mid.positionY).toBeLessThan(0);
+    expect(Math.abs(mid.positionY)).toBeLessThan(0.2);
+  });
+
+  it("skips reflector redraws while Lenis is moving quickly", () => {
+    expect(shouldUpdateLostHeroReflectors(0)).toBe(true);
+    expect(shouldUpdateLostHeroReflectors(120)).toBe(true);
+    expect(shouldUpdateLostHeroReflectors(800)).toBe(false);
+    expect(shouldUpdateLostHeroReflectors(-800)).toBe(false);
+  });
+
+  it("samples Lenis in the hero frame and does not pitch lookAt against the camera", () => {
+    const source = readFileSync(join(__dirname, "hero-three.tsx"), "utf8");
+    expect(source).toContain("useLenis");
+    expect(source).toContain("getLostHeroScrollCameraOffset");
+    expect(source).toContain("shouldUpdateLostHeroReflectors");
+    expect(source).not.toContain("useScroll");
+    expect(source).not.toContain("scrollOffset * 5");
   });
 });
