@@ -10,7 +10,18 @@ export const LOST_PENDING_PAYMENT_STORAGE_KEY =
 export type PendingProductPayment = {
   orderRef: string;
   paymentId: string;
+  customerEmail: string;
 };
+
+export function canViewPaidLostOrder(input: {
+  customer?: string | null;
+  paymentStatus?: string | null;
+  viewerId?: string | null;
+}): boolean {
+  if (input.paymentStatus !== "paid") return false;
+  if (input.viewerId) return input.customer === input.viewerId;
+  return !input.customer;
+}
 
 export function productPaymentSubmitAction(
   pending: PendingProductPayment | null

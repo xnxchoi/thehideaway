@@ -1,8 +1,4 @@
 import { createLocalReq, type Payload } from "payload";
-import type {
-  CommerceOrder as PayloadCommerceOrder,
-  CommerceProduct as PayloadCommerceProduct
-} from "@/payload-types";
 
 import type {
   CommerceOrderRecord,
@@ -11,6 +7,41 @@ import type {
   NewCommerceOrder
 } from "./create-order";
 import { authorizeCommerceOrderMutation } from "./order-protection";
+
+type PayloadCommerceProduct = {
+  id: string;
+  name?: string | null;
+  slug?: string | null;
+  active?: boolean | null;
+  unit_amount?: number | null;
+  max_quantity?: number | null;
+};
+
+type PayloadCommerceOrder = {
+  id: string;
+  ref: string;
+  user?: unknown;
+  product?: unknown;
+  product_name_snapshot: string;
+  product_slug_snapshot: string;
+  quantity: number;
+  unit_amount_snapshot: number;
+  total_amount: number;
+  payment_method: string;
+  payment_status: string;
+  status: string;
+  contact: unknown;
+  shipping: unknown;
+  idempotency_key: string;
+  request_hash: string;
+  provider_payment_id?: string | null;
+  provider_transaction_id?: string | null;
+  bank_transfer_reference?: string | null;
+  tracking_number?: string | null;
+  paid_at?: string | null;
+  shipped_at?: string | null;
+  completed_at?: string | null;
+};
 
 function relationId(value: unknown): string {
   if (typeof value === "string") return value;
@@ -71,7 +102,7 @@ export function createPayloadCommerceRepository(
   const repository: CommerceRepository = {
     async findActiveProduct(id) {
       const doc = await payload.findByID({
-        collection: "commerce-products",
+        collection: "commerce-products" as never,
         id,
         depth: 0,
         disableErrors: true,
@@ -82,7 +113,7 @@ export function createPayloadCommerceRepository(
 
     async findOrderByIdempotencyKey(key) {
       const result = await payload.find({
-        collection: "commerce-orders",
+        collection: "commerce-orders" as never,
         depth: 0,
         limit: 1,
         overrideAccess: true,
@@ -94,7 +125,7 @@ export function createPayloadCommerceRepository(
 
     async findOrderByRef(ref) {
       const result = await payload.find({
-        collection: "commerce-orders",
+        collection: "commerce-orders" as never,
         depth: 0,
         limit: 1,
         overrideAccess: true,
@@ -106,7 +137,7 @@ export function createPayloadCommerceRepository(
 
     async findOrderByProviderPaymentId(paymentId) {
       const result = await payload.find({
-        collection: "commerce-orders",
+        collection: "commerce-orders" as never,
         depth: 0,
         limit: 1,
         overrideAccess: true,
@@ -118,7 +149,7 @@ export function createPayloadCommerceRepository(
 
     async createOrder(input: NewCommerceOrder) {
       const doc = await payload.create({
-        collection: "commerce-orders",
+        collection: "commerce-orders" as never,
         overrideAccess: true,
         data: {
           ref: input.ref,
@@ -167,7 +198,7 @@ export function createPayloadCommerceRepository(
           : {})
       };
       const doc = await payload.update({
-        collection: "commerce-orders",
+        collection: "commerce-orders" as never,
         id,
         overrideAccess: true,
         req,

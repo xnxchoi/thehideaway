@@ -7,6 +7,11 @@
  */
 
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "OrderStatus".
+ */
+export type OrderStatus = ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
+/**
  * Supported timezones in IANA format.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -79,7 +84,7 @@ export interface Config {
     teamMembers: TeamMember;
     members: Member;
     invitations: Invitation;
-    "admin-invitations": AdminInvitation;
+    'admin-invitations': AdminInvitation;
     assets: Asset;
     categories: Category;
     media: Media;
@@ -88,8 +93,8 @@ export interface Config {
     pages: Page;
     posts: Post;
     userMedia: UserMedia;
-    "email-quota": EmailQuota;
-    "deferred-emails": DeferredEmail;
+    'email-quota': EmailQuota;
+    'deferred-emails': DeferredEmail;
     profile: Profile;
     albums: Album;
     tracks: Track;
@@ -101,71 +106,86 @@ export interface Config {
     citations: Citation;
     responses: Response;
     compilations: Compilation;
-    "commerce-products": CommerceProduct;
-    "commerce-orders": CommerceOrder;
     admins: Admin;
     exports: Export;
     imports: Import;
     redirects: Redirect;
     search: Search;
-    "payload-kv": PayloadKv;
-    "payload-jobs": PayloadJob;
-    "payload-folders": FolderInterface;
-    "payload-locked-documents": PayloadLockedDocument;
-    "payload-preferences": PayloadPreference;
-    "payload-migrations": PayloadMigration;
+    plans: Plan;
+    invoices: Invoice;
+    prices: Price;
+    subscriptions: Subscription;
+    'exchange-rate': ExchangeRate;
+    currency: Currency;
+    holidays: Holiday;
+    'product-category': ProductCategory;
+    'product-sub': ProductSub;
+    'product-drops': ProductDrop;
+    addresses: Address;
+    variants: Variant;
+    variantTypes: VariantType;
+    variantOptions: VariantOption;
+    products: Product;
+    carts: Cart;
+    orders: Order;
+    transactions: Transaction;
+    'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
+    'payload-folders': FolderInterface;
+    'payload-locked-documents': PayloadLockedDocument;
+    'payload-preferences': PayloadPreference;
+    'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
     users: {
-      profile: "profile";
-      bookmarks: "bookmarks";
-      followers: "follows";
-      following: "follows";
-      notifications: "notifications";
-      account: "accounts";
-      session: "sessions";
+      profile: 'profile';
+      bookmarks: 'bookmarks';
+      followers: 'follows';
+      following: 'follows';
+      notifications: 'notifications';
+      account: 'accounts';
+      session: 'sessions';
     };
     organizations: {
-      member: "members";
-      invitation: "invitations";
-      team: "teams";
+      member: 'members';
+      invitation: 'invitations';
+      team: 'teams';
     };
     categories: {
-      categorized: "surf" | "posts";
+      categorized: 'surf' | 'posts';
     };
     tags: {
-      taggedItems:
-        | "posts"
-        | "surf"
-        | "playlists"
-        | "albums"
-        | "profile"
-        | "pages"
-        | "tracks";
+      taggedItems: 'posts' | 'surf' | 'playlists' | 'albums' | 'profile' | 'pages' | 'tracks';
     };
     posts: {
-      bookmarks: "bookmarks";
+      bookmarks: 'bookmarks';
     };
     userMedia: {
-      bookmarks: "bookmarks";
+      bookmarks: 'bookmarks';
     };
     profile: {
-      bookmarks: "bookmarks";
+      bookmarks: 'bookmarks';
     };
     albums: {
-      bookmarks: "bookmarks";
+      bookmarks: 'bookmarks';
     };
     tracks: {
-      bookmarks: "bookmarks";
+      bookmarks: 'bookmarks';
     };
     playlists: {
-      bookmarks: "bookmarks";
+      bookmarks: 'bookmarks';
     };
     surf: {
-      bookmarks: "bookmarks";
+      bookmarks: 'bookmarks';
     };
-    "payload-folders": {
-      documentsAndFolders: "payload-folders" | "userMedia";
+    variantTypes: {
+      options: 'variantOptions';
+    };
+    products: {
+      variants: 'variants';
+    };
+    'payload-folders': {
+      documentsAndFolders: 'payload-folders' | 'userMedia';
     };
   };
   collectionsSelect: {
@@ -180,8 +200,7 @@ export interface Config {
     teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
-    "admin-invitations":
-      AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
+    'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
     assets: AssetsSelect<false> | AssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -190,8 +209,8 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     userMedia: UserMediaSelect<false> | UserMediaSelect<true>;
-    "email-quota": EmailQuotaSelect<false> | EmailQuotaSelect<true>;
-    "deferred-emails": DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
+    'email-quota': EmailQuotaSelect<false> | EmailQuotaSelect<true>;
+    'deferred-emails': DeferredEmailsSelect<false> | DeferredEmailsSelect<true>;
     profile: ProfileSelect<false> | ProfileSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     tracks: TracksSelect<false> | TracksSelect<true>;
@@ -203,33 +222,40 @@ export interface Config {
     citations: CitationsSelect<false> | CitationsSelect<true>;
     responses: ResponsesSelect<false> | ResponsesSelect<true>;
     compilations: CompilationsSelect<false> | CompilationsSelect<true>;
-    "commerce-products":
-      CommerceProductsSelect<false> | CommerceProductsSelect<true>;
-    "commerce-orders": CommerceOrdersSelect<false> | CommerceOrdersSelect<true>;
     admins: AdminsSelect<false> | AdminsSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
-    "payload-kv": PayloadKvSelect<false> | PayloadKvSelect<true>;
-    "payload-jobs": PayloadJobsSelect<false> | PayloadJobsSelect<true>;
-    "payload-folders": PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
-    "payload-locked-documents":
-      PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
-    "payload-preferences":
-      PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
-    "payload-migrations":
-      PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+    plans: PlansSelect<false> | PlansSelect<true>;
+    invoices: InvoicesSelect<false> | InvoicesSelect<true>;
+    prices: PricesSelect<false> | PricesSelect<true>;
+    subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
+    'exchange-rate': ExchangeRateSelect<false> | ExchangeRateSelect<true>;
+    currency: CurrencySelect<false> | CurrencySelect<true>;
+    holidays: HolidaysSelect<false> | HolidaysSelect<true>;
+    'product-category': ProductCategorySelect<false> | ProductCategorySelect<true>;
+    'product-sub': ProductSubSelect<false> | ProductSubSelect<true>;
+    'product-drops': ProductDropsSelect<false> | ProductDropsSelect<true>;
+    addresses: AddressesSelect<false> | AddressesSelect<true>;
+    variants: VariantsSelect<false> | VariantsSelect<true>;
+    variantTypes: VariantTypesSelect<false> | VariantTypesSelect<true>;
+    variantOptions: VariantOptionsSelect<false> | VariantOptionsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
+    transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
+    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
     defaultIDType: string;
   };
-  fallbackLocale:
-    | ("false" | "none" | "null")
-    | false
-    | null
-    | ("en" | "ko")
-    | ("en" | "ko")[];
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ko') | ('en' | 'ko')[];
   globals: {
     header: Header;
     footer: Footer;
@@ -238,7 +264,7 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
-  locale: "en" | "ko";
+  locale: 'en' | 'ko';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -259,6 +285,22 @@ export interface Config {
     workflows: {
       onboardUsers: WorkflowOnboardUsers;
       refreshSearch: WorkflowRefreshSearch;
+    };
+  };
+  /**
+   * Generated by the Payload Ecommerce plugin
+   */
+  ecommerce: {
+    collections: {
+      addresses: Address;
+      carts: Cart;
+      customers?: User;
+      orders: Order;
+      products: Product;
+      transactions: Transaction;
+      variantOptions: VariantOption;
+      variants: Variant;
+      variantTypes: VariantType;
     };
   };
 }
@@ -2294,135 +2336,40 @@ export interface Compilation {
   hashId: string;
   description?: string | null;
   author: string | User;
-  visibility: "public" | "private";
+  visibility: 'public' | 'private';
   coverImage?: (string | null) | Media;
   items?:
     | (
         | {
-            relationTo: "posts";
+            relationTo: 'posts';
             value: string | Post;
           }
         | {
-            relationTo: "surf";
+            relationTo: 'surf';
             value: string | Surf;
           }
         | {
-            relationTo: "profile";
+            relationTo: 'profile';
             value: string | Profile;
           }
         | {
-            relationTo: "albums";
+            relationTo: 'albums';
             value: string | Album;
           }
         | {
-            relationTo: "playlists";
+            relationTo: 'playlists';
             value: string | Playlist;
           }
         | {
-            relationTo: "tracks";
+            relationTo: 'tracks';
             value: string | Track;
           }
         | {
-            relationTo: "userMedia";
+            relationTo: 'userMedia';
             value: string | UserMedia;
           }
       )[]
     | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Products available through the minimal commerce system.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-products".
- */
-export interface CommerceProduct {
-  id: string;
-  name: string;
-  slug: string;
-  active: boolean;
-  unit_amount: number;
-  currency: "KRW";
-  max_quantity: number;
-  summary?: string | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ("ltr" | "rtl") | null;
-      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  details?: string | null;
-  care?: string | null;
-  shipping_returns?: string | null;
-  hero_media?: (string | null) | Media;
-  gallery?: (string | Media)[] | null;
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Minimal product orders and their current payment status.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-orders".
- */
-export interface CommerceOrder {
-  id: string;
-  ref: string;
-  user: string | User;
-  product: string | CommerceProduct;
-  product_name_snapshot: string;
-  product_slug_snapshot: string;
-  quantity: number;
-  unit_amount_snapshot: number;
-  total_amount: number;
-  currency: "KRW";
-  payment_method: "card" | "bank_transfer";
-  payment_status: "pending" | "paid" | "failed" | "canceled";
-  status:
-    | "awaiting_payment"
-    | "paid"
-    | "preparing"
-    | "shipped"
-    | "completed"
-    | "canceled";
-  contact:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  shipping:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  idempotency_key: string;
-  request_hash: string;
-  provider_payment_id?: string | null;
-  provider_transaction_id?: string | null;
-  bank_transfer_reference?: string | null;
-  tracking_number?: string | null;
-  paid_at?: string | null;
-  shipped_at?: string | null;
-  completed_at?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2434,7 +2381,7 @@ export interface Admin {
   id: string;
   name: string;
   email: string;
-  role: "admin";
+  role: 'admin';
   /**
    * Upload your profile picture here.
    */
@@ -2454,7 +2401,7 @@ export interface Admin {
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
-  collection: "admins";
+  collection: 'admins';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2653,6 +2600,711 @@ export interface Search {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans".
+ */
+export interface Plan {
+  id: string;
+  /**
+   * Internal admin label (e.g. 'Resident · Yearly · KRW'). Not shown to users.
+   */
+  name: string;
+  /**
+   * The subscriber role this plan grants while active. Cofounder plans are admin-created only — they are filtered out of the public /plans surface by getPlansData().
+   */
+  tier: 'resident' | 'patron' | 'cofounder';
+  /**
+   * User-facing display label (e.g. 'Member', 'Patron').
+   */
+  tier_label: string;
+  /**
+   * Yearly: expires 1 year after start unless waiver criteria met. Lifetime: never expires.
+   */
+  validity: 'yearly' | 'lifetime';
+  /**
+   * All Hideaway plans are one-time payments at launch (manual bank transfer).
+   */
+  type: 'one_time';
+  /**
+   * Accepted checkout methods. 'card' enables the PortOne one-time card flow; bank_transfer / cash use the manual receipt-confirm flow. The plans checkout surfaces only the methods enabled here.
+   */
+  payment_methods: ('card' | 'bank_transfer' | 'cash')[];
+  /**
+   * Short marketing line under the price.
+   */
+  description?: string | null;
+  features?:
+    | {
+        label: string;
+        included?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Max active subscriptions for this plan (0 / blank = unlimited). When reached, the plan card shows 'Closed' and the CTA is disabled.
+   */
+  seat_limit?: number | null;
+  /**
+   * Pill text shown on the card when a deal applies (e.g. 'LIMITED 5').
+   */
+  discount_label?: string | null;
+  sort?: number | null;
+  state: 'active' | 'ended';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices".
+ */
+export interface Invoice {
+  id: string;
+  invoice_number: number;
+  client: string | User;
+  /**
+   * The subscription this invoice receipts.
+   */
+  subscription: string | Subscription;
+  plan: string | Plan;
+  price: string | Price;
+  /**
+   * Total invoice amount in the chosen currency's primary unit (won, dollars, euros).
+   */
+  amount: number;
+  /**
+   * The currency this invoice is denominated in. Points at the canonical `currency` collection (was an enum pre-Sprint 2).
+   */
+  currency: string | Currency;
+  /**
+   * Forward-looking: rate applied when the invoice currency differs from the Plan's base currency. Null at launch (KRW-only).
+   */
+  fx_rate_used?: number | null;
+  /**
+   * Stripe-style FSM: draft → open → paid | void. The issuance hook writes 'paid' directly on bank-confirmed flow; hand-authored invoices may start as 'draft'.
+   */
+  status: 'draft' | 'open' | 'paid' | 'void' | 'pending';
+  /**
+   * Set when admin marks the related Subscription as paid. Mirrors the bank-receipt date.
+   */
+  paid_at?: string | null;
+  /**
+   * Snapshot of subscription.start_date at issue time.
+   */
+  cycle_start?: string | null;
+  /**
+   * Snapshot of subscription.expires_at at issue time (null = lifetime plan).
+   */
+  cycle_end?: string | null;
+  /**
+   * Admin's free-text note: bank transaction id, last-4 digits, or 'cash receipt' tag.
+   */
+  bank_reference?: string | null;
+  /**
+   * Single entry for cash-flow at launch; array shape preserved for future split-payment / multi-currency cases.
+   */
+  payment_method?:
+    | {
+        method: 'bank_transfer' | 'cash';
+        amount: number;
+        currency: string | Currency;
+        payment_date: string;
+        reference?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions".
+ */
+export interface Subscription {
+  id: string;
+  user: string | User;
+  plan: string | Plan;
+  /**
+   * The specific Price (currency × amount × cadence) the subscriber transacted. Captured at checkout; never rewritten.
+   */
+  price: string | Price;
+  /**
+   * Snapshot of the selected Price amount at checkout. Invoice issuance must use this, not mutable catalog prices.
+   */
+  amount: number;
+  /**
+   * Snapshot of the selected Price currency at checkout. Invoice issuance must use this, not mutable catalog prices.
+   */
+  currency: string | Currency;
+  start_date: string;
+  /**
+   * Date the subscription expires (null = lifetime). Set on activation; extended quarterly when waiver criteria are met.
+   */
+  expires_at?: string | null;
+  subscription_status: 'pending' | 'active' | 'expired' | 'canceled';
+  /**
+   * Set true once admin confirms bank-transfer / cash receipt. Activating triggers role sync.
+   */
+  paid?: boolean | null;
+  /**
+   * Admin flag — at the next quarterly check, extend the subscription 90 days for free (Member tier merit waiver).
+   */
+  validity_waived?: boolean | null;
+  /**
+   * System: most recent quarterly waiver evaluation timestamp.
+   */
+  last_waiver_check?: string | null;
+  /**
+   * Method the user requested at checkout. bank_transfer / cash are confirmed manually by admin; card is confirmed automatically by PortOne verification.
+   */
+  request_method: 'bank_transfer' | 'cash' | 'card';
+  /**
+   * manual = bank transfer / cash (admin confirms receipt). portone = one-time card payment (server verifies the payment before marking paid).
+   */
+  provider: 'manual' | 'portone';
+  /**
+   * PortOne paymentId captured at card-checkout start. Unique — the verify route and webhook reconcile the pending→paid edge idempotently against this ref.
+   */
+  payment_ref?: string | null;
+  /**
+   * Settled PortOne transaction id, stamped on verification.
+   */
+  portone_transaction_ref?: string | null;
+  /**
+   * Free-text note attached at checkout.
+   */
+  request_note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "prices".
+ */
+export interface Price {
+  id: string;
+  /**
+   * Admin label for this price row.
+   */
+  nickname: string;
+  /**
+   * The Plan this Price is attached to.
+   */
+  plan: string | Plan;
+  currency: string | Currency;
+  unit_amount: number;
+  type: 'one_time' | 'recurring';
+  /**
+   * Populated only when type='recurring'. Leave blank for one-time prices.
+   */
+  recurring?: {
+    interval?: ('day' | 'week' | 'month' | 'year') | null;
+    interval_count?: number | null;
+    trial_period_days?: number | null;
+  };
+  active: boolean;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "currency".
+ */
+export interface Currency {
+  id: string;
+  name: string;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  kr_nm: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exchange-rate".
+ */
+export interface ExchangeRate {
+  id: string;
+  date: string;
+  rates: {
+    currency: string | Currency;
+    rate: number;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "holidays".
+ */
+export interface Holiday {
+  id: string;
+  dates: {
+    date: string;
+    name: string;
+    id?: string | null;
+  }[];
+  period: number;
+  country: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-category".
+ */
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-sub".
+ */
+export interface ProductSub {
+  id: string;
+  name: string;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * LOSTINSEOUL seasonal drops and collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-drops".
+ */
+export interface ProductDrop {
+  id: string;
+  title: string;
+  slug: string;
+  active: boolean;
+  kicker?: string | null;
+  lede?: string | null;
+  hero_media?: (string | null) | Media;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "addresses".
+ */
+export interface Address {
+  id: string;
+  customer?: (string | null) | User;
+  title?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  company?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country:
+    | 'US'
+    | 'GB'
+    | 'CA'
+    | 'AU'
+    | 'AT'
+    | 'BE'
+    | 'BR'
+    | 'BG'
+    | 'CY'
+    | 'CZ'
+    | 'DK'
+    | 'EE'
+    | 'FI'
+    | 'FR'
+    | 'DE'
+    | 'GR'
+    | 'HK'
+    | 'HU'
+    | 'IN'
+    | 'IE'
+    | 'IT'
+    | 'JP'
+    | 'LV'
+    | 'LT'
+    | 'LU'
+    | 'MY'
+    | 'MT'
+    | 'MX'
+    | 'NL'
+    | 'NZ'
+    | 'NO'
+    | 'PL'
+    | 'PT'
+    | 'RO'
+    | 'SG'
+    | 'SK'
+    | 'SI'
+    | 'ES'
+    | 'SE'
+    | 'CH';
+  phone?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Stable product SKUs used by checkout.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variants".
+ */
+export interface Variant {
+  id: string;
+  /**
+   * Used for administrative purposes, not shown to customers. This is populated by default.
+   */
+  title?: string | null;
+  product: string | Product;
+  options: (string | VariantOption)[];
+  priceInKRWEnabled?: boolean | null;
+  priceInKRW?: number | null;
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  priceInEUREnabled?: boolean | null;
+  priceInEUR?: number | null;
+  priceInJPYEnabled?: boolean | null;
+  priceInJPY?: number | null;
+  active: boolean;
+  identity_locked: boolean;
+  sku?: string | null;
+  label?: string | null;
+  option_key: string;
+  barcode?: string | null;
+  weight_grams?: number | null;
+  length_mm?: number | null;
+  width_mm?: number | null;
+  height_mm?: number | null;
+  tax_category?: string | null;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * LOSTINSEOUL storefront products.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  enableVariants?: boolean | null;
+  variantTypes?: (string | VariantType)[] | null;
+  variants?: {
+    docs?: (string | Variant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  priceInKRWEnabled?: boolean | null;
+  priceInKRW?: number | null;
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  priceInEUREnabled?: boolean | null;
+  priceInEUR?: number | null;
+  priceInJPYEnabled?: boolean | null;
+  priceInJPY?: number | null;
+  name: string;
+  slug: string;
+  active: boolean;
+  storefront: string;
+  drop?: (string | null) | ProductDrop;
+  category?: (string | null) | ProductCategory;
+  summary?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  details?: string | null;
+  care?: string | null;
+  shipping_returns?: string | null;
+  hero_media?: (string | null) | Media;
+  gallery?: (string | Media)[] | null;
+  compare_at_amount?: number | null;
+  max_order_quantity: number;
+  min_order_quantity: number;
+  standard_enabled: boolean;
+  request_to_order_enabled: boolean;
+  private_order_enabled: boolean;
+  private_preset_price_enabled: boolean;
+  private_unit_amount?: number | null;
+  private_tier_gate: 'anyone' | 'resident' | 'patron' | 'cofounder' | 'staff';
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantTypes".
+ */
+export interface VariantType {
+  id: string;
+  label: string;
+  name: string;
+  options?: {
+    docs?: (string | VariantOption)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantOptions".
+ */
+export interface VariantOption {
+  id: string;
+  _variantOptions_options_order?: string | null;
+  variantType: string | VariantType;
+  label: string;
+  /**
+   * should be defaulted or dynamic based on label
+   */
+  value: string;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: string;
+  items?:
+    | {
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
+        quantity: number;
+        mode: 'standard_purchase' | 'request_to_order' | 'private_order';
+        campaign?: string | null;
+        schema_version?: number | null;
+        product_name?: string | null;
+        product_slug?: string | null;
+        sku?: string | null;
+        sku_label?: string | null;
+        options?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        currency?: ('KRW' | 'USD' | 'JPY' | 'EUR') | null;
+        unit_amount?: number | null;
+        line_amount?: number | null;
+        weight_grams?: number | null;
+        length_mm?: number | null;
+        width_mm?: number | null;
+        height_mm?: number | null;
+        tax_category?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  secret?: string | null;
+  customer?: (string | null) | User;
+  purchasedAt?: string | null;
+  status?: ('active' | 'purchased' | 'abandoned') | null;
+  subtotal?: number | null;
+  currency?: ('KRW' | 'USD' | 'EUR' | 'JPY') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: string;
+  items?:
+    | {
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
+        quantity: number;
+        mode: 'standard_purchase' | 'request_to_order' | 'private_order';
+        campaign?: string | null;
+        schema_version?: number | null;
+        product_name?: string | null;
+        product_slug?: string | null;
+        sku?: string | null;
+        sku_label?: string | null;
+        options?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        currency?: ('KRW' | 'USD' | 'JPY' | 'EUR') | null;
+        unit_amount?: number | null;
+        line_amount?: number | null;
+        weight_grams?: number | null;
+        length_mm?: number | null;
+        width_mm?: number | null;
+        height_mm?: number | null;
+        tax_category?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  shippingAddress?: {
+    title?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    company?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    phone?: string | null;
+  };
+  customer?: (string | null) | User;
+  customerEmail?: string | null;
+  transactions?: (string | Transaction)[] | null;
+  status?: OrderStatus;
+  amount?: number | null;
+  currency?: ('KRW' | 'USD' | 'EUR' | 'JPY') | null;
+  order_ref: string;
+  order_mode: 'standard_purchase' | 'request_to_order' | 'private_order';
+  lifecycle_status:
+    | 'draft'
+    | 'quote_requested'
+    | 'quote_ready'
+    | 'pending_payment'
+    | 'paid'
+    | 'paid_inventory_review'
+    | 'committed'
+    | 'confirmed'
+    | 'converted'
+    | 'failed'
+    | 'canceled'
+    | 'refunded';
+  payment_status: 'unpaid' | 'pending' | 'paid' | 'pending_manual' | 'failed' | 'refunded' | 'partially_refunded';
+  fulfillment_status: 'unfulfilled' | 'reserved' | 'in_production' | 'fulfilled' | 'canceled';
+  campaign?: string | null;
+  quote?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  contact?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  line_snapshot_version: number;
+  paid_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions".
+ */
+export interface Transaction {
+  id: string;
+  items?:
+    | {
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
+        quantity: number;
+        mode: 'standard_purchase' | 'request_to_order' | 'private_order';
+        campaign?: string | null;
+        schema_version?: number | null;
+        product_name?: string | null;
+        product_slug?: string | null;
+        sku?: string | null;
+        sku_label?: string | null;
+        options?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        currency?: ('KRW' | 'USD' | 'JPY' | 'EUR') | null;
+        unit_amount?: number | null;
+        line_amount?: number | null;
+        weight_grams?: number | null;
+        length_mm?: number | null;
+        width_mm?: number | null;
+        height_mm?: number | null;
+        tax_category?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  paymentMethod?: 'portone' | null;
+  portone?: {
+    paymentId?: string | null;
+    transactionId?: string | null;
+    channel?: string | null;
+    method?: string | null;
+  };
+  billingAddress?: {
+    title?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    company?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    phone?: string | null;
+  };
+  status: 'pending' | 'succeeded' | 'failed' | 'cancelled' | 'expired' | 'refunded';
+  customer?: (string | null) | User;
+  customerEmail?: string | null;
+  order?: (string | null) | Order;
+  cart?: (string | null) | Cart;
+  amount?: number | null;
+  currency?: ('KRW' | 'USD' | 'EUR' | 'JPY') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -2786,141 +3438,205 @@ export interface PayloadLockedDocument {
   id: string;
   document?:
     | ({
-        relationTo: "users";
+        relationTo: 'users';
         value: string | User;
       } | null)
     | ({
-        relationTo: "sessions";
+        relationTo: 'sessions';
         value: string | Session;
       } | null)
     | ({
-        relationTo: "accounts";
+        relationTo: 'accounts';
         value: string | Account;
       } | null)
     | ({
-        relationTo: "verifications";
+        relationTo: 'verifications';
         value: string | Verification;
       } | null)
     | ({
-        relationTo: "twoFactors";
+        relationTo: 'twoFactors';
         value: string | TwoFactor;
       } | null)
     | ({
-        relationTo: "passkeys";
+        relationTo: 'passkeys';
         value: string | Passkey;
       } | null)
     | ({
-        relationTo: "organizations";
+        relationTo: 'organizations';
         value: string | Organization;
       } | null)
     | ({
-        relationTo: "teams";
+        relationTo: 'teams';
         value: string | Team;
       } | null)
     | ({
-        relationTo: "teamMembers";
+        relationTo: 'teamMembers';
         value: string | TeamMember;
       } | null)
     | ({
-        relationTo: "members";
+        relationTo: 'members';
         value: string | Member;
       } | null)
     | ({
-        relationTo: "invitations";
+        relationTo: 'invitations';
         value: string | Invitation;
       } | null)
     | ({
-        relationTo: "admin-invitations";
+        relationTo: 'admin-invitations';
         value: string | AdminInvitation;
       } | null)
     | ({
-        relationTo: "assets";
+        relationTo: 'assets';
         value: string | Asset;
       } | null)
     | ({
-        relationTo: "categories";
+        relationTo: 'categories';
         value: string | Category;
       } | null)
     | ({
-        relationTo: "media";
+        relationTo: 'media';
         value: string | Media;
       } | null)
     | ({
-        relationTo: "notifications";
+        relationTo: 'notifications';
         value: string | Notification;
       } | null)
     | ({
-        relationTo: "pages";
+        relationTo: 'pages';
         value: string | Page;
       } | null)
     | ({
-        relationTo: "posts";
+        relationTo: 'posts';
         value: string | Post;
       } | null)
     | ({
-        relationTo: "userMedia";
+        relationTo: 'userMedia';
         value: string | UserMedia;
       } | null)
     | ({
-        relationTo: "email-quota";
+        relationTo: 'email-quota';
         value: string | EmailQuota;
       } | null)
     | ({
-        relationTo: "deferred-emails";
+        relationTo: 'deferred-emails';
         value: string | DeferredEmail;
       } | null)
     | ({
-        relationTo: "profile";
+        relationTo: 'profile';
         value: string | Profile;
       } | null)
     | ({
-        relationTo: "bookmarks";
+        relationTo: 'bookmarks';
         value: string | Bookmark;
       } | null)
     | ({
-        relationTo: "userViews";
+        relationTo: 'userViews';
         value: string | UserView;
       } | null)
     | ({
-        relationTo: "responses";
+        relationTo: 'responses';
         value: string | Response;
       } | null)
     | ({
-        relationTo: "compilations";
+        relationTo: 'compilations';
         value: string | Compilation;
       } | null)
     | ({
-        relationTo: "commerce-products";
-        value: string | CommerceProduct;
-      } | null)
-    | ({
-        relationTo: "commerce-orders";
-        value: string | CommerceOrder;
-      } | null)
-    | ({
-        relationTo: "admins";
+        relationTo: 'admins';
         value: string | Admin;
       } | null)
     | ({
-        relationTo: "redirects";
+        relationTo: 'redirects';
         value: string | Redirect;
       } | null)
     | ({
-        relationTo: "search";
+        relationTo: 'search';
         value: string | Search;
       } | null)
     | ({
-        relationTo: "payload-folders";
+        relationTo: 'plans';
+        value: string | Plan;
+      } | null)
+    | ({
+        relationTo: 'invoices';
+        value: string | Invoice;
+      } | null)
+    | ({
+        relationTo: 'prices';
+        value: string | Price;
+      } | null)
+    | ({
+        relationTo: 'subscriptions';
+        value: string | Subscription;
+      } | null)
+    | ({
+        relationTo: 'exchange-rate';
+        value: string | ExchangeRate;
+      } | null)
+    | ({
+        relationTo: 'currency';
+        value: string | Currency;
+      } | null)
+    | ({
+        relationTo: 'holidays';
+        value: string | Holiday;
+      } | null)
+    | ({
+        relationTo: 'product-category';
+        value: string | ProductCategory;
+      } | null)
+    | ({
+        relationTo: 'product-sub';
+        value: string | ProductSub;
+      } | null)
+    | ({
+        relationTo: 'product-drops';
+        value: string | ProductDrop;
+      } | null)
+    | ({
+        relationTo: 'addresses';
+        value: string | Address;
+      } | null)
+    | ({
+        relationTo: 'variants';
+        value: string | Variant;
+      } | null)
+    | ({
+        relationTo: 'variantTypes';
+        value: string | VariantType;
+      } | null)
+    | ({
+        relationTo: 'variantOptions';
+        value: string | VariantOption;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'carts';
+        value: string | Cart;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: string | Order;
+      } | null)
+    | ({
+        relationTo: 'transactions';
+        value: string | Transaction;
+      } | null)
+    | ({
+        relationTo: 'payload-folders';
         value: string | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user:
     | {
-        relationTo: "users";
+        relationTo: 'users';
         value: string | User;
       }
     | {
-        relationTo: "admins";
+        relationTo: 'admins';
         value: string | Admin;
       };
   updatedAt: string;
@@ -4012,59 +4728,6 @@ export interface CompilationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-products_select".
- */
-export interface CommerceProductsSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  active?: T;
-  unit_amount?: T;
-  currency?: T;
-  max_quantity?: T;
-  summary?: T;
-  description?: T;
-  details?: T;
-  care?: T;
-  shipping_returns?: T;
-  hero_media?: T;
-  gallery?: T;
-  sort?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "commerce-orders_select".
- */
-export interface CommerceOrdersSelect<T extends boolean = true> {
-  ref?: T;
-  user?: T;
-  product?: T;
-  product_name_snapshot?: T;
-  product_slug_snapshot?: T;
-  quantity?: T;
-  unit_amount_snapshot?: T;
-  total_amount?: T;
-  currency?: T;
-  payment_method?: T;
-  payment_status?: T;
-  status?: T;
-  contact?: T;
-  shipping?: T;
-  idempotency_key?: T;
-  request_hash?: T;
-  provider_payment_id?: T;
-  provider_transaction_id?: T;
-  bank_transfer_reference?: T;
-  tracking_number?: T;
-  paid_at?: T;
-  shipped_at?: T;
-  completed_at?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins_select".
  */
 export interface AdminsSelect<T extends boolean = true> {
@@ -4210,6 +4873,477 @@ export interface SearchSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans_select".
+ */
+export interface PlansSelect<T extends boolean = true> {
+  name?: T;
+  tier?: T;
+  tier_label?: T;
+  validity?: T;
+  type?: T;
+  payment_methods?: T;
+  description?: T;
+  features?:
+    | T
+    | {
+        label?: T;
+        included?: T;
+        id?: T;
+      };
+  seat_limit?: T;
+  discount_label?: T;
+  sort?: T;
+  state?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices_select".
+ */
+export interface InvoicesSelect<T extends boolean = true> {
+  invoice_number?: T;
+  client?: T;
+  subscription?: T;
+  plan?: T;
+  price?: T;
+  amount?: T;
+  currency?: T;
+  fx_rate_used?: T;
+  status?: T;
+  paid_at?: T;
+  cycle_start?: T;
+  cycle_end?: T;
+  bank_reference?: T;
+  payment_method?:
+    | T
+    | {
+        method?: T;
+        amount?: T;
+        currency?: T;
+        payment_date?: T;
+        reference?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "prices_select".
+ */
+export interface PricesSelect<T extends boolean = true> {
+  nickname?: T;
+  plan?: T;
+  currency?: T;
+  unit_amount?: T;
+  type?: T;
+  recurring?:
+    | T
+    | {
+        interval?: T;
+        interval_count?: T;
+        trial_period_days?: T;
+      };
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions_select".
+ */
+export interface SubscriptionsSelect<T extends boolean = true> {
+  user?: T;
+  plan?: T;
+  price?: T;
+  amount?: T;
+  currency?: T;
+  start_date?: T;
+  expires_at?: T;
+  subscription_status?: T;
+  paid?: T;
+  validity_waived?: T;
+  last_waiver_check?: T;
+  request_method?: T;
+  provider?: T;
+  payment_ref?: T;
+  portone_transaction_ref?: T;
+  request_note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exchange-rate_select".
+ */
+export interface ExchangeRateSelect<T extends boolean = true> {
+  date?: T;
+  rates?:
+    | T
+    | {
+        currency?: T;
+        rate?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "currency_select".
+ */
+export interface CurrencySelect<T extends boolean = true> {
+  name?: T;
+  slugKey?: T;
+  hashId?: T;
+  slugLock?: T;
+  slug?: T;
+  kr_nm?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "holidays_select".
+ */
+export interface HolidaysSelect<T extends boolean = true> {
+  dates?:
+    | T
+    | {
+        date?: T;
+        name?: T;
+        id?: T;
+      };
+  period?: T;
+  country?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-category_select".
+ */
+export interface ProductCategorySelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-sub_select".
+ */
+export interface ProductSubSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-drops_select".
+ */
+export interface ProductDropsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  active?: T;
+  kicker?: T;
+  lede?: T;
+  hero_media?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "addresses_select".
+ */
+export interface AddressesSelect<T extends boolean = true> {
+  customer?: T;
+  title?: T;
+  firstName?: T;
+  lastName?: T;
+  company?: T;
+  addressLine1?: T;
+  addressLine2?: T;
+  city?: T;
+  state?: T;
+  postalCode?: T;
+  country?: T;
+  phone?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variants_select".
+ */
+export interface VariantsSelect<T extends boolean = true> {
+  title?: T;
+  product?: T;
+  options?: T;
+  priceInKRWEnabled?: T;
+  priceInKRW?: T;
+  priceInUSDEnabled?: T;
+  priceInUSD?: T;
+  priceInEUREnabled?: T;
+  priceInEUR?: T;
+  priceInJPYEnabled?: T;
+  priceInJPY?: T;
+  active?: T;
+  identity_locked?: T;
+  sku?: T;
+  label?: T;
+  option_key?: T;
+  barcode?: T;
+  weight_grams?: T;
+  length_mm?: T;
+  width_mm?: T;
+  height_mm?: T;
+  tax_category?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantTypes_select".
+ */
+export interface VariantTypesSelect<T extends boolean = true> {
+  label?: T;
+  name?: T;
+  options?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantOptions_select".
+ */
+export interface VariantOptionsSelect<T extends boolean = true> {
+  _variantOptions_options_order?: T;
+  variantType?: T;
+  label?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  enableVariants?: T;
+  variantTypes?: T;
+  variants?: T;
+  priceInKRWEnabled?: T;
+  priceInKRW?: T;
+  priceInUSDEnabled?: T;
+  priceInUSD?: T;
+  priceInEUREnabled?: T;
+  priceInEUR?: T;
+  priceInJPYEnabled?: T;
+  priceInJPY?: T;
+  name?: T;
+  slug?: T;
+  active?: T;
+  storefront?: T;
+  drop?: T;
+  category?: T;
+  summary?: T;
+  description?: T;
+  details?: T;
+  care?: T;
+  shipping_returns?: T;
+  hero_media?: T;
+  gallery?: T;
+  compare_at_amount?: T;
+  max_order_quantity?: T;
+  min_order_quantity?: T;
+  standard_enabled?: T;
+  request_to_order_enabled?: T;
+  private_order_enabled?: T;
+  private_preset_price_enabled?: T;
+  private_unit_amount?: T;
+  private_tier_gate?: T;
+  sort?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        product?: T;
+        variant?: T;
+        quantity?: T;
+        mode?: T;
+        campaign?: T;
+        schema_version?: T;
+        product_name?: T;
+        product_slug?: T;
+        sku?: T;
+        sku_label?: T;
+        options?: T;
+        currency?: T;
+        unit_amount?: T;
+        line_amount?: T;
+        weight_grams?: T;
+        length_mm?: T;
+        width_mm?: T;
+        height_mm?: T;
+        tax_category?: T;
+        id?: T;
+      };
+  secret?: T;
+  customer?: T;
+  purchasedAt?: T;
+  status?: T;
+  subtotal?: T;
+  currency?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        product?: T;
+        variant?: T;
+        quantity?: T;
+        mode?: T;
+        campaign?: T;
+        schema_version?: T;
+        product_name?: T;
+        product_slug?: T;
+        sku?: T;
+        sku_label?: T;
+        options?: T;
+        currency?: T;
+        unit_amount?: T;
+        line_amount?: T;
+        weight_grams?: T;
+        length_mm?: T;
+        width_mm?: T;
+        height_mm?: T;
+        tax_category?: T;
+        id?: T;
+      };
+  shippingAddress?:
+    | T
+    | {
+        title?: T;
+        firstName?: T;
+        lastName?: T;
+        company?: T;
+        addressLine1?: T;
+        addressLine2?: T;
+        city?: T;
+        state?: T;
+        postalCode?: T;
+        country?: T;
+        phone?: T;
+      };
+  customer?: T;
+  customerEmail?: T;
+  transactions?: T;
+  status?: T;
+  amount?: T;
+  currency?: T;
+  order_ref?: T;
+  order_mode?: T;
+  lifecycle_status?: T;
+  payment_status?: T;
+  fulfillment_status?: T;
+  campaign?: T;
+  quote?: T;
+  contact?: T;
+  line_snapshot_version?: T;
+  paid_at?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions_select".
+ */
+export interface TransactionsSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        product?: T;
+        variant?: T;
+        quantity?: T;
+        mode?: T;
+        campaign?: T;
+        schema_version?: T;
+        product_name?: T;
+        product_slug?: T;
+        sku?: T;
+        sku_label?: T;
+        options?: T;
+        currency?: T;
+        unit_amount?: T;
+        line_amount?: T;
+        weight_grams?: T;
+        length_mm?: T;
+        width_mm?: T;
+        height_mm?: T;
+        tax_category?: T;
+        id?: T;
+      };
+  paymentMethod?: T;
+  portone?:
+    | T
+    | {
+        paymentId?: T;
+        transactionId?: T;
+        channel?: T;
+        method?: T;
+      };
+  billingAddress?:
+    | T
+    | {
+        title?: T;
+        firstName?: T;
+        lastName?: T;
+        company?: T;
+        addressLine1?: T;
+        addressLine2?: T;
+        city?: T;
+        state?: T;
+        postalCode?: T;
+        country?: T;
+        phone?: T;
+      };
+  status?: T;
+  customer?: T;
+  customerEmail?: T;
+  order?: T;
+  cart?: T;
+  amount?: T;
+  currency?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4743,37 +5877,35 @@ export interface TaskCreateCollectionExport {
     name: string;
     batchSize?: number | null;
     collectionSlug:
-      | "users"
-      | "assets"
-      | "categories"
-      | "media"
-      | "tags"
-      | "notifications"
-      | "pages"
-      | "posts"
-      | "userMedia"
-      | "email-quota"
-      | "deferred-emails"
-      | "profile"
-      | "albums"
-      | "tracks"
-      | "playlists"
-      | "follows"
-      | "bookmarks"
-      | "userViews"
-      | "surf"
-      | "citations"
-      | "responses"
-      | "compilations"
-      | "commerce-products"
-      | "commerce-orders"
-      | "admins"
-      | "exports"
-      | "imports";
-    drafts?: ("yes" | "no") | null;
+      | 'users'
+      | 'assets'
+      | 'categories'
+      | 'media'
+      | 'tags'
+      | 'notifications'
+      | 'pages'
+      | 'posts'
+      | 'userMedia'
+      | 'email-quota'
+      | 'deferred-emails'
+      | 'profile'
+      | 'albums'
+      | 'tracks'
+      | 'playlists'
+      | 'follows'
+      | 'bookmarks'
+      | 'userViews'
+      | 'surf'
+      | 'citations'
+      | 'responses'
+      | 'compilations'
+      | 'admins'
+      | 'exports'
+      | 'imports';
+    drafts?: ('yes' | 'no') | null;
     exportCollection: string;
     fields?: string[] | null;
-    format: "csv" | "json";
+    format: 'csv' | 'json';
     limit?: number | null;
     locale?: string | null;
     maxLimit?: number | null;

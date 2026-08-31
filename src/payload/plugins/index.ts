@@ -36,8 +36,10 @@ import { UserMedia } from "../collections/UserMedia";
 import { imageSearchPlugin } from "./image-search";
 import { LikesPlugin } from "./Likes";
 import { userFieldOrganizerPlugin } from "./userField";
+import { hideawayEcommercePlugin } from "./ecommerce/plugin";
 import { MembershipPlugin } from "./membership/plugin";
-import { TicketingPlugin } from "./ticketing/plugin";
+import { MerchandisingPlugin } from "./merchandising/plugin";
+import { InventoryPlugin } from "./inventory/plugin";
 //"tracks"|"albums"|"playlists"|
 export type EOCollectionSlug = Extract<
   CollectionSlug,
@@ -389,4 +391,14 @@ export const plugins: Plugin[] = [
       "citations"
     ]
   }),
+  MembershipPlugin({
+    enabled: true
+  }),
+  MerchandisingPlugin({
+    enabled: true
+  }),
+  InventoryPlugin({
+    enabled: false
+  }),
+  hideawayEcommercePlugin
 ];

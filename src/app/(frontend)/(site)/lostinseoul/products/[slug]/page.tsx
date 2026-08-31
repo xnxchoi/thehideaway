@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
-import { getLostHomeData } from "@/lib/lost-commerce/queries";
 import {
-  getCommerceFragrancePresentation,
-  getCommerceProductPresentation
-} from "@/lib/commerce/product-presentation";
+  getLostFragranceData,
+  getLostHomeData,
+  getLostProductBySlug
+} from "@/lib/lost-commerce/queries";
 import { shouldEnableLostProductStage } from "../../fragrance/product-stage/product-stage-gate";
 import { LostProductDetailClient } from "./product.client";
+
+export const instant = false;
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -17,8 +20,9 @@ type PageProps = {
 export async function generateMetadata({
   params
 }: PageProps): Promise<Metadata> {
+  await connection();
   const { slug } = await params;
-  const product = await getCommerceProductPresentation(slug).catch(() => null);
+  const product = await getLostProductBySlug(slug).catch(() => null);
   return {
     title: product ? `${product.name} — LOSTINSEOUL` : "LOSTINSEOUL",
     description: product?.summary ?? "LOSTINSEOUL product detail."
@@ -26,12 +30,13 @@ export async function generateMetadata({
 }
 
 export default async function LostProductPage({ params }: PageProps) {
+  await connection();
   const { slug } = await params;
-  const product = await getCommerceProductPresentation(slug).catch(() => null);
+  const product = await getLostProductBySlug(slug).catch(() => null);
   if (!product) notFound();
   const [data, fragrance] = await Promise.all([
     getLostHomeData().catch(() => ({ drops: [], products: [] })),
-    getCommerceFragrancePresentation().catch(() => null)
+    getLostFragranceData().catch(() => null)
   ]);
   const relatedProducts = data.products
     .filter((item) => item.id !== product.id)
@@ -42,7 +47,7 @@ export default async function LostProductPage({ params }: PageProps) {
     productSlug: slug,
     fragranceSlug: fragrance?.slug
   });
-  const checkoutEnabled = false;
+  const checkoutEnabled = true;
 
   const [t, tCommerce] = await Promise.all([
     getTranslations("LOSTINSEOUL"),

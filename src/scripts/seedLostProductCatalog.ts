@@ -1,7 +1,6 @@
 const unavailableDraft = {
   active: false,
-  currency: "KRW" as const,
-  unit_amount: 0,
+  priceInKRWEnabled: false,
   standard_enabled: false,
   request_to_order_enabled: false,
   private_order_enabled: false,

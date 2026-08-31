@@ -1,6 +1,7 @@
 import config from "@payload-config";
 import { getPayload } from "payload";
-import type { CommerceProduct } from "@/payload-types";
+import type { Product } from "@/payload-types";
+import { catalogUnitAmount } from "@/payload/plugins/ecommerce/catalog-money";
 import { formatLostMoney } from "./format";
 import { getStorefrontInventoryAvailability } from "./storefront-inventory-availability";
 import {
@@ -49,7 +50,7 @@ export type LostCampaignView = {
 };
 
 export type LostProductDetail = LostProductCard & {
-  description?: CommerceProduct["description"];
+  description?: Product["description"];
   details?: string | null;
   care?: string | null;
   shippingReturns?: string | null;
@@ -67,13 +68,13 @@ function nullableString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
-function richTextValue(value: unknown): CommerceProduct["description"] {
+function richTextValue(value: unknown): Product["description"] {
   if (!value || typeof value !== "object") return null;
   const root = (value as { root?: unknown }).root;
   if (!root || typeof root !== "object") return null;
   const children = (root as { children?: unknown }).children;
   if (!Array.isArray(children) || children.length === 0) return null;
-  return value as NonNullable<CommerceProduct["description"]>;
+  return value as NonNullable<Product["description"]>;
 }
 
 function numberValue(value: unknown, fallback = 0): number {
@@ -232,9 +233,7 @@ function cardPrice(
       ? [variant.amount]
       : []
   );
-  const unitAmount =
-    amounts[0] ??
-    (isPositiveAmount(product.unit_amount) ? product.unit_amount : 0);
+  const unitAmount = amounts[0] ?? catalogUnitAmount(product);
   const distinctAmounts = [...new Set(amounts)].sort((a, b) => a - b);
   const price =
     distinctAmounts.length > 1
@@ -300,7 +299,7 @@ function card(
         )
     : [];
   const galleryImage = galleryImages[0];
-  const currency = stringValue(product.currency, "KRW") as LostCurrency;
+  const currency = "KRW" as LostCurrency;
   const { unitAmount, price } = cardPrice(product, variants, currency);
   const productModes = modes(variants);
   const primaryImage = isImage(hero) && hero.url ? hero : galleryImage;
@@ -359,14 +358,18 @@ async function activeSkusByProduct(
 
   while (true) {
     const result = await payload.find({
-      collection: "product-variants",
-      depth: 0,
+      collection: "variants",
+      depth: 2,
       limit,
       overrideAccess: true,
       page,
       sort: "sort",
       where: {
-        and: [{ active: { equals: true } }, { product: { in: ids } }]
+        and: [
+          { active: { equals: true } },
+          { _status: { equals: "published" } },
+          { product: { in: ids } }
+        ]
       }
     });
     documents.push(...(result.docs as unknown as AnyDoc[]));
@@ -394,23 +397,43 @@ async function activeSkusByProduct(
   );
 }
 
+function inventoryLedgerRegistered(
+  payload: Awaited<ReturnType<typeof getPayload>>
+): boolean {
+  return Boolean(
+    payload.collections &&
+      "inventory-levels" in payload.collections &&
+      "stock-locations" in payload.collections
+  );
+}
+
 async function storefrontAvailability(
   payload: Awaited<ReturnType<typeof getPayload>>,
   skuMap: ReadonlyMap<string, readonly NormalizedLostProductVariant[]>
 ): Promise<ReadonlyMap<string, number>> {
+  const skuIds = [...skuMap.values()].flatMap((variants) =>
+    variants.map((variant) => variant.id)
+  );
+  if (!inventoryLedgerRegistered(payload)) {
+    return new Map(skuIds.map((id) => [id, 1]));
+  }
   return getStorefrontInventoryAvailability({
     payload,
     paymentProvider: "portone",
-    skuIds: [...skuMap.values()].flatMap((variants) =>
-      variants.map((variant) => variant.id)
-    )
+    skuIds
   });
 }
 
 async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
   const payload = await getPayload({ config });
+  if (
+    !payload.collections ||
+    !("product-order-campaigns" in payload.collections)
+  ) {
+    return null;
+  }
   const result = await payload.find({
-    collection: "product-order-campaigns",
+    collection: "product-order-campaigns" as never,
     depth: 0,
     pagination: false,
     overrideAccess: true,
@@ -423,7 +446,9 @@ async function activeCampaignFor(productId: string): Promise<AnyDoc | null> {
       ]
     }
   });
-  return (result.docs as AnyDoc[]).find(isCampaignCheckoutActionable) ?? null;
+  return (result.docs as unknown as AnyDoc[]).find(
+    isCampaignCheckoutActionable
+  ) ?? null;
 }
 
 export async function getLostHomeData(): Promise<{
@@ -441,6 +466,7 @@ export async function getLostHomeData(): Promise<{
       where: {
         and: [
           { active: { equals: true } },
+          { _status: { equals: "published" } },
           { storefront: { equals: "lostinseoul" } }
         ]
       }
@@ -455,7 +481,7 @@ export async function getLostHomeData(): Promise<{
     })
   ]);
 
-  const productDocs = productsResult.docs as AnyDoc[];
+  const productDocs = productsResult.docs as unknown as AnyDoc[];
   const skuMap = await activeSkusByProduct(payload, productDocs);
   const availableToPromiseBySku = await storefrontAvailability(payload, skuMap);
   const products = await Promise.all(
@@ -473,7 +499,7 @@ export async function getLostHomeData(): Promise<{
 
   return {
     products,
-    drops: (dropsResult.docs as AnyDoc[]).map(normalizeLostDropCard)
+    drops: (dropsResult.docs as unknown as AnyDoc[]).map(normalizeLostDropCard)
   };
 }
 
@@ -490,11 +516,12 @@ export async function getLostProductBySlug(
       and: [
         { slug: { equals: slug } },
         { active: { equals: true } },
+        { _status: { equals: "published" } },
         { storefront: { equals: "lostinseoul" } }
       ]
     }
   });
-  const product = result.docs[0] as AnyDoc | undefined;
+  const product = result.docs[0] as unknown as AnyDoc | undefined;
   if (!product) return null;
   const skuMap = await activeSkusByProduct(payload, [product]);
   const availableToPromiseBySku = await storefrontAvailability(payload, skuMap);
@@ -550,11 +577,12 @@ export async function getLostFragranceData(): Promise<LostProductDetail | null> 
     where: {
       and: [
         { active: { equals: true } },
+        { _status: { equals: "published" } },
         { storefront: { equals: "lostinseoul" } }
       ]
     }
   });
-  const fragrance = (result.docs as AnyDoc[]).find((product) =>
+  const fragrance = (result.docs as unknown as AnyDoc[]).find((product) =>
     categoryMatchesFragrance(product.category)
   );
   const slug = fragrance ? stringValue(fragrance.slug) : "";
@@ -589,7 +617,7 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
       where: { active: { equals: true } }
     })
   ]);
-  const drop = dropResult.docs[0] as AnyDoc | undefined;
+  const drop = dropResult.docs[0] as unknown as AnyDoc | undefined;
   if (!drop) return null;
 
   const productResult = await payload.find({
@@ -601,13 +629,14 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
     where: {
       and: [
         { active: { equals: true } },
+        { _status: { equals: "published" } },
         { storefront: { equals: "lostinseoul" } },
         { drop: { equals: drop.id } }
       ]
     }
   });
 
-  const productDocs = productResult.docs as AnyDoc[];
+  const productDocs = productResult.docs as unknown as AnyDoc[];
   const skuMap = await activeSkusByProduct(payload, productDocs);
   const availableToPromiseBySku = await storefrontAvailability(payload, skuMap);
   const products = await Promise.all(
@@ -628,6 +657,6 @@ export async function getLostCollectionBySlug(slug: string): Promise<{
     kicker: nullableString(drop.kicker) ?? undefined,
     lede: nullableString(drop.lede) ?? undefined,
     products,
-    drops: (dropsResult.docs as AnyDoc[]).map(normalizeLostDropCard)
+    drops: (dropsResult.docs as unknown as AnyDoc[]).map(normalizeLostDropCard)
   };
 }

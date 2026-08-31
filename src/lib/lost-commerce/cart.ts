@@ -55,7 +55,7 @@ async function resolveSku(
   if (!line.skuId) throw new Error("sku-required");
 
   const sku = (await payload.findByID({
-    collection: "product-variants",
+    collection: "variants",
     id: line.skuId,
     depth: 0,
     disableErrors: true,

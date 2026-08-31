@@ -3,6 +3,7 @@ import { getPayload } from "payload";
 
 import { formatLostMoney } from "@/lib/lost-commerce/format";
 import type { LostProductDetail } from "@/lib/lost-commerce/queries";
+import { catalogUnitAmount } from "@/payload/plugins/ecommerce/catalog-money";
 
 type MediaView = { url: string; alt?: string | null };
 
@@ -42,7 +43,7 @@ function toPresentationProduct(
   const images = [hero, ...gallery].filter(
     (item): item is MediaView => item !== null
   );
-  const unitAmount = Number(doc.unit_amount);
+  const unitAmount = catalogUnitAmount(doc);
 
   return Object.freeze({
     id: String(doc.id),
@@ -77,12 +78,17 @@ export async function getCommerceProductPresentation(
 ): Promise<LostProductDetail | null> {
   const payload = await getPayload({ config });
   const result = await payload.find({
-    collection: "commerce-products",
+    collection: "products",
     depth: 1,
     limit: 1,
     overrideAccess: true,
     where: {
-      and: [{ slug: { equals: slug } }, { active: { equals: true } }]
+      and: [
+        { slug: { equals: slug } },
+        { active: { equals: true } },
+        { _status: { equals: "published" } },
+        { storefront: { equals: "lostinseoul" } }
+      ]
     }
   });
   const doc = result.docs[0] as unknown as Record<string, unknown> | undefined;
@@ -92,12 +98,18 @@ export async function getCommerceProductPresentation(
 export async function getCommerceFragrancePresentation(): Promise<LostProductDetail | null> {
   const payload = await getPayload({ config });
   const result = await payload.find({
-    collection: "commerce-products",
+    collection: "products",
     depth: 1,
     limit: 24,
     overrideAccess: true,
     sort: "sort",
-    where: { active: { equals: true } }
+    where: {
+      and: [
+        { active: { equals: true } },
+        { _status: { equals: "published" } },
+        { storefront: { equals: "lostinseoul" } }
+      ]
+    }
   });
   const doc = (result.docs as unknown as Record<string, unknown>[]).find(
     (product) =>

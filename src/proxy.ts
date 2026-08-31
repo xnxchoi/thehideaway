@@ -31,9 +31,7 @@ const RETIRED_COMMERCE_API_PREFIXES = [
   "/api/invoice",
   "/api/lost/cart",
   "/api/lost/checkout",
-  "/api/lost/private-quotes",
-  "/api/lost/inventory",
-  "/api/lost/webhooks/portone"
+  "/api/commerce"
 ] as const;
 
 function isRetiredCommerceApiPath(pathname: string): boolean {
@@ -127,7 +125,8 @@ function isLostGateExemptPath(pathname: string): boolean {
   return (
     isLostGatePath(pathname) ||
     pathname === "/api/health" ||
-    pathname === "/api/commerce/payments/card/webhook"
+    pathname === "/api/payments/portone/webhooks" ||
+    pathname === "/api/lost/webhooks/portone"
   );
 }
 

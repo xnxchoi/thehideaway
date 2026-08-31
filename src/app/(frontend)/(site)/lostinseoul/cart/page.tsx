@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
 import { LostCartPageClient } from "./page.client";
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "LOSTINSEOUL cart",
@@ -9,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function LostCartPage() {
+  await connection();
   const t = await getTranslations("LOSTINSEOUL");
   return (
     <RPage slug={["lostinseoul", "cart"]} theme="dark" type="pages">

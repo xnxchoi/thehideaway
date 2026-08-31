@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { LostCartLineInput } from "./types";
+import { useCallback, useMemo } from "react";
+import { useCart } from "@payloadcms/plugin-ecommerce/client/react";
 
-const STORAGE_KEY = "lostinseoul.cart.v2";
+import type { LostCartLineInput } from "./types";
+import {
+  mapPluginCartLines,
+  pluginCartAddItem
+} from "@/payload/plugins/ecommerce/client/map-cart-lines";
 
 export type LostCartLineClient = LostCartLineInput & {
+  itemId?: string;
   productName: string;
   productSlug: string;
   variantLabel?: string;
@@ -14,30 +19,6 @@ export type LostCartLineClient = LostCartLineInput & {
   currency: "KRW" | "USD" | "JPY" | "EUR";
   imageUrl?: string | null;
 };
-
-function keyFor(line: LostCartLineInput): string {
-  return [
-    line.productId,
-    line.skuId,
-    line.mode,
-    line.campaignId ?? ""
-  ].join(":");
-}
-
-function readCart(): LostCartLineClient[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeCart(lines: LostCartLineClient[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
-  window.dispatchEvent(new CustomEvent("lostinseoul-cart"));
-}
 
 export function serializeLostCartLines(
   lines: LostCartLineClient[]
@@ -51,68 +32,31 @@ export function serializeLostCartLines(
   }));
 }
 
-async function syncCart(lines: LostCartLineClient[]) {
-  await fetch("/api/lost/cart", {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      lines: serializeLostCartLines(lines)
-    })
-  }).catch(() => undefined);
-}
-
 export function useLostCart() {
-  const [lines, setLines] = useState<LostCartLineClient[]>([]);
-
-  useEffect(() => {
-    setLines(readCart());
-    const onStorage = () => setLines(readCart());
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("lostinseoul-cart", onStorage);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("lostinseoul-cart", onStorage);
-    };
-  }, []);
-
-  const replace = useCallback((next: LostCartLineClient[]) => {
-    writeCart(next);
-    setLines(next);
-    void syncCart(next);
-  }, []);
+  const { addItem, cart, clearCart, isLoading, removeItem } = useCart();
+  const lines = useMemo(
+    () => mapPluginCartLines(cart, String(cart?.currency ?? "KRW")),
+    [cart]
+  );
+  const total =
+    typeof cart?.subtotal === "number"
+      ? cart.subtotal
+      : lines.reduce((sum, line) => sum + line.unitAmount * line.quantity, 0);
+  const count = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   const add = useCallback(
-    (line: LostCartLineClient) => {
-      const current = readCart();
-      const existing = current.findIndex(
-        (item) => keyFor(item) === keyFor(line)
-      );
-      const next =
-        existing >= 0
-          ? current.map((item, index) =>
-              index === existing
-                ? { ...item, quantity: item.quantity + line.quantity }
-                : item
-            )
-          : [...current, line];
-      replace(next);
-    },
-    [replace]
+    (line: LostCartLineClient) =>
+      addItem(pluginCartAddItem(line) as never, line.quantity),
+    [addItem]
   );
 
   const remove = useCallback(
-    (line: LostCartLineClient) => {
-      replace(readCart().filter((item) => keyFor(item) !== keyFor(line)));
-    },
-    [replace]
+    (line: LostCartLineClient) =>
+      line.itemId ? removeItem(line.itemId) : Promise.resolve(),
+    [removeItem]
   );
 
-  const clear = useCallback(() => replace([]), [replace]);
+  const clear = useCallback(() => clearCart(), [clearCart]);
 
-  const total = useMemo(
-    () => lines.reduce((sum, line) => sum + line.unitAmount * line.quantity, 0),
-    [lines]
-  );
-
-  return { lines, add, remove, clear, total, count: lines.length };
+  return { lines, add, remove, clear, total, count, isLoading };
 }

@@ -1,5 +1,6 @@
 import config from "@payload-config";
 import { headers as nextHeaders } from "next/headers";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getPayload } from "payload";
@@ -12,7 +13,10 @@ type Props = {
   searchParams: Promise<{ order?: string }>;
 };
 
+export const instant = false;
+
 export default async function LostPaymentPendingPage({ searchParams }: Props) {
+  await connection();
   const t = await getTranslations("LOSTINSEOUL.payment");
   const { order } = await searchParams;
   const session = await getServerSession(await nextHeaders());
@@ -20,23 +24,24 @@ export default async function LostPaymentPendingPage({ searchParams }: Props) {
 
   const payload = await getPayload({ config });
   const orders = await payload.find({
-    collection: "commerce-orders" as never,
+    collection: "orders",
     depth: 0,
     limit: 1,
     overrideAccess: true,
     where: {
       and: [
-        { ref: { equals: order } },
-        { user: { equals: String(session.user.id) } }
+        { order_ref: { equals: order } },
+        { customer: { equals: String(session.user.id) } }
       ]
     }
   });
   const ownedOrder = orders.docs[0] as
-    { payment_method?: string; payment_status?: string } | undefined;
+    | { payment_status?: string; lifecycle_status?: string }
+    | undefined;
   if (
     !ownedOrder ||
-    ownedOrder.payment_method !== "bank_transfer" ||
-    ownedOrder.payment_status !== "pending"
+    ownedOrder.payment_status === "paid" ||
+    ownedOrder.lifecycle_status === "paid"
   ) {
     notFound();
   }

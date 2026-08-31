@@ -21,8 +21,6 @@ import { CollectionConfig } from "payload";
 import { Compilations } from "./Compilations";
 import { EmailQuota } from "@/payload/collections/EmailQuota";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
-import { CommerceOrders } from "@/payload/collections/commerce/Orders";
-import { CommerceProducts } from "@/payload/collections/commerce/Products";
 
 export const collections: CollectionConfig[] = [
   Users,
@@ -46,7 +44,5 @@ export const collections: CollectionConfig[] = [
   Surfs,
   Citations,
   Comments,
-  Compilations,
-  CommerceProducts,
-  CommerceOrders
+  Compilations
 ];

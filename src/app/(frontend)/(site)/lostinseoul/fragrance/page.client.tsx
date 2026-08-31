@@ -237,22 +237,25 @@ export function LostFragranceChapter({
       needsProductPage
     )
       return;
-    add({
-      campaignId:
-        mode === "request_to_order" ? product.campaign?.id : undefined,
-      currency: product.currency,
-      imageUrl: product.imageUrl,
-      mode,
-      price: displayedPrice,
-      productId: product.id,
-      productName: product.name,
-      productSlug: product.slug,
-      quantity: 1,
-      unitAmount,
-      skuId: primaryVariant.id,
-      variantLabel: primaryVariant.label
-    });
-    setAdded(true);
+    void Promise.resolve(
+      add({
+        campaignId:
+          mode === "request_to_order" ? product.campaign?.id : undefined,
+        currency: product.currency,
+        imageUrl: product.imageUrl,
+        mode,
+        price: displayedPrice,
+        productId: product.id,
+        productName: product.name,
+        productSlug: product.slug,
+        quantity: 1,
+        unitAmount,
+        skuId: primaryVariant.id,
+        variantLabel: primaryVariant.label
+      })
+    )
+      .then(() => setAdded(true))
+      .catch(() => undefined);
   };
 
   return (
@@ -263,23 +266,17 @@ export function LostFragranceChapter({
           {labels.announcement}
         </LostAnnouncementBar>
         <LostHeader
-          archiveLabel={labels.archiveLabel}
-          backLabel={labels.backLabel}
+
           bagOpen={bagOpen}
-          cartLabel={labels.cartLabel}
-          checkoutLabel={labels.checkoutLabel}
-          clearSearchLabel={labels.clearSearchLabel}
+
           commerceRootRef={commerceRootRef}
           drops={drops}
-          emptyLabel={labels.emptyLabel}
+
           onBagOpenChange={setBagOpen}
-          removeLabel={labels.removeLabel}
-          searchLabel={labels.searchLabel}
-          searchPlaceholder={labels.searchPlaceholder}
+
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          shopLabel={labels.shopLabel}
-          totalLabel={labels.totalLabel}
+
         />
       </div>
       <main
@@ -399,7 +396,7 @@ export function LostFragranceChapter({
                       {canUseActions && needsProductPage ? (
                         <Link
                           className="lost-fragrance-cta"
-                          href={`/products/${product.slug}`}
+                          href={`/lostinseoul/products/${product.slug}`}
                         >
                           {isQuoteOnly
                             ? labels.requestQuoteLabel
@@ -421,7 +418,7 @@ export function LostFragranceChapter({
                       {!needsProductPage || !canUseActions ? (
                         <Link
                           className="lost-fragrance-eyebrow !mb-0 underline-offset-4 hover:underline"
-                          href={`/products/${product.slug}`}
+                          href={`/lostinseoul/products/${product.slug}`}
                         >
                           {reading.reveal.viewObject}
                         </Link>

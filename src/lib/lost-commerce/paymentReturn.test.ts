@@ -1,33 +1,37 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const nextHeaders = vi.fn();
-const settleCardPayment = vi.fn();
-const createPayloadCommerceRepository = vi.fn(() => ({ repository: true }));
-const getPortOnePayment = vi.fn();
+const getPayload = vi.fn();
+const getServerSession = vi.fn();
 
 vi.mock("server-only", () => ({}));
 vi.mock("@payload-config", () => ({ default: {} }));
 vi.mock("next/headers", () => ({ headers: nextHeaders }));
-vi.mock("payload", () => ({ getPayload: vi.fn() }));
-vi.mock("@/lib/auth/getServerSession", () => ({ getServerSession: vi.fn() }));
-vi.mock("@/lib/commerce/settle-payment", () => ({ settleCardPayment }));
-vi.mock("@/lib/commerce/payload-repository", () => ({
-  createPayloadCommerceRepository
-}));
-vi.mock("./verify-payment", () => ({
-  getPortOnePayment,
-  requiresLiveChannel: () => false
-}));
+vi.mock("payload", () => ({ getPayload }));
+vi.mock("@/lib/auth/getServerSession", () => ({ getServerSession }));
 
 describe("verifyReturnedProductPayment", () => {
-  it("accepts distinct order and provider identifiers and returns the stored ref", async () => {
-    const { getPayload } = await import("payload");
-    const { getServerSession } = await import("@/lib/auth/getServerSession");
-    vi.mocked(getPayload).mockResolvedValue({} as never);
-    vi.mocked(getServerSession).mockResolvedValue({
+  beforeEach(() => {
+    nextHeaders.mockReset();
+    getPayload.mockReset();
+    getServerSession.mockReset();
+  });
+
+  it("accepts a plugin order_ref and returns it when paid", async () => {
+    getServerSession.mockResolvedValue({
       user: { id: "user_1", role: "user" }
-    } as never);
-    settleCardPayment.mockResolvedValue({ ref: "ord_1" });
+    });
+    getPayload.mockResolvedValue({
+      find: vi.fn().mockResolvedValue({
+        docs: [
+          {
+            order_ref: "ord_1",
+            customer: "user_1",
+            payment_status: "paid"
+          }
+        ]
+      })
+    });
     const { verifyReturnedProductPayment } = await import("./paymentReturn");
     const result = await verifyReturnedProductPayment({
       orderRef: "ord_1",
@@ -39,8 +43,30 @@ describe("verifyReturnedProductPayment", () => {
       status: 200,
       orderRef: "ord_1"
     });
-    expect(settleCardPayment).toHaveBeenCalledWith(
-      expect.objectContaining({ paymentId: "pay_1", userId: "user_1" })
-    );
+  });
+
+  it("does not distinguish unpaid orders from missing ones", async () => {
+    getServerSession.mockResolvedValue({
+      user: { id: "user_1", role: "user" }
+    });
+    getPayload.mockResolvedValue({
+      find: vi.fn().mockResolvedValue({
+        docs: [
+          {
+            order_ref: "ord_1",
+            customer: "user_1",
+            payment_status: "unpaid"
+          }
+        ]
+      })
+    });
+    const { verifyReturnedProductPayment } = await import("./paymentReturn");
+    await expect(
+      verifyReturnedProductPayment({ paymentId: "pay_1" })
+    ).resolves.toEqual({
+      ok: false,
+      status: 404,
+      reason: "order-not-found"
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  canViewPaidLostOrder,
   productPaymentRecoveryAction,
   productPaymentSubmitAction
 } from "./payment-recovery";
@@ -34,8 +35,58 @@ describe("productPaymentRecoveryAction", () => {
 
   it("reconciles an unresolved attempt instead of creating a new intent", () => {
     expect(
-      productPaymentSubmitAction({ orderRef: "lis_1", paymentId: "lis_1" })
+      productPaymentSubmitAction({
+        orderRef: "lis_1",
+        paymentId: "lis_1",
+        customerEmail: "guest@example.com"
+      })
     ).toBe("reconcile");
     expect(productPaymentSubmitAction(null)).toBe("create");
+  });
+});
+
+describe("canViewPaidLostOrder", () => {
+  it("lets a guest see a paid order that has no customer account", () => {
+    expect(
+      canViewPaidLostOrder({
+        customer: null,
+        paymentStatus: "paid",
+        viewerId: null
+      })
+    ).toBe(true);
+  });
+
+  it("lets a signed-in customer see only their paid order", () => {
+    expect(
+      canViewPaidLostOrder({
+        customer: "user-1",
+        paymentStatus: "paid",
+        viewerId: "user-1"
+      })
+    ).toBe(true);
+    expect(
+      canViewPaidLostOrder({
+        customer: "user-1",
+        paymentStatus: "paid",
+        viewerId: "user-2"
+      })
+    ).toBe(false);
+  });
+
+  it("hides unpaid orders and guest views of account orders", () => {
+    expect(
+      canViewPaidLostOrder({
+        customer: null,
+        paymentStatus: "processing",
+        viewerId: null
+      })
+    ).toBe(false);
+    expect(
+      canViewPaidLostOrder({
+        customer: "user-1",
+        paymentStatus: "paid",
+        viewerId: null
+      })
+    ).toBe(false);
   });
 });

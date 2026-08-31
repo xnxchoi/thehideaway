@@ -4,50 +4,62 @@ import config from "@payload-config";
 import { headers as nextHeaders } from "next/headers";
 import { getPayload } from "payload";
 import { getServerSession } from "@/lib/auth/getServerSession";
-import { createPayloadCommerceRepository } from "@/lib/commerce/payload-repository";
-import { settleCardPayment } from "@/lib/commerce/settle-payment";
-import { getPortOnePayment, requiresLiveChannel } from "./verify-payment";
+import { canViewPaidLostOrder } from "./payment-recovery";
 
 export async function verifyReturnedProductPayment(input: {
   orderRef?: string;
   paymentId?: string;
 }) {
-  const paymentId = input.paymentId;
+  const paymentId = input.paymentId ?? input.orderRef;
   if (!paymentId) {
     return { ok: false, status: 400, reason: "order-not-found" } as const;
   }
 
   const headers = await nextHeaders();
   const session = await getServerSession(headers);
-  if (!session?.user?.id) {
-    return { ok: false, status: 401, reason: "order-not-found" } as const;
-  }
-
   const payload = await getPayload({ config });
   try {
-    const order = await settleCardPayment({
-      repository: createPayloadCommerceRepository(payload),
-      gateway: {
-        getPayment: getPortOnePayment,
-        requireLiveChannel: requiresLiveChannel()
-      },
-      paymentId,
-      userId: String(session.user.id),
-      isAdmin: session.user.role === "admin"
+    const orders = await payload.find({
+      collection: "orders",
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      where: {
+        or: [
+          { order_ref: { equals: paymentId } },
+          ...(input.orderRef && input.orderRef !== paymentId
+            ? [{ order_ref: { equals: input.orderRef } }]
+            : [])
+        ]
+      }
     });
-    if (input.orderRef && input.orderRef !== order.ref) {
+    const order = orders.docs[0] as
+      | {
+          order_ref?: string;
+          customer?: string | { id?: string } | null;
+          payment_status?: string;
+        }
+      | undefined;
+    if (!order?.order_ref) {
       return { ok: false, status: 404, reason: "order-not-found" } as const;
     }
-    return { ok: true, status: 200, orderRef: order.ref } as const;
-  } catch (error) {
-    const reason =
-      error instanceof Error ? error.message : "verify-unavailable";
-    if (reason === "not-paid") {
-      return { ok: false, status: 402, reason: "payment-failed" } as const;
+    const customer =
+      typeof order.customer === "string"
+        ? order.customer
+        : order.customer && typeof order.customer.id === "string"
+          ? order.customer.id
+          : null;
+    if (
+      !canViewPaidLostOrder({
+        customer,
+        paymentStatus: order.payment_status,
+        viewerId: session?.user?.id ? String(session.user.id) : null
+      })
+    ) {
+      return { ok: false, status: 404, reason: "order-not-found" } as const;
     }
-    if (reason === "order-not-found") {
-      return { ok: false, status: 404, reason } as const;
-    }
+    return { ok: true, status: 200, orderRef: order.order_ref } as const;
+  } catch {
     return { ok: false, status: 503, reason: "verify-unavailable" } as const;
   }
 }

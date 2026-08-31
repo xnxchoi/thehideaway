@@ -97,6 +97,13 @@ function eventIdOf(event: Record<string, unknown>): string {
   return String(event.webhook_id ?? event.event_id ?? "");
 }
 
+function collectionMissing(
+  payload: { collections?: Record<string, unknown> },
+  slug: string
+): boolean {
+  return Boolean(payload.collections) && !(slug in payload.collections);
+}
+
 async function finishProviderEvent(
   context: {
     payload: Awaited<ReturnType<typeof getPayload>>;
@@ -108,11 +115,13 @@ async function finishProviderEvent(
   outcomeCode: string
 ): Promise<NextResponse> {
   try {
-    await completeCommerceProviderEvent({
-      ...context,
-      status,
-      outcomeCode
-    });
+    if (context.eventId !== "unlogged") {
+      await completeCommerceProviderEvent({
+        ...context,
+        status,
+        outcomeCode
+      });
+    }
     return response;
   } catch {
     return NextResponse.json(
@@ -220,19 +229,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const webhookPaymentId = webhookPaymentIdOf(event);
   const payload = await getPayload({ config });
   const providerEventId = req.headers.get("webhook-id") ?? eventIdOf(event);
+  const providerEventsRegistered = !collectionMissing(
+    payload,
+    "commerce-provider-events"
+  );
   let providerEvent;
-  try {
-    providerEvent = await recordCommerceProviderEventStandalone({
-      payload,
-      paymentId: webhookPaymentId ?? undefined,
-      event: { ...event, provider_event_id: providerEventId },
-      rawBody
-    });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "provider-event-persistence-failed" },
-      { status: 503 }
-    );
+  if (!providerEventsRegistered) {
+    providerEvent = {
+      recorded: true,
+      duplicate: false,
+      conflict: false,
+      eventId: "unlogged"
+    };
+  } else {
+    try {
+      providerEvent = await recordCommerceProviderEventStandalone({
+        payload,
+        paymentId: webhookPaymentId ?? undefined,
+        event: { ...event, provider_event_id: providerEventId },
+        rawBody
+      });
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "provider-event-persistence-failed" },
+        { status: 503 }
+      );
+    }
   }
   if (providerEvent.conflict) {
     return NextResponse.json(
@@ -251,16 +273,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   let claim;
-  try {
-    claim = await claimCommerceProviderEvent({
-      payload,
-      eventId: providerEvent.eventId
-    });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "provider-event-claim-failed" },
-      { status: 503 }
-    );
+  if (!providerEventsRegistered) {
+    claim = { kind: "acquired" as const, leaseToken: "unlogged" };
+  } else {
+    try {
+      claim = await claimCommerceProviderEvent({
+        payload,
+        eventId: providerEvent.eventId
+      });
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "provider-event-claim-failed" },
+        { status: 503 }
+      );
+    }
   }
   if (claim.kind === "terminal") {
     return NextResponse.json({ ok: true, alreadyProcessed: true });
@@ -397,6 +423,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         NextResponse.json({ ok: true, rejected: result.reason }),
         "rejected",
         result.reason
+      );
+    }
+    if (
+      collectionMissing(payload, "product-orders") ||
+      collectionMissing(payload, "product-payments")
+    ) {
+      return finishProviderEvent(
+        processingContext,
+        NextResponse.json({
+          ok: true,
+          ignored: "proprietary-product-payments-retired"
+        }),
+        "processed",
+        "product-payments-retired"
       );
     }
     const result = await syncProductPayment({

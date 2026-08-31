@@ -467,26 +467,6 @@ export const enum_compilations_visibility = pgEnum(
   "enum_compilations_visibility",
   ["public", "private"]
 );
-export const enum_commerce_products_currency = pgEnum(
-  "enum_commerce_products_currency",
-  ["KRW"]
-);
-export const enum_commerce_orders_currency = pgEnum(
-  "enum_commerce_orders_currency",
-  ["KRW"]
-);
-export const enum_commerce_orders_payment_method = pgEnum(
-  "enum_commerce_orders_payment_method",
-  ["card", "bank_transfer"]
-);
-export const enum_commerce_orders_payment_status = pgEnum(
-  "enum_commerce_orders_payment_status",
-  ["pending", "paid", "failed", "canceled"]
-);
-export const enum_commerce_orders_status = pgEnum(
-  "enum_commerce_orders_status",
-  ["awaiting_payment", "paid", "preparing", "shipped", "completed", "canceled"]
-);
 export const enum_exports_format = pgEnum("enum_exports_format", [
   "csv",
   "json"
@@ -515,6 +495,228 @@ export const enum_imports_status = pgEnum("enum_imports_status", [
 export const enum_redirects_to_type = pgEnum("enum_redirects_to_type", [
   "reference",
   "custom"
+]);
+export const enum_plans_payment_methods = pgEnum("enum_plans_payment_methods", [
+  "card",
+  "bank_transfer",
+  "cash"
+]);
+export const enum_plans_tier = pgEnum("enum_plans_tier", [
+  "resident",
+  "patron",
+  "cofounder"
+]);
+export const enum_plans_validity = pgEnum("enum_plans_validity", [
+  "yearly",
+  "lifetime"
+]);
+export const enum_plans_type = pgEnum("enum_plans_type", ["one_time"]);
+export const enum_plans_state = pgEnum("enum_plans_state", ["active", "ended"]);
+export const enum_invoices_payment_method_method = pgEnum(
+  "enum_invoices_payment_method_method",
+  ["bank_transfer", "cash"]
+);
+export const enum_invoices_status = pgEnum("enum_invoices_status", [
+  "draft",
+  "open",
+  "paid",
+  "void",
+  "pending"
+]);
+export const enum_prices_type = pgEnum("enum_prices_type", [
+  "one_time",
+  "recurring"
+]);
+export const enum_prices_recurring_interval = pgEnum(
+  "enum_prices_recurring_interval",
+  ["day", "week", "month", "year"]
+);
+export const enum_subscriptions_subscription_status = pgEnum(
+  "enum_subscriptions_subscription_status",
+  ["pending", "active", "expired", "canceled"]
+);
+export const enum_subscriptions_request_method = pgEnum(
+  "enum_subscriptions_request_method",
+  ["bank_transfer", "cash", "card"]
+);
+export const enum_subscriptions_provider = pgEnum(
+  "enum_subscriptions_provider",
+  ["manual", "portone"]
+);
+export const enum_addresses_country = pgEnum("enum_addresses_country", [
+  "US",
+  "GB",
+  "CA",
+  "AU",
+  "AT",
+  "BE",
+  "BR",
+  "BG",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HK",
+  "HU",
+  "IN",
+  "IE",
+  "IT",
+  "JP",
+  "LV",
+  "LT",
+  "LU",
+  "MY",
+  "MT",
+  "MX",
+  "NL",
+  "NZ",
+  "NO",
+  "PL",
+  "PT",
+  "RO",
+  "SG",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
+  "CH"
+]);
+export const enum_variants_status = pgEnum("enum_variants_status", [
+  "draft",
+  "published"
+]);
+export const enum__variants_v_version_status = pgEnum(
+  "enum__variants_v_version_status",
+  ["draft", "published"]
+);
+export const enum__variants_v_published_locale = pgEnum(
+  "enum__variants_v_published_locale",
+  ["en", "ko"]
+);
+export const enum_products_private_tier_gate = pgEnum(
+  "enum_products_private_tier_gate",
+  ["anyone", "resident", "patron", "cofounder", "staff"]
+);
+export const enum_products_status = pgEnum("enum_products_status", [
+  "draft",
+  "published"
+]);
+export const enum__products_v_version_private_tier_gate = pgEnum(
+  "enum__products_v_version_private_tier_gate",
+  ["anyone", "resident", "patron", "cofounder", "staff"]
+);
+export const enum__products_v_version_status = pgEnum(
+  "enum__products_v_version_status",
+  ["draft", "published"]
+);
+export const enum__products_v_published_locale = pgEnum(
+  "enum__products_v_published_locale",
+  ["en", "ko"]
+);
+export const enum_carts_items_mode = pgEnum("enum_carts_items_mode", [
+  "standard_purchase",
+  "request_to_order",
+  "private_order"
+]);
+export const enum_carts_items_currency = pgEnum("enum_carts_items_currency", [
+  "KRW",
+  "USD",
+  "JPY",
+  "EUR"
+]);
+export const enum_carts_currency = pgEnum("enum_carts_currency", [
+  "KRW",
+  "USD",
+  "EUR",
+  "JPY"
+]);
+export const enum_orders_items_mode = pgEnum("enum_orders_items_mode", [
+  "standard_purchase",
+  "request_to_order",
+  "private_order"
+]);
+export const enum_orders_items_currency = pgEnum("enum_orders_items_currency", [
+  "KRW",
+  "USD",
+  "JPY",
+  "EUR"
+]);
+export const enum_orders_status = pgEnum("enum_orders_status", [
+  "processing",
+  "completed",
+  "cancelled",
+  "refunded"
+]);
+export const enum_orders_currency = pgEnum("enum_orders_currency", [
+  "KRW",
+  "USD",
+  "EUR",
+  "JPY"
+]);
+export const enum_orders_order_mode = pgEnum("enum_orders_order_mode", [
+  "standard_purchase",
+  "request_to_order",
+  "private_order"
+]);
+export const enum_orders_lifecycle_status = pgEnum(
+  "enum_orders_lifecycle_status",
+  [
+    "draft",
+    "quote_requested",
+    "quote_ready",
+    "pending_payment",
+    "paid",
+    "paid_inventory_review",
+    "committed",
+    "confirmed",
+    "converted",
+    "failed",
+    "canceled",
+    "refunded"
+  ]
+);
+export const enum_orders_payment_status = pgEnum("enum_orders_payment_status", [
+  "unpaid",
+  "pending",
+  "paid",
+  "pending_manual",
+  "failed",
+  "refunded",
+  "partially_refunded"
+]);
+export const enum_orders_fulfillment_status = pgEnum(
+  "enum_orders_fulfillment_status",
+  ["unfulfilled", "reserved", "in_production", "fulfilled", "canceled"]
+);
+export const enum_transactions_items_mode = pgEnum(
+  "enum_transactions_items_mode",
+  ["standard_purchase", "request_to_order", "private_order"]
+);
+export const enum_transactions_items_currency = pgEnum(
+  "enum_transactions_items_currency",
+  ["KRW", "USD", "JPY", "EUR"]
+);
+export const enum_transactions_payment_method = pgEnum(
+  "enum_transactions_payment_method",
+  ["portone"]
+);
+export const enum_transactions_status = pgEnum("enum_transactions_status", [
+  "pending",
+  "succeeded",
+  "failed",
+  "cancelled",
+  "expired",
+  "refunded"
+]);
+export const enum_transactions_currency = pgEnum("enum_transactions_currency", [
+  "KRW",
+  "USD",
+  "EUR",
+  "JPY"
 ]);
 export const enum_payload_jobs_log_task_slug = pgEnum(
   "enum_payload_jobs_log_task_slug",
@@ -5305,178 +5507,6 @@ export const compilations_rels = pgTable(
   ]
 );
 
-export const commerce_products = pgTable(
-  "commerce_products",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    name: varchar("name").notNull(),
-    slug: varchar("slug").notNull(),
-    active: boolean("active").notNull().default(false),
-    unit_amount: numeric("unit_amount", { mode: "number" }).notNull(),
-    currency: enum_commerce_products_currency("currency")
-      .notNull()
-      .default("KRW"),
-    max_quantity: numeric("max_quantity", { mode: "number" })
-      .notNull()
-      .default(1),
-    summary: varchar("summary"),
-    description: jsonb("description"),
-    details: varchar("details"),
-    care: varchar("care"),
-    shipping_returns: varchar("shipping_returns"),
-    hero_media: varchar("hero_media_id").references(() => media.id, {
-      onDelete: "set null"
-    }),
-    sort: numeric("sort", { mode: "number" }).default(0),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("commerce_products_slug_idx").on(columns.slug),
-    index("commerce_products_active_idx").on(columns.active),
-    index("commerce_products_hero_media_idx").on(columns.hero_media),
-    index("commerce_products_sort_idx").on(columns.sort),
-    index("commerce_products_updated_at_idx").on(columns.updatedAt),
-    index("commerce_products_created_at_idx").on(columns.createdAt)
-  ]
-);
-
-export const commerce_products_rels = pgTable(
-  "commerce_products_rels",
-  {
-    id: serial("id").primaryKey(),
-    order: integer("order"),
-    parent: uuid("parent_id").notNull(),
-    path: varchar("path").notNull(),
-    mediaID: varchar("media_id")
-  },
-  (columns) => [
-    index("commerce_products_rels_order_idx").on(columns.order),
-    index("commerce_products_rels_parent_idx").on(columns.parent),
-    index("commerce_products_rels_path_idx").on(columns.path),
-    index("commerce_products_rels_media_id_idx").on(columns.mediaID),
-    foreignKey({
-      columns: [columns["parent"]],
-      foreignColumns: [commerce_products.id],
-      name: "commerce_products_rels_parent_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["mediaID"]],
-      foreignColumns: [media.id],
-      name: "commerce_products_rels_media_fk"
-    }).onDelete("cascade")
-  ]
-);
-
-export const commerce_orders = pgTable(
-  "commerce_orders",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    ref: varchar("ref").notNull(),
-    user: uuid("user_id")
-      .notNull()
-      .references(() => users.id, {
-        onDelete: "set null"
-      }),
-    product: uuid("product_id")
-      .notNull()
-      .references(() => commerce_products.id, {
-        onDelete: "set null"
-      }),
-    product_name_snapshot: varchar("product_name_snapshot").notNull(),
-    product_slug_snapshot: varchar("product_slug_snapshot").notNull(),
-    quantity: numeric("quantity", { mode: "number" }).notNull(),
-    unit_amount_snapshot: numeric("unit_amount_snapshot", {
-      mode: "number"
-    }).notNull(),
-    total_amount: numeric("total_amount", { mode: "number" }).notNull(),
-    currency: enum_commerce_orders_currency("currency")
-      .notNull()
-      .default("KRW"),
-    payment_method:
-      enum_commerce_orders_payment_method("payment_method").notNull(),
-    payment_status: enum_commerce_orders_payment_status("payment_status")
-      .notNull()
-      .default("pending"),
-    status: enum_commerce_orders_status("status")
-      .notNull()
-      .default("awaiting_payment"),
-    contact: jsonb("contact").notNull(),
-    shipping: jsonb("shipping").notNull(),
-    idempotency_key: varchar("idempotency_key").notNull(),
-    request_hash: varchar("request_hash").notNull(),
-    provider_payment_id: varchar("provider_payment_id"),
-    provider_transaction_id: varchar("provider_transaction_id"),
-    bank_transfer_reference: varchar("bank_transfer_reference"),
-    tracking_number: varchar("tracking_number"),
-    paid_at: timestamp("paid_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    shipped_at: timestamp("shipped_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    completed_at: timestamp("completed_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    }),
-    updatedAt: timestamp("updated_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull(),
-    createdAt: timestamp("created_at", {
-      mode: "string",
-      withTimezone: true,
-      precision: 3
-    })
-      .defaultNow()
-      .notNull()
-  },
-  (columns) => [
-    uniqueIndex("commerce_orders_ref_idx").on(columns.ref),
-    index("commerce_orders_user_idx").on(columns.user),
-    index("commerce_orders_product_idx").on(columns.product),
-    index("commerce_orders_payment_status_idx").on(columns.payment_status),
-    index("commerce_orders_status_idx").on(columns.status),
-    uniqueIndex("commerce_orders_idempotency_key_idx").on(
-      columns.idempotency_key
-    ),
-    uniqueIndex("commerce_orders_provider_payment_id_idx").on(
-      columns.provider_payment_id
-    ),
-    index("commerce_orders_provider_transaction_id_idx").on(
-      columns.provider_transaction_id
-    ),
-    uniqueIndex("commerce_orders_bank_transfer_reference_idx").on(
-      columns.bank_transfer_reference
-    ),
-    index("commerce_orders_paid_at_idx").on(columns.paid_at),
-    index("commerce_orders_shipped_at_idx").on(columns.shipped_at),
-    index("commerce_orders_completed_at_idx").on(columns.completed_at),
-    index("commerce_orders_updated_at_idx").on(columns.updatedAt),
-    index("commerce_orders_created_at_idx").on(columns.createdAt)
-  ]
-);
-
 export const admins = pgTable(
   "admins",
   {
@@ -5975,6 +6005,1570 @@ export const search_rels = pgTable(
   ]
 );
 
+export const plans_payment_methods = pgTable(
+  "plans_payment_methods",
+  {
+    order: integer("order").notNull(),
+    parent: uuid("parent_id").notNull(),
+    value: enum_plans_payment_methods("value"),
+    id: uuid("id").defaultRandom().primaryKey()
+  },
+  (columns) => [
+    index("plans_payment_methods_order_idx").on(columns.order),
+    index("plans_payment_methods_parent_idx").on(columns.parent),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [plans.id],
+      name: "plans_payment_methods_parent_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const plans_features = pgTable(
+  "plans_features",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    label: varchar("label").notNull(),
+    included: boolean("included").default(true)
+  },
+  (columns) => [
+    index("plans_features_order_idx").on(columns._order),
+    index("plans_features_parent_id_idx").on(columns._parentID),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [plans.id],
+      name: "plans_features_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const plans = pgTable(
+  "plans",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    tier: enum_plans_tier("tier").notNull().default("resident"),
+    tier_label: varchar("tier_label").notNull().default(""),
+    validity: enum_plans_validity("validity").notNull().default("yearly"),
+    type: enum_plans_type("type").notNull().default("one_time"),
+    description: varchar("description"),
+    seat_limit: numeric("seat_limit", { mode: "number" }),
+    discount_label: varchar("discount_label"),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    state: enum_plans_state("state").notNull().default("active"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("plans_name_idx").on(columns.name),
+    index("plans_sort_idx").on(columns.sort),
+    index("plans_updated_at_idx").on(columns.updatedAt),
+    index("plans_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const invoices_payment_method = pgTable(
+  "invoices_payment_method",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    method: enum_invoices_payment_method_method("method").notNull(),
+    amount: numeric("amount", { mode: "number" }).notNull(),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
+    payment_date: timestamp("payment_date", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    reference: varchar("reference")
+  },
+  (columns) => [
+    index("invoices_payment_method_order_idx").on(columns._order),
+    index("invoices_payment_method_parent_id_idx").on(columns._parentID),
+    index("invoices_payment_method_currency_idx").on(columns.currency),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [invoices.id],
+      name: "invoices_payment_method_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const invoices = pgTable(
+  "invoices",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    invoice_number: numeric("invoice_number", { mode: "number" }).notNull(),
+    client: uuid("client_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    subscription: uuid("subscription_id")
+      .notNull()
+      .references(() => subscriptions.id, {
+        onDelete: "set null"
+      }),
+    plan: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, {
+        onDelete: "set null"
+      }),
+    price: uuid("price_id")
+      .notNull()
+      .references(() => prices.id, {
+        onDelete: "set null"
+      }),
+    amount: numeric("amount", { mode: "number" }).notNull(),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
+    fx_rate_used: numeric("fx_rate_used", { mode: "number" }),
+    status: enum_invoices_status("status").notNull().default("draft"),
+    paid_at: timestamp("paid_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    cycle_start: timestamp("cycle_start", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    cycle_end: timestamp("cycle_end", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    bank_reference: varchar("bank_reference"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("invoices_invoice_number_idx").on(columns.invoice_number),
+    index("invoices_client_idx").on(columns.client),
+    index("invoices_subscription_idx").on(columns.subscription),
+    index("invoices_plan_idx").on(columns.plan),
+    index("invoices_price_idx").on(columns.price),
+    index("invoices_currency_idx").on(columns.currency),
+    index("invoices_status_idx").on(columns.status),
+    index("invoices_updated_at_idx").on(columns.updatedAt),
+    index("invoices_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const prices = pgTable(
+  "prices",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    nickname: varchar("nickname").notNull(),
+    plan: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, {
+        onDelete: "set null"
+      }),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
+    unit_amount: numeric("unit_amount", { mode: "number" }).notNull(),
+    type: enum_prices_type("type").notNull().default("one_time"),
+    recurring_interval:
+      enum_prices_recurring_interval("recurring_interval").default("month"),
+    recurring_interval_count: numeric("recurring_interval_count", {
+      mode: "number"
+    }).default(1),
+    recurring_trial_period_days: numeric("recurring_trial_period_days", {
+      mode: "number"
+    }).default(0),
+    active: boolean("active").notNull().default(true),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("prices_plan_idx").on(columns.plan),
+    index("prices_currency_idx").on(columns.currency),
+    index("prices_active_idx").on(columns.active),
+    index("prices_updated_at_idx").on(columns.updatedAt),
+    index("prices_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    user: uuid("user_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null"
+      }),
+    plan: uuid("plan_id")
+      .notNull()
+      .references(() => plans.id, {
+        onDelete: "set null"
+      }),
+    price: uuid("price_id")
+      .notNull()
+      .references(() => prices.id, {
+        onDelete: "set null"
+      }),
+    amount: numeric("amount", { mode: "number" }).notNull().default(0),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
+    start_date: timestamp("start_date", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    expires_at: timestamp("expires_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    subscription_status: enum_subscriptions_subscription_status(
+      "subscription_status"
+    )
+      .notNull()
+      .default("pending"),
+    paid: boolean("paid").default(false),
+    validity_waived: boolean("validity_waived").default(false),
+    last_waiver_check: timestamp("last_waiver_check", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    request_method: enum_subscriptions_request_method("request_method")
+      .notNull()
+      .default("bank_transfer"),
+    provider: enum_subscriptions_provider("provider")
+      .notNull()
+      .default("manual"),
+    payment_ref: varchar("payment_ref"),
+    portone_transaction_ref: varchar("portone_transaction_ref"),
+    request_note: varchar("request_note"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("subscriptions_user_idx").on(columns.user),
+    index("subscriptions_plan_idx").on(columns.plan),
+    index("subscriptions_price_idx").on(columns.price),
+    index("subscriptions_currency_idx").on(columns.currency),
+    index("subscriptions_expires_at_idx").on(columns.expires_at),
+    index("subscriptions_subscription_status_idx").on(
+      columns.subscription_status
+    ),
+    index("subscriptions_provider_idx").on(columns.provider),
+    uniqueIndex("subscriptions_payment_ref_idx").on(columns.payment_ref),
+    index("subscriptions_portone_transaction_ref_idx").on(
+      columns.portone_transaction_ref
+    ),
+    index("subscriptions_updated_at_idx").on(columns.updatedAt),
+    index("subscriptions_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const exchange_rate_rates = pgTable(
+  "exchange_rate_rates",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    currency: uuid("currency_id")
+      .notNull()
+      .references(() => currency.id, {
+        onDelete: "set null"
+      }),
+    rate: numeric("rate", { mode: "number" }).notNull()
+  },
+  (columns) => [
+    index("exchange_rate_rates_order_idx").on(columns._order),
+    index("exchange_rate_rates_parent_id_idx").on(columns._parentID),
+    index("exchange_rate_rates_currency_idx").on(columns.currency),
+    index("exchange_rate_rates_rate_idx").on(columns.rate),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [exchange_rate.id],
+      name: "exchange_rate_rates_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const exchange_rate = pgTable(
+  "exchange_rate",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    date: timestamp("date", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("exchange_rate_date_idx").on(columns.date),
+    index("exchange_rate_updated_at_idx").on(columns.updatedAt),
+    index("exchange_rate_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const currency = pgTable(
+  "currency",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    slugKey: varchar("slug_key"),
+    hashId: varchar("hash_id").notNull(),
+    slugLock: boolean("slug_lock").notNull(),
+    slug: varchar("slug").notNull(),
+    kr_nm: varchar("kr_nm").notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("currency_name_idx").on(columns.name),
+    index("currency_slug_key_idx").on(columns.slugKey),
+    index("currency_hash_id_idx").on(columns.hashId),
+    uniqueIndex("currency_kr_nm_idx").on(columns.kr_nm),
+    index("currency_updated_at_idx").on(columns.updatedAt),
+    index("currency_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const holidays_dates = pgTable(
+  "holidays_dates",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    date: timestamp("date", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }).notNull(),
+    name: varchar("name").notNull()
+  },
+  (columns) => [
+    index("holidays_dates_order_idx").on(columns._order),
+    index("holidays_dates_parent_id_idx").on(columns._parentID),
+    index("holidays_dates_date_idx").on(columns.date),
+    index("holidays_dates_name_idx").on(columns.name),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [holidays.id],
+      name: "holidays_dates_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const holidays = pgTable(
+  "holidays",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    period: numeric("period", { mode: "number" }).notNull(),
+    country: varchar("country").notNull().default("kr"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("holidays_period_idx").on(columns.period),
+    index("holidays_country_idx").on(columns.country),
+    index("holidays_updated_at_idx").on(columns.updatedAt),
+    index("holidays_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_category = pgTable(
+  "product_category",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    slug: varchar("slug").notNull(),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_category_slug_idx").on(columns.slug),
+    index("product_category_sort_idx").on(columns.sort),
+    index("product_category_updated_at_idx").on(columns.updatedAt),
+    index("product_category_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_sub = pgTable(
+  "product_sub",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: varchar("name").notNull(),
+    slug: varchar("slug").notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_sub_slug_idx").on(columns.slug),
+    index("product_sub_updated_at_idx").on(columns.updatedAt),
+    index("product_sub_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const product_drops = pgTable(
+  "product_drops",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title").notNull(),
+    slug: varchar("slug").notNull(),
+    active: boolean("active").notNull().default(false),
+    kicker: varchar("kicker"),
+    lede: varchar("lede"),
+    hero_media: varchar("hero_media_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    uniqueIndex("product_drops_slug_idx").on(columns.slug),
+    index("product_drops_active_idx").on(columns.active),
+    index("product_drops_hero_media_idx").on(columns.hero_media),
+    index("product_drops_sort_idx").on(columns.sort),
+    index("product_drops_updated_at_idx").on(columns.updatedAt),
+    index("product_drops_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const addresses = pgTable(
+  "addresses",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    customer: uuid("customer_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    title: varchar("title"),
+    firstName: varchar("first_name"),
+    lastName: varchar("last_name"),
+    company: varchar("company"),
+    addressLine1: varchar("address_line1"),
+    addressLine2: varchar("address_line2"),
+    city: varchar("city"),
+    state: varchar("state"),
+    postalCode: varchar("postal_code"),
+    country: enum_addresses_country("country").notNull(),
+    phone: varchar("phone"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("addresses_customer_idx").on(columns.customer),
+    index("addresses_updated_at_idx").on(columns.updatedAt),
+    index("addresses_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const variants = pgTable(
+  "variants",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: varchar("title"),
+    product: uuid("product_id").references(() => products.id, {
+      onDelete: "set null"
+    }),
+    priceInKRWEnabled: boolean("price_in_k_r_w_enabled"),
+    priceInKRW: numeric("price_in_k_r_w", { mode: "number" }),
+    priceInUSDEnabled: boolean("price_in_u_s_d_enabled"),
+    priceInUSD: numeric("price_in_u_s_d", { mode: "number" }),
+    priceInEUREnabled: boolean("price_in_e_u_r_enabled"),
+    priceInEUR: numeric("price_in_e_u_r", { mode: "number" }),
+    priceInJPYEnabled: boolean("price_in_j_p_y_enabled"),
+    priceInJPY: numeric("price_in_j_p_y", { mode: "number" }),
+    active: boolean("active").default(false),
+    identity_locked: boolean("identity_locked").default(false),
+    sku: varchar("sku"),
+    label: varchar("label"),
+    option_key: varchar("option_key"),
+    barcode: varchar("barcode"),
+    weight_grams: numeric("weight_grams", { mode: "number" }),
+    length_mm: numeric("length_mm", { mode: "number" }),
+    width_mm: numeric("width_mm", { mode: "number" }),
+    height_mm: numeric("height_mm", { mode: "number" }),
+    tax_category: varchar("tax_category"),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp("deleted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    _status: enum_variants_status("_status").default("draft")
+  },
+  (columns) => [
+    index("variants_product_idx").on(columns.product),
+    index("variants_active_idx").on(columns.active),
+    uniqueIndex("variants_sku_idx").on(columns.sku),
+    uniqueIndex("variants_option_key_idx").on(columns.option_key),
+    uniqueIndex("variants_barcode_idx").on(columns.barcode),
+    index("variants_sort_idx").on(columns.sort),
+    index("variants_updated_at_idx").on(columns.updatedAt),
+    index("variants_created_at_idx").on(columns.createdAt),
+    index("variants_deleted_at_idx").on(columns.deletedAt),
+    index("variants__status_idx").on(columns._status)
+  ]
+);
+
+export const variants_rels = pgTable(
+  "variants_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    variantOptionsID: uuid("variant_options_id")
+  },
+  (columns) => [
+    index("variants_rels_order_idx").on(columns.order),
+    index("variants_rels_parent_idx").on(columns.parent),
+    index("variants_rels_path_idx").on(columns.path),
+    index("variants_rels_variant_options_id_idx").on(columns.variantOptionsID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [variants.id],
+      name: "variants_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["variantOptionsID"]],
+      foreignColumns: [variant_options.id],
+      name: "variants_rels_variant_options_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const _variants_v = pgTable(
+  "_variants_v",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    parent: uuid("parent_id").references(() => variants.id, {
+      onDelete: "set null"
+    }),
+    version_title: varchar("version_title"),
+    version_product: uuid("version_product_id").references(() => products.id, {
+      onDelete: "set null"
+    }),
+    version_priceInKRWEnabled: boolean("version_price_in_k_r_w_enabled"),
+    version_priceInKRW: numeric("version_price_in_k_r_w", { mode: "number" }),
+    version_priceInUSDEnabled: boolean("version_price_in_u_s_d_enabled"),
+    version_priceInUSD: numeric("version_price_in_u_s_d", { mode: "number" }),
+    version_priceInEUREnabled: boolean("version_price_in_e_u_r_enabled"),
+    version_priceInEUR: numeric("version_price_in_e_u_r", { mode: "number" }),
+    version_priceInJPYEnabled: boolean("version_price_in_j_p_y_enabled"),
+    version_priceInJPY: numeric("version_price_in_j_p_y", { mode: "number" }),
+    version_active: boolean("version_active").default(false),
+    version_identity_locked: boolean("version_identity_locked").default(false),
+    version_sku: varchar("version_sku"),
+    version_label: varchar("version_label"),
+    version_option_key: varchar("version_option_key"),
+    version_barcode: varchar("version_barcode"),
+    version_weight_grams: numeric("version_weight_grams", { mode: "number" }),
+    version_length_mm: numeric("version_length_mm", { mode: "number" }),
+    version_width_mm: numeric("version_width_mm", { mode: "number" }),
+    version_height_mm: numeric("version_height_mm", { mode: "number" }),
+    version_tax_category: varchar("version_tax_category"),
+    version_sort: numeric("version_sort", { mode: "number" }).default(0),
+    version_updatedAt: timestamp("version_updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version_createdAt: timestamp("version_created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version_deletedAt: timestamp("version_deleted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version__status:
+      enum__variants_v_version_status("version__status").default("draft"),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    snapshot: boolean("snapshot"),
+    publishedLocale: enum__variants_v_published_locale("published_locale"),
+    latest: boolean("latest"),
+    autosave: boolean("autosave")
+  },
+  (columns) => [
+    index("_variants_v_parent_idx").on(columns.parent),
+    index("_variants_v_version_version_product_idx").on(
+      columns.version_product
+    ),
+    index("_variants_v_version_version_active_idx").on(columns.version_active),
+    index("_variants_v_version_version_sku_idx").on(columns.version_sku),
+    index("_variants_v_version_version_option_key_idx").on(
+      columns.version_option_key
+    ),
+    index("_variants_v_version_version_barcode_idx").on(
+      columns.version_barcode
+    ),
+    index("_variants_v_version_version_sort_idx").on(columns.version_sort),
+    index("_variants_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_variants_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_variants_v_version_version_deleted_at_idx").on(
+      columns.version_deletedAt
+    ),
+    index("_variants_v_version_version__status_idx").on(
+      columns.version__status
+    ),
+    index("_variants_v_created_at_idx").on(columns.createdAt),
+    index("_variants_v_updated_at_idx").on(columns.updatedAt),
+    index("_variants_v_snapshot_idx").on(columns.snapshot),
+    index("_variants_v_published_locale_idx").on(columns.publishedLocale),
+    index("_variants_v_latest_idx").on(columns.latest),
+    index("_variants_v_autosave_idx").on(columns.autosave)
+  ]
+);
+
+export const _variants_v_rels = pgTable(
+  "_variants_v_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    variantOptionsID: uuid("variant_options_id")
+  },
+  (columns) => [
+    index("_variants_v_rels_order_idx").on(columns.order),
+    index("_variants_v_rels_parent_idx").on(columns.parent),
+    index("_variants_v_rels_path_idx").on(columns.path),
+    index("_variants_v_rels_variant_options_id_idx").on(
+      columns.variantOptionsID
+    ),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [_variants_v.id],
+      name: "_variants_v_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["variantOptionsID"]],
+      foreignColumns: [variant_options.id],
+      name: "_variants_v_rels_variant_options_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const variant_types = pgTable(
+  "variant_types",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    label: varchar("label").notNull(),
+    name: varchar("name").notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp("deleted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+  },
+  (columns) => [
+    index("variant_types_updated_at_idx").on(columns.updatedAt),
+    index("variant_types_created_at_idx").on(columns.createdAt),
+    index("variant_types_deleted_at_idx").on(columns.deletedAt)
+  ]
+);
+
+export const variant_options = pgTable(
+  "variant_options",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    _variantOptions_options_order: varchar("_variantoptions_options_order"),
+    variantType: uuid("variant_type_id")
+      .notNull()
+      .references(() => variant_types.id, {
+        onDelete: "set null"
+      }),
+    label: varchar("label").notNull(),
+    value: varchar("value").notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp("deleted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+  },
+  (columns) => [
+    index("variant_options__variantoptions_options_order_idx").on(
+      columns._variantOptions_options_order
+    ),
+    index("variant_options_variant_type_idx").on(columns.variantType),
+    index("variant_options_updated_at_idx").on(columns.updatedAt),
+    index("variant_options_created_at_idx").on(columns.createdAt),
+    index("variant_options_deleted_at_idx").on(columns.deletedAt)
+  ]
+);
+
+export const products = pgTable(
+  "products",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    enableVariants: boolean("enable_variants"),
+    priceInKRWEnabled: boolean("price_in_k_r_w_enabled"),
+    priceInKRW: numeric("price_in_k_r_w", { mode: "number" }),
+    priceInUSDEnabled: boolean("price_in_u_s_d_enabled"),
+    priceInUSD: numeric("price_in_u_s_d", { mode: "number" }),
+    priceInEUREnabled: boolean("price_in_e_u_r_enabled"),
+    priceInEUR: numeric("price_in_e_u_r", { mode: "number" }),
+    priceInJPYEnabled: boolean("price_in_j_p_y_enabled"),
+    priceInJPY: numeric("price_in_j_p_y", { mode: "number" }),
+    name: varchar("name"),
+    slug: varchar("slug"),
+    active: boolean("active").default(false),
+    storefront: varchar("storefront").default("lostinseoul"),
+    drop: uuid("drop_id").references(() => product_drops.id, {
+      onDelete: "set null"
+    }),
+    category: uuid("category_id").references(() => product_category.id, {
+      onDelete: "set null"
+    }),
+    summary: varchar("summary"),
+    description: jsonb("description"),
+    details: varchar("details"),
+    care: varchar("care"),
+    shipping_returns: varchar("shipping_returns"),
+    hero_media: varchar("hero_media_id").references(() => media.id, {
+      onDelete: "set null"
+    }),
+    compare_at_amount: numeric("compare_at_amount", { mode: "number" }),
+    max_order_quantity: numeric("max_order_quantity", {
+      mode: "number"
+    }).default(1),
+    min_order_quantity: numeric("min_order_quantity", {
+      mode: "number"
+    }).default(1),
+    standard_enabled: boolean("standard_enabled").default(true),
+    request_to_order_enabled: boolean("request_to_order_enabled").default(
+      false
+    ),
+    private_order_enabled: boolean("private_order_enabled").default(false),
+    private_preset_price_enabled: boolean(
+      "private_preset_price_enabled"
+    ).default(false),
+    private_unit_amount: numeric("private_unit_amount", { mode: "number" }),
+    private_tier_gate:
+      enum_products_private_tier_gate("private_tier_gate").default("anyone"),
+    sort: numeric("sort", { mode: "number" }).default(0),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    deletedAt: timestamp("deleted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    _status: enum_products_status("_status").default("draft")
+  },
+  (columns) => [
+    uniqueIndex("products_name_idx").on(columns.name),
+    uniqueIndex("products_slug_idx").on(columns.slug),
+    index("products_active_idx").on(columns.active),
+    index("products_storefront_idx").on(columns.storefront),
+    index("products_drop_idx").on(columns.drop),
+    index("products_category_idx").on(columns.category),
+    index("products_hero_media_idx").on(columns.hero_media),
+    index("products_max_order_quantity_idx").on(columns.max_order_quantity),
+    index("products_min_order_quantity_idx").on(columns.min_order_quantity),
+    index("products_standard_enabled_idx").on(columns.standard_enabled),
+    index("products_request_to_order_enabled_idx").on(
+      columns.request_to_order_enabled
+    ),
+    index("products_private_order_enabled_idx").on(
+      columns.private_order_enabled
+    ),
+    index("products_private_tier_gate_idx").on(columns.private_tier_gate),
+    index("products_sort_idx").on(columns.sort),
+    index("products_updated_at_idx").on(columns.updatedAt),
+    index("products_created_at_idx").on(columns.createdAt),
+    index("products_deleted_at_idx").on(columns.deletedAt),
+    index("products__status_idx").on(columns._status)
+  ]
+);
+
+export const products_rels = pgTable(
+  "products_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    variantTypesID: uuid("variant_types_id"),
+    mediaID: varchar("media_id")
+  },
+  (columns) => [
+    index("products_rels_order_idx").on(columns.order),
+    index("products_rels_parent_idx").on(columns.parent),
+    index("products_rels_path_idx").on(columns.path),
+    index("products_rels_variant_types_id_idx").on(columns.variantTypesID),
+    index("products_rels_media_id_idx").on(columns.mediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [products.id],
+      name: "products_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["variantTypesID"]],
+      foreignColumns: [variant_types.id],
+      name: "products_rels_variant_types_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "products_rels_media_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const _products_v = pgTable(
+  "_products_v",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    parent: uuid("parent_id").references(() => products.id, {
+      onDelete: "set null"
+    }),
+    version_enableVariants: boolean("version_enable_variants"),
+    version_priceInKRWEnabled: boolean("version_price_in_k_r_w_enabled"),
+    version_priceInKRW: numeric("version_price_in_k_r_w", { mode: "number" }),
+    version_priceInUSDEnabled: boolean("version_price_in_u_s_d_enabled"),
+    version_priceInUSD: numeric("version_price_in_u_s_d", { mode: "number" }),
+    version_priceInEUREnabled: boolean("version_price_in_e_u_r_enabled"),
+    version_priceInEUR: numeric("version_price_in_e_u_r", { mode: "number" }),
+    version_priceInJPYEnabled: boolean("version_price_in_j_p_y_enabled"),
+    version_priceInJPY: numeric("version_price_in_j_p_y", { mode: "number" }),
+    version_name: varchar("version_name"),
+    version_slug: varchar("version_slug"),
+    version_active: boolean("version_active").default(false),
+    version_storefront: varchar("version_storefront").default("lostinseoul"),
+    version_drop: uuid("version_drop_id").references(() => product_drops.id, {
+      onDelete: "set null"
+    }),
+    version_category: uuid("version_category_id").references(
+      () => product_category.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    version_summary: varchar("version_summary"),
+    version_description: jsonb("version_description"),
+    version_details: varchar("version_details"),
+    version_care: varchar("version_care"),
+    version_shipping_returns: varchar("version_shipping_returns"),
+    version_hero_media: varchar("version_hero_media_id").references(
+      () => media.id,
+      {
+        onDelete: "set null"
+      }
+    ),
+    version_compare_at_amount: numeric("version_compare_at_amount", {
+      mode: "number"
+    }),
+    version_max_order_quantity: numeric("version_max_order_quantity", {
+      mode: "number"
+    }).default(1),
+    version_min_order_quantity: numeric("version_min_order_quantity", {
+      mode: "number"
+    }).default(1),
+    version_standard_enabled: boolean("version_standard_enabled").default(true),
+    version_request_to_order_enabled: boolean(
+      "version_request_to_order_enabled"
+    ).default(false),
+    version_private_order_enabled: boolean(
+      "version_private_order_enabled"
+    ).default(false),
+    version_private_preset_price_enabled: boolean(
+      "version_private_preset_price_enabled"
+    ).default(false),
+    version_private_unit_amount: numeric("version_private_unit_amount", {
+      mode: "number"
+    }),
+    version_private_tier_gate: enum__products_v_version_private_tier_gate(
+      "version_private_tier_gate"
+    ).default("anyone"),
+    version_sort: numeric("version_sort", { mode: "number" }).default(0),
+    version_updatedAt: timestamp("version_updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version_createdAt: timestamp("version_created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version_deletedAt: timestamp("version_deleted_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    version__status:
+      enum__products_v_version_status("version__status").default("draft"),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    snapshot: boolean("snapshot"),
+    publishedLocale: enum__products_v_published_locale("published_locale"),
+    latest: boolean("latest"),
+    autosave: boolean("autosave")
+  },
+  (columns) => [
+    index("_products_v_parent_idx").on(columns.parent),
+    index("_products_v_version_version_name_idx").on(columns.version_name),
+    index("_products_v_version_version_slug_idx").on(columns.version_slug),
+    index("_products_v_version_version_active_idx").on(columns.version_active),
+    index("_products_v_version_version_storefront_idx").on(
+      columns.version_storefront
+    ),
+    index("_products_v_version_version_drop_idx").on(columns.version_drop),
+    index("_products_v_version_version_category_idx").on(
+      columns.version_category
+    ),
+    index("_products_v_version_version_hero_media_idx").on(
+      columns.version_hero_media
+    ),
+    index("_products_v_version_version_max_order_quantity_idx").on(
+      columns.version_max_order_quantity
+    ),
+    index("_products_v_version_version_min_order_quantity_idx").on(
+      columns.version_min_order_quantity
+    ),
+    index("_products_v_version_version_standard_enabled_idx").on(
+      columns.version_standard_enabled
+    ),
+    index("_products_v_version_version_request_to_order_enabled_idx").on(
+      columns.version_request_to_order_enabled
+    ),
+    index("_products_v_version_version_private_order_enabled_idx").on(
+      columns.version_private_order_enabled
+    ),
+    index("_products_v_version_version_private_tier_gate_idx").on(
+      columns.version_private_tier_gate
+    ),
+    index("_products_v_version_version_sort_idx").on(columns.version_sort),
+    index("_products_v_version_version_updated_at_idx").on(
+      columns.version_updatedAt
+    ),
+    index("_products_v_version_version_created_at_idx").on(
+      columns.version_createdAt
+    ),
+    index("_products_v_version_version_deleted_at_idx").on(
+      columns.version_deletedAt
+    ),
+    index("_products_v_version_version__status_idx").on(
+      columns.version__status
+    ),
+    index("_products_v_created_at_idx").on(columns.createdAt),
+    index("_products_v_updated_at_idx").on(columns.updatedAt),
+    index("_products_v_snapshot_idx").on(columns.snapshot),
+    index("_products_v_published_locale_idx").on(columns.publishedLocale),
+    index("_products_v_latest_idx").on(columns.latest),
+    index("_products_v_autosave_idx").on(columns.autosave)
+  ]
+);
+
+export const _products_v_rels = pgTable(
+  "_products_v_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    variantTypesID: uuid("variant_types_id"),
+    mediaID: varchar("media_id")
+  },
+  (columns) => [
+    index("_products_v_rels_order_idx").on(columns.order),
+    index("_products_v_rels_parent_idx").on(columns.parent),
+    index("_products_v_rels_path_idx").on(columns.path),
+    index("_products_v_rels_variant_types_id_idx").on(columns.variantTypesID),
+    index("_products_v_rels_media_id_idx").on(columns.mediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [_products_v.id],
+      name: "_products_v_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["variantTypesID"]],
+      foreignColumns: [variant_types.id],
+      name: "_products_v_rels_variant_types_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "_products_v_rels_media_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const carts_items = pgTable(
+  "carts_items",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    product: uuid("product_id").references(() => products.id, {
+      onDelete: "set null"
+    }),
+    variant: uuid("variant_id").references(() => variants.id, {
+      onDelete: "set null"
+    }),
+    quantity: numeric("quantity", { mode: "number" }).notNull().default(1),
+    mode: enum_carts_items_mode("mode").notNull().default("standard_purchase"),
+    campaign: varchar("campaign"),
+    schema_version: numeric("schema_version", { mode: "number" }).default(3),
+    product_name: varchar("product_name"),
+    product_slug: varchar("product_slug"),
+    sku: varchar("sku"),
+    sku_label: varchar("sku_label"),
+    options: jsonb("options"),
+    currency: enum_carts_items_currency("currency").default("KRW"),
+    unit_amount: numeric("unit_amount", { mode: "number" }),
+    line_amount: numeric("line_amount", { mode: "number" }),
+    weight_grams: numeric("weight_grams", { mode: "number" }),
+    length_mm: numeric("length_mm", { mode: "number" }),
+    width_mm: numeric("width_mm", { mode: "number" }),
+    height_mm: numeric("height_mm", { mode: "number" }),
+    tax_category: varchar("tax_category")
+  },
+  (columns) => [
+    index("carts_items_order_idx").on(columns._order),
+    index("carts_items_parent_id_idx").on(columns._parentID),
+    index("carts_items_product_idx").on(columns.product),
+    index("carts_items_variant_idx").on(columns.variant),
+    index("carts_items_mode_idx").on(columns.mode),
+    index("carts_items_campaign_idx").on(columns.campaign),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [carts.id],
+      name: "carts_items_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const carts = pgTable(
+  "carts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    secret: varchar("secret"),
+    customer: uuid("customer_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    purchasedAt: timestamp("purchased_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    subtotal: numeric("subtotal", { mode: "number" }),
+    currency: enum_carts_currency("currency").default("KRW"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("carts_secret_idx").on(columns.secret),
+    index("carts_customer_idx").on(columns.customer),
+    index("carts_updated_at_idx").on(columns.updatedAt),
+    index("carts_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const orders_items = pgTable(
+  "orders_items",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    product: uuid("product_id").references(() => products.id, {
+      onDelete: "set null"
+    }),
+    variant: uuid("variant_id").references(() => variants.id, {
+      onDelete: "set null"
+    }),
+    quantity: numeric("quantity", { mode: "number" }).notNull().default(1),
+    mode: enum_orders_items_mode("mode").notNull().default("standard_purchase"),
+    campaign: varchar("campaign"),
+    schema_version: numeric("schema_version", { mode: "number" }).default(3),
+    product_name: varchar("product_name"),
+    product_slug: varchar("product_slug"),
+    sku: varchar("sku"),
+    sku_label: varchar("sku_label"),
+    options: jsonb("options"),
+    currency: enum_orders_items_currency("currency").default("KRW"),
+    unit_amount: numeric("unit_amount", { mode: "number" }),
+    line_amount: numeric("line_amount", { mode: "number" }),
+    weight_grams: numeric("weight_grams", { mode: "number" }),
+    length_mm: numeric("length_mm", { mode: "number" }),
+    width_mm: numeric("width_mm", { mode: "number" }),
+    height_mm: numeric("height_mm", { mode: "number" }),
+    tax_category: varchar("tax_category")
+  },
+  (columns) => [
+    index("orders_items_order_idx").on(columns._order),
+    index("orders_items_parent_id_idx").on(columns._parentID),
+    index("orders_items_product_idx").on(columns.product),
+    index("orders_items_variant_idx").on(columns.variant),
+    index("orders_items_mode_idx").on(columns.mode),
+    index("orders_items_campaign_idx").on(columns.campaign),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [orders.id],
+      name: "orders_items_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    shippingAddress_title: varchar("shipping_address_title"),
+    shippingAddress_firstName: varchar("shipping_address_first_name"),
+    shippingAddress_lastName: varchar("shipping_address_last_name"),
+    shippingAddress_company: varchar("shipping_address_company"),
+    shippingAddress_addressLine1: varchar("shipping_address_address_line1"),
+    shippingAddress_addressLine2: varchar("shipping_address_address_line2"),
+    shippingAddress_city: varchar("shipping_address_city"),
+    shippingAddress_state: varchar("shipping_address_state"),
+    shippingAddress_postalCode: varchar("shipping_address_postal_code"),
+    shippingAddress_country: varchar("shipping_address_country"),
+    shippingAddress_phone: varchar("shipping_address_phone"),
+    customer: uuid("customer_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    customerEmail: varchar("customer_email"),
+    status: enum_orders_status("status").default("processing"),
+    amount: numeric("amount", { mode: "number" }),
+    currency: enum_orders_currency("currency").default("KRW"),
+    order_ref: varchar("order_ref").notNull(),
+    order_mode: enum_orders_order_mode("order_mode")
+      .notNull()
+      .default("standard_purchase"),
+    lifecycle_status: enum_orders_lifecycle_status("lifecycle_status")
+      .notNull()
+      .default("pending_payment"),
+    payment_status: enum_orders_payment_status("payment_status")
+      .notNull()
+      .default("pending"),
+    fulfillment_status: enum_orders_fulfillment_status("fulfillment_status")
+      .notNull()
+      .default("unfulfilled"),
+    campaign: varchar("campaign"),
+    quote: jsonb("quote"),
+    contact: jsonb("contact"),
+    line_snapshot_version: numeric("line_snapshot_version", { mode: "number" })
+      .notNull()
+      .default(3),
+    paid_at: timestamp("paid_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("orders_customer_idx").on(columns.customer),
+    uniqueIndex("orders_order_ref_idx").on(columns.order_ref),
+    index("orders_order_mode_idx").on(columns.order_mode),
+    index("orders_lifecycle_status_idx").on(columns.lifecycle_status),
+    index("orders_payment_status_idx").on(columns.payment_status),
+    index("orders_fulfillment_status_idx").on(columns.fulfillment_status),
+    index("orders_campaign_idx").on(columns.campaign),
+    index("orders_paid_at_idx").on(columns.paid_at),
+    index("orders_updated_at_idx").on(columns.updatedAt),
+    index("orders_created_at_idx").on(columns.createdAt)
+  ]
+);
+
+export const orders_rels = pgTable(
+  "orders_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: uuid("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    transactionsID: uuid("transactions_id")
+  },
+  (columns) => [
+    index("orders_rels_order_idx").on(columns.order),
+    index("orders_rels_parent_idx").on(columns.parent),
+    index("orders_rels_path_idx").on(columns.path),
+    index("orders_rels_transactions_id_idx").on(columns.transactionsID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [orders.id],
+      name: "orders_rels_parent_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["transactionsID"]],
+      foreignColumns: [transactions.id],
+      name: "orders_rels_transactions_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const transactions_items = pgTable(
+  "transactions_items",
+  {
+    _order: integer("_order").notNull(),
+    _parentID: uuid("_parent_id").notNull(),
+    id: varchar("id").primaryKey(),
+    product: uuid("product_id").references(() => products.id, {
+      onDelete: "set null"
+    }),
+    variant: uuid("variant_id").references(() => variants.id, {
+      onDelete: "set null"
+    }),
+    quantity: numeric("quantity", { mode: "number" }).notNull().default(1),
+    mode: enum_transactions_items_mode("mode")
+      .notNull()
+      .default("standard_purchase"),
+    campaign: varchar("campaign"),
+    schema_version: numeric("schema_version", { mode: "number" }).default(3),
+    product_name: varchar("product_name"),
+    product_slug: varchar("product_slug"),
+    sku: varchar("sku"),
+    sku_label: varchar("sku_label"),
+    options: jsonb("options"),
+    currency: enum_transactions_items_currency("currency").default("KRW"),
+    unit_amount: numeric("unit_amount", { mode: "number" }),
+    line_amount: numeric("line_amount", { mode: "number" }),
+    weight_grams: numeric("weight_grams", { mode: "number" }),
+    length_mm: numeric("length_mm", { mode: "number" }),
+    width_mm: numeric("width_mm", { mode: "number" }),
+    height_mm: numeric("height_mm", { mode: "number" }),
+    tax_category: varchar("tax_category")
+  },
+  (columns) => [
+    index("transactions_items_order_idx").on(columns._order),
+    index("transactions_items_parent_id_idx").on(columns._parentID),
+    index("transactions_items_product_idx").on(columns.product),
+    index("transactions_items_variant_idx").on(columns.variant),
+    index("transactions_items_mode_idx").on(columns.mode),
+    index("transactions_items_campaign_idx").on(columns.campaign),
+    foreignKey({
+      columns: [columns["_parentID"]],
+      foreignColumns: [transactions.id],
+      name: "transactions_items_parent_id_fk"
+    }).onDelete("cascade")
+  ]
+);
+
+export const transactions = pgTable(
+  "transactions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    paymentMethod: enum_transactions_payment_method("payment_method"),
+    portone_paymentId: varchar("portone_payment_id"),
+    portone_transactionId: varchar("portone_transaction_id"),
+    portone_channel: varchar("portone_channel"),
+    portone_method: varchar("portone_method"),
+    billingAddress_title: varchar("billing_address_title"),
+    billingAddress_firstName: varchar("billing_address_first_name"),
+    billingAddress_lastName: varchar("billing_address_last_name"),
+    billingAddress_company: varchar("billing_address_company"),
+    billingAddress_addressLine1: varchar("billing_address_address_line1"),
+    billingAddress_addressLine2: varchar("billing_address_address_line2"),
+    billingAddress_city: varchar("billing_address_city"),
+    billingAddress_state: varchar("billing_address_state"),
+    billingAddress_postalCode: varchar("billing_address_postal_code"),
+    billingAddress_country: varchar("billing_address_country"),
+    billingAddress_phone: varchar("billing_address_phone"),
+    status: enum_transactions_status("status").notNull().default("pending"),
+    customer: uuid("customer_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    customerEmail: varchar("customer_email"),
+    order: uuid("order_id").references(() => orders.id, {
+      onDelete: "set null"
+    }),
+    cart: uuid("cart_id").references(() => carts.id, {
+      onDelete: "set null"
+    }),
+    amount: numeric("amount", { mode: "number" }),
+    currency: enum_transactions_currency("currency").default("KRW"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3
+    })
+      .defaultNow()
+      .notNull()
+  },
+  (columns) => [
+    index("transactions_portone_portone_payment_id_idx").on(
+      columns.portone_paymentId
+    ),
+    index("transactions_customer_idx").on(columns.customer),
+    index("transactions_order_idx").on(columns.order),
+    index("transactions_cart_idx").on(columns.cart),
+    index("transactions_updated_at_idx").on(columns.updatedAt),
+    index("transactions_created_at_idx").on(columns.createdAt)
+  ]
+);
+
 export const payload_kv = pgTable(
   "payload_kv",
   {
@@ -6183,11 +7777,27 @@ export const payload_locked_documents_rels = pgTable(
     userViewsID: uuid("user_views_id"),
     responsesID: varchar("responses_id"),
     compilationsID: varchar("compilations_id"),
-    "commerce-productsID": uuid("commerce_products_id"),
-    "commerce-ordersID": uuid("commerce_orders_id"),
     adminsID: varchar("admins_id"),
     redirectsID: uuid("redirects_id"),
     searchID: varchar("search_id"),
+    plansID: uuid("plans_id"),
+    invoicesID: uuid("invoices_id"),
+    pricesID: uuid("prices_id"),
+    subscriptionsID: uuid("subscriptions_id"),
+    "exchange-rateID": uuid("exchange_rate_id"),
+    currencyID: uuid("currency_id"),
+    holidaysID: uuid("holidays_id"),
+    "product-categoryID": uuid("product_category_id"),
+    "product-subID": uuid("product_sub_id"),
+    "product-dropsID": uuid("product_drops_id"),
+    addressesID: uuid("addresses_id"),
+    variantsID: uuid("variants_id"),
+    variantTypesID: uuid("variant_types_id"),
+    variantOptionsID: uuid("variant_options_id"),
+    productsID: uuid("products_id"),
+    cartsID: uuid("carts_id"),
+    ordersID: uuid("orders_id"),
+    transactionsID: uuid("transactions_id"),
     "payload-foldersID": uuid("payload_folders_id")
   },
   (columns) => [
@@ -6256,17 +7866,57 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_compilations_id_idx").on(
       columns.compilationsID
     ),
-    index("payload_locked_documents_rels_commerce_products_id_idx").on(
-      columns["commerce-productsID"]
-    ),
-    index("payload_locked_documents_rels_commerce_orders_id_idx").on(
-      columns["commerce-ordersID"]
-    ),
     index("payload_locked_documents_rels_admins_id_idx").on(columns.adminsID),
     index("payload_locked_documents_rels_redirects_id_idx").on(
       columns.redirectsID
     ),
     index("payload_locked_documents_rels_search_id_idx").on(columns.searchID),
+    index("payload_locked_documents_rels_plans_id_idx").on(columns.plansID),
+    index("payload_locked_documents_rels_invoices_id_idx").on(
+      columns.invoicesID
+    ),
+    index("payload_locked_documents_rels_prices_id_idx").on(columns.pricesID),
+    index("payload_locked_documents_rels_subscriptions_id_idx").on(
+      columns.subscriptionsID
+    ),
+    index("payload_locked_documents_rels_exchange_rate_id_idx").on(
+      columns["exchange-rateID"]
+    ),
+    index("payload_locked_documents_rels_currency_id_idx").on(
+      columns.currencyID
+    ),
+    index("payload_locked_documents_rels_holidays_id_idx").on(
+      columns.holidaysID
+    ),
+    index("payload_locked_documents_rels_product_category_id_idx").on(
+      columns["product-categoryID"]
+    ),
+    index("payload_locked_documents_rels_product_sub_id_idx").on(
+      columns["product-subID"]
+    ),
+    index("payload_locked_documents_rels_product_drops_id_idx").on(
+      columns["product-dropsID"]
+    ),
+    index("payload_locked_documents_rels_addresses_id_idx").on(
+      columns.addressesID
+    ),
+    index("payload_locked_documents_rels_variants_id_idx").on(
+      columns.variantsID
+    ),
+    index("payload_locked_documents_rels_variant_types_id_idx").on(
+      columns.variantTypesID
+    ),
+    index("payload_locked_documents_rels_variant_options_id_idx").on(
+      columns.variantOptionsID
+    ),
+    index("payload_locked_documents_rels_products_id_idx").on(
+      columns.productsID
+    ),
+    index("payload_locked_documents_rels_carts_id_idx").on(columns.cartsID),
+    index("payload_locked_documents_rels_orders_id_idx").on(columns.ordersID),
+    index("payload_locked_documents_rels_transactions_id_idx").on(
+      columns.transactionsID
+    ),
     index("payload_locked_documents_rels_payload_folders_id_idx").on(
       columns["payload-foldersID"]
     ),
@@ -6406,16 +8056,6 @@ export const payload_locked_documents_rels = pgTable(
       name: "payload_locked_documents_rels_compilations_fk"
     }).onDelete("cascade"),
     foreignKey({
-      columns: [columns["commerce-productsID"]],
-      foreignColumns: [commerce_products.id],
-      name: "payload_locked_documents_rels_commerce_products_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [columns["commerce-ordersID"]],
-      foreignColumns: [commerce_orders.id],
-      name: "payload_locked_documents_rels_commerce_orders_fk"
-    }).onDelete("cascade"),
-    foreignKey({
       columns: [columns["adminsID"]],
       foreignColumns: [admins.id],
       name: "payload_locked_documents_rels_admins_fk"
@@ -6429,6 +8069,96 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["searchID"]],
       foreignColumns: [search.id],
       name: "payload_locked_documents_rels_search_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["plansID"]],
+      foreignColumns: [plans.id],
+      name: "payload_locked_documents_rels_plans_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["invoicesID"]],
+      foreignColumns: [invoices.id],
+      name: "payload_locked_documents_rels_invoices_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["pricesID"]],
+      foreignColumns: [prices.id],
+      name: "payload_locked_documents_rels_prices_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["subscriptionsID"]],
+      foreignColumns: [subscriptions.id],
+      name: "payload_locked_documents_rels_subscriptions_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["exchange-rateID"]],
+      foreignColumns: [exchange_rate.id],
+      name: "payload_locked_documents_rels_exchange_rate_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["currencyID"]],
+      foreignColumns: [currency.id],
+      name: "payload_locked_documents_rels_currency_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["holidaysID"]],
+      foreignColumns: [holidays.id],
+      name: "payload_locked_documents_rels_holidays_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-categoryID"]],
+      foreignColumns: [product_category.id],
+      name: "payload_locked_documents_rels_product_category_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-subID"]],
+      foreignColumns: [product_sub.id],
+      name: "payload_locked_documents_rels_product_sub_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["product-dropsID"]],
+      foreignColumns: [product_drops.id],
+      name: "payload_locked_documents_rels_product_drops_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["addressesID"]],
+      foreignColumns: [addresses.id],
+      name: "payload_locked_documents_rels_addresses_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["variantsID"]],
+      foreignColumns: [variants.id],
+      name: "payload_locked_documents_rels_variants_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["variantTypesID"]],
+      foreignColumns: [variant_types.id],
+      name: "payload_locked_documents_rels_variant_types_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["variantOptionsID"]],
+      foreignColumns: [variant_options.id],
+      name: "payload_locked_documents_rels_variant_options_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["productsID"]],
+      foreignColumns: [products.id],
+      name: "payload_locked_documents_rels_products_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["cartsID"]],
+      foreignColumns: [carts.id],
+      name: "payload_locked_documents_rels_carts_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["ordersID"]],
+      foreignColumns: [orders.id],
+      name: "payload_locked_documents_rels_orders_fk"
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["transactionsID"]],
+      foreignColumns: [transactions.id],
+      name: "payload_locked_documents_rels_transactions_fk"
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["payload-foldersID"]],
@@ -8625,49 +10355,6 @@ export const relations_compilations = relations(
     })
   })
 );
-export const relations_commerce_products_rels = relations(
-  commerce_products_rels,
-  ({ one }) => ({
-    parent: one(commerce_products, {
-      fields: [commerce_products_rels.parent],
-      references: [commerce_products.id],
-      relationName: "_rels"
-    }),
-    mediaID: one(media, {
-      fields: [commerce_products_rels.mediaID],
-      references: [media.id],
-      relationName: "media"
-    })
-  })
-);
-export const relations_commerce_products = relations(
-  commerce_products,
-  ({ one, many }) => ({
-    hero_media: one(media, {
-      fields: [commerce_products.hero_media],
-      references: [media.id],
-      relationName: "hero_media"
-    }),
-    _rels: many(commerce_products_rels, {
-      relationName: "_rels"
-    })
-  })
-);
-export const relations_commerce_orders = relations(
-  commerce_orders,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [commerce_orders.user],
-      references: [users.id],
-      relationName: "user"
-    }),
-    product: one(commerce_products, {
-      fields: [commerce_orders.product],
-      references: [commerce_products.id],
-      relationName: "product"
-    })
-  })
-);
 export const relations_admins = relations(admins, ({ one }) => ({
   foto: one(media, {
     fields: [admins.foto],
@@ -8846,6 +10533,431 @@ export const relations_search = relations(search, ({ many }) => ({
     relationName: "_rels"
   })
 }));
+export const relations_plans_payment_methods = relations(
+  plans_payment_methods,
+  ({ one }) => ({
+    parent: one(plans, {
+      fields: [plans_payment_methods.parent],
+      references: [plans.id],
+      relationName: "payment_methods"
+    })
+  })
+);
+export const relations_plans_features = relations(
+  plans_features,
+  ({ one }) => ({
+    _parentID: one(plans, {
+      fields: [plans_features._parentID],
+      references: [plans.id],
+      relationName: "features"
+    })
+  })
+);
+export const relations_plans = relations(plans, ({ many }) => ({
+  payment_methods: many(plans_payment_methods, {
+    relationName: "payment_methods"
+  }),
+  features: many(plans_features, {
+    relationName: "features"
+  })
+}));
+export const relations_invoices_payment_method = relations(
+  invoices_payment_method,
+  ({ one }) => ({
+    _parentID: one(invoices, {
+      fields: [invoices_payment_method._parentID],
+      references: [invoices.id],
+      relationName: "payment_method"
+    }),
+    currency: one(currency, {
+      fields: [invoices_payment_method.currency],
+      references: [currency.id],
+      relationName: "currency"
+    })
+  })
+);
+export const relations_invoices = relations(invoices, ({ one, many }) => ({
+  client: one(users, {
+    fields: [invoices.client],
+    references: [users.id],
+    relationName: "client"
+  }),
+  subscription: one(subscriptions, {
+    fields: [invoices.subscription],
+    references: [subscriptions.id],
+    relationName: "subscription"
+  }),
+  plan: one(plans, {
+    fields: [invoices.plan],
+    references: [plans.id],
+    relationName: "plan"
+  }),
+  price: one(prices, {
+    fields: [invoices.price],
+    references: [prices.id],
+    relationName: "price"
+  }),
+  currency: one(currency, {
+    fields: [invoices.currency],
+    references: [currency.id],
+    relationName: "currency"
+  }),
+  payment_method: many(invoices_payment_method, {
+    relationName: "payment_method"
+  })
+}));
+export const relations_prices = relations(prices, ({ one }) => ({
+  plan: one(plans, {
+    fields: [prices.plan],
+    references: [plans.id],
+    relationName: "plan"
+  }),
+  currency: one(currency, {
+    fields: [prices.currency],
+    references: [currency.id],
+    relationName: "currency"
+  })
+}));
+export const relations_subscriptions = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.user],
+    references: [users.id],
+    relationName: "user"
+  }),
+  plan: one(plans, {
+    fields: [subscriptions.plan],
+    references: [plans.id],
+    relationName: "plan"
+  }),
+  price: one(prices, {
+    fields: [subscriptions.price],
+    references: [prices.id],
+    relationName: "price"
+  }),
+  currency: one(currency, {
+    fields: [subscriptions.currency],
+    references: [currency.id],
+    relationName: "currency"
+  })
+}));
+export const relations_exchange_rate_rates = relations(
+  exchange_rate_rates,
+  ({ one }) => ({
+    _parentID: one(exchange_rate, {
+      fields: [exchange_rate_rates._parentID],
+      references: [exchange_rate.id],
+      relationName: "rates"
+    }),
+    currency: one(currency, {
+      fields: [exchange_rate_rates.currency],
+      references: [currency.id],
+      relationName: "currency"
+    })
+  })
+);
+export const relations_exchange_rate = relations(exchange_rate, ({ many }) => ({
+  rates: many(exchange_rate_rates, {
+    relationName: "rates"
+  })
+}));
+export const relations_currency = relations(currency, () => ({}));
+export const relations_holidays_dates = relations(
+  holidays_dates,
+  ({ one }) => ({
+    _parentID: one(holidays, {
+      fields: [holidays_dates._parentID],
+      references: [holidays.id],
+      relationName: "dates"
+    })
+  })
+);
+export const relations_holidays = relations(holidays, ({ many }) => ({
+  dates: many(holidays_dates, {
+    relationName: "dates"
+  })
+}));
+export const relations_product_category = relations(
+  product_category,
+  () => ({})
+);
+export const relations_product_sub = relations(product_sub, () => ({}));
+export const relations_product_drops = relations(product_drops, ({ one }) => ({
+  hero_media: one(media, {
+    fields: [product_drops.hero_media],
+    references: [media.id],
+    relationName: "hero_media"
+  })
+}));
+export const relations_addresses = relations(addresses, ({ one }) => ({
+  customer: one(users, {
+    fields: [addresses.customer],
+    references: [users.id],
+    relationName: "customer"
+  })
+}));
+export const relations_variants_rels = relations(variants_rels, ({ one }) => ({
+  parent: one(variants, {
+    fields: [variants_rels.parent],
+    references: [variants.id],
+    relationName: "_rels"
+  }),
+  variantOptionsID: one(variant_options, {
+    fields: [variants_rels.variantOptionsID],
+    references: [variant_options.id],
+    relationName: "variantOptions"
+  })
+}));
+export const relations_variants = relations(variants, ({ one, many }) => ({
+  product: one(products, {
+    fields: [variants.product],
+    references: [products.id],
+    relationName: "product"
+  }),
+  _rels: many(variants_rels, {
+    relationName: "_rels"
+  })
+}));
+export const relations__variants_v_rels = relations(
+  _variants_v_rels,
+  ({ one }) => ({
+    parent: one(_variants_v, {
+      fields: [_variants_v_rels.parent],
+      references: [_variants_v.id],
+      relationName: "_rels"
+    }),
+    variantOptionsID: one(variant_options, {
+      fields: [_variants_v_rels.variantOptionsID],
+      references: [variant_options.id],
+      relationName: "variantOptions"
+    })
+  })
+);
+export const relations__variants_v = relations(
+  _variants_v,
+  ({ one, many }) => ({
+    parent: one(variants, {
+      fields: [_variants_v.parent],
+      references: [variants.id],
+      relationName: "parent"
+    }),
+    version_product: one(products, {
+      fields: [_variants_v.version_product],
+      references: [products.id],
+      relationName: "version_product"
+    }),
+    _rels: many(_variants_v_rels, {
+      relationName: "_rels"
+    })
+  })
+);
+export const relations_variant_types = relations(variant_types, () => ({}));
+export const relations_variant_options = relations(
+  variant_options,
+  ({ one }) => ({
+    variantType: one(variant_types, {
+      fields: [variant_options.variantType],
+      references: [variant_types.id],
+      relationName: "variantType"
+    })
+  })
+);
+export const relations_products_rels = relations(products_rels, ({ one }) => ({
+  parent: one(products, {
+    fields: [products_rels.parent],
+    references: [products.id],
+    relationName: "_rels"
+  }),
+  variantTypesID: one(variant_types, {
+    fields: [products_rels.variantTypesID],
+    references: [variant_types.id],
+    relationName: "variantTypes"
+  }),
+  mediaID: one(media, {
+    fields: [products_rels.mediaID],
+    references: [media.id],
+    relationName: "media"
+  })
+}));
+export const relations_products = relations(products, ({ one, many }) => ({
+  drop: one(product_drops, {
+    fields: [products.drop],
+    references: [product_drops.id],
+    relationName: "drop"
+  }),
+  category: one(product_category, {
+    fields: [products.category],
+    references: [product_category.id],
+    relationName: "category"
+  }),
+  hero_media: one(media, {
+    fields: [products.hero_media],
+    references: [media.id],
+    relationName: "hero_media"
+  }),
+  _rels: many(products_rels, {
+    relationName: "_rels"
+  })
+}));
+export const relations__products_v_rels = relations(
+  _products_v_rels,
+  ({ one }) => ({
+    parent: one(_products_v, {
+      fields: [_products_v_rels.parent],
+      references: [_products_v.id],
+      relationName: "_rels"
+    }),
+    variantTypesID: one(variant_types, {
+      fields: [_products_v_rels.variantTypesID],
+      references: [variant_types.id],
+      relationName: "variantTypes"
+    }),
+    mediaID: one(media, {
+      fields: [_products_v_rels.mediaID],
+      references: [media.id],
+      relationName: "media"
+    })
+  })
+);
+export const relations__products_v = relations(
+  _products_v,
+  ({ one, many }) => ({
+    parent: one(products, {
+      fields: [_products_v.parent],
+      references: [products.id],
+      relationName: "parent"
+    }),
+    version_drop: one(product_drops, {
+      fields: [_products_v.version_drop],
+      references: [product_drops.id],
+      relationName: "version_drop"
+    }),
+    version_category: one(product_category, {
+      fields: [_products_v.version_category],
+      references: [product_category.id],
+      relationName: "version_category"
+    }),
+    version_hero_media: one(media, {
+      fields: [_products_v.version_hero_media],
+      references: [media.id],
+      relationName: "version_hero_media"
+    }),
+    _rels: many(_products_v_rels, {
+      relationName: "_rels"
+    })
+  })
+);
+export const relations_carts_items = relations(carts_items, ({ one }) => ({
+  _parentID: one(carts, {
+    fields: [carts_items._parentID],
+    references: [carts.id],
+    relationName: "items"
+  }),
+  product: one(products, {
+    fields: [carts_items.product],
+    references: [products.id],
+    relationName: "product"
+  }),
+  variant: one(variants, {
+    fields: [carts_items.variant],
+    references: [variants.id],
+    relationName: "variant"
+  })
+}));
+export const relations_carts = relations(carts, ({ one, many }) => ({
+  items: many(carts_items, {
+    relationName: "items"
+  }),
+  customer: one(users, {
+    fields: [carts.customer],
+    references: [users.id],
+    relationName: "customer"
+  })
+}));
+export const relations_orders_items = relations(orders_items, ({ one }) => ({
+  _parentID: one(orders, {
+    fields: [orders_items._parentID],
+    references: [orders.id],
+    relationName: "items"
+  }),
+  product: one(products, {
+    fields: [orders_items.product],
+    references: [products.id],
+    relationName: "product"
+  }),
+  variant: one(variants, {
+    fields: [orders_items.variant],
+    references: [variants.id],
+    relationName: "variant"
+  })
+}));
+export const relations_orders_rels = relations(orders_rels, ({ one }) => ({
+  parent: one(orders, {
+    fields: [orders_rels.parent],
+    references: [orders.id],
+    relationName: "_rels"
+  }),
+  transactionsID: one(transactions, {
+    fields: [orders_rels.transactionsID],
+    references: [transactions.id],
+    relationName: "transactions"
+  })
+}));
+export const relations_orders = relations(orders, ({ one, many }) => ({
+  items: many(orders_items, {
+    relationName: "items"
+  }),
+  customer: one(users, {
+    fields: [orders.customer],
+    references: [users.id],
+    relationName: "customer"
+  }),
+  _rels: many(orders_rels, {
+    relationName: "_rels"
+  })
+}));
+export const relations_transactions_items = relations(
+  transactions_items,
+  ({ one }) => ({
+    _parentID: one(transactions, {
+      fields: [transactions_items._parentID],
+      references: [transactions.id],
+      relationName: "items"
+    }),
+    product: one(products, {
+      fields: [transactions_items.product],
+      references: [products.id],
+      relationName: "product"
+    }),
+    variant: one(variants, {
+      fields: [transactions_items.variant],
+      references: [variants.id],
+      relationName: "variant"
+    })
+  })
+);
+export const relations_transactions = relations(
+  transactions,
+  ({ one, many }) => ({
+    items: many(transactions_items, {
+      relationName: "items"
+    }),
+    customer: one(users, {
+      fields: [transactions.customer],
+      references: [users.id],
+      relationName: "customer"
+    }),
+    order: one(orders, {
+      fields: [transactions.order],
+      references: [orders.id],
+      relationName: "order"
+    }),
+    cart: one(carts, {
+      fields: [transactions.cart],
+      references: [carts.id],
+      relationName: "cart"
+    })
+  })
+);
 export const relations_payload_kv = relations(payload_kv, () => ({}));
 export const relations_payload_jobs_log = relations(
   payload_jobs_log,
@@ -9023,16 +11135,6 @@ export const relations_payload_locked_documents_rels = relations(
       references: [compilations.id],
       relationName: "compilations"
     }),
-    "commerce-productsID": one(commerce_products, {
-      fields: [payload_locked_documents_rels["commerce-productsID"]],
-      references: [commerce_products.id],
-      relationName: "commerce-products"
-    }),
-    "commerce-ordersID": one(commerce_orders, {
-      fields: [payload_locked_documents_rels["commerce-ordersID"]],
-      references: [commerce_orders.id],
-      relationName: "commerce-orders"
-    }),
     adminsID: one(admins, {
       fields: [payload_locked_documents_rels.adminsID],
       references: [admins.id],
@@ -9047,6 +11149,96 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.searchID],
       references: [search.id],
       relationName: "search"
+    }),
+    plansID: one(plans, {
+      fields: [payload_locked_documents_rels.plansID],
+      references: [plans.id],
+      relationName: "plans"
+    }),
+    invoicesID: one(invoices, {
+      fields: [payload_locked_documents_rels.invoicesID],
+      references: [invoices.id],
+      relationName: "invoices"
+    }),
+    pricesID: one(prices, {
+      fields: [payload_locked_documents_rels.pricesID],
+      references: [prices.id],
+      relationName: "prices"
+    }),
+    subscriptionsID: one(subscriptions, {
+      fields: [payload_locked_documents_rels.subscriptionsID],
+      references: [subscriptions.id],
+      relationName: "subscriptions"
+    }),
+    "exchange-rateID": one(exchange_rate, {
+      fields: [payload_locked_documents_rels["exchange-rateID"]],
+      references: [exchange_rate.id],
+      relationName: "exchange-rate"
+    }),
+    currencyID: one(currency, {
+      fields: [payload_locked_documents_rels.currencyID],
+      references: [currency.id],
+      relationName: "currency"
+    }),
+    holidaysID: one(holidays, {
+      fields: [payload_locked_documents_rels.holidaysID],
+      references: [holidays.id],
+      relationName: "holidays"
+    }),
+    "product-categoryID": one(product_category, {
+      fields: [payload_locked_documents_rels["product-categoryID"]],
+      references: [product_category.id],
+      relationName: "product-category"
+    }),
+    "product-subID": one(product_sub, {
+      fields: [payload_locked_documents_rels["product-subID"]],
+      references: [product_sub.id],
+      relationName: "product-sub"
+    }),
+    "product-dropsID": one(product_drops, {
+      fields: [payload_locked_documents_rels["product-dropsID"]],
+      references: [product_drops.id],
+      relationName: "product-drops"
+    }),
+    addressesID: one(addresses, {
+      fields: [payload_locked_documents_rels.addressesID],
+      references: [addresses.id],
+      relationName: "addresses"
+    }),
+    variantsID: one(variants, {
+      fields: [payload_locked_documents_rels.variantsID],
+      references: [variants.id],
+      relationName: "variants"
+    }),
+    variantTypesID: one(variant_types, {
+      fields: [payload_locked_documents_rels.variantTypesID],
+      references: [variant_types.id],
+      relationName: "variantTypes"
+    }),
+    variantOptionsID: one(variant_options, {
+      fields: [payload_locked_documents_rels.variantOptionsID],
+      references: [variant_options.id],
+      relationName: "variantOptions"
+    }),
+    productsID: one(products, {
+      fields: [payload_locked_documents_rels.productsID],
+      references: [products.id],
+      relationName: "products"
+    }),
+    cartsID: one(carts, {
+      fields: [payload_locked_documents_rels.cartsID],
+      references: [carts.id],
+      relationName: "carts"
+    }),
+    ordersID: one(orders, {
+      fields: [payload_locked_documents_rels.ordersID],
+      references: [orders.id],
+      relationName: "orders"
+    }),
+    transactionsID: one(transactions, {
+      fields: [payload_locked_documents_rels.transactionsID],
+      references: [transactions.id],
+      relationName: "transactions"
     }),
     "payload-foldersID": one(payload_folders, {
       fields: [payload_locked_documents_rels["payload-foldersID"]],
@@ -9403,11 +11595,6 @@ type DatabaseSchema = {
   enum__responses_v_version_status: typeof enum__responses_v_version_status;
   enum__responses_v_published_locale: typeof enum__responses_v_published_locale;
   enum_compilations_visibility: typeof enum_compilations_visibility;
-  enum_commerce_products_currency: typeof enum_commerce_products_currency;
-  enum_commerce_orders_currency: typeof enum_commerce_orders_currency;
-  enum_commerce_orders_payment_method: typeof enum_commerce_orders_payment_method;
-  enum_commerce_orders_payment_status: typeof enum_commerce_orders_payment_status;
-  enum_commerce_orders_status: typeof enum_commerce_orders_status;
   enum_exports_format: typeof enum_exports_format;
   enum_exports_sort_order: typeof enum_exports_sort_order;
   enum_exports_locale: typeof enum_exports_locale;
@@ -9415,6 +11602,43 @@ type DatabaseSchema = {
   enum_imports_import_mode: typeof enum_imports_import_mode;
   enum_imports_status: typeof enum_imports_status;
   enum_redirects_to_type: typeof enum_redirects_to_type;
+  enum_plans_payment_methods: typeof enum_plans_payment_methods;
+  enum_plans_tier: typeof enum_plans_tier;
+  enum_plans_validity: typeof enum_plans_validity;
+  enum_plans_type: typeof enum_plans_type;
+  enum_plans_state: typeof enum_plans_state;
+  enum_invoices_payment_method_method: typeof enum_invoices_payment_method_method;
+  enum_invoices_status: typeof enum_invoices_status;
+  enum_prices_type: typeof enum_prices_type;
+  enum_prices_recurring_interval: typeof enum_prices_recurring_interval;
+  enum_subscriptions_subscription_status: typeof enum_subscriptions_subscription_status;
+  enum_subscriptions_request_method: typeof enum_subscriptions_request_method;
+  enum_subscriptions_provider: typeof enum_subscriptions_provider;
+  enum_addresses_country: typeof enum_addresses_country;
+  enum_variants_status: typeof enum_variants_status;
+  enum__variants_v_version_status: typeof enum__variants_v_version_status;
+  enum__variants_v_published_locale: typeof enum__variants_v_published_locale;
+  enum_products_private_tier_gate: typeof enum_products_private_tier_gate;
+  enum_products_status: typeof enum_products_status;
+  enum__products_v_version_private_tier_gate: typeof enum__products_v_version_private_tier_gate;
+  enum__products_v_version_status: typeof enum__products_v_version_status;
+  enum__products_v_published_locale: typeof enum__products_v_published_locale;
+  enum_carts_items_mode: typeof enum_carts_items_mode;
+  enum_carts_items_currency: typeof enum_carts_items_currency;
+  enum_carts_currency: typeof enum_carts_currency;
+  enum_orders_items_mode: typeof enum_orders_items_mode;
+  enum_orders_items_currency: typeof enum_orders_items_currency;
+  enum_orders_status: typeof enum_orders_status;
+  enum_orders_currency: typeof enum_orders_currency;
+  enum_orders_order_mode: typeof enum_orders_order_mode;
+  enum_orders_lifecycle_status: typeof enum_orders_lifecycle_status;
+  enum_orders_payment_status: typeof enum_orders_payment_status;
+  enum_orders_fulfillment_status: typeof enum_orders_fulfillment_status;
+  enum_transactions_items_mode: typeof enum_transactions_items_mode;
+  enum_transactions_items_currency: typeof enum_transactions_items_currency;
+  enum_transactions_payment_method: typeof enum_transactions_payment_method;
+  enum_transactions_status: typeof enum_transactions_status;
+  enum_transactions_currency: typeof enum_transactions_currency;
   enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug;
   enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state;
   enum_payload_jobs_workflow_slug: typeof enum_payload_jobs_workflow_slug;
@@ -9525,9 +11749,6 @@ type DatabaseSchema = {
   _responses_v_rels: typeof _responses_v_rels;
   compilations: typeof compilations;
   compilations_rels: typeof compilations_rels;
-  commerce_products: typeof commerce_products;
-  commerce_products_rels: typeof commerce_products_rels;
-  commerce_orders: typeof commerce_orders;
   admins: typeof admins;
   _admins_v: typeof _admins_v;
   exports: typeof exports;
@@ -9542,6 +11763,39 @@ type DatabaseSchema = {
   search: typeof search;
   search_locales: typeof search_locales;
   search_rels: typeof search_rels;
+  plans_payment_methods: typeof plans_payment_methods;
+  plans_features: typeof plans_features;
+  plans: typeof plans;
+  invoices_payment_method: typeof invoices_payment_method;
+  invoices: typeof invoices;
+  prices: typeof prices;
+  subscriptions: typeof subscriptions;
+  exchange_rate_rates: typeof exchange_rate_rates;
+  exchange_rate: typeof exchange_rate;
+  currency: typeof currency;
+  holidays_dates: typeof holidays_dates;
+  holidays: typeof holidays;
+  product_category: typeof product_category;
+  product_sub: typeof product_sub;
+  product_drops: typeof product_drops;
+  addresses: typeof addresses;
+  variants: typeof variants;
+  variants_rels: typeof variants_rels;
+  _variants_v: typeof _variants_v;
+  _variants_v_rels: typeof _variants_v_rels;
+  variant_types: typeof variant_types;
+  variant_options: typeof variant_options;
+  products: typeof products;
+  products_rels: typeof products_rels;
+  _products_v: typeof _products_v;
+  _products_v_rels: typeof _products_v_rels;
+  carts_items: typeof carts_items;
+  carts: typeof carts;
+  orders_items: typeof orders_items;
+  orders: typeof orders;
+  orders_rels: typeof orders_rels;
+  transactions_items: typeof transactions_items;
+  transactions: typeof transactions;
   payload_kv: typeof payload_kv;
   payload_jobs_log: typeof payload_jobs_log;
   payload_jobs: typeof payload_jobs;
@@ -9660,9 +11914,6 @@ type DatabaseSchema = {
   relations__responses_v: typeof relations__responses_v;
   relations_compilations_rels: typeof relations_compilations_rels;
   relations_compilations: typeof relations_compilations;
-  relations_commerce_products_rels: typeof relations_commerce_products_rels;
-  relations_commerce_products: typeof relations_commerce_products;
-  relations_commerce_orders: typeof relations_commerce_orders;
   relations_admins: typeof relations_admins;
   relations__admins_v: typeof relations__admins_v;
   relations_exports_texts: typeof relations_exports_texts;
@@ -9677,6 +11928,39 @@ type DatabaseSchema = {
   relations_search_locales: typeof relations_search_locales;
   relations_search_rels: typeof relations_search_rels;
   relations_search: typeof relations_search;
+  relations_plans_payment_methods: typeof relations_plans_payment_methods;
+  relations_plans_features: typeof relations_plans_features;
+  relations_plans: typeof relations_plans;
+  relations_invoices_payment_method: typeof relations_invoices_payment_method;
+  relations_invoices: typeof relations_invoices;
+  relations_prices: typeof relations_prices;
+  relations_subscriptions: typeof relations_subscriptions;
+  relations_exchange_rate_rates: typeof relations_exchange_rate_rates;
+  relations_exchange_rate: typeof relations_exchange_rate;
+  relations_currency: typeof relations_currency;
+  relations_holidays_dates: typeof relations_holidays_dates;
+  relations_holidays: typeof relations_holidays;
+  relations_product_category: typeof relations_product_category;
+  relations_product_sub: typeof relations_product_sub;
+  relations_product_drops: typeof relations_product_drops;
+  relations_addresses: typeof relations_addresses;
+  relations_variants_rels: typeof relations_variants_rels;
+  relations_variants: typeof relations_variants;
+  relations__variants_v_rels: typeof relations__variants_v_rels;
+  relations__variants_v: typeof relations__variants_v;
+  relations_variant_types: typeof relations_variant_types;
+  relations_variant_options: typeof relations_variant_options;
+  relations_products_rels: typeof relations_products_rels;
+  relations_products: typeof relations_products;
+  relations__products_v_rels: typeof relations__products_v_rels;
+  relations__products_v: typeof relations__products_v;
+  relations_carts_items: typeof relations_carts_items;
+  relations_carts: typeof relations_carts;
+  relations_orders_items: typeof relations_orders_items;
+  relations_orders_rels: typeof relations_orders_rels;
+  relations_orders: typeof relations_orders;
+  relations_transactions_items: typeof relations_transactions_items;
+  relations_transactions: typeof relations_transactions;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_jobs_log: typeof relations_payload_jobs_log;
   relations_payload_jobs: typeof relations_payload_jobs;

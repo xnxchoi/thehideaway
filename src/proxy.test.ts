@@ -217,11 +217,8 @@ describe("proxy routing", () => {
   });
 
   it.each([
-    "/api/lost/cart",
-    "/api/lost/checkout/cancel",
-    "/api/lost/checkout/intent",
     "/api/lost/private-quotes",
-    "/api/lost/webhooks/portone"
+    "/api/lost/inventory/commands"
   ])("password-gates concrete LOST API route %s", async (pathname) => {
     const res = await proxy(
       makeRequest(pathname, undefined, "https://lostinseoul.com")
@@ -237,10 +234,9 @@ describe("proxy routing", () => {
     "/api/lost/checkout/cancel",
     "/api/lost/checkout/intent",
     "/api/lost/checkout/verify",
-    "/api/lost/private-quotes",
-    "/api/lost/inventory/commands",
-    "/api/lost/inventory/reservations",
-    "/api/lost/webhooks/portone"
+    "/api/commerce/orders",
+    "/api/commerce/payments/card/confirm",
+    "/api/commerce/payments/card/webhook"
   ])("retires the old commerce API after the gate", async (pathname) => {
     const res = await proxy(
       makeRequest(pathname, lostGateCookie, "https://lostinseoul.com")
@@ -263,16 +259,27 @@ describe("proxy routing", () => {
     });
   });
 
-  it("lets signed card webhooks reach verification without a gate cookie", async () => {
+  it("lets PortOne plugin webhooks reach Payload without a gate cookie", async () => {
     const res = await proxy(
       makeRequest(
-        "/api/commerce/payments/card/webhook",
+        "/api/payments/portone/webhooks",
         undefined,
         "https://lostinseoul.com"
       )
     );
 
-    expect(res.status).toBe(200);
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("lets signed card webhooks reach verification without a gate cookie", async () => {
+    const res = await proxy(
+      makeRequest(
+        "/api/lost/webhooks/portone",
+        undefined,
+        "https://lostinseoul.com"
+      )
+    );
+
     expect(res.headers.get("location")).toBeNull();
   });
 

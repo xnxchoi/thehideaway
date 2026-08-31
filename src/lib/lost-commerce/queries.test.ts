@@ -52,8 +52,7 @@ function product(overrides: Record<string, unknown> = {}) {
     slug: "catalyst",
     active: true,
     storefront: "lostinseoul",
-    currency: "KRW",
-    unit_amount: 120000,
+    priceInKRW: 120000,
     standard_enabled: true,
     request_to_order_enabled: true,
     private_order_enabled: true,
@@ -88,6 +87,15 @@ function mockProductQuery(
       return { docs, hasNextPage: nextPage !== null, nextPage };
     }
   );
+  vi.mocked(getPayload).mockResolvedValue({
+    db: { drizzle: { execute } },
+    find,
+    collections: {
+      "inventory-levels": {},
+      "stock-locations": {},
+      ...(campaignDocs.length > 0 ? { "product-order-campaigns": {} } : {})
+    }
+  } as never);
 }
 
 beforeEach(() => {
@@ -97,7 +105,8 @@ beforeEach(() => {
   Object.assign(process.env, POLICY_ENV);
   vi.mocked(getPayload).mockResolvedValue({
     db: { drizzle: { execute } },
-    find
+    find,
+    collections: {}
   } as never);
 });
 
@@ -111,17 +120,17 @@ afterAll(() => {
 describe("lost commerce query normalization", () => {
   it("normalizes active SKUs without scalar stock compatibility fields", () => {
     expect(
-      normalizeLostProductSkus({ unit_amount: 120000 }, [
+      normalizeLostProductSkus({ priceInKRW: 120000 }, [
         {
           id: "sku-1",
           active: true,
           sku: "LIS-1",
           label: "Black / 02",
           options: [
-            { key: "size", value: "02" },
-            { key: "color", value: "Black" }
+            { label: "02", variantType: { name: "size" } },
+            { label: "Black", variantType: { name: "color" } }
           ],
-          price_override_amount: 135000
+          priceInKRW: 135000
         },
         { id: "sku-2", active: false, sku: "LIS-2", options: [] }
       ])
@@ -216,14 +225,14 @@ describe("lost commerce relational SKU queries", () => {
     ]);
     expect(find).toHaveBeenCalledWith(
       expect.objectContaining({
-        collection: "product-variants",
+        collection: "variants",
         page: 1,
         sort: "sort"
       })
     );
     expect(find).toHaveBeenCalledWith(
       expect.objectContaining({
-        collection: "product-variants",
+        collection: "variants",
         page: 2,
         sort: "sort"
       })
@@ -275,6 +284,37 @@ describe("lost commerce relational SKU queries", () => {
     expect(result?.modes).toEqual([]);
     expect(result?.displayPrice).toBe("\u20a9120,000");
     expect(result?.variants[0]?.actionableModes).toEqual([]);
+  });
+
+  it("enables standard purchase without ATP when inventory collections are unregistered", async () => {
+    mockProductQuery(
+      product({
+        request_to_order_enabled: false,
+        private_order_enabled: false
+      }),
+      {
+        1: [
+          {
+            id: "sku-incomplete",
+            product: "product-1",
+            active: true,
+            sku: "LIS-INCOMPLETE",
+            options: []
+          }
+        ]
+      }
+    );
+    vi.mocked(getPayload).mockResolvedValue({
+      db: { drizzle: { execute } },
+      find,
+      collections: {}
+    } as never);
+
+    const result = await getLostProductBySlug("catalyst");
+
+    expect(result?.modes).toEqual(["standard_purchase"]);
+    expect(result?.variants[0]?.actionableModes).toEqual(["standard_purchase"]);
+    expect(execute).not.toHaveBeenCalled();
   });
 
   it("enables standard purchase when batched ATP is positive", async () => {
@@ -418,7 +458,7 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-PRIVATE-QUOTE",
-            price_override_amount: null,
+            priceInKRW: null,
             options: []
           }
         ]
@@ -448,7 +488,7 @@ describe("lost commerce relational SKU queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-PRIVATE-INCOMPLETE",
-            price_override_amount: null,
+            priceInKRW: null,
             options: []
           }
         ]
@@ -672,7 +712,7 @@ describe("lost commerce storefront queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-MIXED-PRIVATE",
-            price_override_amount: 120000,
+            priceInKRW: 120000,
             options: []
           }
         ]
@@ -705,7 +745,7 @@ describe("lost commerce storefront queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-PRIVATE",
-            price_override_amount: 120000,
+            priceInKRW: 120000,
             options: []
           }
         ]
@@ -739,7 +779,7 @@ describe("lost commerce storefront queries", () => {
             product: "product-1",
             active: true,
             sku: "LIS-PRIVATE-QUOTE",
-            price_override_amount: 120000,
+            priceInKRW: 120000,
             options: []
           }
         ]
@@ -775,7 +815,7 @@ describe("lost commerce storefront queries", () => {
               product: "product-1",
               active: true,
               sku: "LIS-PRIVATE-INVALID",
-              price_override_amount: 120000,
+              priceInKRW: 120000,
               options: []
             }
           ]
@@ -795,12 +835,12 @@ describe("lost commerce storefront queries", () => {
     find.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === "products") {
         return {
-          docs: [product({ unit_amount: 0 })],
+          docs: [product({ priceInKRW: 0 })],
           hasNextPage: false,
           nextPage: null
         };
       }
-      if (collection === "product-variants") {
+      if (collection === "variants") {
         return {
           docs: [
             {
@@ -808,7 +848,7 @@ describe("lost commerce storefront queries", () => {
               product: "product-1",
               active: true,
               sku: "LIS-OVERRIDE",
-              price_override_amount: 135000,
+              priceInKRW: 135000,
               options: []
             }
           ],
@@ -840,12 +880,12 @@ describe("lost commerce storefront queries", () => {
     find.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === "products") {
         return {
-          docs: [product({ unit_amount: 0 })],
+          docs: [product({ priceInKRW: 0 })],
           hasNextPage: false,
           nextPage: null
         };
       }
-      if (collection === "product-variants") {
+      if (collection === "variants") {
         return {
           docs: [
             {
@@ -853,7 +893,7 @@ describe("lost commerce storefront queries", () => {
               product: "product-1",
               active: true,
               sku: "LIS-HIGH",
-              price_override_amount: 150000,
+              priceInKRW: 150000,
               options: []
             },
             {
@@ -861,7 +901,7 @@ describe("lost commerce storefront queries", () => {
               product: "product-1",
               active: true,
               sku: "LIS-LOW",
-              price_override_amount: 125000,
+              priceInKRW: 125000,
               options: []
             }
           ],
@@ -883,10 +923,35 @@ describe("lost commerce storefront queries", () => {
     );
   });
 
+  it("skips campaign lookup when the collection is unregistered", async () => {
+    mockProductQuery(product(), {
+      1: [
+        {
+          id: "sku-1",
+          product: "product-1",
+          active: true,
+          sku: "LIS-1",
+          options: []
+        }
+      ]
+    });
+
+    await getLostProductBySlug("catalyst");
+
+    expect(find).not.toHaveBeenCalledWith(
+      expect.objectContaining({ collection: "product-order-campaigns" })
+    );
+  });
+
   it("loads home products, campaigns, drops, and normalized media", async () => {
     execute.mockResolvedValue({
       rows: [{ sku_id: "sku-1", available_to_promise: 1 }]
     });
+    vi.mocked(getPayload).mockResolvedValue({
+      db: { drizzle: { execute } },
+      find,
+      collections: { "product-order-campaigns": {} }
+    } as never);
     find.mockImplementation(async ({ collection }: { collection: string }) => {
       if (collection === "products") {
         return {
@@ -919,7 +984,7 @@ describe("lost commerce storefront queries", () => {
           nextPage: null
         };
       }
-      if (collection === "product-variants") {
+      if (collection === "variants") {
         return {
           docs: [
             {
@@ -1021,7 +1086,7 @@ describe("lost commerce storefront queries", () => {
         if (collection === "products") {
           return { docs: [product()], hasNextPage: false, nextPage: null };
         }
-        if (collection === "product-variants") {
+        if (collection === "variants") {
           return {
             docs: [
               {
@@ -1112,7 +1177,7 @@ describe("lost commerce storefront queries", () => {
             ]
           };
         }
-        if (collection === "product-variants") {
+        if (collection === "variants") {
           return {
             docs: [
               {

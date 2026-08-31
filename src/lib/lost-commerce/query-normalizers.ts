@@ -1,3 +1,5 @@
+import { catalogUnitAmount } from "@/payload/plugins/ecommerce/catalog-money";
+
 type AnyDoc = Record<string, unknown>;
 
 export type LostProductVariant = {
@@ -44,19 +46,19 @@ export function normalizeLostProductSkus(
         : [];
       const optionValue = (key: string) =>
         nullableString(
-          options.find(
-            (option) =>
-              nullableString(option.key)?.trim().toLowerCase() === key
-          )?.value
+          options.find((option) => {
+            const type = option.variantType;
+            const typeName =
+              typeof type === "string"
+                ? type
+                : nullableString((type as AnyDoc | null)?.name);
+            return typeName?.trim().toLowerCase() === key;
+          })?.label
         );
       const skuCode = nullableString(sku.sku);
       const id = stringValue(sku.id);
       const amount =
-        typeof sku.price_override_amount === "number"
-          ? sku.price_override_amount
-          : typeof product.unit_amount === "number"
-            ? product.unit_amount
-            : null;
+        catalogUnitAmount(sku) || catalogUnitAmount(product) || null;
 
       return {
         id,

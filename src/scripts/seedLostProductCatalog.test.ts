@@ -17,12 +17,13 @@ describe("LOSTINSEOUL fragrance seed catalog", () => {
     for (const product of LOST_FRAGRANCE_SEED_PRODUCTS) {
       expect(product).toMatchObject({
         active: false,
-        currency: "KRW",
-        unit_amount: 0,
+        priceInKRWEnabled: false,
         standard_enabled: false,
         request_to_order_enabled: false,
         private_order_enabled: false
       });
+      expect(product).not.toHaveProperty("unit_amount");
+      expect(product).not.toHaveProperty("currency");
       expect(product).not.toHaveProperty("inventory");
       expect(product).not.toHaveProperty("stock_state");
       expect(product).not.toHaveProperty("variant_source");

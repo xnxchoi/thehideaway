@@ -17,6 +17,14 @@ import {
   releaseInventoryLot,
   type InventoryOperationResult
 } from "@/lib/lost-commerce/inventory-operations";
+import {
+  DEFAULT_VARIANT_OPTION,
+  DEFAULT_VARIANT_TYPE,
+  inventoryCollectionsReady,
+  pluginLaunchProductData,
+  pluginLaunchVariantData
+} from "@/payload/plugins/ecommerce/seed-catalog";
+
 import { LOST_LAUNCH_PRODUCTS } from "./lostLaunchCatalog";
 import {
   lostLaunchInventoryAction,
@@ -70,12 +78,12 @@ async function transactional<T>(
 
 async function findOne(
   payload: Payload,
-  collection: Parameters<Payload["find"]>[0]["collection"],
+  collection: string,
   where: Record<string, unknown>,
   req?: PayloadRequest
 ): Promise<DocumentWithId | null> {
   const result = await payload.find({
-    collection,
+    collection: collection as never,
     depth: 0,
     limit: 1,
     overrideAccess: true,
@@ -199,13 +207,58 @@ async function ensureCategory(
   return relationshipId(created.id);
 }
 
+async function ensureDefaultVariantTaxonomy(
+  payload: Payload,
+  req: PayloadRequest
+): Promise<{ typeId: string; optionId: string }> {
+  const existingType = await findOne(
+    payload,
+    "variantTypes",
+    { name: { equals: DEFAULT_VARIANT_TYPE.name } },
+    req
+  );
+  const typeDoc = existingType
+    ? existingType
+    : ((await payload.create({
+        collection: "variantTypes",
+        data: { ...DEFAULT_VARIANT_TYPE },
+        overrideAccess: true,
+        req
+      } as never)) as DocumentWithId);
+  const typeId = relationshipId(typeDoc.id);
+  const existingOption = await findOne(
+    payload,
+    "variantOptions",
+    {
+      and: [
+        { label: { equals: DEFAULT_VARIANT_OPTION.label } },
+        { variantType: { equals: typeId } }
+      ]
+    },
+    req
+  );
+  const optionDoc = existingOption
+    ? existingOption
+    : ((await payload.create({
+        collection: "variantOptions",
+        data: {
+          ...DEFAULT_VARIANT_OPTION,
+          variantType: typeId
+        },
+        overrideAccess: true,
+        req
+      } as never)) as DocumentWithId);
+  return { typeId, optionId: relationshipId(optionDoc.id) };
+}
+
 async function upsertCatalog(
   payload: Payload,
   baseReq: PayloadRequest,
   mediaIds: Map<string, string>
 ): Promise<Map<string, string>> {
-  return transactional(payload, baseReq, async (req) => {
-    const skuIds = new Map<string, string>();
+  const catalog = await transactional(payload, baseReq, async (req) => {
+    const taxonomy = await ensureDefaultVariantTaxonomy(payload, req);
+    const productIds = new Map<string, string>();
 
     for (const product of LOST_LAUNCH_PRODUCTS) {
       const categoryId = await ensureCategory(
@@ -223,28 +276,12 @@ async function upsertCatalog(
         return mediaId;
       });
       const productData = {
-        name: product.name,
-        slug: product.slug,
-        active: true,
-        storefront: "lostinseoul",
-        category: categoryId,
-        summary: product.summary,
-        details: product.details,
-        shipping_returns: product.shippingReturns,
-        hero_media: heroMedia,
-        gallery,
-        currency: product.currency,
-        unit_amount: product.unitAmount,
-        min_order_quantity: 1,
-        max_order_quantity: product.availableQuantity ?? 1,
-        standard_enabled: product.fulfillment === "stock",
-        request_to_order_enabled: product.fulfillment === "preorder",
-        private_order_enabled: false,
-        private_preset_price_enabled: false,
-        private_unit_amount: null,
-        private_tier_gate: "anyone",
-        sort: product.sort
-      } as const;
+        ...pluginLaunchProductData(product, categoryId, {
+          heroMedia,
+          gallery
+        }),
+        variantTypes: [taxonomy.typeId]
+      };
       const existingProduct = await findOne(
         payload,
         "products",
@@ -256,19 +293,34 @@ async function upsertCatalog(
             collection: "products",
             id: existingProduct.id,
             data: productData,
+            draft: false,
             overrideAccess: true,
             req
           } as never)
         : await payload.create({
             collection: "products",
             data: productData,
+            draft: false,
             overrideAccess: true,
             req
           } as never);
-      const productId = relationshipId((productDoc as DocumentWithId).id);
+      productIds.set(
+        product.slug,
+        relationshipId((productDoc as DocumentWithId).id)
+      );
+    }
+
+    return { productIds, optionId: taxonomy.optionId };
+  });
+
+  return transactional(payload, baseReq, async (req) => {
+    const skuIds = new Map<string, string>();
+    for (const product of LOST_LAUNCH_PRODUCTS) {
+      const productId = catalog.productIds.get(product.slug);
+      if (!productId) throw new Error(`lost-launch-product-missing:${product.slug}`);
       const existingSku = await findOne(
         payload,
-        "product-variants",
+        "variants",
         {
           and: [
             { sku: { equals: product.sku } },
@@ -277,36 +329,27 @@ async function upsertCatalog(
         },
         req
       );
+      const variantData = pluginLaunchVariantData(product, productId, [
+        catalog.optionId
+      ]);
       const skuDoc = existingSku
         ? await payload.update({
-            collection: "product-variants",
+            collection: "variants",
             id: existingSku.id,
-            data: {
-              active: true,
-              label: product.name,
-              price_override_amount: null,
-              sort: product.sort
-            },
+            data: variantData,
+            draft: false,
             overrideAccess: true,
             req
           } as never)
         : await payload.create({
-            collection: "product-variants",
-            data: {
-              product: productId,
-              active: true,
-              sku: product.sku,
-              label: product.name,
-              options: [],
-              price_override_amount: null,
-              sort: product.sort
-            },
+            collection: "variants",
+            data: variantData,
+            draft: false,
             overrideAccess: true,
             req
           } as never);
       skuIds.set(product.slug, relationshipId((skuDoc as DocumentWithId).id));
     }
-
     return skuIds;
   });
 }
@@ -322,7 +365,7 @@ async function ensureStockLocation(
 
   return transactional(payload, baseReq, async (req) => {
     const created = await payload.create({
-      collection: "stock-locations",
+      collection: "stock-locations" as never,
       data: { code: "SEOUL", name: "Seoul", active: true },
       overrideAccess: true,
       req
@@ -338,7 +381,7 @@ async function ensureHoodieInventory(
   locationId: string
 ): Promise<void> {
   const levels = await payload.find({
-    collection: "inventory-levels",
+    collection: "inventory-levels" as never,
     depth: 0,
     limit: 1,
     overrideAccess: true,
@@ -350,7 +393,9 @@ async function ensureHoodieInventory(
       ]
     }
   });
-  const quantity = Number(levels.docs[0]?.quantity ?? 0);
+  const quantity = Number(
+    (levels.docs[0] as { quantity?: unknown } | undefined)?.quantity ?? 0
+  );
   const existingReceipt = await findOne(payload, "inventory-receipts", {
     external_reference: { equals: "lost-launch-hoodie-v1" }
   });
@@ -444,7 +489,7 @@ async function assertHoodieInventoryComplete(
 ): Promise<void> {
   const [levels, receipt] = await Promise.all([
     payload.find({
-      collection: "inventory-levels",
+      collection: "inventory-levels" as never,
       depth: 0,
       limit: 1,
       overrideAccess: true,
@@ -460,7 +505,9 @@ async function assertHoodieInventoryComplete(
       external_reference: { equals: "lost-launch-hoodie-v1" }
     })
   ]);
-  const quantity = Number(levels.docs[0]?.quantity ?? 0);
+  const quantity = Number(
+    (levels.docs[0] as { quantity?: unknown } | undefined)?.quantity ?? 0
+  );
   if (quantity !== 5 || receipt?.status !== "closed") {
     throw new Error(
       `lost-launch-hoodie-postcondition:${quantity}:${String(receipt?.status ?? "none")}`
@@ -496,11 +543,18 @@ export async function bootstrapLostLaunch(payload: Payload): Promise<void> {
   const skuIds = await upsertCatalog(payload, req, mediaIds);
   const hoodieSkuId = skuIds.get("damaged-love-the-damaged");
   if (!hoodieSkuId) throw new Error("lost-launch-hoodie-sku-missing");
-  const locationId = await ensureStockLocation(payload, req);
-  await ensureHoodieInventory(payload, req, hoodieSkuId, locationId);
+
+  if (inventoryCollectionsReady(payload)) {
+    const locationId = await ensureStockLocation(payload, req);
+    await ensureHoodieInventory(payload, req, hoodieSkuId, locationId);
+    payload.logger.info(
+      "[bootstrap:lost-launch] catalog ready; hoodie stock=5; pre-orders remain campaign-gated"
+    );
+    return;
+  }
 
   payload.logger.info(
-    "[bootstrap:lost-launch] catalog ready; hoodie stock=5; pre-orders remain campaign-gated"
+    "[bootstrap:lost-launch] catalog ready; inventory collections unregistered, skipping stock"
   );
 }
 

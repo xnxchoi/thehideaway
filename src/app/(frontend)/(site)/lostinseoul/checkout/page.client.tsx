@@ -10,20 +10,17 @@ import {
 } from "@/lib/lost-commerce/payment-preview";
 import {
   LOST_PENDING_PAYMENT_STORAGE_KEY,
-  productPaymentRecoveryAction,
-  type PendingProductPayment,
-  type ProductPaymentRecoveryResult
+  type PendingProductPayment
 } from "@/lib/lost-commerce/payment-recovery";
+import { useLostCart } from "@/lib/lost-commerce/useLostCart";
+import { usePayments } from "@payloadcms/plugin-ecommerce/client/react";
 import {
-  serializeLostCartLines,
-  useLostCart
-} from "@/lib/lost-commerce/useLostCart";
+  pluginConfirmOrderRef,
+  pluginPortOneClientPayload,
+  pluginPortOnePaymentId
+} from "@/payload/plugins/ecommerce/client/portone-checkout";
 import {
-  checkoutCommandFailureAction,
-  checkoutCompletionAction,
-  checkoutIdempotencyKey,
   clearCheckoutIdempotencyKey,
-  parseCheckoutIntentSuccess,
   replaceCheckoutCommandWithPendingPayment
 } from "./checkout-idempotency";
 import "../index.css";
@@ -54,7 +51,9 @@ function readPendingPayment(): PendingProductPayment | null {
     );
     return parsed &&
       typeof parsed.orderRef === "string" &&
-      typeof parsed.paymentId === "string"
+      typeof parsed.paymentId === "string" &&
+      typeof parsed.customerEmail === "string" &&
+      parsed.customerEmail.trim()
       ? parsed
       : null;
   } catch {
@@ -84,19 +83,6 @@ type Labels = {
   empty: string;
   total: string;
 };
-
-function isPortOneV2Payload(
-  payload: unknown
-): payload is { storeId: string; paymentId: string } {
-  return (
-    typeof payload === "object" &&
-    payload !== null &&
-    "storeId" in payload &&
-    typeof (payload as { storeId?: unknown }).storeId === "string" &&
-    "paymentId" in payload &&
-    typeof (payload as { paymentId?: unknown }).paymentId === "string"
-  );
-}
 
 function isPortOneFailure(response: unknown): response is { code: string } {
   return (
@@ -134,40 +120,6 @@ function loadPortOneSdk(sdkVersion: "v2" | "global"): Promise<void> {
   });
 }
 
-async function reconcileFailedOrder(
-  orderRef: string
-): Promise<ProductPaymentRecoveryResult> {
-  try {
-    const response = await fetch("/api/lost/checkout/cancel", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ order_ref: orderRef })
-    });
-    return (await response
-      .json()
-      .catch(() => null)) as ProductPaymentRecoveryResult;
-  } catch {
-    return null;
-  }
-}
-
-async function verifyPendingPayment(
-  paymentId: string
-): Promise<ProductPaymentRecoveryResult> {
-  try {
-    const response = await fetch("/api/lost/checkout/verify", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ payment_id: paymentId })
-    });
-    return (await response
-      .json()
-      .catch(() => null)) as ProductPaymentRecoveryResult;
-  } catch {
-    return null;
-  }
-}
-
 export function LostCheckoutPageClient({
   colophon,
   labels,
@@ -184,6 +136,7 @@ export function LostCheckoutPageClient({
   portOneSdkVersion: "v2" | "global";
 }) {
   const { lines, total, clear } = useLostCart();
+  const { confirmOrder, initiatePayment } = usePayments();
   const portOneUiEnabled = isLostCommercePaymentUiEnabled({
     configured: portOneEnabled,
     previewEnabled: paymentPreviewEnabled
@@ -212,37 +165,28 @@ export function LostCheckoutPageClient({
     }
   }, [commerceConnected]);
 
-  function finishReconciliation(
-    result: ProductPaymentRecoveryResult,
-    payment: PendingProductPayment
-  ): boolean {
-    const recovery = productPaymentRecoveryAction(result);
-    if (recovery === "success") {
-      rememberPendingPayment(null);
-      setPendingPayment(null);
-      clear();
-      window.location.href = `/lostinseoul/payment/success?order=${encodeURIComponent(
-        payment.orderRef
-      )}`;
-      return true;
-    }
-    if (recovery === "failure") {
-      rememberPendingPayment(null);
-      setPendingPayment(null);
-      window.location.href = `/lostinseoul/payment/failure?order=${encodeURIComponent(
-        payment.orderRef
-      )}`;
-      return true;
-    }
-    setState("failed");
-    return false;
-  }
-
   async function recoverPendingPayment() {
     if (!pendingPayment) return;
     setState("reconciling");
-    const result = await verifyPendingPayment(pendingPayment.paymentId);
-    finishReconciliation(result, pendingPayment);
+    try {
+      const confirmed = await confirmOrder("portone", {
+        additionalData: {
+          paymentId: pendingPayment.paymentId,
+          customerEmail: pendingPayment.customerEmail
+        }
+      });
+      const orderRef =
+        pluginConfirmOrderRef(confirmed) ?? pendingPayment.orderRef;
+      rememberPendingPayment(null);
+      setPendingPayment(null);
+      clearCheckoutIdempotencyKey();
+      await Promise.resolve(clear()).catch(() => undefined);
+      window.location.href = `/lostinseoul/payment/success?order=${encodeURIComponent(
+        orderRef
+      )}`;
+    } catch {
+      setState("failed");
+    }
   }
 
   async function submit(form: HTMLFormElement) {
@@ -277,57 +221,37 @@ export function LostCheckoutPageClient({
         setState("failed");
         return;
       }
-    }
-    const requestBody = JSON.stringify({
-      paymentProvider,
-      contact: {
-        name: formData.get("name"),
-        email: formData.get("email"),
-        phone: formData.get("phone")
-      },
-      shipping: {
-        address: formData.get("address"),
-        note: formData.get("note")
-      },
-      lines: serializeLostCartLines(lines)
-    });
-    let response: Response;
-    try {
-      const commandKey = await checkoutIdempotencyKey(requestBody);
-      response = await fetch("/api/lost/checkout/intent", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "idempotency-key": commandKey
+      const customerEmail = String(formData.get("email") ?? "").trim();
+      const additionalData = {
+        customerEmail,
+        shippingAddress: {
+          firstName: String(formData.get("name") ?? "").trim(),
+          phone: String(formData.get("phone") ?? "").trim(),
+          addressLine1: String(formData.get("address") ?? "").trim()
         },
-        body: requestBody
-      });
-    } catch {
-      setState("failed");
-      return;
-    }
-    const responseBody = await response.json().catch(() => null);
-    const data = response.ok
-      ? parseCheckoutIntentSuccess(responseBody, paymentProvider)
-      : null;
-    if (!data) {
-      if (
-        checkoutCommandFailureAction(response.status, responseBody) === "clear"
-      ) {
-        clearCheckoutIdempotencyKey();
+        billingAddress: {
+          firstName: String(formData.get("name") ?? "").trim(),
+          phone: String(formData.get("phone") ?? "").trim(),
+          addressLine1: String(formData.get("address") ?? "").trim()
+        }
+      };
+      let initiated: unknown;
+      try {
+        initiated = await initiatePayment("portone", { additionalData });
+      } catch {
+        setState("failed");
+        return;
       }
-      setState("failed");
-      return;
-    }
-    if (
-      checkoutCompletionAction(paymentProvider) === "reconcile" &&
-      data.portone
-    ) {
+      const clientPayload = pluginPortOneClientPayload(initiated);
+      const paymentId = pluginPortOnePaymentId(initiated);
+      if (!clientPayload || !paymentId) {
+        setState("failed");
+        return;
+      }
       const payment = {
-        orderRef: data.order.order_ref as string,
-        paymentId: isPortOneV2Payload(data.portone)
-          ? data.portone.paymentId
-          : (data.order.order_ref as string)
+        orderRef: paymentId,
+        paymentId,
+        customerEmail
       };
       try {
         replaceCheckoutCommandWithPendingPayment(payment);
@@ -342,29 +266,33 @@ export function LostCheckoutPageClient({
           setState("failed");
           return;
         }
-        const portOneResponse = await requestPayment(data.portone);
+        const portOneResponse = await requestPayment(clientPayload);
         if (isPortOneFailure(portOneResponse)) {
-          const reconciled = await reconcileFailedOrder(data.order.order_ref);
-          finishReconciliation(reconciled, payment);
+          rememberPendingPayment(null);
+          setPendingPayment(null);
+          setState("failed");
           return;
         }
-        const verified = await verifyPendingPayment(payment.paymentId);
-        finishReconciliation(verified, payment);
+        const confirmed = await confirmOrder("portone", {
+          additionalData: { paymentId, customerEmail }
+        });
+        const orderRef = pluginConfirmOrderRef(confirmed) ?? paymentId;
+        rememberPendingPayment(null);
+        setPendingPayment(null);
+        clearCheckoutIdempotencyKey();
+        await Promise.resolve(clear()).catch(() => undefined);
+        window.location.href = `/lostinseoul/payment/success?order=${encodeURIComponent(
+          orderRef
+        )}`;
         return;
       } catch {
-        const reconciled = await reconcileFailedOrder(data.order.order_ref);
-        finishReconciliation(reconciled, payment);
+        rememberPendingPayment(null);
+        setPendingPayment(null);
+        setState("failed");
         return;
       }
     }
-
-    clearCheckoutIdempotencyKey();
-    rememberPendingPayment(null);
-    setPendingPayment(null);
-    clear();
-    window.location.href = `/lostinseoul/payment/pending?order=${encodeURIComponent(
-      data.order.order_ref
-    )}`;
+    setState("failed");
   }
 
   return (

@@ -27,6 +27,11 @@ export const rejectCampaignReferencedProductReassignment: CollectionBeforeChange
     const skuId = relationshipId(originalDoc as RelationshipValue);
     if (!skuId) throw new Error("sku-id-required");
 
+    const collections = req.payload.collections;
+    if (collections && !("product-order-campaigns" in collections)) {
+      return data;
+    }
+
     const referencedCampaigns = await req.payload.find({
       collection: "product-order-campaigns",
       where: { eligible_skus: { contains: skuId } },

@@ -1,8 +1,7 @@
 import { Target } from "motion";
-import { TransitionState } from "@/stores/RP_Ui";
 
 export type LostEntryElement = "stage" | "chrome" | "heroText" | "heroButton";
-
+export type LostEntryPhase = "loading" | "ready" | "ending";
 type LostEntryElementState = {
   opacity: number | number[];
   pointerEvents?: "auto" | "none";
@@ -14,9 +13,9 @@ export const LOST_ENTRY_PHASE_EVENT = "lost:entry-phase";
 
 export const lostEntryDelays = {
   ending: {
-    chrome: 0.62,
+    chrome: 0.51,
     heroButton: 9.62,
-    heroText: 0.51,
+    heroText: 0.62,
     stage: 0
   },
   ready: {
@@ -62,6 +61,7 @@ export function getLostEntryElementState(
         toReturn.y = 0;
         toReturn.pointerEvents = "auto";
       }
+      break;
     }
     default: {
       if (phase === "loading") {
@@ -96,12 +96,29 @@ export function isLostEntryPhase(
   return value === "loading" || value === "ending" || value === "ready";
 }
 
+export function parseLostEntryPhaseEvent(event: Event): LostEntryPhase | null {
+  const detail = "detail" in event ? (event as CustomEvent<unknown>).detail : undefined;
+  if (typeof detail === "string") {
+    return isLostEntryPhase(detail) ? detail : null;
+  }
+  if (
+    detail !== null &&
+    typeof detail === "object" &&
+    "phase" in detail &&
+    typeof (detail as { phase?: unknown }).phase === "string"
+  ) {
+    const phase = (detail as { phase: string }).phase;
+    return isLostEntryPhase(phase) ? phase : null;
+  }
+  return null;
+}
+
 export function resolveLostHeaderEntryPhase({
   animated,
   observedPhase
 }: {
   animated: boolean;
-  observedPhase: TransitionState;
+  observedPhase: LostEntryPhase;
 }): LostEntryPhase {
   return animated ? observedPhase : "ready";
 }

@@ -244,26 +244,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const hasPresetPrice = quoteLine.unitAmount !== null;
 
     const order = (await payload.create({
-      collection: "product-orders",
+      collection: "orders",
       overrideAccess: true,
       req: txReq,
       data: {
         order_ref: commandClaim.businessKey,
-        user: userId,
-        storefront: "lostinseoul",
+        customer: userId,
         order_mode: "private_order",
-        status: "quote_requested",
+        status: "processing",
+        lifecycle_status: "quote_requested",
         payment_status: "unpaid",
         fulfillment_status: "unfulfilled",
         currency: resolved.currency,
-        subtotal_amount: hasPresetPrice ? resolved.subtotalAmount : 0,
-        total_amount: hasPresetPrice ? resolved.totalAmount : 0,
+        amount: hasPresetPrice ? resolved.totalAmount : 0,
+        items: [quoteLine],
         line_snapshot_version: 3,
-        lines: [quoteLine],
-        shipping: parsed.data.shipping,
         contact: parsed.data.contact,
         quote: { state: "requested", note: parsed.data.note }
-      }
+      } as never
     })) as unknown as { id: string | number; order_ref: string };
 
     const response = {

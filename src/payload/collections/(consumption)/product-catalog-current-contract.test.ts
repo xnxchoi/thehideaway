@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { getTableColumns } from "drizzle-orm";
 
-import { commerce_products } from "@/payload-generated-schema";
-import { CommerceProducts } from "../commerce/Products";
+import { products } from "@/payload-generated-schema";
+import { productsCollectionOverride } from "@/payload/plugins/ecommerce/products-collection";
 
 function fieldNames(config: { fields: readonly unknown[] }): string[] {
   return config.fields.flatMap((field) => {
@@ -11,32 +11,33 @@ function fieldNames(config: { fields: readonly unknown[] }): string[] {
   });
 }
 
-describe("current minimal commerce product catalog schema", () => {
-  it("contains no compatibility fields on products", () => {
-    expect(fieldNames(CommerceProducts)).not.toEqual(
+describe("plugin product catalog schema", () => {
+  it("does not keep Stack A money or inventory fields on plugin products", async () => {
+    const collection = await productsCollectionOverride({
+      defaultCollection: {
+        slug: "products",
+        fields: [{ name: "priceInKRW", type: "number" }],
+        access: {},
+        hooks: {}
+      } as never
+    });
+    expect(fieldNames(collection)).not.toEqual(
       expect.arrayContaining([
+        "unit_amount",
         "inventory",
         "stock_state",
-        "variant_source",
-        "variants"
+        "variant_source"
       ])
     );
   });
 
-  it("does not expose compatibility fields in admin listings", () => {
-    expect(CommerceProducts.admin?.defaultColumns).not.toEqual(
-      expect.arrayContaining(["inventory", "stock_state"])
-    );
-  });
-
-  it("contains no compatibility columns in the generated PostgreSQL schema", () => {
-    expect(Object.keys(getTableColumns(commerce_products))).not.toEqual(
-      expect.arrayContaining([
-        "inventory",
-        "stock_state",
-        "variant_source",
-        "variants"
-      ])
+  it("stores plugin integer prices instead of unit_amount", () => {
+    const columns = Object.keys(getTableColumns(products));
+    expect(columns).toEqual(expect.arrayContaining(["priceInKRW"]));
+    expect(columns).not.toEqual(expect.arrayContaining(["unit_amount"]));
+    expect(columns).not.toEqual(
+      expect.arrayContaining(["inventory", "stock_state", "variant_source"])
     );
   });
 });
+

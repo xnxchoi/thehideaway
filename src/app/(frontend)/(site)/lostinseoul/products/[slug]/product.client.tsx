@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PlusIcon, XIcon } from "@phosphor-icons/react";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
@@ -136,6 +137,7 @@ export function LostProductDetailClient({
   enableProductStage?: boolean;
 }) {
   const { add } = useLostCart();
+  const router = useRouter();
   const [mode, setMode] = useState<LostOrderMode | null>(
     product.modes[0] ?? null
   );
@@ -254,15 +256,20 @@ export function LostProductDetailClient({
   const addToCart = () => {
     const line = buildCartLine();
     if (!line) return;
-    add(line);
-    setAdded(true);
+    void Promise.resolve(add(line))
+      .then(() => setAdded(true))
+      .catch(() => undefined);
   };
 
   const buyNow = () => {
     const line = buildCartLine();
     if (!line) return;
-    add(line);
-    setAdded(true);
+    void Promise.resolve(add(line))
+      .then(() => {
+        setAdded(true);
+        router.push("/lostinseoul/checkout");
+      })
+      .catch(() => undefined);
   };
 
   useEffect(() => {
@@ -805,13 +812,13 @@ export function LostProductDetailClient({
                 </form>
               ) : canUseActions ? (
                 <div className="grid grid-cols-2 gap-x-2 pb-7 lg:gap-x-4 lg:pb-8">
-                  <Link
+                  <Button
                     className="lost-source-button lost-source-button--white justify-center"
-                    href="/checkout"
                     onClick={buyNow}
+                    type="button"
                   >
                     <span>{labels.directPurchase}</span>
-                  </Link>
+                  </Button>
                   <Button
                     className="lost-source-button justify-center"
                     onClick={addToCart}
@@ -939,7 +946,7 @@ export function LostProductDetailClient({
             <div className="grid grid-cols-2 gap-2">
               <Link
                 className="lost-source-button lost-source-button--white justify-center"
-                href="/checkout"
+                href="/lostinseoul/checkout"
                 onClick={buyNow}
               >
                 <span>{labels.directPurchase}</span>

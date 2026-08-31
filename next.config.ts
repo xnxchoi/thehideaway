@@ -239,6 +239,7 @@ const nextConfig: NextConfig = {
       }
     ];
   },
+  transpilePackages: ["@payloadcms/plugin-ecommerce"],
   output: "standalone"
 };
 

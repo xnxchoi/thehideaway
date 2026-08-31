@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { createTranslator } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { RPage } from "@/components/UX/Transition";
-import { getLostHomeData } from "@/lib/lost-commerce/queries";
-import { getCommerceFragrancePresentation } from "@/lib/commerce/product-presentation";
+import {
+  getLostFragranceData,
+  getLostHomeData
+} from "@/lib/lost-commerce/queries";
 import enMessages from "../../../../../../messages/en.json";
 import koMessages from "../../../../../../messages/ko.json";
 import { getLostBusinessFooterProps } from "../business-footer-props";
 import { LostFragranceChapter, type LostFragranceCopy } from "./page.client";
 
+export const instant = false;
+
 export async function generateMetadata(): Promise<Metadata> {
+  await connection();
   const t = await getTranslations("LOSTINSEOUL.fragrance");
   return {
     title: t("metaTitle"),
@@ -58,8 +64,9 @@ function copyFrom(t: FragranceTranslator): LostFragranceCopy {
 }
 
 export default async function LostFragrancePage() {
+  await connection();
   const [product, home, rawLocale, t] = await Promise.all([
-    getCommerceFragrancePresentation().catch(() => null),
+    getLostFragranceData().catch(() => null),
     getLostHomeData().catch(() => ({ drops: [], products: [] })),
     getLocale(),
     getTranslations("LOSTINSEOUL")
@@ -67,7 +74,7 @@ export default async function LostFragrancePage() {
   const locale = rawLocale === "ko" ? "ko" : "en";
   const tEn = fragranceTranslator("en");
   const tKo = fragranceTranslator("ko");
-  const checkoutEnabled = false;
+  const checkoutEnabled = true;
 
   return (
     <RPage slug={["lostinseoul", "fragrance"]} theme="dark" type="pages">

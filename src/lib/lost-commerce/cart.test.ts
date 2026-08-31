@@ -127,7 +127,7 @@ describe("resolveLostCheckout", () => {
     });
     const findByID = payload.findByID.bind(payload);
     payload.findByID = async (args: { collection: string; id: string }) => {
-      if (args.collection === "product-variants") throw infrastructureError;
+      if (args.collection === "variants") throw infrastructureError;
       return findByID(args);
     };
 

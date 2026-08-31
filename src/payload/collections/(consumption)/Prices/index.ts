@@ -38,6 +38,14 @@ export const Prices: CollectionConfig = {
   },
   fields: [
     {
+      name: "nickname",
+      type: "text",
+      required: true,
+      admin: {
+        description: "Admin label for this price row."
+      }
+    },
+    {
       name: "plan",
       type: "relationship",
       relationTo: "plans",

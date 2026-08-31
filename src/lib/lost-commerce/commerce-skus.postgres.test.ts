@@ -10,7 +10,6 @@ import {
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { ProductOrderCampaigns } from "@/payload/collections/(consumption)/ProductOrderCampaigns";
-import { ProductOrders } from "@/payload/collections/(consumption)/ProductOrders";
 import { lockProductUpdate } from "@/payload/collections/(consumption)/Products/lockProductUpdate";
 import { ProductVariants } from "@/payload/collections/(consumption)/ProductVariants";
 import {
@@ -86,6 +85,11 @@ const TestUsers: CollectionConfig = {
   fields: []
 };
 
+const TestProductOrders: CollectionConfig = {
+  slug: "product-orders",
+  fields: [{ name: "order_ref", type: "text" }]
+};
+
 type CreatedProduct = {
   id: string;
   name: string;
@@ -113,7 +117,7 @@ describeWithPostgres.sequential(
           TestProducts,
           TestProductVariants,
           ProductOrderCampaigns,
-          ProductOrders
+          TestProductOrders
         ]
       });
       payload = await getPayload({ config });

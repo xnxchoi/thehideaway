@@ -21,26 +21,30 @@ export default async function LostOrderPage({ params }: Props) {
 
   const payload = await getPayload({ config });
   const result = await payload.find({
-    collection: "commerce-orders" as never,
+    collection: "orders",
     depth: 0,
     limit: 1,
     overrideAccess: true,
     where: {
-      and: [{ ref: { equals: ref } }, { user: { equals: session.user.id } }]
+      and: [
+        { order_ref: { equals: ref } },
+        { customer: { equals: session.user.id } }
+      ]
     }
   });
   const order = result.docs[0] as
     | {
-        ref: string;
+        order_ref: string;
         status: string;
+        lifecycle_status?: string;
         payment_status: string;
         currency: "KRW" | "USD" | "JPY" | "EUR";
-        total_amount: number;
-        product_name_snapshot: string;
-        quantity: number;
+        amount?: number;
+        items?: Array<{ product_name?: string; quantity?: number }>;
       }
     | undefined;
   if (!order) notFound();
+  const firstItem = order.items?.[0];
 
   const t = await getTranslations("LOSTINSEOUL.order");
 
@@ -55,14 +59,16 @@ export default async function LostOrderPage({ params }: Props) {
             {t("title")}
           </h1>
           <p className="mt-4 font-mono text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
-            {order.ref}
+            {order.order_ref}
           </p>
           <dl className="mt-8 grid gap-4 border-y border-[oklch(from_var(--fg)_l_c_h_/_0.15)] py-6 sm:grid-cols-3">
             <div>
               <dt className="text-sm text-[oklch(from_var(--fg)_l_c_h_/_0.6)]">
                 {t("status")}
               </dt>
-              <dd className="mt-1 text-base font-medium">{order.status}</dd>
+              <dd className="mt-1 text-base font-medium">
+                {order.lifecycle_status ?? order.status}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-[oklch(from_var(--fg)_l_c_h_/_0.6)]">
@@ -78,7 +84,7 @@ export default async function LostOrderPage({ params }: Props) {
               </dt>
               <dd className="mt-1 text-base font-medium">
                 {formatLostMoney(
-                  Number(order.total_amount ?? 0),
+                  Number(order.amount ?? 0),
                   order.currency
                 )}
               </dd>
@@ -86,9 +92,9 @@ export default async function LostOrderPage({ params }: Props) {
           </dl>
           <div className="mt-8 divide-y divide-[oklch(from_var(--fg)_l_c_h_/_0.15)]">
             <div className="flex justify-between py-4">
-              <span>{order.product_name_snapshot}</span>
+              <span>{firstItem?.product_name ?? ""}</span>
               <span className="font-mono text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
-                x {order.quantity}
+                x {firstItem?.quantity ?? 0}
               </span>
             </div>
           </div>

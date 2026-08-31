@@ -228,7 +228,7 @@ export function buildPortOnePaymentPayload(input: {
       payMethod: input.paymentMethod ?? cfg.defaultMethod ?? "CARD",
       redirectUrl: returnUrl,
       forceRedirect: true,
-      noticeUrls: [`${input.origin}/api/commerce/payments/card/webhook`],
+      noticeUrls: [`${input.origin}/api/payments/portone/webhooks`],
       products:
         input.products && input.products.length > 0
           ? input.products

@@ -375,12 +375,12 @@ describe("POST /api/lost/private-quotes", () => {
     });
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        collection: "product-orders",
+        collection: "orders",
         overrideAccess: true,
         data: expect.objectContaining({
           line_snapshot_version: 3,
-          lines: [skuSnapshot],
-          shipping: { country: "KR" },
+          items: [skuSnapshot],
+          customer: "user-1",
           contact: { email: "buyer@example.com" },
           quote: { state: "requested", note: "Gift packaging" }
         })
@@ -422,7 +422,7 @@ describe("POST /api/lost/private-quotes", () => {
     );
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        collection: "product-orders",
+        collection: "orders",
         req: expect.objectContaining({ transactionID: "tx-1", context: {} })
       })
     );
@@ -568,9 +568,8 @@ describe("POST /api/lost/private-quotes", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           currency: "KRW",
-          subtotal_amount: 360000,
-          total_amount: 360000,
-          lines: [
+          amount: 360000,
+          items: [
             expect.objectContaining({
               schemaVersion: 3,
               skuId: "sku-1",
@@ -608,9 +607,8 @@ describe("POST /api/lost/private-quotes", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           currency: "USD",
-          subtotal_amount: 280,
-          total_amount: 280,
-          lines: [usdSnapshot]
+          amount: 280,
+          items: [usdSnapshot]
         })
       })
     );
@@ -634,9 +632,8 @@ describe("POST /api/lost/private-quotes", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           currency: "KRW",
-          subtotal_amount: 360_000,
-          total_amount: 360_000,
-          lines: [skuSnapshot]
+          amount: 360_000,
+          items: [skuSnapshot]
         })
       })
     );
@@ -665,9 +662,8 @@ describe("POST /api/lost/private-quotes", () => {
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          subtotal_amount: 0,
-          total_amount: 0,
-          lines: [
+          amount: 0,
+          items: [
             expect.objectContaining({
               unitAmount: null,
               lineAmount: null

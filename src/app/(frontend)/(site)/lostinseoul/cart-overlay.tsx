@@ -44,17 +44,15 @@ import {
   type LostBagRootMotionTarget,
   toLostBagFrameStyleVars
 } from "./cart-frame";
+import { useTranslations } from "next-intl";
 
 type Props = {
-  cartLabel: string;
-  backLabel: string;
+
   commerceRootRef: RefObject<HTMLElement | null>;
-  emptyLabel: string;
-  checkoutLabel: string;
+
   onOpenChange: (open: boolean) => void;
   open: boolean;
-  removeLabel: string;
-  totalLabel: string;
+
 };
 
 type CartLine = ReturnType<typeof useLostCart>["lines"][number];
@@ -69,15 +67,12 @@ function clearLostBagRootInlineStyles(root: HTMLElement | null) {
 }
 
 export function LostCartOverlay({
-  backLabel,
-  cartLabel,
-  checkoutLabel,
+
   commerceRootRef,
-  emptyLabel,
+
   onOpenChange,
   open,
-  removeLabel,
-  totalLabel
+
 }: Props) {
   const [mounted, setMounted] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(
@@ -133,20 +128,18 @@ export function LostCartOverlay({
       {open ? (
         <LostBagSurface
           apertureRef={apertureRef}
-          backLabel={backLabel}
-          cartLabel={cartLabel}
-          checkoutLabel={checkoutLabel}
+
+
           count={count}
           currency={currency}
-          emptyLabel={emptyLabel}
           key="lost-bag-surface"
           lines={lines}
           onClose={closeBag}
           onRemove={remove}
           open={open}
-          removeLabel={removeLabel}
+
           total={total}
-          totalLabel={totalLabel}
+
         />
       ) : null}
     </AnimatePresence>
@@ -156,7 +149,7 @@ export function LostCartOverlay({
     <>
       <LostBagTransformStyles />
       <LostBagOpenButton
-        cartLabel={cartLabel}
+
         count={count}
         onOpen={() => onOpenChange(true)}
         open={open}
@@ -474,16 +467,17 @@ function useCartRootTransform(
 }
 
 function LostBagOpenButton({
-  cartLabel,
+
   count,
   onOpen,
   open
 }: {
-  cartLabel: string;
+
   count: number;
   onOpen: () => void;
   open: boolean;
 }) {
+  const t = useTranslations("LOSTINSEOUL.cart");
   return (
     <Button
       aria-expanded={open}
@@ -493,7 +487,7 @@ function LostBagOpenButton({
     >
       <ShoppingBagIcon aria-hidden className="size-7" weight="regular" />
       <span>
-        {cartLabel} / {count}
+        {t("title")} / {count}
       </span>
     </Button>
   );
@@ -501,42 +495,37 @@ function LostBagOpenButton({
 
 function LostBagSurface({
   apertureRef,
-  backLabel,
-  cartLabel,
-  checkoutLabel,
+
   count,
   currency,
-  emptyLabel,
+
   lines,
   onClose,
   onRemove,
   open,
-  removeLabel,
+
   total,
-  totalLabel
+
 }: {
   apertureRef: RefObject<HTMLButtonElement | null>;
-  backLabel: string;
-  cartLabel: string;
-  checkoutLabel: string;
+
   count: number;
   currency: LostCurrency;
-  emptyLabel: string;
+
   lines: CartLine[];
   onClose: () => void;
   onRemove: (line: CartLine) => void;
   open: boolean;
-  removeLabel: string;
+
   total: number;
-  totalLabel: string;
+
 }) {
   const isPresent = useIsPresent();
-
+  const t=useTranslations('LOSTINSEOUL.cart')
   return (
     <m.div
       role="dialog"
       aria-modal="true"
-      aria-hidden={!open || !isPresent}
       animate={{ opacity: 1 }}
       data-open={open ? "true" : "false"}
       data-lost-cursor-theme="light"
@@ -546,29 +535,22 @@ function LostBagSurface({
       }}
       initial={{ opacity: 1 }}
       className={cn(
-        "lost-bag-surface fixed inset-0 z-[var(--lost-bag-surface-z)] grid grid-rows-[11.5rem_calc(100svh_-_17.1rem)_5.6rem] gap-5 overflow-hidden px-4 text-[var(--lost-bag-ink)] [--lost-bag-bg:var(--n-s-bg)] [--lost-bag-fg:var(--n-s-fg)] [--lost-bag-ink:var(--n-s-fg)] [--lost-bag-line:oklch(from_var(--n-s-fg)_l_c_h_/_0.15)] [--lost-bag-muted:oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] [--lost-bag-soft:oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] [--lost-bag-strong-ink:var(--n-s-bg)] [--lost-bag-strong:var(--n-s-fg)] lg:grid-cols-12 lg:grid-rows-[18.9rem_auto_7rem] lg:px-28",
+        "lost-bag-surface fixed inset-0 z-(--lost-bag-surface-z) grid grid-rows-[11.5rem_calc(100svh_-_17.1rem)_5.6rem] gap-5 overflow-hidden px-4 text-[var(--lost-bag-ink)] [--lost-bag-bg:var(--n-s-bg)] [--lost-bag-fg:var(--n-s-fg)] [--lost-bag-ink:var(--n-s-fg)] [--lost-bag-line:oklch(from_var(--n-s-fg)_l_c_h_/_0.15)] [--lost-bag-muted:oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] [--lost-bag-soft:oklch(from_var(--n-s-fg)_l_c_h_/_0.08)] [--lost-bag-strong-ink:var(--n-s-bg)] [--lost-bag-strong:var(--n-s-fg)] lg:grid-cols-12 lg:grid-rows-[18.9rem_auto_7rem] lg:px-28",
         open && isPresent ? "pointer-events-auto" : "pointer-events-none"
       )}
       transition={getLostBagSurfaceTransition(true)}
     >
       <LostBagHeader
-        backLabel={backLabel}
-        cartLabel={cartLabel}
         count={count}
         onClose={onClose}
       />
       <LostBagAperture apertureRef={apertureRef} onClose={onClose} />
       <LostBagPanel
-        backLabel={backLabel}
-        checkoutLabel={checkoutLabel}
         currency={currency}
-        emptyLabel={emptyLabel}
         lines={lines}
         onClose={onClose}
         onRemove={onRemove}
-        removeLabel={removeLabel}
         total={total}
-        totalLabel={totalLabel}
       />
       <p className="relative z-10 col-span-full row-start-3 hidden self-center justify-self-center overflow-hidden text-[1.2rem] leading-none text-[var(--lost-bag-muted)] lg:block">
         <m.span
@@ -578,7 +560,7 @@ function LostBagSurface({
           initial={getLostBagOverlayChromeState(false)}
           transition={getLostBagOverlayChromeTransition()}
         >
-          {totalLabel} {formatLostMoney(total, currency)}
+          {t("total")} {formatLostMoney(total, currency)}
         </m.span>
       </p>
     </m.div>
@@ -586,18 +568,14 @@ function LostBagSurface({
 }
 
 function LostBagHeader({
-  backLabel,
-  cartLabel,
   count,
   onClose
 }: {
-  backLabel: string;
-  cartLabel: string;
   count: number;
   onClose: () => void;
 }) {
   const chromeTransition = getLostBagOverlayChromeTransition();
-
+  const t=useTranslations("LOSTINSEOUL")
   return (
     <header className="relative z-10 col-span-full row-start-1 flex h-28 items-center justify-between overflow-hidden pt-6 lg:h-32 lg:pt-16">
       <m.div
@@ -623,7 +601,7 @@ function LostBagHeader({
         initial={getLostBagOverlayChromeState(false)}
         transition={chromeTransition}
       >
-        {cartLabel} [{count.toString().padStart(2, "0")}]
+        {t('cart.title')} [{count.toString().padStart(2, "0")}]
       </m.p>
       <m.div
         animate={getLostBagOverlayChromeState(true)}
@@ -637,7 +615,7 @@ function LostBagHeader({
           type="button"
         >
           <XIcon aria-hidden className="size-6" weight="regular" />
-          {backLabel}
+          {t('order.back')}
         </Button>
       </m.div>
     </header>
@@ -681,28 +659,19 @@ function LostBagAperture({
 }
 
 function LostBagPanel({
-  backLabel,
-  checkoutLabel,
   currency,
-  emptyLabel,
   lines,
   onClose,
   onRemove,
-  removeLabel,
   total,
-  totalLabel
 }: {
-  backLabel: string;
-  checkoutLabel: string;
   currency: LostCurrency;
-  emptyLabel: string;
   lines: CartLine[];
   onClose: () => void;
   onRemove: (line: CartLine) => void;
-  removeLabel: string;
   total: number;
-  totalLabel: string;
 }) {
+  const t=useTranslations("LOSTINSEOUL")
   return (
     <m.aside
       animate={getLostBagOverlayPanelState(true)}
@@ -723,8 +692,6 @@ function LostBagPanel({
       <div className="grid min-h-[calc(100svh-24rem)] grid-rows-[1fr_auto] border border-[var(--lost-bag-line)] bg-[var(--lost-bag-bg)] p-5 lg:min-h-0 lg:p-8">
         {lines.length === 0 ? (
           <LostBagEmpty
-            backLabel={backLabel}
-            emptyLabel={emptyLabel}
             onClose={onClose}
           />
         ) : (
@@ -732,23 +699,22 @@ function LostBagPanel({
             <div className="grid max-h-[48svh] gap-6 overflow-y-auto pr-2">
               {lines.map((line) => (
                 <LostBagLine
-                  key={`${line.productId}:${line.skuId}:${line.mode}:${line.campaignId ?? ""}`}
+                  key={line.itemId ?? `${line.productId}:${line.skuId}:${line.mode}:${line.campaignId ?? ""}`}
                   line={line}
                   onRemove={onRemove}
-                  removeLabel={removeLabel}
                 />
               ))}
             </div>
             <div className="mt-8 grid gap-4 border-t border-[var(--lost-bag-line)] pt-5">
               <div className="flex items-center justify-between font-mono text-[1.1rem] leading-none tracking-[0.16em] text-[var(--lost-bag-muted)] uppercase">
-                <span>{totalLabel}</span>
+                <span>{t('cart.total')}</span>
                 <span>{formatLostMoney(total, currency)}</span>
               </div>
               <Link
                 className="inline-flex min-h-18 items-center justify-center rounded-[4px] bg-[var(--lost-bag-strong)] px-5 text-[1.2rem] leading-none font-medium text-[var(--lost-bag-strong-ink)]"
-                href="/checkout"
+                href="/lostinseoul/checkout"
               >
-                {checkoutLabel}
+                {t('checkout.title')}
               </Link>
             </div>
           </>
@@ -759,25 +725,22 @@ function LostBagPanel({
 }
 
 function LostBagEmpty({
-  backLabel,
-  emptyLabel,
   onClose
 }: {
-  backLabel: string;
-  emptyLabel: string;
   onClose: () => void;
 }) {
+  const t=useTranslations("LOSTINSEOUL")
   return (
     <div className="grid content-center justify-items-center gap-5 self-center text-center">
       <p className="font-mono text-[1.4rem] leading-none font-bold tracking-[0.18em] uppercase">
-        {emptyLabel}
+        {t('cart.empty')}
       </p>
       <Button
         className="inline-flex min-h-16 items-center rounded-[4px] bg-[var(--lost-bag-strong)] px-5 text-[1.2rem] leading-none font-medium text-[var(--lost-bag-strong-ink)]"
         onClick={onClose}
         type="button"
       >
-        {backLabel}
+        {t('order.back')}
       </Button>
     </div>
   );
@@ -786,17 +749,16 @@ function LostBagEmpty({
 function LostBagLine({
   line,
   onRemove,
-  removeLabel
 }: {
   line: CartLine;
   onRemove: (line: CartLine) => void;
-  removeLabel: string;
 }) {
+  const t=useTranslations('LOSTINSEOUL.cart')
   return (
     <div className="grid grid-cols-[7.2rem_1fr] gap-4 border-b border-[var(--lost-bag-line)] pb-5 last:border-b-0">
       <Link
         className="aspect-square overflow-hidden bg-[var(--lost-bag-soft)]"
-        href={`/products/${line.productSlug}`}
+        href={`/lostinseoul/products/${line.productSlug}`}
       >
         {line.imageUrl ? (
           <LostCartLineImage
@@ -810,7 +772,7 @@ function LostBagLine({
         <div className="flex items-start justify-between gap-3">
           <Link
             className="text-[1.4rem] leading-tight font-medium tracking-tight"
-            href={`/products/${line.productSlug}`}
+            href={`/lostinseoul/products/${line.productSlug}`}
           >
             {line.productName}
           </Link>
@@ -827,7 +789,7 @@ function LostBagLine({
           onClick={() => onRemove(line)}
           type="button"
         >
-          {removeLabel}
+          {t('remove')}
         </Button>
       </div>
     </div>

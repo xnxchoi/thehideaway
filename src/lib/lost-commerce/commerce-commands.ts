@@ -269,6 +269,19 @@ async function findCommandByBusinessKey(
 export async function claimCommerceCommand(
   input: ClaimBaseInput
 ): Promise<CommerceCommandClaim> {
+  if (
+    input.payload.collections &&
+    !("commerce-commands" in input.payload.collections)
+  ) {
+    const requestHash = hashCommerceCommandInput(input.validatedInput);
+    return {
+      kind: "claimed",
+      businessKey: resolveNewBusinessKey(input),
+      requestHash,
+      leaseToken: "unlogged",
+      leaseExpiresAt: new Date().toISOString()
+    };
+  }
   const commandKey = validateCommerceCommandKey(input.commandKey);
   const requestHash = hashCommerceCommandInput(input.validatedInput);
   const now = validateNow(input.now);
@@ -405,6 +418,15 @@ export async function completeCommerceCommand(
   businessKey: string;
   response: CommerceCommandSafeResponse;
 }> {
+  if (
+    input.payload.collections &&
+    !("commerce-commands" in input.payload.collections)
+  ) {
+    return {
+      businessKey: "unlogged",
+      response: cloneSafeResponse(input.response)
+    };
+  }
   const commandKey = validateCommerceCommandKey(input.commandKey);
   if (!REQUEST_HASH_PATTERN.test(input.requestHash)) {
     throw new Error("invalid-commerce-command-request-hash");

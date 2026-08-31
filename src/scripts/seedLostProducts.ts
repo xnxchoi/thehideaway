@@ -5,9 +5,28 @@
  * and have no SKU rows until reviewed SKU, price, and stock facts are supplied.
  */
 import config from "@payload-config";
-import { getPayload, type Payload } from "payload";
+import { getPayload, type Payload, type PayloadRequest } from "payload";
+
+import { pluginDraftProductData } from "@/payload/plugins/ecommerce/seed-catalog";
 
 import { LOST_FRAGRANCE_SEED_PRODUCTS } from "./seedLostProductCatalog";
+
+async function withTransaction<T>(
+  payload: Payload,
+  run: (req: PayloadRequest) => Promise<T>
+): Promise<T> {
+  const transactionID = await payload.db.beginTransaction();
+  if (!transactionID) throw new Error("lost-seed-transaction-failed");
+  const req = { payload, transactionID } as PayloadRequest;
+  try {
+    const result = await run(req);
+    await payload.db.commitTransaction(transactionID);
+    return result;
+  } catch (error) {
+    await payload.db.rollbackTransaction(transactionID);
+    throw error;
+  }
+}
 
 async function ensureFragranceCategory(payload: Payload): Promise<string> {
   const found = await payload.find({
@@ -30,47 +49,37 @@ async function ensureProductDrafts(
   payload: Payload,
   categoryId: string
 ): Promise<void> {
-  for (const product of LOST_FRAGRANCE_SEED_PRODUCTS) {
-    const data = {
-      name: product.name,
-      slug: product.slug,
-      summary: product.summary,
-      category: categoryId,
-      storefront: "lostinseoul",
-      active: product.active,
-      currency: product.currency,
-      unit_amount: product.unit_amount,
-      standard_enabled: product.standard_enabled,
-      request_to_order_enabled: product.request_to_order_enabled,
-      private_order_enabled: product.private_order_enabled,
-      private_preset_price_enabled: product.private_preset_price_enabled,
-      private_tier_gate: product.private_tier_gate,
-      min_order_quantity: product.min_order_quantity,
-      max_order_quantity: product.max_order_quantity,
-      sort: product.sort
-    } as const;
-    const found = await payload.find({
-      collection: "products",
-      depth: 0,
-      limit: 1,
-      overrideAccess: true,
-      where: { slug: { equals: product.slug } }
-    });
-    if (found.docs[0]) {
-      await payload.update({
+  await withTransaction(payload, async (req) => {
+    for (const product of LOST_FRAGRANCE_SEED_PRODUCTS) {
+      const data = pluginDraftProductData(product, categoryId);
+      const found = await payload.find({
         collection: "products",
-        id: found.docs[0].id,
+        depth: 0,
+        limit: 1,
         overrideAccess: true,
-        data
+        req,
+        where: { slug: { equals: product.slug } }
       });
-    } else {
-      await payload.create({
-        collection: "products",
-        overrideAccess: true,
-        data
-      });
+      if (found.docs[0]) {
+        await payload.update({
+          collection: "products",
+          id: found.docs[0].id,
+          overrideAccess: true,
+          req,
+          draft: true,
+          data
+        });
+      } else {
+        await payload.create({
+          collection: "products",
+          overrideAccess: true,
+          req,
+          draft: true,
+          data
+        });
+      }
     }
-  }
+  });
 }
 
 async function main(): Promise<void> {

@@ -17,7 +17,8 @@ describe("commerce product presentation seam", () => {
           name: "Fragrance Object",
           slug: "fragrance-object",
           active: true,
-          unit_amount: 55_000,
+          priceInKRW: 55_000,
+          _status: "published",
           hero_media: { filename: "object.webp", alt: "Object" }
         }
       ]
