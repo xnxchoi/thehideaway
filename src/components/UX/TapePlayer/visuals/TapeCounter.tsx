@@ -48,7 +48,7 @@ export const TapeCounter = ({ height = 36, className }: TapeCounterProps) => {
     <m.div
       className={cn(
         "bg-off-bg flex w-full items-center justify-between rounded-sm px-3",
-        "font-mono tracking-tight text-bleu-200 tabular-nums",
+        "font-sans tracking-tight text-bleu-200 tabular-nums",
         className
       )}
       style={{ height }}

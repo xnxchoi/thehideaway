@@ -1,4 +1,7 @@
-import {ImageCollection, ImageCollectionSlug} from "@/types/collections/image-collections";
+import {
+  ImageCollection,
+  ImageCollectionSlug
+} from "@types/collections/image-collections";
 import {getLuminance} from "@/utilities/extractImageInfo";
 import type {CollectionAfterReadHook, CollectionBeforeChangeHook, CollectionConfig} from "payload"
 

@@ -1168,7 +1168,7 @@ const EventGateAtmosphere = memo(function EventGateAtmosphere({
       </div>
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[2] [clip-path:inset(0_0_50%_0)]"
+        className="pointer-events-none absolute inset-0 z-2 [clip-path:inset(0_0_50%_0)]"
       >
         <m.div
           className="absolute top-1/2 left-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_center,oklch(92%_0.12_75)_0%,oklch(85%_0.16_60)_40%,oklch(75%_0.18_45)_70%,oklch(65%_0.14_35_/_0)_100%)] shadow-[0_0_40px_0_oklch(85%_0.16_60_/_0.5),0_0_80px_0_oklch(80%_0.14_50_/_0.3)]"

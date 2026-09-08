@@ -8,7 +8,7 @@ export function DemimondePhrases() {
     >
       <div className="mx-auto max-w-[1200px]">
         <header className="mb-14 flex flex-col gap-2 border-b border-[var(--rule)] pb-7 max-sm:mb-9">
-          <span className="font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+          <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
             {PHRASES.eyebrow}
           </span>
           <h2
@@ -32,19 +32,19 @@ export function DemimondePhrases() {
             <tr>
               <th
                 scope="col"
-                className="border-b border-[var(--rule)] pb-4 pl-0 text-left font-mono text-[10px] font-normal tracking-[0.3em] text-[var(--ink-muted)] uppercase max-sm:pr-2 max-sm:pl-0 sm:px-4"
+                className="border-b border-[var(--rule)] pb-4 pl-0 text-left font-sans text-[10px] font-normal tracking-[0.3em] text-[var(--ink-muted)] uppercase max-sm:pr-2 max-sm:pl-0 sm:px-4"
               >
                 English
               </th>
               <th
                 scope="col"
-                className="border-b border-[var(--rule)] pb-4 text-left font-mono text-[10px] font-normal tracking-[0.3em] text-[var(--ink-muted)] uppercase max-sm:px-2 sm:px-4"
+                className="border-b border-[var(--rule)] pb-4 text-left font-sans text-[10px] font-normal tracking-[0.3em] text-[var(--ink-muted)] uppercase max-sm:px-2 sm:px-4"
               >
                 Say it
               </th>
               <th
                 scope="col"
-                className="border-b border-[var(--rule)] pb-4 text-left font-mono text-[10px] font-normal tracking-[0.3em] text-[var(--ink-muted)] uppercase max-sm:px-2 sm:px-4"
+                className="border-b border-[var(--rule)] pb-4 text-left font-sans text-[10px] font-normal tracking-[0.3em] text-[var(--ink-muted)] uppercase max-sm:px-2 sm:px-4"
               >
                 한국어
               </th>
@@ -56,7 +56,7 @@ export function DemimondePhrases() {
                 <td className="border-b border-dashed border-[var(--rule)] py-4.5 pl-0 align-top text-[15px] font-medium text-[var(--ink)] max-sm:pr-2 sm:px-4">
                   {row.en}
                 </td>
-                <td className="border-b border-dashed border-[var(--rule)] py-4.5 align-top font-mono text-[13px] text-[var(--ink-muted)] max-sm:px-2 sm:px-4">
+                <td className="border-b border-dashed border-[var(--rule)] py-4.5 align-top font-sans text-[13px] text-[var(--ink-muted)] max-sm:px-2 sm:px-4">
                   {row.say}
                 </td>
                 <td className="border-b border-dashed border-[var(--rule)] py-4.5 align-top font-serif text-[17px] text-[var(--tomato)] italic max-sm:px-2 sm:px-4">

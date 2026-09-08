@@ -55,7 +55,7 @@ export function TapeConnect({
         <div className="mb-16 h-px w-full border-t border-border/20" />
 
         <div className="flex flex-col items-center text-center">
-          <p className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
+          <p className="mb-6 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
             · Connect
           </p>
 
@@ -64,7 +64,7 @@ export function TapeConnect({
           </h2>
 
           {blurb && (
-            <p className="mb-12 max-w-md font-mono text-[11px] leading-relaxed text-muted-foreground/60 xl:text-xs">
+            <p className="mb-12 max-w-md font-sans text-[11px] leading-relaxed text-muted-foreground/60 xl:text-xs">
               {blurb}
             </p>
           )}
@@ -86,7 +86,7 @@ export function TapeConnect({
         <div className="mt-24 flex justify-center">
           <Link
             href={returnHref}
-            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/60 uppercase transition-colors hover:border-border hover:text-foreground"
+            className="border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/60 uppercase transition-colors hover:border-border hover:text-foreground"
           >
             {returnLabel}
           </Link>
@@ -108,7 +108,7 @@ function ExternalLink({ href, external, children }: ExternalLinkProps) {
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="group inline-flex items-center gap-3 border-b border-border/30 pb-1 font-mono text-[11px] tracking-widest uppercase transition-colors hover:border-foreground/50"
+      className="group inline-flex items-center gap-3 border-b border-border/30 pb-1 font-sans text-[11px] tracking-widest uppercase transition-colors hover:border-foreground/50"
     >
       <span>{children}</span>
       {external && (

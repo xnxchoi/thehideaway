@@ -82,7 +82,7 @@ export default function PublicCompilationClient({
         ) : (
           <>
             <div className="absolute inset-0 bg-gradient-to-br from-muted/60 to-background" />
-            <span className="absolute inset-0 flex items-center justify-center font-mono text-[20vw] font-light text-foreground/[0.04] select-none">
+            <span className="absolute inset-0 flex items-center justify-center font-sans text-[20vw] font-light text-foreground/[0.04] select-none">
               {compilation.title.charAt(0).toUpperCase()}
             </span>
           </>
@@ -95,7 +95,7 @@ export default function PublicCompilationClient({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mb-2 font-mono text-[10px] tracking-[0.25em] text-white/50 uppercase xl:text-xs"
+              className="mb-2 font-sans text-[10px] tracking-[0.25em] text-white/50 uppercase xl:text-xs"
             >
               A List by{" "}
               {authorSlug ? (
@@ -122,7 +122,7 @@ export default function PublicCompilationClient({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.25 }}
-                className="mt-2 max-w-xl font-mono text-[11px] leading-relaxed text-white/50 xl:max-w-2xl xl:text-xs"
+                className="mt-2 max-w-xl font-sans text-[11px] leading-relaxed text-white/50 xl:max-w-2xl xl:text-xs"
               >
                 {compilation.description}
               </m.p>
@@ -133,14 +133,14 @@ export default function PublicCompilationClient({
               transition={{ delay: 0.3 }}
               className="mt-4 flex items-center gap-5"
             >
-              <span className="font-mono text-[10px] text-white/40">
+              <span className="font-sans text-[10px] text-white/40">
                 {compilation.itemCount}{" "}
                 {compilation.itemCount === 1 ? "item" : "items"}
               </span>
               {isOwner && (
                 <Link
                   href={`/me/library/lists/${compilation.hashId}`}
-                  className="font-mono text-[10px] tracking-widest text-white/40 uppercase underline decoration-dotted underline-offset-2 hover:text-white/70"
+                  className="font-sans text-[10px] tracking-widest text-white/40 uppercase underline decoration-dotted underline-offset-2 hover:text-white/70"
                 >
                   Edit
                 </Link>
@@ -157,7 +157,7 @@ export default function PublicCompilationClient({
             <button
               onClick={() => setFilter("all")}
               className={cn(
-                "shrink-0 font-mono text-[10px] tracking-widest uppercase transition-colors xl:text-xs",
+                "shrink-0 font-sans text-[10px] tracking-widest uppercase transition-colors xl:text-xs",
                 filter === "all"
                   ? "text-foreground"
                   : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -170,7 +170,7 @@ export default function PublicCompilationClient({
                 key={t}
                 onClick={() => setFilter(t)}
                 className={cn(
-                  "shrink-0 font-mono text-[10px] tracking-widest uppercase transition-colors xl:text-xs",
+                  "shrink-0 font-sans text-[10px] tracking-widest uppercase transition-colors xl:text-xs",
                   filter === t
                     ? "text-foreground"
                     : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -186,7 +186,7 @@ export default function PublicCompilationClient({
       {/* ── Items ─────────────────────────────────────────── */}
       <div className="mx-auto max-w-7xl px-6 py-8 sm:px-10 xl:px-10 xl:py-12">
         {filteredItems.length === 0 ? (
-          <p className="py-16 text-center font-mono text-[11px] text-muted-foreground/40 xl:text-xs">
+          <p className="py-16 text-center font-sans text-[11px] text-muted-foreground/40 xl:text-xs">
             Nothing here yet.
           </p>
         ) : (
@@ -274,7 +274,7 @@ function PublicItemCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <span className="font-mono text-4xl text-muted-foreground/15 select-none">
+            <span className="font-sans text-4xl text-muted-foreground/15 select-none">
               {collectionSlug.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -295,7 +295,7 @@ function PublicItemCard({
             {title}
           </p>
         )}
-        <p className="mt-1 font-mono text-[9px] tracking-widest text-muted-foreground/35 uppercase xl:text-[10px]">
+        <p className="mt-1 font-sans text-[9px] tracking-widest text-muted-foreground/35 uppercase xl:text-[10px]">
           {TYPE_LABEL[collectionSlug]}
         </p>
       </div>

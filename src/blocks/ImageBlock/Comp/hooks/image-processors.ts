@@ -4,12 +4,12 @@ import {
 	RP_InternalImageNodeData
 } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
 import {
-	FetchedImageDoc,
-	ProcessedImageDoc,
-	RalueWithRelation,
-	RenderImageFields
-} from "@/types/collections/image-collections";
-import {FetchedUnsplashImage} from "@/types/ImageCollections/unsplash";
+  FetchedImageDoc,
+  ProcessedImageDoc,
+  RalueWithRelation,
+  RenderImageFields
+} from "@types/collections/image-collections";
+import { FetchedUnsplashImage } from "@types/ImageCollections/unsplash";
 
 export const processImageForNode = ({doc, relationTo, value}: {
 	doc: FetchedImageDoc;

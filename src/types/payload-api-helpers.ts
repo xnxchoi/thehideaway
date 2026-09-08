@@ -1,5 +1,8 @@
 import type {Compilation} from "@/payload-types"
-import {ImageCollection, ImageCollectionSlug} from "@/types/collections/image-collections";
+import {
+  ImageCollection,
+  ImageCollectionSlug
+} from "@types/collections/image-collections";
 import type {Flatten, RequiredFields} from "@/utilities/typeUtilities"
 import {
 	CollectionSlug,

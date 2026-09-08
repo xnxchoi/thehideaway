@@ -36,7 +36,7 @@ export function GuestsChrome() {
     >
       <Link
         href="/day-n-night"
-        className="group inline-flex items-center gap-[10px] rounded-full border border-white/20 bg-black/35 py-[7px] pr-[14px] pl-3 font-mono text-[10px] tracking-[0.18em] text-white/70 uppercase no-underline backdrop-blur-md transition-colors hover:border-white/45 hover:text-white"
+        className="group inline-flex items-center gap-[10px] rounded-full border border-white/20 bg-black/35 py-[7px] pr-[14px] pl-3 font-sans text-[10px] tracking-[0.18em] text-white/70 uppercase no-underline backdrop-blur-md transition-colors hover:border-white/45 hover:text-white"
       >
         <span
           aria-hidden
@@ -47,13 +47,13 @@ export function GuestsChrome() {
         <span>{tGuests("navigation.back")}</span>
       </Link>
 
-      <span className="pointer-events-none hidden rounded-full border border-white/15 bg-black/25 px-4 py-[7px] font-mono text-[10px] tracking-[0.22em] text-white/55 uppercase backdrop-blur-md md:inline-flex">
+      <span className="pointer-events-none hidden rounded-full border border-white/15 bg-black/25 px-4 py-[7px] font-sans text-[10px] tracking-[0.22em] text-white/55 uppercase backdrop-blur-md md:inline-flex">
         {tGuests("title")}
       </span>
 
       <Link
         href="/tickets/day-n-night"
-        className="group inline-flex items-center gap-[10px] rounded-full border border-white/75 bg-white px-[14px] py-[7px] font-mono text-[10px] tracking-[0.18em] text-black uppercase no-underline backdrop-blur-md transition-transform hover:-translate-y-px"
+        className="group inline-flex items-center gap-[10px] rounded-full border border-white/75 bg-white px-[14px] py-[7px] font-sans text-[10px] tracking-[0.18em] text-black uppercase no-underline backdrop-blur-md transition-transform hover:-translate-y-px"
       >
         <span>{tDn("rsvpCta.register")}</span>
         <span

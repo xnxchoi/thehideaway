@@ -131,7 +131,7 @@ export function Paywall({
         aria-label="Continue reading"
         className="relative mt-16 flex w-full flex-col items-center justify-center border-t border-muted-faded-foreground/30 pt-12"
       >
-        <p className="mb-4 font-mono text-[10px] tracking-[0.2em] text-muted-faded-foreground/70 uppercase">
+        <p className="mb-4 font-sans text-[10px] tracking-[0.2em] text-muted-faded-foreground/70 uppercase">
           ◌ {copy.label} only · the rest is reserved
         </p>
 
@@ -141,7 +141,7 @@ export function Paywall({
             : `Continue reading as a ${copy.label.replace(/s$/, "")}`}
         </h2>
 
-        <p className="mb-10 max-w-prose font-mono text-[12px] leading-relaxed text-muted-faded-foreground">
+        <p className="mb-10 max-w-prose font-sans text-[12px] leading-relaxed text-muted-faded-foreground">
           {copy.pitch}
         </p>
 
@@ -150,7 +150,7 @@ export function Paywall({
             <Link
               href={loginHref}
               prefetch={false}
-              className="inline-flex h-11 items-center border border-muted-faded-foreground/50 px-5 font-mono text-[11px] tracking-widest uppercase transition-colors hover:border-foreground hover:text-foreground"
+              className="inline-flex h-11 items-center border border-muted-faded-foreground/50 px-5 font-sans text-[11px] tracking-widest uppercase transition-colors hover:border-foreground hover:text-foreground"
             >
               Sign in
             </Link>
@@ -158,20 +158,20 @@ export function Paywall({
           <Link
             href="/plans"
             prefetch={false}
-            className="inline-flex h-11 items-center border border-foreground bg-foreground px-5 font-mono text-[11px] tracking-widest text-background uppercase transition-colors hover:bg-foreground/90"
+            className="inline-flex h-11 items-center border border-foreground bg-foreground px-5 font-sans text-[11px] tracking-widest text-background uppercase transition-colors hover:bg-foreground/90"
           >
             {needsAuth ? "View plans" : copy.cta}
           </Link>
           <Link
             href="/plans"
             prefetch={false}
-            className="ml-1 font-mono text-[11px] tracking-widest text-muted-faded-foreground/70 uppercase underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            className="ml-1 font-sans text-[11px] tracking-widest text-muted-faded-foreground/70 uppercase underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
             What&#39;s included
           </Link>
         </div>
 
-        <p className="mt-12 max-w-prose font-mono text-[10px] tracking-[0.2em] text-muted-faded-foreground/40 uppercase">
+        <p className="mt-12 max-w-prose font-sans text-[10px] tracking-[0.2em] text-muted-faded-foreground/40 uppercase">
           The Hideaway · Seoul
         </p>
       </section>

@@ -4,7 +4,7 @@ import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage
 import { HomeSquare } from "@/components/sections/HomeSquare";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
-import { PostOverview } from "@/types/collections/posts";
+import { PostOverview } from "@types/collections/posts";
 import { DateTime } from "luxon";
 import { ComponentProps, ComponentPropsWithoutRef } from "react";
 

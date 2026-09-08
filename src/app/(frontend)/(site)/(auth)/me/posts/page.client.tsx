@@ -95,7 +95,7 @@ export default function MyPostsClient({
         accessorKey: "title",
         meta: { label: "Title" },
         header: () => (
-          <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
+          <span className="font-sans text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
             Title
           </span>
         ),
@@ -114,7 +114,7 @@ export default function MyPostsClient({
           ]
         },
         header: () => (
-          <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
+          <span className="font-sans text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
             Status
           </span>
         ),
@@ -132,7 +132,7 @@ export default function MyPostsClient({
           options: tagOptions.map((t) => ({ label: t.title, value: t.id }))
         },
         header: () => (
-          <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
+          <span className="font-sans text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
             Tags
           </span>
         ),
@@ -146,7 +146,7 @@ export default function MyPostsClient({
         accessorKey: "updatedAt",
         meta: { label: "Updated", variant: "dateRange" },
         header: () => (
-          <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
+          <span className="font-sans text-[10px] tracking-[0.18em] text-foreground/55 uppercase">
             Updated
           </span>
         ),
@@ -478,7 +478,7 @@ function StatusCell({ status }: { status: UserPostStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-[6px] rounded-full px-[10px] py-[4px] font-mono text-[11px] tracking-[0.16em] uppercase",
+        "inline-flex items-center gap-[6px] rounded-full px-[10px] py-[4px] font-sans text-[11px] tracking-[0.16em] uppercase",
         isDraft
           ? "bg-amber-500/10 text-amber-700 ring-1 ring-amber-600/25 dark:text-amber-300/90 dark:ring-amber-300/20"
           : "bg-foreground/[0.06] text-foreground/80 ring-1 ring-foreground/15 dark:bg-foreground/[0.08]"
@@ -511,13 +511,13 @@ function TagsCell({ tags }: { tags: UserPostRow["tags"] }) {
       {visible.map((t) => (
         <li
           key={t.id}
-          className="inline-flex items-center rounded-sm bg-foreground/[0.05] px-[8px] py-[3px] font-mono text-[10px] tracking-[0.14em] text-foreground/70 uppercase dark:bg-foreground/[0.07]"
+          className="inline-flex items-center rounded-sm bg-foreground/[0.05] px-[8px] py-[3px] font-sans text-[10px] tracking-[0.14em] text-foreground/70 uppercase dark:bg-foreground/[0.07]"
         >
           {t.title}
         </li>
       ))}
       {overflow > 0 && (
-        <li className="font-mono text-[10px] tracking-[0.14em] text-foreground/45 uppercase tabular-nums">
+        <li className="font-sans text-[10px] tracking-[0.14em] text-foreground/45 uppercase tabular-nums">
           +{overflow}
         </li>
       )}
@@ -534,12 +534,12 @@ function UpdatedCell({ row }: { row: UserPostRow }) {
   return (
     <div className="flex flex-col gap-[3px]">
       <time
-        className="font-mono text-[12px] text-foreground/80 tabular-nums"
+        className="font-sans text-[12px] text-foreground/80 tabular-nums"
         dateTime={row.updatedAt}
       >
         {dateLabel}
       </time>
-      <span className="font-mono text-[11px] text-foreground/50 tabular-nums">
+      <span className="font-sans text-[11px] text-foreground/50 tabular-nums">
         {isDraft ? `edited ${relative}` : relative}
       </span>
     </div>
@@ -640,7 +640,7 @@ function PageMasthead({
       className="flex flex-col gap-5 xl:gap-6"
     >
       <div className="flex items-center gap-4">
-        <span className="font-mono text-[10px] tracking-[0.22em] text-foreground/55 uppercase xl:text-[11px]">
+        <span className="font-sans text-[10px] tracking-[0.22em] text-foreground/55 uppercase xl:text-[11px]">
           Authorship
         </span>
         <span
@@ -658,7 +658,7 @@ function PageMasthead({
         >
           Posts<span className="text-foreground/35">.</span>
         </h1>
-        <p className="font-mono text-[10px] tracking-[0.18em] text-foreground/45 uppercase xl:text-[11px]">
+        <p className="font-sans text-[10px] tracking-[0.18em] text-foreground/45 uppercase xl:text-[11px]">
           {counts.all === 0
             ? "No posts yet"
             : `${counts.all} total · ${counts.published} published · ${counts.draft} draft${counts.draft === 1 ? "" : "s"}`}
@@ -755,7 +755,7 @@ function PostsActionBar<TData>({ table }: { table: Table<TData> }) {
         "dark:bg-background/95 dark:ring-foreground/25"
       )}
     >
-      <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/65 uppercase">
+      <span className="font-sans text-[10px] tracking-[0.18em] text-foreground/65 uppercase">
         {selectedCount} selected
       </span>
       <span className="h-4 w-px bg-foreground/15" aria-hidden="true" />

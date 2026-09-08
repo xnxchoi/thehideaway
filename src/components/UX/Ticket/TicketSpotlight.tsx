@@ -144,7 +144,7 @@ export function TicketSpotlight({
           {/* Top bar — close + meta */}
           <div className="relative z-[1] flex items-center justify-between px-6 pt-6 xl:px-10 xl:pt-8">
             <div className="min-w-0">
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+              <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                 Spotlight · {String(ticket.ticketNumber ?? 0).padStart(4, "0")}
               </p>
               <p className="mt-0.5 truncate text-base font-light tracking-tight xl:text-lg">
@@ -154,7 +154,7 @@ export function TicketSpotlight({
             <RP_Btn
               onClick={onClose}
               aria-label="Close"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:text-foreground xl:text-xs"
+              className="font-sans text-[11px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:text-foreground xl:text-xs"
             >
               Close ✕
             </RP_Btn>
@@ -192,7 +192,7 @@ export function TicketSpotlight({
                 {ticket.eventName}
               </h2>
               {ticket.dateLong ? (
-                <p className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+                <p className="font-sans text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
                   {ticket.dateLong}
                   {ticket.location ? ` · ${ticket.location}` : ""}
                 </p>
@@ -232,7 +232,7 @@ export function TicketSpotlight({
             <p
               aria-live="polite"
               className={cn(
-                "h-4 font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase xl:text-[11px]",
+                "h-4 font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase xl:text-[11px]",
                 shareToast ? "opacity-100" : "opacity-0"
               )}
             >
@@ -249,10 +249,10 @@ export function TicketSpotlight({
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 60, opacity: 0 }}
                 transition={{ type: "spring", bounce: 0.18, duration: 0.5 }}
-                className="absolute right-0 bottom-28 left-0 z-[2] flex justify-center px-6"
+                className="absolute right-0 bottom-28 left-0 z-2 flex justify-center px-6"
               >
                 <div className="rounded-xl border border-border/30 bg-background/95 p-6 backdrop-blur-xl">
-                  <p className="mb-4 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                  <p className="mb-4 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                     At the door
                   </p>
                   <TicketQR value={ticket.checkInUrl} size={220} />
@@ -287,7 +287,7 @@ function SpotlightAction({
       disabled={disabled}
       aria-pressed={pressed || undefined}
       className={cn(
-        "inline-flex items-center gap-2 rounded-md border border-border/40 px-4 py-2.5 font-mono text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
+        "inline-flex items-center gap-2 rounded-md border border-border/40 px-4 py-2.5 font-sans text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
         disabled
           ? "cursor-not-allowed border-border/20 text-muted-foreground/30"
           : pressed

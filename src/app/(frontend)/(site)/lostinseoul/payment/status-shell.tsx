@@ -1,6 +1,6 @@
 import { Link } from "@/components/core/Link/Link";
 import { CheckoutColophon } from "@/components/Shells/Footer/CheckoutColophon";
-import "../index.css";
+import "@lostinseoul/index.css";
 
 type LostPaymentStatusShellProps = {
   actionHref: string;
@@ -22,26 +22,26 @@ export function LostPaymentStatusShell({
       <header className="grid min-h-[56px] grid-cols-[1fr_auto_1fr] items-start gap-4 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] pb-5">
         <Link
           aria-label="LOSTINSEOUL home"
-          className="inline-flex min-h-[44px] items-center font-mono text-sm font-bold tracking-[0.24em] uppercase"
+          className="inline-flex min-h-[44px] items-center font-sans text-sm font-bold tracking-[0.24em] uppercase"
           href="/lostinseoul"
         >
           LOSTINSEOUL
         </Link>
-        <p className="pt-3 font-mono text-[11px] font-bold tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] uppercase">
+        <p className="pt-3 font-sans text-[11px] font-bold tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] uppercase">
           Payment
         </p>
         <span aria-hidden />
       </header>
 
       <section className="mx-auto grid w-full max-w-3xl content-center justify-items-start py-16 md:py-24">
-        <p className="font-mono text-[11px] tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] uppercase">
+        <p className="font-sans text-[11px] tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] uppercase">
           {eyebrow}
         </p>
         <h1 className="mt-5 max-w-[12ch] font-serif text-5xl leading-[0.95] font-bold tracking-tight text-[var(--n-s-fg)] sm:text-6xl md:text-7xl">
           {title}
         </h1>
         {order ? (
-          <p className="mt-6 max-w-full font-mono text-xs leading-relaxed tracking-[0.1em] break-all text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.58)] uppercase">
+          <p className="mt-6 max-w-full font-sans text-xs leading-relaxed tracking-[0.1em] break-all text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.58)] uppercase">
             {order}
           </p>
         ) : null}

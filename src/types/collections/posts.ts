@@ -7,14 +7,14 @@ import {
 import {
   CategoryOverview,
   TagOverview
-} from "@/types/collections/meta-collections";
+} from "@types/collections/meta-collections";
 import {
   AuthorOverview,
   AuthorSingle,
   RelUser
-} from "@/types/collections/users";
-import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
-import { PayloadFound } from "@/types/payload-api-helpers";
+} from "@types/collections/users";
+import { RalueAsDataWithRelation } from "@types/collections/image-collections";
+import { PayloadFound } from "@types/payload-api-helpers";
 
 export type PostOverview = {
   id: string;

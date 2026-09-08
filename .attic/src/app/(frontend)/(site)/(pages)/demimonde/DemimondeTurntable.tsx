@@ -52,7 +52,7 @@ import { useCanvasClaim } from "../../../../../../../src/stores/CanvasFrameloop"
  *
  * Stacking caveat: MainInternal's canvas wrapper sits at z=40. The page
  * wrapper (<RPage>) uses `isolate`, which traps any z-index inside the
- * page's stacking context. The play-glyph at z-[2] therefore composites
+ * page's stacking context. The play-glyph at z-2 therefore composites
  * as part of that trapped context and would render visually behind the
  * canvas overlay. We accept this for now — the button still receives
  * clicks because the canvas has pointer-events:none. If the glyph needs
@@ -72,7 +72,7 @@ export function DemimondeTurntable() {
     >
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-14 md:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] md:gap-24">
         <div className="min-w-0">
-          <span className="mb-5 inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase before:h-px before:w-6 before:bg-[var(--tomato)] before:content-['']">
+          <span className="mb-5 inline-flex items-center gap-3 font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase before:h-px before:w-6 before:bg-[var(--tomato)] before:content-['']">
             {TURNTABLE.eyebrow}
           </span>
           <h2 className="m-0 font-serif text-[clamp(36px,5.5vw,68px)] leading-[0.96] font-normal tracking-[-0.025em] text-balance text-[var(--ink)] italic">
@@ -86,7 +86,7 @@ export function DemimondeTurntable() {
             {TURNTABLE.blurb}
           </p>
           <p className="mt-7 border-t border-[var(--rule)] pt-4 text-[13px] leading-[1.5] text-[var(--ink-muted)]">
-            <span className="mr-2 font-mono text-[10px] tracking-[0.3em] text-[var(--ink-muted)] uppercase">
+            <span className="mr-2 font-sans text-[10px] tracking-[0.3em] text-[var(--ink-muted)] uppercase">
               {TURNTABLE.creditsLabel}
             </span>{" "}
             {TURNTABLE.credits}
@@ -163,7 +163,7 @@ export function DemimondeTurntable() {
               stacking caveat at the top of this file. */}
           <span
             aria-hidden
-            className="absolute right-[14%] bottom-[14%] z-[2] flex h-[18%] min-h-9 w-[18%] min-w-9 items-center justify-center rounded-full bg-[oklch(0.18_0.02_60)] text-[oklch(0.96_0.02_85)] shadow-[0_3px_6px_oklch(0_0_0/0.35),inset_0_1px_0_oklch(1_0_0/0.3)]"
+            className="absolute right-[14%] bottom-[14%] z-2 flex h-[18%] min-h-9 w-[18%] min-w-9 items-center justify-center rounded-full bg-[oklch(0.18_0.02_60)] text-[oklch(0.96_0.02_85)] shadow-[0_3px_6px_oklch(0_0_0/0.35),inset_0_1px_0_oklch(1_0_0/0.3)]"
           >
             <svg
               viewBox="0 0 24 24"

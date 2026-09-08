@@ -154,9 +154,6 @@ export interface Config {
     categories: {
       categorized: 'surf' | 'posts';
     };
-    tags: {
-      taggedItems: 'posts' | 'surf' | 'playlists' | 'albums' | 'profile' | 'pages' | 'tracks';
-    };
     posts: {
       bookmarks: 'bookmarks';
     };
@@ -1108,42 +1105,49 @@ export interface Tag {
   slugLock: boolean;
   slug: string;
   tagCount: number;
-  taggedItems?: {
-    docs?: (
-      | {
-          relationTo?: 'posts';
-          value: string | Post;
-        }
-      | {
-          relationTo?: 'surf';
-          value: string | Surf;
-        }
-      | {
-          relationTo?: 'playlists';
-          value: string | Playlist;
-        }
-      | {
-          relationTo?: 'albums';
-          value: string | Album;
-        }
-      | {
-          relationTo?: 'profile';
-          value: string | Profile;
-        }
-      | {
-          relationTo?: 'pages';
-          value: string | Page;
-        }
-      | {
-          relationTo?: 'tracks';
-          value: string | Track;
-        }
-    )[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "albums".
+ */
+export interface Album {
+  id: string;
+  title: string;
+  release_date?: string | null;
+  cover?: (string | null) | Media;
+  artist: string;
+  bookmarks?: {
+    docs?: (string | Bookmark)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  tagged?: (string | Tag)[] | null;
+  description?: string | null;
+  visibility: "public" | "private";
+  publishedAt?: string | null;
+  author: string | User;
+  slugKey?: string | null;
+  hashId: string;
+  slugLock: boolean;
+  slug: string;
+  locked?: boolean | null;
+  /**
+   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
+   */
+  allowList?: (string | User)[] | null;
+  /**
+   * Limit access to users of this role or higher
+   */
+  authority?: number | null;
+  /**
+   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
+   */
+  audience?: ("public" | "any_user" | "members" | "patrons" | "curated") | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1239,44 +1243,230 @@ export interface Track {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "albums".
+ * via the `definition` "payload-folders".
  */
-export interface Album {
+export interface FolderInterface {
   id: string;
-  title: string;
-  release_date?: string | null;
-  cover?: (string | null) | Media;
-  artist: string;
-  bookmarks?: {
-    docs?: (string | Bookmark)[];
+  name: string;
+  folder?: (string | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: "payload-folders";
+          value: string | FolderInterface;
+        }
+      | {
+          relationTo?: "userMedia";
+          value: string | UserMedia;
+        }
+    )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  tagged?: (string | Tag)[] | null;
-  description?: string | null;
-  visibility: 'public' | 'private';
-  publishedAt?: string | null;
-  author: string | User;
-  slugKey?: string | null;
-  hashId: string;
-  slugLock: boolean;
-  slug: string;
-  locked?: boolean | null;
-  /**
-   * Specific users granted read access regardless of audience tier. Required when 'Curated list only' is selected.
-   */
-  allowList?: (string | User)[] | null;
-  /**
-   * Limit access to users of this role or higher
-   */
-  authority?: number | null;
-  /**
-   * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
-   */
-  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
+  folderType?: "userMedia"[] | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "follows".
+ */
+export interface Follow {
+  id: string;
+  user: string | User;
+  target: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * User notifications for system events and social interactions
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  recipient: string | User;
+  trigger?:
+    | ({
+        relationTo: "posts";
+        value: string | Post;
+      } | null)
+    | ({
+        relationTo: "surf";
+        value: string | Surf;
+      } | null)
+    | ({
+        relationTo: "users";
+        value: string | User;
+      } | null)
+    | ({
+        relationTo: "profile";
+        value: string | Profile;
+      } | null)
+    | ({
+        relationTo: "bookmarks";
+        value: string | Bookmark;
+      } | null)
+    | ({
+        relationTo: "follows";
+        value: string | Follow;
+      } | null)
+    | ({
+        relationTo: "responses";
+        value: string | Response;
+      } | null);
+  thumbnail?: (string | null) | Asset;
+  type:
+    | "comment"
+    | "follow"
+    | "mention"
+    | "system"
+    | "access"
+    | "bookmark"
+    | "profile"
+    | "post"
+    | "surf"
+    | "notification";
+  importance: number;
+  status: "unread" | "read" | "dismissed";
+  read: boolean;
+  dismissed: boolean;
+  readAt?: string | null;
+  sticky: boolean;
+  title: string;
+  content: string;
+  actionLink: {
+    type: "reference" | "custom";
+    newTab: boolean;
+    reference?:
+      | ({
+          relationTo: "pages";
+          value: string | Page;
+        } | null)
+      | ({
+          relationTo: "posts";
+          value: string | Post;
+        } | null)
+      | ({
+          relationTo: "surf";
+          value: string | Surf;
+        } | null)
+      | ({
+          relationTo: "users";
+          value: string | User;
+        } | null)
+      | ({
+          relationTo: "albums";
+          value: string | Album;
+        } | null)
+      | ({
+          relationTo: "tracks";
+          value: string | Track;
+        } | null)
+      | ({
+          relationTo: "playlists";
+          value: string | Playlist;
+        } | null)
+      | ({
+          relationTo: "organizations";
+          value: string | Organization;
+        } | null)
+      | ({
+          relationTo: "categories";
+          value: string | Category;
+        } | null);
+    url?: string | null;
+    label: string;
+    /**
+     * Choose how the link should be rendered.
+     */
+    appearance?: ("default" | "outline") | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "responses".
+ */
+export interface Response {
+  id: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  author: string | User;
+  target:
+    | {
+        relationTo: "posts";
+        value: string | Post;
+      }
+    | {
+        relationTo: "surf";
+        value: string | Surf;
+      };
+  isEdited: boolean;
+  depth: number;
+  hash: string;
+  parent?:
+    | ({
+        relationTo: "responses";
+        value: string | Response;
+      } | null)
+    | ({
+        relationTo: "citations";
+        value: string | Citation;
+      } | null);
+  mentions?: (string | User)[] | null;
+  /**
+   * Pin this response to the top
+   */
+  isSticky: boolean;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ("draft" | "published") | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "citations".
+ */
+export interface Citation {
+  id: string;
+  path: string;
+  reference: string;
+  selection: {
+    text: string;
+    before: string;
+    after: string;
+  };
+  private: boolean;
+  quote: string;
+  author: string | User;
+  target:
+    | {
+        relationTo: "surf";
+        value: string | Surf;
+      }
+    | {
+        relationTo: "posts";
+        value: string | Post;
+      };
+  cited: string | User;
+  memo?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1798,224 +1988,6 @@ export interface HeroSquareBlock {
     | null;
   blockName?: string | null;
   blockType: 'heroSquare';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-folders".
- */
-export interface FolderInterface {
-  id: string;
-  name: string;
-  folder?: (string | null) | FolderInterface;
-  documentsAndFolders?: {
-    docs?: (
-      | {
-          relationTo?: 'payload-folders';
-          value: string | FolderInterface;
-        }
-      | {
-          relationTo?: 'userMedia';
-          value: string | UserMedia;
-        }
-    )[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  folderType?: 'userMedia'[] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "follows".
- */
-export interface Follow {
-  id: string;
-  user: string | User;
-  target: string | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * User notifications for system events and social interactions
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "notifications".
- */
-export interface Notification {
-  id: string;
-  recipient: string | User;
-  trigger?:
-    | ({
-        relationTo: 'posts';
-        value: string | Post;
-      } | null)
-    | ({
-        relationTo: 'surf';
-        value: string | Surf;
-      } | null)
-    | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
-        relationTo: 'profile';
-        value: string | Profile;
-      } | null)
-    | ({
-        relationTo: 'bookmarks';
-        value: string | Bookmark;
-      } | null)
-    | ({
-        relationTo: 'follows';
-        value: string | Follow;
-      } | null)
-    | ({
-        relationTo: 'responses';
-        value: string | Response;
-      } | null);
-  thumbnail?: (string | null) | Asset;
-  type:
-    'comment' | 'follow' | 'mention' | 'system' | 'access' | 'bookmark' | 'profile' | 'post' | 'surf' | 'notification';
-  importance: number;
-  status: 'unread' | 'read' | 'dismissed';
-  read: boolean;
-  dismissed: boolean;
-  readAt?: string | null;
-  sticky: boolean;
-  title: string;
-  content: string;
-  actionLink: {
-    type: 'reference' | 'custom';
-    newTab: boolean;
-    reference?:
-      | ({
-          relationTo: 'pages';
-          value: string | Page;
-        } | null)
-      | ({
-          relationTo: 'posts';
-          value: string | Post;
-        } | null)
-      | ({
-          relationTo: 'surf';
-          value: string | Surf;
-        } | null)
-      | ({
-          relationTo: 'users';
-          value: string | User;
-        } | null)
-      | ({
-          relationTo: 'albums';
-          value: string | Album;
-        } | null)
-      | ({
-          relationTo: 'tracks';
-          value: string | Track;
-        } | null)
-      | ({
-          relationTo: 'playlists';
-          value: string | Playlist;
-        } | null)
-      | ({
-          relationTo: 'organizations';
-          value: string | Organization;
-        } | null)
-      | ({
-          relationTo: 'categories';
-          value: string | Category;
-        } | null);
-    url?: string | null;
-    label: string;
-    /**
-     * Choose how the link should be rendered.
-     */
-    appearance?: ('default' | 'outline') | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "responses".
- */
-export interface Response {
-  id: string;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  author: string | User;
-  target:
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      }
-    | {
-        relationTo: 'surf';
-        value: string | Surf;
-      };
-  isEdited: boolean;
-  depth: number;
-  hash: string;
-  parent?:
-    | ({
-        relationTo: 'responses';
-        value: string | Response;
-      } | null)
-    | ({
-        relationTo: 'citations';
-        value: string | Citation;
-      } | null);
-  mentions?: (string | User)[] | null;
-  /**
-   * Pin this response to the top
-   */
-  isSticky: boolean;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "citations".
- */
-export interface Citation {
-  id: string;
-  path: string;
-  reference: string;
-  selection: {
-    text: string;
-    before: string;
-    after: string;
-  };
-  private: boolean;
-  quote: string;
-  author: string | User;
-  target:
-    | {
-        relationTo: 'surf';
-        value: string | Surf;
-      }
-    | {
-        relationTo: 'posts';
-        value: string | Post;
-      };
-  cited: string | User;
-  memo?: string | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * Accounts are used to store user accounts for authentication providers
@@ -4092,7 +4064,6 @@ export interface TagsSelect<T extends boolean = true> {
   slugLock?: T;
   slug?: T;
   tagCount?: T;
-  taggedItems?: T;
   updatedAt?: T;
   createdAt?: T;
 }

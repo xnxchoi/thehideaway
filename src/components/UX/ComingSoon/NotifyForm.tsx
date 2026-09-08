@@ -30,7 +30,7 @@ export function NotifyForm({ className, topic = "unknown" }: NotifyFormProps) {
     return (
       <p
         className={cn(
-          "font-mono text-[11px] tracking-wide text-muted-foreground/70",
+          "font-sans text-[11px] tracking-wide text-muted-foreground/70",
           className
         )}
       >
@@ -54,7 +54,7 @@ export function NotifyForm({ className, topic = "unknown" }: NotifyFormProps) {
       />
       <Button
         type="submit"
-        className="shrink-0 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:text-foreground"
+        className="shrink-0 font-sans text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:text-foreground"
       >
         {t("cta")} →
       </Button>

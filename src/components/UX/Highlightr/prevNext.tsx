@@ -3,7 +3,7 @@ import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
 import { useCursor, useFrameState, useRPStore } from "@/providers/RP_Pro";
-import type { PostOverview } from "@/types/collections/posts";
+import type { PostOverview } from "@types/collections/posts";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { useLenis } from "lenis/react";
 import { useMotionValue, useTransform } from "motion/react";
@@ -124,7 +124,7 @@ export const PrevNext = ({
               <br />
               &nbsp;on... &nbsp;
             </h1>
-            <div className="m-0 flex h-auto w-full justify-between gap-12.5 font-mono text-base leading-[1.4] -tracking-[0.03em] break-words uppercase [&_span]:self-end [&_span]:min-lg:min-w-1/2">
+            <div className="m-0 flex h-auto w-full justify-between gap-12.5 font-sans text-base leading-[1.4] -tracking-[0.03em] wrap-break-word uppercase [&_span]:self-end [&_span]:min-lg:min-w-1/2">
               <span>
                 {prev.title + " // "}
                 <span>{prev.author.name}</span>
@@ -138,7 +138,7 @@ export const PrevNext = ({
           onClick={resetCursorTheme}
           className={"overflow-hidden rounded-lg"}
         >
-          <div className="relative flex h-full w-full flex-col justify-end bg-faded-foreground break-words text-faded-background transition-colors duration-200 ease-out-power2 hover:bg-faded-background/40 hover:text-faded-foreground min-lg:px-[14px] min-lg:py-[10px]">
+          <div className="relative flex h-full w-full flex-col justify-end bg-faded-foreground wrap-break-word text-faded-background transition-colors duration-200 ease-out-power2 hover:bg-faded-background/40 hover:text-faded-foreground min-lg:px-[14px] min-lg:py-[10px]">
             {next && "image" in next && next.image && (
               <div className="absolute inset-0 z-[0] opacity-0 mix-blend-overlay transition-opacity duration-400 ease-out-power2 hover:opacity-35">
                 <FrontImage
@@ -149,7 +149,7 @@ export const PrevNext = ({
                 />
               </div>
             )}
-            <div className="fixed !top-[80px] z-[5] m-0 flex h-auto w-[calc(50%-44px)] justify-between gap-[32px] text-right font-mono text-base leading-[1.4] -tracking-[0.03em] uppercase min-lg:w-[calc(50%-97px)] min-lg:self-end min-lg:[&_span]:max-w-1/2">
+            <div className="fixed !top-[80px] z-[5] m-0 flex h-auto w-[calc(50%-44px)] justify-between gap-[32px] text-right font-sans text-base leading-[1.4] -tracking-[0.03em] uppercase min-lg:w-[calc(50%-97px)] min-lg:self-end min-lg:[&_span]:max-w-1/2">
               <span>
                 {next.title + " // "}
                 <span className={"hidden min-lg:inline"}>
@@ -173,7 +173,7 @@ export const PrevNext = ({
         </Link>
         <div
           className={
-            "absolute bottom-0 z-[2] h-[24px] w-full after:absolute after:top-0 after:left-0 after:z-[2] after:w-full after:border-t-[1px] after:border-solid after:border-background after:opacity-20 after:content-['']"
+            "absolute bottom-0 z-2 h-[24px] w-full after:absolute after:top-0 after:left-0 after:z-2 after:w-full after:border-t-[1px] after:border-solid after:border-background after:opacity-20 after:content-['']"
           }
         ></div>
       </div>

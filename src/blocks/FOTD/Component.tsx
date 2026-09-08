@@ -70,8 +70,8 @@ export const FOTDBlock: FC<
       </style>
       <section className="overflow-hidden">
         <div className="relative top-0 min-w-[99vw] origin-[50%_0]" data-fotd>
-          <div className="sticky top-0 z-[2] -mt-16 flex h-screen max-h-none w-full items-stretch justify-between bg-background/85 p-[40px_1vw_1vw] text-foreground">
-            <div className="relative z-[2] flex h-full w-1/2 flex-col items-start justify-start gap-y-[1vw] rounded-[4px] pt-[1vw] max-md:w-full max-md:flex-nowrap">
+          <div className="sticky top-0 z-2 -mt-16 flex h-screen max-h-none w-full items-stretch justify-between bg-background/85 p-[40px_1vw_1vw] text-foreground">
+            <div className="relative z-2 flex h-full w-1/2 flex-col items-start justify-start gap-y-[1vw] rounded-[4px] pt-[1vw] max-md:w-full max-md:flex-nowrap">
               <div className="flex-1 gap-x-[1vw] gap-y-[2vw] border-[1px] border-none border-[oklch(87.6%_0_none/0.5)_var(--color-faded-white)_var(--color-faded-white)]">
                 <div className="relative z-[1] mb-auto flex w-5/12 max-w-full flex-col justify-between gap-x-[1vw] gap-y-[2vw] rounded-[2px] border-[1px] border-none border-[oklch(87.6%_0_none/0.5)_var(--color-faded-white)_var(--color-faded-white)] pb-[1vw]">
                   <div>

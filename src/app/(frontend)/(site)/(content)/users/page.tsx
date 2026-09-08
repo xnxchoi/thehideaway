@@ -27,14 +27,14 @@ export default async function Page() {
           <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
             <div className="flex items-end justify-between gap-6">
               <div>
-                <p className="mb-2 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                <p className="mb-2 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                   The Residency
                 </p>
                 <h1 className="text-2xl font-light tracking-tight xl:text-3xl">
                   Members
                 </h1>
               </div>
-              <p className="font-mono text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
+              <p className="font-sans text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
                 {users.totalDocs} {users.totalDocs === 1 ? "member" : "members"}
               </p>
             </div>
@@ -44,7 +44,7 @@ export default async function Page() {
         <section className="mx-auto max-w-7xl px-6 py-10 xl:px-10 xl:py-14">
           {members.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <span className="mb-4 font-mono text-5xl opacity-10">○</span>
+              <span className="mb-4 font-sans text-5xl opacity-10">○</span>
               <p className="text-base font-light text-foreground/70">
                 No members yet.
               </p>
@@ -87,7 +87,7 @@ function MemberCardItem({ user }: { user: MemberCard }) {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <span className="font-mono text-6xl font-light text-muted-foreground/15 select-none">
+              <span className="font-sans text-6xl font-light text-muted-foreground/15 select-none">
                 {initial}
               </span>
             </div>
@@ -99,11 +99,11 @@ function MemberCardItem({ user }: { user: MemberCard }) {
             {displayName}
           </p>
           {user.username && user.username !== displayName && (
-            <p className="mt-0.5 font-mono text-[10px] text-muted-foreground/50 xl:text-[11px]">
+            <p className="mt-0.5 font-sans text-[10px] text-muted-foreground/50 xl:text-[11px]">
               @{user.username}
             </p>
           )}
-          <p className="mt-2 font-mono text-[9px] tracking-[0.2em] text-muted-foreground/40 uppercase xl:text-[10px]">
+          <p className="mt-2 font-sans text-[9px] tracking-[0.2em] text-muted-foreground/40 uppercase xl:text-[10px]">
             {user.role}
           </p>
         </div>

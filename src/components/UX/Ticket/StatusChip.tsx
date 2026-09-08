@@ -32,7 +32,7 @@ export function StatusChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2 font-mono text-[10px] tracking-widest text-foreground/70 uppercase xl:text-[11px]",
+        "inline-flex items-center gap-2 font-sans text-[10px] tracking-widest text-foreground/70 uppercase xl:text-[11px]",
         className
       )}
     >

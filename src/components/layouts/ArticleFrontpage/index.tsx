@@ -4,7 +4,7 @@ import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage
 import { FeaturedHero } from "@/components/sections/FeaturedHero";
 import { HeadlinersRail } from "@/components/sections/HeadlinersRail";
 import { cn } from "@/lib/utils";
-import { PostOverview } from "@/types/collections/posts";
+import { PostOverview } from "@types/collections/posts";
 import { formatRelativeTime } from "@/utilities/formatRelativeTime";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { getLocale } from "next-intl/server";
@@ -133,7 +133,7 @@ const SecondaryArticleCard = ({
         </span>
 
         {(authorName || relative) && (
-          <div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
+          <div className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
             {authorName}
             {authorName && relative && (
               <span aria-hidden className="mx-2">

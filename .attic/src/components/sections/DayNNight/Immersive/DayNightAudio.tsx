@@ -269,7 +269,7 @@ export function DayNightAudio() {
       data-dn-chrome-pill
       data-dn-audio-toggle
       data-on={enabled || undefined}
-      className="group ease fixed top-16 right-5 z-[46] inline-flex cursor-pointer appearance-none items-center gap-2 rounded-full border border-[var(--dn-chrome-line)] px-[14px] py-[7px] font-mono text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase transition-[color,border-color] duration-[250ms] hover:text-[var(--dn-chrome-fg)] data-[on]:border-[oklch(from_var(--dn-chrome-fg)_l_c_h_/_0.4)] data-[on]:text-[var(--dn-chrome-fg)] md:top-[84px] md:right-8 xl:top-24 xl:right-12"
+      className="group ease fixed top-16 right-5 z-[46] inline-flex cursor-pointer appearance-none items-center gap-2 rounded-full border border-[var(--dn-chrome-line)] px-[14px] py-[7px] font-sans text-[10px] tracking-[0.18em] text-[var(--dn-chrome-fg-mute)] uppercase transition-[color,border-color] duration-[250ms] hover:text-[var(--dn-chrome-fg)] data-[on]:border-[oklch(from_var(--dn-chrome-fg)_l_c_h_/_0.4)] data-[on]:text-[var(--dn-chrome-fg)] md:top-[84px] md:right-8 xl:top-24 xl:right-12"
       onClick={() => setEnabled((v) => !v)}
       aria-label={enabled ? t("off") : t("on")}
       aria-pressed={enabled}

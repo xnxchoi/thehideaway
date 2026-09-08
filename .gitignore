@@ -75,10 +75,9 @@ test*/
 
 !/essays/DemoOfArchive.tsx
 *__backup.tsx
-src/**/* copy*
+
 /src/components/layouts/Registration/Plate/ThreeCSG.ts
 
 readmes
-!/src/components/Shells/Header/HCC.tsx
 tsconfig.tsbuildinfo
 .shit

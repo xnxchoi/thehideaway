@@ -217,7 +217,7 @@ export function Polaroid(props: PolaroidProps) {
                 sizes={`${Math.round(width)}px`}
                 className="pointer-events-none absolute inset-0 z-[1] object-cover select-none"
               />
-              <div className="absolute top-[4%] left-[5%] z-[2] h-[62%] w-[90%] overflow-hidden">
+              <div className="absolute top-[4%] left-[5%] z-2 h-[62%] w-[90%] overflow-hidden">
                 <Image
                   src={(props as PolaroidStamped).src}
                   alt={(props as PolaroidStamped).alt ?? ""}

@@ -5,9 +5,9 @@ import type { Bookmark, Category, Compilation, Media, User } from "@/payload-typ
 import { CompilationItemType, compilationItemTypes } from "@/payload/collections/Compilations";
 import { getUserOverview } from "@/payload/collections/Posts/api/queryPostOverviews";
 import { CollectionMap } from "@/payload/plugins/plugin-search/utilities/syncDocAsSearchIndex";
-import { ImageCollection } from "@/types/collections/image-collections";
-import { CategoryOverview } from "@/types/collections/meta-collections";
-import { AuthorOverview } from "@/types/collections/users";
+import { ImageCollection } from "@types/collections/image-collections";
+import { CategoryOverview } from "@types/collections/meta-collections";
+import { AuthorOverview } from "@types/collections/users";
 import { KeysOfValue } from "@/utilities/typeUtilities";
 import config from "@payload-config";
 import { nanoid } from "nanoid";

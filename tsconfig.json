@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -17,10 +17,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@/types/*": ["./src/types/*"],
+      "@lostinseoul/*": ["./src/lostinseoul/*"],
+      "@types/*": ["./src/types/*"],
       "@payload-types": ["./src/payload-types.ts"],
       "@payload-config": ["./src/payload.config.ts"],
-      "meshline": ["./src/components/three/meshline"],
+      "meshline": ["./src/lib/external/meshline"],
       "@payload-auth/*": ["./src/lib/auth/payload-auth/*"],
       "@payload-auth/better-auth/plugin/rsc": [
         "./src/lib/auth/payload-auth/better-auth/plugin/payload/exports/rsc.ts"
@@ -53,9 +54,6 @@
     "reference/**",
     "src/payload/collections/(consumption)/**",
     "src/payload/collections/Holidays.ts",
-    "src/payload/plugins/membership/**",
-    "src/utilities/getExchangeRate.ts",
-    "src/utilities/getHoliday.ts",
-    "src/styles/test.tsx"
+    "src/payload/plugins/membership/**"
   ]
 }

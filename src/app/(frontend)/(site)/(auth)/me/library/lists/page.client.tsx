@@ -66,13 +66,13 @@ export default function ListsPageClient({
         <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+              <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                 Curated Collections
               </p>
               <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 My Lists
                 {compilations.length > 0 && (
-                  <span className="ml-2.5 font-mono text-sm text-muted-foreground/50 tabular-nums">
+                  <span className="ml-2.5 font-sans text-sm text-muted-foreground/50 tabular-nums">
                     {compilations.length}
                   </span>
                 )}
@@ -81,13 +81,13 @@ export default function ListsPageClient({
             <div className="flex items-center gap-4">
               <Link
                 href="/me/library/saved"
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+                className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
               >
                 ← Saved
               </Link>
               <RP_Btn
                 onClick={() => setShowCreate(true)}
-                className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60 xl:text-xs"
+                className="font-sans text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 transition-opacity hover:opacity-60 xl:text-xs"
               >
                 New List
               </RP_Btn>
@@ -190,7 +190,7 @@ function CompilationCard({
                 {c.title}
               </h3>
               {c.description && (
-                <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-white/60 xl:text-[11px]">
+                <p className="mt-0.5 line-clamp-1 font-sans text-[10px] text-white/60 xl:text-[11px]">
                   {c.description}
                 </p>
               )}
@@ -204,7 +204,7 @@ function CompilationCard({
               {c.title}
             </h3>
             {c.description && (
-              <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
+              <p className="mt-0.5 line-clamp-1 font-sans text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {c.description}
               </p>
             )}
@@ -215,7 +215,7 @@ function CompilationCard({
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-border/15 px-3.5 py-2 xl:px-4">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] text-muted-foreground/50 tabular-nums xl:text-[11px]">
+          <span className="font-sans text-[10px] text-muted-foreground/50 tabular-nums xl:text-[11px]">
             {c.itemCount} {c.itemCount === 1 ? "item" : "items"}
           </span>
           <VisibilityBadge visibility={c.visibility} />
@@ -227,7 +227,7 @@ function CompilationCard({
               e.preventDefault();
               setMenuOpen((o) => !o);
             }}
-            className="flex h-11 w-11 items-center justify-center font-mono text-sm text-muted-foreground/40 transition-colors hover:text-foreground"
+            className="flex h-11 w-11 items-center justify-center font-sans text-sm text-muted-foreground/40 transition-colors hover:text-foreground"
           >
             ···
           </RP_Btn>
@@ -242,7 +242,7 @@ function CompilationCard({
               >
                 <Link
                   href={`/me/library/lists/${c.hashId}`}
-                  className="block px-3 py-2 font-mono text-[11px] text-foreground/80 hover:bg-accent"
+                  className="block px-3 py-2 font-sans text-[11px] text-foreground/80 hover:bg-accent"
                   onClick={() => setMenuOpen(false)}
                 >
                   Edit
@@ -250,7 +250,7 @@ function CompilationCard({
                 {c.visibility === "public" && (
                   <Link
                     href={`/lists/${c.author.slug ?? c.author.id}/${c.hashId}`}
-                    className="block px-3 py-2 font-mono text-[11px] text-foreground/80 hover:bg-accent"
+                    className="block px-3 py-2 font-sans text-[11px] text-foreground/80 hover:bg-accent"
                     onClick={() => setMenuOpen(false)}
                   >
                     View public
@@ -261,7 +261,7 @@ function CompilationCard({
                     setMenuOpen(false);
                     onDelete();
                   }}
-                  className="w-full px-3 py-2 text-left font-mono text-[11px] text-destructive hover:bg-accent"
+                  className="w-full px-3 py-2 text-left font-sans text-[11px] text-destructive hover:bg-accent"
                 >
                   Delete
                 </RP_Btn>
@@ -277,7 +277,7 @@ function CompilationCard({
 function ListPlaceholder({ title }: { title: string }) {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/40 to-muted/10">
-      <span className="font-mono text-7xl font-light text-muted-foreground/10 select-none">
+      <span className="font-sans text-7xl font-light text-muted-foreground/10 select-none">
         {title.charAt(0).toUpperCase()}
       </span>
     </div>
@@ -288,7 +288,7 @@ function VisibilityBadge({ visibility }: { visibility: "public" | "private" }) {
   return (
     <span
       className={cn(
-        "font-mono text-[9px] tracking-widest uppercase",
+        "font-sans text-[9px] tracking-widest uppercase",
         visibility === "public"
           ? "text-muted-foreground/40"
           : "text-muted-foreground/25"
@@ -306,16 +306,16 @@ function ListsEmptyState({ onNew }: { onNew: () => void }) {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center py-28 text-center"
     >
-      <span className="mb-5 font-mono text-4xl text-foreground/10 select-none">
+      <span className="mb-5 font-sans text-4xl text-foreground/10 select-none">
         ⊞
       </span>
       <p className="text-base font-light text-foreground/70">No lists yet.</p>
-      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+      <p className="mt-1.5 max-w-xs font-sans text-[11px] text-muted-foreground/50">
         Create a curated list to organise and share the things you love.
       </p>
       <RP_Btn
         onClick={onNew}
-        className="mt-7 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+        className="mt-7 border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
       >
         Create your first list
       </RP_Btn>
@@ -388,12 +388,12 @@ function CreateCompilationSheet({
         className="fixed inset-x-4 bottom-0 z-150 mx-auto max-w-lg rounded-t-lg border border-border/30 bg-card shadow-2xl sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-sm"
       >
         <div className="flex items-center justify-between border-b border-border/20 px-6 py-4">
-          <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase">
             New List
           </p>
           <RP_Btn
             onClick={onClose}
-            className="font-mono text-xs text-muted-foreground/50 hover:text-foreground"
+            className="font-sans text-xs text-muted-foreground/50 hover:text-foreground"
           >
             ✕
           </RP_Btn>
@@ -404,7 +404,7 @@ function CreateCompilationSheet({
             <div>
               <label
                 htmlFor="title"
-                className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase"
+                className="mb-1.5 block font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase"
               >
                 Title
               </label>
@@ -421,7 +421,7 @@ function CreateCompilationSheet({
             <div>
               <label
                 htmlFor="description"
-                className="mb-1.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase"
+                className="mb-1.5 block font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase"
               >
                 Description{" "}
                 <span className="normal-case opacity-50">(optional)</span>
@@ -436,7 +436,7 @@ function CreateCompilationSheet({
             </div>
 
             <div>
-              <label className="mb-2.5 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+              <label className="mb-2.5 block font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase">
                 Visibility
               </label>
               <div className="flex gap-5">
@@ -446,7 +446,7 @@ function CreateCompilationSheet({
                     type="button"
                     onClick={() => setVisibility(v)}
                     className={cn(
-                      "flex items-center gap-2 font-mono text-[11px] tracking-widest uppercase transition-opacity",
+                      "flex items-center gap-2 font-sans text-[11px] tracking-widest uppercase transition-opacity",
                       visibility === v
                         ? "opacity-100"
                         : "opacity-35 hover:opacity-60"
@@ -468,7 +468,7 @@ function CreateCompilationSheet({
           </div>
 
           {error && (
-            <p className="mt-4 font-mono text-[10px] text-destructive">
+            <p className="mt-4 font-sans text-[10px] text-destructive">
               {error}
             </p>
           )}
@@ -477,14 +477,14 @@ function CreateCompilationSheet({
             <RP_Btn
               type="button"
               onClick={onClose}
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase hover:text-foreground"
+              className="font-sans text-[11px] tracking-widest text-muted-foreground/50 uppercase hover:text-foreground"
             >
               Cancel
             </RP_Btn>
             {/*<RP_Btn*/}
             {/*  type="submit"*/}
             {/*  disabled={isPending}*/}
-            {/*  className="border border-border/40 px-5 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"*/}
+            {/*  className="border border-border/40 px-5 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"*/}
             {/*>*/}
             {/*  {isPending ? "Creating…" : "Create"}*/}
             {/*</RP_Btn>*/}

@@ -1,7 +1,7 @@
 "use client";
 import { ReactNode, useCallback, useEffect, useRef } from "react";
 import { useHighlighter } from "@/components/UX/Highlightr/providers/HighlighterProvider";
-import type { SingleArticle } from "@/types/collections/posts";
+import type { SingleArticle } from "@types/collections/posts";
 import { useArticle } from "@/components/UX/Highlightr/providers/ArticleProvider";
 import { useShallow } from "zustand/shallow";
 

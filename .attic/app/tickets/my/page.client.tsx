@@ -173,7 +173,7 @@ function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
           </h2>
 
           {dateShort ? (
-            <p className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+            <p className="font-sans text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
               {dow ? `${dow} · ` : ""}
               {dateShort}
               {ev?.location ? ` · ${ev.location}` : ""}
@@ -182,7 +182,7 @@ function PagerCard({ ticket }: { ticket: MyTicketDoc }) {
 
           <Link
             href={`/tickets/my/${ticket.id}`}
-            className="mt-2 font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+            className="mt-2 font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
           >
             View details →
           </Link>
@@ -219,7 +219,7 @@ function PagerControls({
         >
           ← Prev
         </MotionPillButton>
-        <span className="font-mono text-[11px] text-muted-foreground/70 tabular-nums xl:text-xs">
+        <span className="font-sans text-[11px] text-muted-foreground/70 tabular-nums xl:text-xs">
           {padIndex(index + 1)}{" "}
           <span className="text-muted-foreground/30">/</span> {padIndex(total)}
         </span>
@@ -274,12 +274,12 @@ function EmptyState() {
           duration: 0.5,
           ease: [0.25, 0.46, 0.45, 0.94]
         }}
-        className="mb-4 block font-mono text-5xl"
+        className="mb-4 block font-sans text-5xl"
       >
         ○
       </m.span>
       <p className="text-base font-light text-foreground/70">No tickets yet.</p>
-      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+      <p className="mt-1.5 max-w-xs font-sans text-[11px] text-muted-foreground/50">
         Tickets arrive here once you purchase one through a private event link
         or claim a gift sent to you.
       </p>

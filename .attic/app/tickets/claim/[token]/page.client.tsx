@@ -116,7 +116,7 @@ export function ClaimClient({
             {/* Event meta */}
             <div>
               {dateDisplay ? (
-                <p className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+                <p className="font-sans text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
                   {dateDisplay}
                   {event.location ? ` · ${event.location}` : ""}
                 </p>
@@ -194,14 +194,14 @@ function InvalidView() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 0.1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.5 }}
-        className="mb-4 block font-mono text-5xl"
+        className="mb-4 block font-sans text-5xl"
       >
         ○
       </m.span>
       <p className="text-base font-light text-foreground/70">
         Link is invalid or already claimed.
       </p>
-      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+      <p className="mt-1.5 max-w-xs font-sans text-[11px] text-muted-foreground/50">
         If you think this is a mistake, ask the sender to resend.
       </p>
     </m.div>
@@ -217,7 +217,7 @@ function AlreadyMineView({ ticketId }: { ticketId: string }) {
       transition={{ duration: 0.3 }}
       className="flex flex-col gap-5"
     >
-      <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
+      <p className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase">
         Already yours
       </p>
       <p className="text-sm font-light text-foreground/80">
@@ -245,7 +245,7 @@ function EmailMismatchView({ token }: { token: string }) {
       transition={{ duration: 0.3 }}
       className="flex flex-col gap-5"
     >
-      <p className="font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
+      <p className="font-sans text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
         Wrong account
       </p>
       <p className="text-sm font-light text-foreground/80">
@@ -287,7 +287,7 @@ function ClaimView({
       className="flex flex-col gap-5"
     >
       <div>
-        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+        <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
           Gift ticket
         </p>
         <p className="mt-3 text-sm font-light text-foreground/80">
@@ -295,7 +295,7 @@ function ClaimView({
           your account and the link becomes unusable.
         </p>
         {emailRestricted ? (
-          <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
+          <p className="mt-2 font-sans text-[11px] text-muted-foreground/60">
             Email restriction is in effect — only the intended recipient can
             claim.
           </p>
@@ -307,7 +307,7 @@ function ClaimView({
           role="alert"
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+          className="font-sans text-[11px] text-[oklch(0.7_0.18_30)]"
         >
           {err}
         </m.p>

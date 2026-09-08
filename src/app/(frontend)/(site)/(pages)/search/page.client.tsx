@@ -123,7 +123,7 @@ function ResultItem({
           {label}
         </span>
         {result.subtitle && (
-          <span className="hidden max-w-xs truncate font-mono text-[10px] text-muted-foreground/50 md:block xl:text-[11px]">
+          <span className="hidden max-w-xs truncate font-sans text-[10px] text-muted-foreground/50 md:block xl:text-[11px]">
             {result.subtitle}
           </span>
         )}
@@ -155,7 +155,7 @@ function ResultGroup({
       transition={{ duration: 0.2 }}
       aria-label={label}
     >
-      <h3 className="mt-10 mb-1 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase first:mt-0 xl:text-xs">
+      <h3 className="mt-10 mb-1 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase first:mt-0 xl:text-xs">
         {label}
       </h3>
       <ul>
@@ -278,7 +278,7 @@ const PageClient = ({ initialQuery = "" }: { initialQuery?: string }) => {
           </div>
 
           {/* ── Result count ── */}
-          <div className="mt-4 h-5 font-mono text-[10px] tracking-widest text-muted-foreground/40 uppercase xl:text-[11px]">
+          <div className="mt-4 h-5 font-sans text-[10px] tracking-widest text-muted-foreground/40 uppercase xl:text-[11px]">
             {hasResults && (
               <m.span
                 initial={{ opacity: 0 }}
@@ -299,7 +299,7 @@ const PageClient = ({ initialQuery = "" }: { initialQuery?: string }) => {
                   <p className="text-base font-light text-foreground/50">
                     Start typing to search…
                   </p>
-                  <p className="font-mono text-[10px] text-muted-foreground/40 xl:text-[11px]">
+                  <p className="font-sans text-[10px] text-muted-foreground/40 xl:text-[11px]">
                     Essays · Surf · People · Albums · Tracks · Playlists
                   </p>
                 </m.div>
@@ -322,13 +322,13 @@ const PageClient = ({ initialQuery = "" }: { initialQuery?: string }) => {
                       }}
                       className="flex flex-col items-center justify-center py-24 text-center"
                     >
-                      <span className="mb-4 font-mono text-5xl opacity-10">
+                      <span className="mb-4 font-sans text-5xl opacity-10">
                         ○
                       </span>
                       <p className="text-base font-light text-foreground/70">
                         No results for &ldquo;{debouncedQuery}&rdquo;
                       </p>
-                      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+                      <p className="mt-1.5 max-w-xs font-sans text-[11px] text-muted-foreground/50">
                         Try a different spelling or a broader term.
                       </p>
                     </m.div>

@@ -100,16 +100,16 @@ function Colophon() {
   return (
     <section className="border-t border-border/20 py-16 xl:py-20">
       <div className="mx-auto max-w-7xl px-6 xl:px-10">
-        <p className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase xl:text-[11px]">
+        <p className="mb-6 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase xl:text-[11px]">
           · Colophon
         </p>
-        <dl className="grid grid-cols-1 gap-x-12 gap-y-3 font-mono text-[11px] text-muted-foreground/60 sm:grid-cols-2 lg:grid-cols-4 xl:text-xs">
+        <dl className="grid grid-cols-1 gap-x-12 gap-y-3 font-sans text-[11px] text-muted-foreground/60 sm:grid-cols-2 lg:grid-cols-4 xl:text-xs">
           <ColophonRow label="Recorded" value="[Studio, City]" />
           <ColophonRow label="Mixed by" value="[Name]" />
           <ColophonRow label="Mastered by" value="[Name]" />
           <ColophonRow label="Edition" value="[n] copies" />
         </dl>
-        <p className="mt-12 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/30 uppercase xl:text-[11px]">
+        <p className="mt-12 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/30 uppercase xl:text-[11px]">
           End of broadcast.
         </p>
       </div>

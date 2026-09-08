@@ -8,7 +8,7 @@ import { useCursor } from "@/providers/RP_Pro";
 
 import { useTheme } from "@/providers/Theme";
 import { Theme } from "@/providers/Theme/types";
-import { PostOverview } from "@/types/collections/posts";
+import { PostOverview } from "@types/collections/posts";
 import { ComponentPropsWithoutRef, useCallback } from "react";
 
 export const HomeSquare = (
@@ -64,7 +64,7 @@ export const HomeSquare = (
             {article.subtitle}
           </p>
         )}
-        <div className="max-w-[36ch] font-mono text-[10px] tracking-widest uppercase sm:text-xs">
+        <div className="max-w-[36ch] font-sans text-[10px] tracking-widest uppercase sm:text-xs">
           {article.author.name}
         </div>
       </Link>

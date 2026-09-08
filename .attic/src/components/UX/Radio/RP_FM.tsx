@@ -230,7 +230,7 @@ const LP = () => {
             >
               <Image
                 className={cn(
-                  "absolute inset-0 z-[2] block aspect-square rounded-full object-cover"
+                  "absolute inset-0 z-2 block aspect-square rounded-full object-cover"
                 )}
                 src={lpImage}
                 alt="an image of an lp"
@@ -245,11 +245,11 @@ const LP = () => {
               >
                 {/* <div
               className={
-                "absolute inset-0 z-[2] aspect-square rounded-full bg-[url(/assets/textures/lp/lp_svg.png)] mask-[url(/assets/textures/lp/lp_grooves_op75.png)] bg-auto bg-position-[center_center] bg-no-repeat mask-alpha mask-size-[100%] mask-position-[50%_50%] mask-no-repeat opacity-75 bg-blend-overlay mix-blend-multiply !outline-bleu-500/25 min-lg:bg-[url(/assets/textures/lp/lp_svg@2x.png)] min-lg:mask-[url(/assets/textures/lp/lp_grooves_op75@2x.png)]"
+                "absolute inset-0 z-2 aspect-square rounded-full bg-[url(/assets/textures/lp/lp_svg.png)] mask-[url(/assets/textures/lp/lp_grooves_op75.png)] bg-auto bg-position-[center_center] bg-no-repeat mask-alpha mask-size-[100%] mask-position-[50%_50%] mask-no-repeat opacity-75 bg-blend-overlay mix-blend-multiply !outline-bleu-500/25 min-lg:bg-[url(/assets/textures/lp/lp_svg@2x.png)] min-lg:mask-[url(/assets/textures/lp/lp_grooves_op75@2x.png)]"
               }
             /> */}
 
-                {/* <div className="absolute inset-0 z-[2] flex aspect-square items-center justify-between rounded-full bg-bleu-500/20 mask-[url(#lp)] mask-alpha mask-size-[100%] mask-position-[center_center] mask-no-repeat text-[1.8rem] opacity-95"></div> */}
+                {/* <div className="absolute inset-0 z-2 flex aspect-square items-center justify-between rounded-full bg-bleu-500/20 mask-[url(#lp)] mask-alpha mask-size-[100%] mask-position-[center_center] mask-no-repeat text-[1.8rem] opacity-95"></div> */}
 
                 <div className="relative z-[11] h-full w-full font-siegfried leading-[1]">
                   {track.artist === artist && (
@@ -395,7 +395,7 @@ const LP = () => {
 //           }}
 //         ></div>
 //         <div
-//           className="flex items-center justify-between text-[1.8rem] bg-bleu-500/20 opacity-95 absolute inset-0 aspect-square rounded-full z-[2]"
+//           className="flex items-center justify-between text-[1.8rem] bg-bleu-500/20 opacity-95 absolute inset-0 aspect-square rounded-full z-2"
 //  //         style={{ outlineColor: "var(---bleu-400)/.5)" ,
 //             maskImage: "url(#lp)",
 //             maskSize: "100%",
@@ -408,7 +408,7 @@ const LP = () => {
 //         <div className="text-md font-italic opacity-95 absolute inset-0 w-full aspect-square rounded-full bg-transparent">
 //           <div className={"relative"}>
 //             <div
-//               className=" z-[2] absolute inset-0 w-full aspect-square rounded-full opacity-95"
+//               className=" z-2 absolute inset-0 w-full aspect-square rounded-full opacity-95"
 //               style={{
 //                 maskImage: `url(assets/textures/lp/lp_effects${isMobile ? "" : "@2x"}.png), url(/assets/textures/lp/lp_grooves_op75${isMobile ? "" : "@2x"}.png)`,
 //                 maskSize: "auto, 100%",
@@ -421,7 +421,7 @@ const LP = () => {
 //           </div>
 //           <div
 //             className={
-//               "aspect-square w-full absolute py-[1.2rem] px-[1rem] tracking-[.06rem] text-bleu-300 flex rounded-full z-[2] opacity-95"
+//               "aspect-square w-full absolute py-[1.2rem] px-[1rem] tracking-[.06rem] text-bleu-300 flex rounded-full z-2 opacity-95"
 //             }
 //             style={{
 //               backgroundImage: `url(assets/textures/lp/lp_grooves_gradient_bo${isMobile ? "" : "@2x"}.png)`,
@@ -452,7 +452,7 @@ const LP = () => {
 //                   {curIn.album}
 //                 </div>
 //               </div>
-//               <div className="overflow-hidden pb-[2px] relative z-[2]">
+//               <div className="overflow-hidden pb-[2px] relative z-2">
 //                 <div
 //                   className="text-2xl font-serif italic leading-[1] font-bold"
 //                   ref={trackTitle}
@@ -461,7 +461,7 @@ const LP = () => {
 //                 </div>
 //               </div>
 //             </div>
-//             <div className="opacity-90 text-center flex-col gap-0  bg-transparent justify-center items-center w-full mb-[3rem] flex absolute top-auto bottom-0 left-0 right-0 scale-[.83] font-medium font-sans z-[2]">
+//             <div className="opacity-90 text-center flex-col gap-0  bg-transparent justify-center items-center w-full mb-[3rem] flex absolute top-auto bottom-0 left-0 right-0 scale-[.83] font-medium font-sans z-2">
 //               <span className="tracking-tighter text-[.7rem]">
 //                 The Hideaway
 //               </span>
@@ -602,7 +602,7 @@ const padWithLeadingZeros = (num: number, length: number): string => {
               filter: "brightness(1.15) contrast(1.1)",
               mixBlendMode: "hard-light",
             }}></div>
-            <div className="absolute inset-0 rounded-full z-[2] w-full flex items-center justify-center aspect-square" data-lp-effects={true} style={{
+            <div className="absolute inset-0 rounded-full z-2 w-full flex items-center justify-center aspect-square" data-lp-effects={true} style={{
               maskImage: "url(/assets/lp_effects.png)",
 
               backgroundImage: "radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y), oklch(from var(--faded-white) l c h/0.8) 0%, oklch(from var(--faded-white) l c h/0.78) 25%, oklch(from var(--faded-black) l c h/0.9) 90%)",

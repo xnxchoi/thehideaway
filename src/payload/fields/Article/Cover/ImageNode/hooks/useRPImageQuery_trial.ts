@@ -7,9 +7,9 @@ import {
   RalueAsDataWithRelation,
   RalueWithRelation,
   RenderImageFields
-} from "@/types/collections/image-collections";
-import { ImageMetadata } from "@/types/ImageCollections/schema";
-import { imageSelect } from "@/types/payload-api-selects";
+} from "@types/collections/image-collections";
+import { ImageMetadata } from "@types/ImageCollections/schema";
+import { imageSelect } from "@types/payload-api-selects";
 import { getClientSideURL } from "@/utilities/getURL";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { stringify } from "qs-esm";

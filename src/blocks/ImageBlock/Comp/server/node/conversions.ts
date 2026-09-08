@@ -3,7 +3,7 @@ import {RP_IMG_DMA} from "@/payload/fields/Article/Cover/rp-image/client/nodeTOD
 import {
 	$createRPImageServerNode
 } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
-import {ImageCollectionSlug} from "@/types/collections/image-collections";
+import { ImageCollectionSlug } from "@types/collections/image-collections";
 import {DOMConversionOutput} from "@payloadcms/richtext-lexical/lexical";
 import {uuidv7} from "uuidv7";
 

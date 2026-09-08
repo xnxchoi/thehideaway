@@ -1,7 +1,10 @@
 "use client";
-import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
+import {
+  CategoryOverview,
+  TagOverview
+} from "@types/collections/meta-collections";
 
-import {AuthorOverview} from "@/types/collections/users";
+import { AuthorOverview } from "@types/collections/users";
 import type { DataFromCollectionSlug } from "payload";
 import { type ReactNode, createContext, useContext, useRef } from "react";
 import { type StoreApi, createStore, useStore } from "zustand";

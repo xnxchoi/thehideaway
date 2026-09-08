@@ -34,7 +34,7 @@ export function TicketWallet({ tickets }: Props) {
   if (tickets.length === 0) {
     return (
       <section className="mt-10 border-t border-off-white/10 pt-8">
-        <h2 className="font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
+        <h2 className="font-sans text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
           {t("walletTitle")}
         </h2>
         <p className="mt-3 max-w-md text-sm leading-relaxed font-light text-off-white/70">
@@ -52,7 +52,7 @@ export function TicketWallet({ tickets }: Props) {
       )}
     >
       <div className="mb-8 flex flex-col gap-3">
-        <h2 className="font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
+        <h2 className="font-sans text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
           {t("walletTitle")}
         </h2>
         <p className="max-w-md text-sm leading-relaxed font-light text-off-white/70">
@@ -79,7 +79,7 @@ export function TicketWallet({ tickets }: Props) {
                 paymentInstructions={ticket.paymentInstructions}
               />
               <div className="flex flex-col gap-3 border-t border-off-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="max-w-md font-mono text-[10px] leading-relaxed tracking-widest text-off-white/65 uppercase">
+                <p className="max-w-md font-sans text-[10px] leading-relaxed tracking-widest text-off-white/65 uppercase">
                   {ticket.checkedIn
                     ? t("checkedInHint")
                     : hasEntryQr
@@ -88,7 +88,7 @@ export function TicketWallet({ tickets }: Props) {
                 </p>
                 <Link
                   href={`/tickets/my/${ticket.id}`}
-                  className="font-mono text-[10px] tracking-[0.24em] text-off-white/70 uppercase transition-colors hover:text-off-white"
+                  className="font-sans text-[10px] tracking-[0.24em] text-off-white/70 uppercase transition-colors hover:text-off-white"
                 >
                   {t("openTicket")}
                 </Link>

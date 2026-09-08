@@ -38,7 +38,7 @@ const COPY: Record<DetailLinkKind, string> = {
 };
 
 const LABEL_CLASSES =
-  "font-mono text-[11px] uppercase tracking-widest transition-colors";
+  "font-sans text-[11px] uppercase tracking-widest transition-colors";
 
 export function DetailLink({ kind, entity, disabled }: DetailLinkProps) {
   const label = COPY[kind];

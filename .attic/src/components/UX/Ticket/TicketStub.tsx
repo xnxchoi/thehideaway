@@ -87,7 +87,7 @@ export function TicketStub({
             <div className="relative flex-1 px-5 py-5">
               <div className="flex items-baseline justify-between gap-3">
                 <span
-                  className="font-mono text-[9px] uppercase"
+                  className="font-sans text-[9px] uppercase"
                   style={{ letterSpacing: "0.32em", opacity: 0.5 }}
                 >
                   Admit One
@@ -103,7 +103,7 @@ export function TicketStub({
               </p>
 
               <p
-                className="mt-2 font-mono text-[10px]"
+                className="mt-2 font-sans text-[10px]"
                 style={{ opacity: 0.6 }}
               >
                 {date ?? "—"}
@@ -149,15 +149,15 @@ export function TicketStub({
               }}
             >
               <span
-                className="font-mono text-[8px] uppercase"
+                className="font-sans text-[8px] uppercase"
                 style={{ letterSpacing: "0.32em", opacity: 0.45 }}
               >
                 No.
               </span>
-              <span className="mt-1 font-mono text-base">{num}</span>
+              <span className="mt-1 font-sans text-base">{num}</span>
               {checkedIn ? (
                 <span
-                  className="mt-2 font-mono text-[8px] uppercase"
+                  className="mt-2 font-sans text-[8px] uppercase"
                   style={{
                     letterSpacing: "0.22em",
                     color: "oklch(0.45 0.16 150)"
@@ -190,7 +190,7 @@ function StatusDot({ status, checkedIn }: StatusDotProps) {
         style={{ background: color }}
       />
       <span
-        className="font-mono text-[9px] uppercase"
+        className="font-sans text-[9px] uppercase"
         style={{ letterSpacing: "0.22em", color: PAPER_INK, opacity: 0.65 }}
       >
         {label}

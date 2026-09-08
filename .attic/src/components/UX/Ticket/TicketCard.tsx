@@ -142,13 +142,13 @@ export function TicketCard({
             <header className="flex items-start justify-between gap-4">
               <div>
                 <span
-                  className="block font-mono text-[9px] uppercase"
+                  className="block font-sans text-[9px] uppercase"
                   style={{ letterSpacing: "0.32em", opacity: 0.5 }}
                 >
                   Admit One · No. {num}
                 </span>
                 <span
-                  className="mt-1 block font-mono text-[11px]"
+                  className="mt-1 block font-sans text-[11px]"
                   style={{ letterSpacing: "0.18em", opacity: 0.7 }}
                 >
                   The Hideaway · Seoul
@@ -186,7 +186,7 @@ export function TicketCard({
                 >
                   {formatKRW(ticketPrice)}
                   <span
-                    className="ml-3 font-mono text-[9px] uppercase"
+                    className="ml-3 font-sans text-[9px] uppercase"
                     style={{ letterSpacing: "0.32em", opacity: 0.45 }}
                   >
                     Awaiting payment
@@ -194,14 +194,14 @@ export function TicketCard({
                 </p>
                 {paymentInstructions ? (
                   <p
-                    className="mt-4 font-mono text-[11px] leading-relaxed whitespace-pre-line"
+                    className="mt-4 font-sans text-[11px] leading-relaxed whitespace-pre-line"
                     style={{ opacity: 0.78, maxWidth: "44ch" }}
                   >
                     {paymentInstructions}
                   </p>
                 ) : (
                   <p
-                    className="mt-4 font-mono text-[11px] leading-relaxed"
+                    className="mt-4 font-sans text-[11px] leading-relaxed"
                     style={{ opacity: 0.65, maxWidth: "44ch" }}
                   >
                     The host will reach out with payment details. Your ticket
@@ -211,14 +211,14 @@ export function TicketCard({
               </div>
             ) : status === "used" ? (
               <p
-                className="mt-8 font-mono text-[11px] uppercase"
+                className="mt-8 font-sans text-[11px] uppercase"
                 style={{ letterSpacing: "0.18em", opacity: 0.45 }}
               >
                 This ticket has been used
               </p>
             ) : status === "canceled" ? (
               <p
-                className="mt-8 font-mono text-[11px] uppercase"
+                className="mt-8 font-sans text-[11px] uppercase"
                 style={{ letterSpacing: "0.18em", opacity: 0.45 }}
               >
                 This ticket is canceled
@@ -228,7 +228,7 @@ export function TicketCard({
             {/* Foot rail */}
             <div
               aria-hidden="true"
-              className="mt-auto pt-8 font-mono text-[8px]"
+              className="mt-auto pt-8 font-sans text-[8px]"
               style={{ letterSpacing: "0.5em", opacity: 0.45 }}
             >
               {`HW · ${num} · ${(eventDate ?? "").slice(0, 10).replace(/-/g, "·") || "—"}`}
@@ -256,7 +256,7 @@ export function TicketCard({
                 />
               </div>
               <span
-                className="font-mono text-[9px] uppercase"
+                className="font-sans text-[9px] uppercase"
                 style={{ letterSpacing: "0.32em", opacity: 0.5 }}
               >
                 Scan at the door
@@ -297,12 +297,12 @@ function Field({ label, children }: FieldProps) {
   return (
     <div>
       <dt
-        className="font-mono text-[9px] uppercase"
+        className="font-sans text-[9px] uppercase"
         style={{ letterSpacing: "0.32em", opacity: 0.4 }}
       >
         {label}
       </dt>
-      <dd className="mt-1 font-mono text-[11px]">{children}</dd>
+      <dd className="mt-1 font-sans text-[11px]">{children}</dd>
     </div>
   );
 }
@@ -331,7 +331,7 @@ function StatusFlag({ status, paid, checkedIn }: StatusFlagProps) {
       }}
     >
       <span
-        className="font-mono text-[9px] uppercase"
+        className="font-sans text-[9px] uppercase"
         style={{ letterSpacing: "0.22em" }}
       >
         {label}
@@ -363,7 +363,7 @@ function Stamp({ label, tone, rotate, large }: StampProps) {
         style={{ borderColor: color, color }}
       >
         <span
-          className={`font-mono uppercase ${large ? "text-3xl" : "text-xl"} font-bold`}
+          className={`font-sans uppercase ${large ? "text-3xl" : "text-xl"} font-bold`}
           style={{ letterSpacing: "0.18em" }}
         >
           {label}

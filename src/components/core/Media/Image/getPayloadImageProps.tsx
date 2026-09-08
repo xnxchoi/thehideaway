@@ -1,4 +1,4 @@
-import { RenderImageFields } from "@/types/collections/image-collections";
+import { RenderImageFields } from "@types/collections/image-collections";
 
 /**
  * Generates src, srcset, and sizes attributes for an image

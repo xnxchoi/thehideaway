@@ -147,7 +147,7 @@ function ItemContent({
       <span
         aria-hidden="true"
         className={cn(
-          "font-mono text-[9px] tracking-widest tabular-nums",
+          "font-sans text-[9px] tracking-widest tabular-nums",
           active
             ? "text-foreground/85"
             : "text-foreground/55 dark:text-foreground/50"
@@ -159,7 +159,7 @@ function ItemContent({
         className={
           labelStyle === "mono"
             ? cn(
-                "font-mono text-[10px] tracking-[0.18em] uppercase transition-colors",
+                "font-sans text-[10px] tracking-[0.18em] uppercase transition-colors",
                 active
                   ? "text-foreground"
                   : "text-foreground/60 dark:text-foreground/55"

@@ -25,7 +25,7 @@ export function TossPayButton({ amount, tossId, label }: TossPayButtonProps) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block border border-border/40 px-5 py-3 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+      className="inline-block border border-border/40 px-5 py-3 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
     >
       {label ?? `Pay with Toss · ${display}`}
     </Link>

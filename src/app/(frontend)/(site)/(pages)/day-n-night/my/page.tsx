@@ -128,7 +128,7 @@ export default async function DayNNightMyPage() {
         {/* H13: max-w-2xl (was 3xl) — a list, but related to the
             max-w-md single-action gate/claim screens. */}
         <div className="mx-auto max-w-2xl px-6 py-24 xl:px-10 xl:py-28">
-          <p className="mb-3 font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
+          <p className="mb-3 font-sans text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
             {t("eyebrow")}
           </p>
           <h1 className="font-wide text-4xl leading-[1.05] font-light tracking-tight xl:text-5xl">
@@ -169,7 +169,7 @@ export default async function DayNNightMyPage() {
                         className="rounded-2xl border border-off-white/10 bg-off-white/[0.03] p-7 xl:p-9"
                       >
                         <div className="flex items-center justify-between gap-4">
-                          <span className="font-mono text-[10px] tracking-[0.32em] text-off-white/55 uppercase">
+                          <span className="font-sans text-[10px] tracking-[0.32em] text-off-white/55 uppercase">
                             {o.paid
                               ? t("confirmed")
                               : o.payment_submitted_at
@@ -178,14 +178,14 @@ export default async function DayNNightMyPage() {
                           </span>
                           {/* H14: opacity bumped from /35 to /55 — clears
                               the legibility floor for informative UI text. */}
-                          <span className="font-mono text-[10px] tracking-[0.32em] text-off-white/55 uppercase">
+                          <span className="font-sans text-[10px] tracking-[0.32em] text-off-white/55 uppercase">
                             {t("ticketCount", { count: siblings.length })}
                           </span>
                         </div>
 
                         {o.paid && o.password ? (
                           <div className="mt-5">
-                            <p className="font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
+                            <p className="font-sans text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
                               {t("orderPassword")}
                             </p>
                             {/* H3: tap-to-reveal — the password stays
@@ -195,7 +195,7 @@ export default async function DayNNightMyPage() {
                             {/* H14: opacity bumped from /45 to /65 (and
                                 tracking-widest is unchanged) so the
                                 passwordHint copy clears the floor. */}
-                            <p className="mt-2 max-w-md font-mono text-[10px] leading-relaxed tracking-widest text-off-white/65 uppercase">
+                            <p className="mt-2 max-w-md font-sans text-[10px] leading-relaxed tracking-widest text-off-white/65 uppercase">
                               {t("passwordHint")}
                             </p>
                           </div>
@@ -220,7 +220,7 @@ export default async function DayNNightMyPage() {
                                   {ticket.gift_initial_name?.trim() ||
                                     `#${ticket.ticket_number ?? "—"}`}
                                 </span>
-                                <span className="font-mono text-[10px] tracking-widest text-off-white/55 uppercase">
+                                <span className="font-sans text-[10px] tracking-widest text-off-white/55 uppercase">
                                   {claimed ? t("claimed") : t("unclaimed")}
                                 </span>
                               </li>

@@ -1,4 +1,4 @@
-import {ImageCollection} from "@/types/collections/image-collections";
+import { ImageCollection } from "@types/collections/image-collections";
 import type {CheckboxField, FieldHookArgs, GroupField, TextField} from "payload"
 
 const altField: TextField = {

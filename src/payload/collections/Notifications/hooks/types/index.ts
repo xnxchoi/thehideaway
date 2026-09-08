@@ -1,5 +1,5 @@
 import {Notification} from "@/payload-types";
-import {RalueAsDataWithRelation} from "@/types/collections/image-collections";
+import { RalueAsDataWithRelation } from "@types/collections/image-collections";
 
 export type SyncedAsset = RalueAsDataWithRelation
 

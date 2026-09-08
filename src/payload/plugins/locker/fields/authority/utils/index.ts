@@ -1,12 +1,7 @@
-export type Role =
-  | "guest"
-  | "user"
-  | "resident"
-  | "patron"
-  | "author"
-  | "editor"
-  | "cofounder"
-  | "admin";
+import { RP_Roles } from "@/stores/Notification/NotificationStore";
+
+export type Role = RP_Roles | "guest";
+
 
 export const roleToAuthority = (role: Role): number => {
   switch (role) {

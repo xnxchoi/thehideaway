@@ -3,8 +3,11 @@ import {surfOverviewSelect} from "@/payload/collections/Surf/api/querySurfOvervi
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 
 import {RP_Roles} from "@/stores/Notification/NotificationStore";
-import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
-import {AuthorOverview} from "@/types/collections/users";
+import {
+  CategoryOverview,
+  TagOverview
+} from "@types/collections/meta-collections";
+import { AuthorOverview } from "@types/collections/users";
 import {draftMode} from "next/headers";
 import {headersWithCors, type PayloadRequest} from "payload";
 

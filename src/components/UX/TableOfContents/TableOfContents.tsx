@@ -159,14 +159,14 @@ function TocItemLink({
   );
 
   const numberClass = cn(
-    "relative z-10 font-mono text-[10px] tracking-widest tabular-nums transition-colors",
+    "relative z-10 font-sans text-[10px] tracking-widest tabular-nums transition-colors",
     active ? "text-foreground/85" : "text-foreground/55 dark:text-foreground/50"
   );
 
   const labelClass =
     labelStyle === "mono"
       ? cn(
-          "relative z-10 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors xl:text-xs ease-out-power2 duration-150",
+          "relative z-10 font-sans text-[11px] tracking-[0.18em] uppercase transition-colors xl:text-xs ease-out-power2 duration-150",
           active
             ? "text-foreground"
             : "text-foreground/60 group-hover:text-foreground/85 dark:text-foreground/55"

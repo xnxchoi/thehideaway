@@ -80,7 +80,7 @@ export function InvoiceSleeve({ label = "RECEIPT" }: InvoiceSleeveProps) {
             The Hideaway
           </span>
           <span
-            className="font-mono text-[9px] tracking-[0.4em] text-[#1a0606]/80 uppercase"
+            className="font-sans text-[9px] tracking-[0.4em] text-[#1a0606]/80 uppercase"
             style={{
               textShadow:
                 "0 1px 0 rgba(255,255,255,0.05), 0 -1px 0 rgba(0,0,0,0.3)"

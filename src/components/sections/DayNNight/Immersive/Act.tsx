@@ -149,11 +149,7 @@ export const TITLE_PAIR =
 export const LEDE =
   "text-[clamp(1.4rem,1.6vw,1.75rem)] leading-[1.45] font-light tracking-[-0.005em] text-[var(--dn-fg-mute)]";
 
-export const BODY_SERIF =
-  "font-serif text-[clamp(1.45rem,1.75vw,1.9rem)] leading-[1.35] tracking-[-0.005em] text-[var(--dn-fg-mute)] italic";
 
-export const KICKER_MONO =
-  "font-mono text-[11px] tracking-[0.32em] text-[var(--dn-fg-mute)] uppercase";
 
 export const LABEL_MONO =
-  "font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase";
+  "font-sans text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase";

@@ -16,8 +16,8 @@ import type { User } from "@/payload-types";
 import RichText from "../RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursor } from "@/providers/RP_Pro";
-import type { SingleArticle } from "@/types/collections/posts";
-import { AuthorOverview } from "@/types/collections/users";
+import type { SingleArticle } from "@types/collections/posts";
+import { AuthorOverview } from "@types/collections/users";
 import { motionCallback } from "@/utilities/motionHelpers";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import {

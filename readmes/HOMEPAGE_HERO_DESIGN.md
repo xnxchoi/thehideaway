@@ -73,7 +73,8 @@ No type-on-image overlays — text always sits below the image. The wavy mask ha
 ### 1.8 What's Worth Stealing (for The Hideaway)
 1. **The asymmetric two-row, 6-col composition with a tall type-only rail.** Highest-leverage layout move. Translate: swap chartreuse card for `bg-card` with `border border-border/20`; keep `grid-cols-6` + `col-span-4` lead, `col-span-2 row-span-2` rail.
 2. **Single rounded "card-of-cards" wrapper** with very small radii (5–10px). Already on-spec for CLAUDE.md.
-3. **Type-only "Latest" rail as a peer to image cards.** `border-t border-border/30` rows, `font-medium tracking-tight text-base xl:text-lg`, `font-mono text-[10px] muted-foreground/60` for timestamps.
+3. **Type-only "Latest" rail as a peer to image cards.** `border-t border-border/30` rows,
+   `font-medium tracking-tight text-base xl:text-lg`, `font-sans text-[10px] muted-foreground/60` for timestamps.
 4. **Lead image silhouette dissolved into the card.** Skip the wavy SVG; use a 6–8% height `from-card` gradient overlay at the bottom of the hero image so it bleeds into the type block. One subtle move, big silhouette payoff.
 5. **Eyebrow as a `border 1px` pill in display-wide font.** Already on-spec.
 
@@ -235,10 +236,14 @@ Adopt Inverse's exact 6-col asymmetric two-row structure. The current `ArticleFr
 **Lead (slot 1)** — `lg:col-span-4 lg:row-span-1`
 - Image: 16:9 (`aspect-video`), full width of slot, flush to slot edges. Bottom ~8% gradient `from-card via-card/0 to-transparent` overlay for silhouette dissolution. (Inverse's wavy-mask move, translated to monochrome.)
 - Below image, padding `p-5 xl:p-6` (roomy-editorial card padding per §5.5):
-  - **Eyebrow chip (category)**: `inline-block border border-border/40 rounded-xs px-2 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60`. (`rounded-xs` = 2px per §6.1; chip is rectangular, not pill — pill `rounded-full` reserved for avatars/play controls per §6.2.)
+    - **Eyebrow chip (category)**:
+      `inline-block border border-border/40 rounded-xs px-2 py-1 font-sans text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60`.
+      (`rounded-xs` = 2px per §6.1; chip is rectangular, not pill — pill `rounded-full` reserved for avatars/play
+      controls per §6.2.)
   - **Headline**: `<h2>` with `font-serif font-light text-3xl sm:text-4xl md:text-5xl xl:text-6xl tracking-tight leading-[1.05] text-balance`. (Hideaway scale: `1rem=10px`, so `text-6xl`=60px, `text-3xl`=30px. Lands in Inverse's neighborhood.)
   - **Dek** (only on lead — Verge rule): `font-serif italic text-base sm:text-lg lg:text-xl text-foreground/70 leading-snug max-w-[60ch]`. (Atlantic flavor.)
-  - **Byline**: `mt-3 font-mono text-[10px] xl:text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60` — `By {author} · {relative date}`.
+      - **Byline**: `mt-3 font-sans text-[10px] xl:text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60` —
+        `By {author} · {relative date}`.
 - Whole slot wrapped in a single `<Link>` (overlay absolute, no nested links).
 
 **Secondary A & B (slots 2 & 3)** — each `lg:col-span-2 lg:row-span-1` in row 2
@@ -248,11 +253,14 @@ Adopt Inverse's exact 6-col asymmetric two-row structure. The current `ArticleFr
 - Hover: image scales `1.02` at `duration-150 ease-[cubic-bezier(.4,0,.2,1)]`; surrounding type stays still.
 
 **Headliners rail (slot 4)** — `lg:col-span-2 lg:row-span-2`
-- Type-only. Header row: `font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 px-5 py-3 border-b border-border/30` showing **HEADLINERS**.
+
+- Type-only. Header row:
+  `font-sans text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 px-5 py-3 border-b border-border/30`
+  showing **HEADLINERS**.
 - 5 numbered items (Verge "Most Popular" rhythm), each row:
-  - Mono number (`01`–`05`) at left, `font-mono text-[10px] text-muted-foreground/40`.
+    - Mono number (`01`–`05`) at left, `font-sans text-[10px] text-muted-foreground/40`.
   - Title: `text-base xl:text-lg font-medium tracking-tight leading-snug text-balance`.
-  - Byline + relative date below in `font-mono text-[10px] xl:text-[11px] text-muted-foreground/60`.
+      - Byline + relative date below in `font-sans text-[10px] xl:text-[11px] text-muted-foreground/60`.
   - `border-t border-border/30` between items (none on first), `px-5 py-4`.
 - Hover: title `text-foreground` (was `/70`), border `border-border/30 → border-border/50`. No fill swap.
 
@@ -319,7 +327,10 @@ The harsh critic flagged that adopting Inverse's information topology (8-slot fe
 - Preserve outer `min-h-[85vh]` shell for CLS protection (Builder C).
 
 **Resolved spec gaps:**
-- Category chip: **build inline span**, not via `<RP_BadgeTag>` (which is non-compliant: pill radius, `font-medium` not mono). Class recipe: `inline-block rounded-sm border border-border/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60`.
+
+- Category chip: **build inline span**, not via `<RP_BadgeTag>` (which is non-compliant: pill radius, `font-medium` not
+  mono). Class recipe:
+  `inline-block rounded-sm border border-border/40 px-2 py-0.5 font-sans text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60`.
 - Bottom-8% gradient: sibling overlay div, not `:after`.
 - `gap-px` + `bg-border/20` divider trick: Tailwind v4 supports natively. Hairlines collapse to row stripes on mobile — that's intentional (cleaner than per-card borders).
 - `<h2>` for lead → **kept as `<span>`**. Page-level `<h1>` belongs to masthead/header upstream; using `<h2>` inside ArticleHero risks duplicate-h2 conflicts on pages that already have section headings. Use `<span>` with display typography (the same compromise we made on the previous HomeSquare iteration).

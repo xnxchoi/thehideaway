@@ -320,7 +320,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
           {/* @ prefix */}
           <span
             className={cn(
-              "pointer-events-none font-mono text-sm leading-none transition-colors duration-200 select-none",
+              "pointer-events-none font-sans text-sm leading-none transition-colors duration-200 select-none",
               isError
                 ? "text-rouge-700"
                 : focused
@@ -340,7 +340,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
              */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 flex items-center pl-[3px] font-mono text-sm leading-none select-none"
+              className="pointer-events-none absolute inset-0 flex items-center pl-[3px] font-sans text-sm leading-none select-none"
             >
               {/* Invisible spacer matching the typed text */}
               <span className="invisible whitespace-pre">{inputValue}</span>
@@ -377,7 +377,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
                 isError && errorMessage ? "handle-error" : undefined
               }
               className={cn(
-                "relative w-full bg-transparent font-mono text-sm leading-none",
+                "relative w-full bg-transparent font-sans text-sm leading-none",
                 "border-none pb-0 pl-[3px] shadow-none outline-none",
                 // Text is always transparent so the span layer is the visual text
                 "text-foreground",
@@ -394,7 +394,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
           {/* "Tab to accept" keyboard hint */}
           {ghostSuffix && focused && (
             <div className="pointer-events-none ml-1.5 flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground/50">
-              <kbd className="rounded border border-current px-1 py-px font-mono text-[9px] leading-none">
+              <kbd className="rounded border border-current px-1 py-px font-sans text-[9px] leading-none">
                 Tab
               </kbd>
               <span>to accept</span>
@@ -435,7 +435,7 @@ export const HandleComponent: FC<UserHandleComponentProps> = ({
                   aria-selected={suggestion === inlineSuggestion}
                   onClick={() => acceptSuggestion(suggestion)}
                   className={cn(
-                    "rounded-sm border px-2 py-0.5 font-mono text-xs transition-colors duration-100",
+                    "rounded-sm border px-2 py-0.5 font-sans text-xs transition-colors duration-100",
                     "border-foreground/20 bg-foreground/5 text-foreground/70",
                     "hover:border-foreground/40 hover:bg-foreground/10 hover:text-foreground",
                     // Highlight the one that also has inline ghost text

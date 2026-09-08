@@ -56,13 +56,13 @@ export function TicketBottomBar({
       <div className="mx-auto max-w-7xl px-6 py-3.5 xl:px-10 xl:py-4">
         <div className="flex items-end justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+            <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
               {eyebrow}
             </p>
             <h1 className="mt-0.5 truncate text-lg font-light tracking-tight xl:text-xl">
               {title}
               {typeof count === "number" && count > 0 ? (
-                <span className="ml-2 font-mono text-sm text-muted-foreground/50 tabular-nums">
+                <span className="ml-2 font-sans text-sm text-muted-foreground/50 tabular-nums">
                   {count}
                 </span>
               ) : null}
@@ -72,7 +72,7 @@ export function TicketBottomBar({
             {rightAction ? (
               <Link
                 href={rightAction.href}
-                className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+                className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
               >
                 {rightAction.label}
               </Link>

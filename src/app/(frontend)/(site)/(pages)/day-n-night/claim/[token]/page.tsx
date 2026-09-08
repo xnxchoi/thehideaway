@@ -92,7 +92,7 @@ export default async function DayNNightClaimPage({
     <RPage type="pages" slug={["day-n-night", "claim"]}>
       <main className="relative flex min-h-screen w-full items-center justify-center bg-off-black px-6 text-off-white">
         <div className="w-full max-w-md">
-          <p className="mb-3 font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
+          <p className="mb-3 font-sans text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
             {t("eyebrow")}
           </p>
 

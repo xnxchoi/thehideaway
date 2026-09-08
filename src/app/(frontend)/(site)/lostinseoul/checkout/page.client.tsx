@@ -12,7 +12,7 @@ import {
   LOST_PENDING_PAYMENT_STORAGE_KEY,
   type PendingProductPayment
 } from "@/lib/lost-commerce/payment-recovery";
-import { useLostCart } from "@/lib/lost-commerce/useLostCart";
+import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
 import { usePayments } from "@payloadcms/plugin-ecommerce/client/react";
 import {
   pluginConfirmOrderRef,
@@ -23,7 +23,7 @@ import {
   clearCheckoutIdempotencyKey,
   replaceCheckoutCommandWithPendingPayment
 } from "./checkout-idempotency";
-import "../index.css";
+import "@lostinseoul/index.css";
 
 declare global {
   interface Window {
@@ -135,7 +135,7 @@ export function LostCheckoutPageClient({
   portOneEnabled: boolean;
   portOneSdkVersion: "v2" | "global";
 }) {
-  const { lines, total, clear } = useLostCart();
+  const { lines, total, clear } = useStoreCart();
   const { confirmOrder, initiatePayment } = usePayments();
   const portOneUiEnabled = isLostCommercePaymentUiEnabled({
     configured: portOneEnabled,
@@ -489,7 +489,7 @@ export function LostCheckoutPageClient({
                         ? ` / ${line.variantLabel}`
                         : ""} x {line.quantity}
                     </span>
-                    <span className="justify-self-start font-mono text-[11px] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)] tabular-nums sm:justify-self-end">
+                    <span className="justify-self-start font-sans text-[11px] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)] tabular-nums sm:justify-self-end">
                       {formatLostMoney(
                         line.unitAmount * line.quantity,
                         line.currency
@@ -500,7 +500,7 @@ export function LostCheckoutPageClient({
               </div>
               <p className="mt-5 flex items-center justify-between gap-4 border-t border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.15)] pt-5 text-sm text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)]">
                 <span>{labels.total}</span>
-                <span className="font-mono text-xs tabular-nums">
+                <span className="font-sans text-xs tabular-nums">
                   {formatLostMoney(total, currency)}
                 </span>
               </p>

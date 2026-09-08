@@ -10,16 +10,17 @@ import {
   AnimatePresence,
   useMotionValue,
   useSpring,
-  useTransform
+  useTransform,
+  Variants
 } from "motion/react";
 import * as m from "motion/react-m";
 import {
+  type ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
-  useState,
-  type ReactNode,
-  useMemo
+  useState
 } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTranslations } from "next-intl";
@@ -68,11 +69,7 @@ export const SideVaul = (_props: { children: ReactNode }) => {
     "bottom" | "left" | "top" | "right" | undefined
   >(
     SIDE_DRAWER[window.innerWidth < 768 ? "MOBILE" : "DESKTOP"].direction as
-      | "bottom"
-      | "left"
-      | "top"
-      | "right"
-      | undefined
+      "bottom" | "left" | "top" | "right" | undefined
   );
   const setCursorTheme = useCursor((r) => r.setCursorTheme);
   const resetCursor = useCursor((r) => r.resetCursorTheme);
@@ -446,7 +443,7 @@ const defaultLinksContainer = {
     transition: { staggerChildren: 0.045, delayChildren: 0.08 }
   }
 };
-const defaultLinksItem = {
+const defaultLinksItem: Variants = {
   hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,

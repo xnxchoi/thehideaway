@@ -8,8 +8,8 @@ import type { Image as MediaBlockProps } from "@/payload-types";
 import {
   ProcessedImageDoc,
   RenderImageFields
-} from "@/types/collections/image-collections";
-import { imageSelect } from "@/types/payload-api-selects";
+} from "@types/collections/image-collections";
+import { imageSelect } from "@types/payload-api-selects";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery } from "@tanstack/react-query";
 import Lenis from "lenis";

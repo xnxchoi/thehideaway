@@ -133,7 +133,7 @@ export function TicketPaper({
         style={{ color: "rgba(232, 196, 132, 0.78)" }}
       >
         <span
-          className="font-mono font-medium uppercase"
+          className="font-sans font-medium uppercase"
           style={{
             letterSpacing: "0.36em",
             fontSize: "clamp(0.6rem,1.4cqw,0.95rem)"
@@ -142,7 +142,7 @@ export function TicketPaper({
           The&nbsp;&nbsp;Hideaway
         </span>
         <span
-          className="font-mono uppercase"
+          className="font-sans uppercase"
           style={{
             letterSpacing: "0.36em",
             opacity: 0.6,
@@ -184,7 +184,7 @@ export function TicketPaper({
         style={{ color: "rgba(232, 196, 132, 0.6)" }}
       >
         <span
-          className="font-mono uppercase"
+          className="font-sans uppercase"
           style={{
             letterSpacing: "0.32em",
             fontSize: "clamp(0.55rem,1.2cqw,0.78rem)"
@@ -193,7 +193,7 @@ export function TicketPaper({
           hideawayseoul.com
         </span>
         <span
-          className="font-mono uppercase"
+          className="font-sans uppercase"
           style={{
             letterSpacing: "0.32em",
             fontSize: "clamp(0.5rem,1.05cqw,0.7rem)",

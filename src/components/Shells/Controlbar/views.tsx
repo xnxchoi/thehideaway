@@ -85,7 +85,7 @@ export const NotificationsView = () => {
         variants={itemVariants}
         className="flex items-center justify-between px-6 pt-2 pb-3"
       >
-        <span className="font-mono text-[11px] tracking-widest text-foreground/55 uppercase">
+        <span className="font-sans text-[11px] tracking-widest text-foreground/55 uppercase">
           {t("notifications")}
         </span>
         {unread > 0 && (
@@ -94,7 +94,7 @@ export const NotificationsView = () => {
             onClick={() => setAllRead()}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
-              "font-mono text-[10px] tracking-widest uppercase",
+              "font-sans text-[10px] tracking-widest uppercase",
               "text-foreground/70 active:bg-foreground/[0.06]",
               "touch-manipulation transition-colors"
             )}
@@ -110,11 +110,11 @@ export const NotificationsView = () => {
           variants={itemVariants}
           className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center"
         >
-          <span className="mb-3 font-mono text-3xl opacity-15">○</span>
+          <span className="mb-3 font-sans text-3xl opacity-15">○</span>
           <p className="font-sans text-sm font-light text-foreground/70">
             No notifications yet
           </p>
-          <p className="mt-1 font-mono text-[11px] text-muted-foreground/55">
+          <p className="mt-1 font-sans text-[11px] text-muted-foreground/55">
             Replies and mentions appear here
           </p>
         </m.div>
@@ -188,7 +188,7 @@ const NotificationRow = ({
             {content}
           </span>
         )}
-        <span className="mt-0.5 font-mono text-[10px] text-muted-foreground/55">
+        <span className="mt-0.5 font-sans text-[10px] text-muted-foreground/55">
           {when}
         </span>
       </span>
@@ -277,13 +277,13 @@ export const SearchView = () => {
           <p className="font-sans text-sm font-light text-foreground/65">
             Search essays, surf, music, members
           </p>
-          <p className="mt-1 font-mono text-[11px] text-muted-foreground/55">
+          <p className="mt-1 font-sans text-[11px] text-muted-foreground/55">
             Type to begin
           </p>
         </m.div>
       ) : isLoading && results.length === 0 ? (
         <div className="flex flex-1 items-center justify-center py-12">
-          <span className="font-mono text-[11px] tracking-widest text-muted-foreground/55 uppercase">
+          <span className="font-sans text-[11px] tracking-widest text-muted-foreground/55 uppercase">
             …searching
           </span>
         </div>
@@ -348,7 +348,7 @@ const SearchResultRow = ({
         {title}
       </span>
       {type && (
-        <span className="font-mono text-[10px] tracking-widest text-muted-foreground/55 uppercase">
+        <span className="font-sans text-[10px] tracking-widest text-muted-foreground/55 uppercase">
           {type}
         </span>
       )}
@@ -425,7 +425,7 @@ export const AccountView = () => {
             {avatarUser.name || "—"}
           </span>
           {avatarUser.email && (
-            <span className="truncate font-mono text-[11px] text-muted-foreground/65">
+            <span className="truncate font-sans text-[11px] text-muted-foreground/65">
               {avatarUser.email}
             </span>
           )}
@@ -523,7 +523,7 @@ const MoreLink = ({
     onClick={onSelect}
     className={cn(
       "flex items-center justify-between rounded-xl border border-border/30 px-4 py-3",
-      "font-mono text-[11px] tracking-widest text-foreground/75 uppercase",
+      "font-sans text-[11px] tracking-widest text-foreground/75 uppercase",
       "touch-manipulation transition-colors active:bg-foreground/[0.05]"
     )}
   >

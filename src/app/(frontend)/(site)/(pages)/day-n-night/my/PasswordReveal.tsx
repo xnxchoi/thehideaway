@@ -24,7 +24,7 @@ export function PasswordReveal({ password }: { password: string }) {
   return (
     <div className="mt-2 flex items-center gap-3">
       <p
-        className={`font-mono text-2xl tracking-[0.18em] text-off-white transition-[filter] duration-200 ${
+        className={`font-sans text-2xl tracking-[0.18em] text-off-white transition-[filter] duration-200 ${
           revealed ? "" : "[filter:blur(8px)] select-none"
         }`}
         aria-hidden={!revealed}
@@ -35,7 +35,7 @@ export function PasswordReveal({ password }: { password: string }) {
         type="button"
         onClick={() => setRevealed((v) => !v)}
         aria-pressed={revealed}
-        className="font-mono text-[10px] tracking-widest text-off-white/65 uppercase transition-colors hover:text-off-white"
+        className="font-sans text-[10px] tracking-widest text-off-white/65 uppercase transition-colors hover:text-off-white"
       >
         {revealed ? t("passwordHide") : t("passwordReveal")}
       </button>

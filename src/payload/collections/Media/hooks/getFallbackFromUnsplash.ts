@@ -1,14 +1,14 @@
 "use server";
 import {blurhashToDataURI} from "@/payload/collections/Media/hooks/blurHashToDataUrl";
 import {formatUnsplashData} from "@/payload/collections/Media/hooks/unsplashData";
-import {RenderImageFields} from "@/types/collections/image-collections";
+import { RenderImageFields } from "@types/collections/image-collections";
 import {
-	SavedMetadataUnsplash,
-	UnsplashCollectionDoc,
-	UnsplashFetchResult,
-	UnsplashImageDoc,
-	UnsplashUserOverview
-} from "@/types/ImageCollections/unsplash";
+  SavedMetadataUnsplash,
+  UnsplashCollectionDoc,
+  UnsplashFetchResult,
+  UnsplashImageDoc,
+  UnsplashUserOverview
+} from "@types/ImageCollections/unsplash";
 import {stringify} from "qs-esm";
 import {cache} from "react";
 

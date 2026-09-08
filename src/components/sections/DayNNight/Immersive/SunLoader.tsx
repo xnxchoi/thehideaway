@@ -239,7 +239,7 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
         >
           <NumberFlow
             value={count}
-            className="font-mono text-[clamp(2rem,5vw,3.5rem)] font-light text-[var(--dn-fg)] tabular-nums"
+            className="font-sans text-[clamp(2rem,5vw,3.5rem)] font-light text-[var(--dn-fg)] tabular-nums"
             format={{ minimumIntegerDigits: 2 }}
             respectMotionPreference={false}
           />
@@ -267,7 +267,7 @@ export function SunLoader({ onEnter, onSummary }: SunLoaderProps) {
           <Button
             type="button"
             onClick={handleSummary}
-            className="mt-1 font-mono text-[10px] tracking-[0.2em] text-[var(--dn-fg-mute)] uppercase opacity-30 transition-opacity duration-200 hover:opacity-70"
+            className="mt-1 font-sans text-[10px] tracking-[0.2em] text-[var(--dn-fg-mute)] uppercase opacity-30 transition-opacity duration-200 hover:opacity-70"
           >
             {t("loader.summary")}
           </Button>

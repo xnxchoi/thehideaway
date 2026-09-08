@@ -19,9 +19,9 @@ import {
   RalueAsDataWithRelation,
   RalueWithRelation,
   RenderImageFields
-} from "@/types/collections/image-collections";
-import { ImageMetadata } from "@/types/ImageCollections/schema";
-import { imageSelect } from "@/types/payload-api-selects";
+} from "@types/collections/image-collections";
+import { ImageMetadata } from "@types/ImageCollections/schema";
+import { imageSelect } from "@types/payload-api-selects";
 import { getClientSideURL } from "@/utilities/getURL";
 import { useLexicalComposerContext } from "@payloadcms/richtext-lexical/lexical/react/LexicalComposerContext";
 import {

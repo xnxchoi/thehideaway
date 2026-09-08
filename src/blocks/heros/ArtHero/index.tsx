@@ -1,6 +1,6 @@
 import React, { CSSProperties } from "react";
 import "@/styles/__archives.scss";
-import { SingleArticle } from "@/types/collections/posts";
+import { SingleArticle } from "@types/collections/posts";
 import {
   CoverAuthor,
   CoverCard,

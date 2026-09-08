@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { RPCard } from "@/payload/components/Card";
-import {PostOverview} from "@/types/collections/posts";
+import { PostOverview } from "@types/collections/posts";
 
 export type Props = {
 	posts: PostOverview[];

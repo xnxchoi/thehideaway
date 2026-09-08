@@ -2,7 +2,7 @@ import { cssVariables } from "@/cssVariables";
 import type {
   FetchedImageDoc,
   ImageCollectionSlug
-} from "@/types/collections/image-collections";
+} from "@types/collections/image-collections";
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import type {
   ComponentProps,

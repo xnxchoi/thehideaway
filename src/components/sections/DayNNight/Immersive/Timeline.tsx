@@ -1,7 +1,7 @@
 "use client";
 
 import { useWindowResize } from "@/utilities/use_window_resize";
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import type { useTranslations as UseTranslationsType } from "next-intl";
 import { useTranslations } from "next-intl";
 import { useGSAP } from "@gsap/react";
@@ -9,7 +9,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useShallow } from "zustand/shallow";
 import { useLenis } from "lenis/react";
-import { useDayNNightScene, SECTION_KEYS, type ActLayout } from "../store";
+import { type ActLayout, SECTION_KEYS, useDayNNightScene } from "../store";
 import { Polaroid, PolaroidGroup } from "./Polaroid";
 import { RevealItem, RevealStage, useActRevealActive } from "./Reveal";
 import { SceneView } from "./SceneView";
@@ -17,12 +17,10 @@ import { SurvivalKit } from "../SurvivalKit";
 import {
   Act,
   ActEyebrow,
-  TITLE_HERO,
-  TITLE_SECTION,
+  LABEL_MONO,
   LEDE,
-  BODY_SERIF,
-  KICKER_MONO,
-  LABEL_MONO
+  TITLE_HERO,
+  TITLE_SECTION
 } from "./Act";
 import { OpeningCard } from "./OpeningCard";
 import { useStickyZone } from "./SeamBridge";
@@ -344,7 +342,7 @@ export function Timeline({
       <div
         data-dn-grain
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[2] opacity-[0.45] mix-blend-overlay"
+        className="pointer-events-none absolute inset-0 z-2 opacity-[0.45] mix-blend-overlay"
       />
       <div
         ref={track}
@@ -524,7 +522,12 @@ function ActSet({
             active={openingActive}
             className="grid content-end gap-7 xl:gap-9"
           >
-            <RevealItem as="p" className={KICKER_MONO}>
+            <RevealItem
+              as="p"
+              className={
+                "font-sans text-[11px] tracking-[0.32em] text-[var(--dn-fg-mute)] uppercase"
+              }
+            >
               {t("opening.kicker")}
             </RevealItem>
             <RevealItem
@@ -572,10 +575,10 @@ function ActSet({
             aria-hidden
             className="mr-auto mb-3 block h-px w-14 bg-[var(--dn-fg)] opacity-60"
           />
-          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+          <span className="font-sans text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
             {t("date.full")}
           </span>
-          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
+          <span className="font-sans text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase">
             {t("location.neighborhood")}
           </span>
         </m.div>
@@ -716,7 +719,14 @@ function ActSet({
         <div className="col-start-1 col-end-6 row-start-2 row-end-3 hidden flex-col gap-6 self-end max-lg:col-span-full lg:flex">
           <div className="grid gap-3">
             <span className={LABEL_MONO}>{t("tribute.heading")}</span>
-            <p className={`${BODY_SERIF} max-w-[34ch]`}>{t("tribute.body")}</p>
+
+            <p
+              className={
+                "max-w-[34ch] font-serif text-[clamp(1.45rem,1.75vw,1.9rem)] leading-[1.35] tracking-[-0.005em] text-(--dn-fg-mute) italic"
+              }
+            >
+              {t("tribute.body")}
+            </p>
           </div>
           <SurvivalKit variant="embedded" />
         </div>
@@ -734,7 +744,7 @@ function ActSet({
           >
             <RevealItem
               as="p"
-              className={`${KICKER_MONO} justify-self-end max-lg:justify-self-start`}
+              className={`justify-self-end font-sans text-[11px] tracking-[0.32em] text-[var(--dn-fg-mute)] uppercase max-lg:justify-self-start`}
             >
               {t("closing.kicker")}
             </RevealItem>
@@ -780,10 +790,10 @@ function ActSet({
             aria-hidden
             className="mb-3 ml-auto block h-px w-14 bg-[var(--dn-fg)] opacity-60 max-lg:ml-0"
           />
-          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase max-lg:block max-lg:w-[min(20rem,calc(100vw-3rem))] max-lg:font-sans max-lg:text-xs max-lg:leading-[1.45] max-lg:tracking-normal max-lg:normal-case">
+          <span className="font-sans text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase max-lg:block max-lg:w-[min(20rem,calc(100vw-3rem))] max-lg:font-sans max-lg:text-xs max-lg:leading-[1.45] max-lg:tracking-normal max-lg:normal-case">
             {t("footer.hosts")}
           </span>
-          <span className="font-mono text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase max-lg:block max-lg:w-[min(20rem,calc(100vw-3rem))] max-lg:font-sans max-lg:text-xs max-lg:leading-[1.45] max-lg:tracking-normal max-lg:normal-case">
+          <span className="font-sans text-[11px] leading-[1.7] tracking-[0.18em] text-[var(--dn-fg-mute)] uppercase max-lg:block max-lg:w-[min(20rem,calc(100vw-3rem))] max-lg:font-sans max-lg:text-xs max-lg:leading-[1.45] max-lg:tracking-normal max-lg:normal-case">
             {t("footer.rsvpClosesAt")}
           </span>
         </div>
@@ -797,7 +807,7 @@ function GuestListCaption() {
 
   return (
     <div className="grid max-w-[min(25rem,100%)] justify-items-start gap-3 border border-[oklch(42%_0.07_255/0.42)] bg-[linear-gradient(135deg,oklch(94%_0.012_245/0.96),oklch(94%_0.022_58/0.92))] px-5 py-4 text-left text-[oklch(18%_0.012_250)] shadow-[0_18px_50px_-16px_rgba(0,0,0,0.78)] max-lg:px-4 max-lg:py-3.5">
-      <p className="m-0 bg-gradient-to-r from-[oklch(36%_0.075_255)] to-[oklch(45%_0.09_48)] bg-clip-text font-mono text-[10px] leading-[1.4] tracking-[0.28em] text-transparent uppercase">
+      <p className="m-0 bg-gradient-to-r from-[oklch(36%_0.075_255)] to-[oklch(45%_0.09_48)] bg-clip-text font-sans text-[10px] leading-[1.4] tracking-[0.28em] text-transparent uppercase">
         {t("label")}
       </p>
       <p className="m-0 max-w-[30ch] font-serif text-[clamp(1.1rem,1.8vw,1.55rem)] leading-[1.25] tracking-[0.005em]">
@@ -805,7 +815,7 @@ function GuestListCaption() {
       </p>
       <Link
         href="/day-n-night/guests"
-        className="inline-flex items-baseline gap-3 border-b border-[oklch(35%_0.07_255/0.58)] pb-1 font-mono text-[10px] tracking-[0.24em] text-[oklch(24%_0.04_255)] uppercase no-underline transition-[gap,border-color,color] duration-200 hover:gap-5 hover:border-[oklch(45%_0.09_48)] hover:text-[oklch(34%_0.07_48)]"
+        className="inline-flex items-baseline gap-3 border-b border-[oklch(35%_0.07_255/0.58)] pb-1 font-sans text-[10px] tracking-[0.24em] text-[oklch(24%_0.04_255)] uppercase no-underline transition-[gap,border-color,color] duration-200 hover:gap-5 hover:border-[oklch(45%_0.09_48)] hover:text-[oklch(34%_0.07_48)]"
       >
         <span>{t("cta")}</span>
         <span aria-hidden>→</span>

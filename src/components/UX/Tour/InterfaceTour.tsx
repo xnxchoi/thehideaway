@@ -119,7 +119,7 @@ function TourTooltip({
           </m.span>
           {target.shortcut && (
             <m.kbd
-              className="rounded border border-foreground/10 bg-foreground/5 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
+              className="rounded border border-foreground/10 bg-foreground/5 px-1.5 py-0.5 font-sans text-[11px] text-muted-foreground"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.25, delay: 0.12 }}

@@ -54,7 +54,7 @@ export function DayNNightGate() {
     <RPage type="pages" slug={["day-n-night", "gate"]}>
       <main className="relative flex min-h-screen w-full items-center justify-center bg-off-black px-6 text-off-white">
         <div className="w-full max-w-md">
-          <p className="mb-3 font-mono text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
+          <p className="mb-3 font-sans text-[10px] tracking-[0.32em] text-off-white/65 uppercase">
             {t("eyebrow")}
           </p>
           <h1 className="font-wide text-4xl leading-[1.05] font-light tracking-tight text-off-white xl:text-5xl">
@@ -84,7 +84,7 @@ export function DayNNightGate() {
               <p
                 role="alert"
                 aria-live="polite"
-                className="mt-4 font-mono text-[11px] tracking-widest text-off-white/80 uppercase"
+                className="mt-4 font-sans text-[11px] tracking-widest text-off-white/80 uppercase"
               >
                 {errorMessage}
               </p>
@@ -93,16 +93,16 @@ export function DayNNightGate() {
             <button
               type="submit"
               disabled={pending}
-              className="mt-7 border border-off-white/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="mt-7 border border-off-white/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               {pending ? t("submitting") : t("submit")}
             </button>
           </form>
 
-          <p className="mt-10 max-w-sm font-mono text-[10px] leading-relaxed tracking-widest text-off-white/45 uppercase">
+          <p className="mt-10 max-w-sm font-sans text-[10px] leading-relaxed tracking-widest text-off-white/45 uppercase">
             {t("hint")}
           </p>
-          <p className="mt-3 max-w-sm font-mono text-[10px] leading-relaxed tracking-widest text-off-white/35 uppercase">
+          <p className="mt-3 max-w-sm font-sans text-[10px] leading-relaxed tracking-widest text-off-white/35 uppercase">
             {t("footer")}
           </p>
         </div>

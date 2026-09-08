@@ -3,7 +3,7 @@ import { AuthView as AuthCard } from "@betterauth-ui";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
 import { signInRedirectTarget } from "@/lib/routes/auth";
-import "../../index.css";
+import "@lostinseoul/index.css";
 
 type SearchParams = Promise<{
   redirectTo?: string | string[];
@@ -26,7 +26,7 @@ export default async function LostSignInPage(props: {
           <section className="max-w-2xl">
             <Link
               href="/lostinseoul"
-              className="font-mono text-xs tracking-[0.2em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)] uppercase transition-opacity hover:opacity-75"
+              className="font-sans text-xs tracking-[0.2em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.65)] uppercase transition-opacity hover:opacity-75"
             >
               {t("home.eyebrow")}
             </Link>

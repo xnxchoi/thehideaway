@@ -99,7 +99,7 @@ function InAppBrowserEscapeDialog({
           <div className="relative grid gap-5 p-5 sm:grid-cols-[0.72fr_1fr] sm:gap-7 sm:p-7">
             <DialogHeader className="gap-4 text-left">
               <div className="grid gap-4">
-                <span className="font-mono text-[10px] tracking-[0.34em] text-[#489FFA] uppercase">
+                <span className="font-sans text-[10px] tracking-[0.34em] text-[#489FFA] uppercase">
                   {copy.eyebrow}
                 </span>
                 <DialogTitle className="max-w-[10ch] font-serif text-[clamp(2.7rem,12vw,4.4rem)] leading-[0.86] tracking-[-0.035em] text-white">

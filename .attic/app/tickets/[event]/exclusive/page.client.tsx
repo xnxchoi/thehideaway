@@ -90,14 +90,14 @@ function NotAttendeeView({ eventName }: { eventName: string }) {
           duration: 0.5,
           ease: [0.25, 0.46, 0.45, 0.94]
         }}
-        className="mb-4 block font-mono text-5xl"
+        className="mb-4 block font-sans text-5xl"
       >
         ○
       </m.span>
       <p className="text-base font-light text-foreground/70">
         This page is for attendees only.
       </p>
-      <p className="mt-1.5 max-w-md font-mono text-[11px] text-muted-foreground/50">
+      <p className="mt-1.5 max-w-md font-sans text-[11px] text-muted-foreground/50">
         Only people who were checked in at {eventName} can see this content.
       </p>
     </m.div>
@@ -148,7 +148,7 @@ function AttendeeView({
     >
       <div>
         {dateDisplay ? (
-          <p className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
+          <p className="font-sans text-[11px] tracking-widest text-foreground/70 uppercase xl:text-xs">
             {dateDisplay}
             {eventLocation ? ` · ${eventLocation}` : ""}
           </p>
@@ -167,7 +167,7 @@ function AttendeeView({
         />
 
         <div className="mt-10">
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             From the night
           </p>
           {exclusiveLinks.length > 0 ? (
@@ -196,7 +196,7 @@ function AttendeeView({
                     <span className="text-sm font-light tracking-tight text-foreground/80 transition-colors group-hover:text-foreground">
                       {l.label}
                     </span>
-                    <span className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase transition-colors group-hover:text-muted-foreground/80">
+                    <span className="font-sans text-[10px] tracking-widest text-muted-foreground/50 uppercase transition-colors group-hover:text-muted-foreground/80">
                       {l.type === "form" ? "Form →" : "Open →"}
                     </span>
                   </a>
@@ -204,7 +204,7 @@ function AttendeeView({
               ))}
             </ul>
           ) : (
-            <p className="mt-3 max-w-md font-mono text-[11px] text-muted-foreground/50">
+            <p className="mt-3 max-w-md font-sans text-[11px] text-muted-foreground/50">
               No photos, recordings, or messages are available.
             </p>
           )}
@@ -293,10 +293,10 @@ function DeliveryForm({
         "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
       )}
     >
-      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
+      <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
         Goods drop
       </p>
-      <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
+      <p className="mt-2 font-sans text-[11px] text-muted-foreground/60">
         Tell us where to send your free goods.
       </p>
 
@@ -313,7 +313,7 @@ function DeliveryForm({
               "bg-foreground/[0.025] dark:bg-foreground/[0.03]"
             )}
           >
-            <p className="font-mono text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
+            <p className="font-sans text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
               Address received
             </p>
             <p className="mt-3 text-sm leading-relaxed font-light text-foreground/80">
@@ -362,7 +362,7 @@ function DeliveryForm({
                 role="alert"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+                className="font-sans text-[11px] text-[oklch(0.7_0.18_30)]"
               >
                 {err}
               </m.p>
@@ -402,7 +402,7 @@ function FormField({
     <div>
       <label
         htmlFor={id}
-        className="mb-1 block font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase"
+        className="mb-1 block font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase"
       >
         {label}
       </label>

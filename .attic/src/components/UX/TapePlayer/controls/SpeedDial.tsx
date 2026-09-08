@@ -51,16 +51,13 @@ export const SpeedDial = ({ size = 64, className }: SpeedDialProps) => {
 
   return (
     <m.div
-      className={cn(
-        "relative flex flex-col items-center gap-1",
-        className
-      )}
+      className={cn("relative flex flex-col items-center gap-1", className)}
       onWheel={onWheel}
     >
       {/* Speed label */}
       <span
         className={cn(
-          "font-mono text-[0.6rem] tabular-nums tracking-tight transition-colors duration-150",
+          "font-sans text-[0.6rem] tracking-tight tabular-nums transition-colors duration-150",
           mode === "scrub" ? "text-rouge-400" : "text-faded-fg"
         )}
       >
@@ -70,8 +67,8 @@ export const SpeedDial = ({ size = 64, className }: SpeedDialProps) => {
       {/* The dial */}
       <m.div
         className={cn(
-          "relative cursor-grab touch-none select-none rounded-full",
-          "border border-faded-fg/20",
+          "relative cursor-grab touch-none rounded-full select-none",
+          "border-faded-fg/20 border",
           "active:cursor-grabbing"
         )}
         style={{ width: size, height: size }}
@@ -137,14 +134,14 @@ export const SpeedDial = ({ size = 64, className }: SpeedDialProps) => {
             style={{
               width: 3,
               height: indicatorLength,
-              marginTop: 6,
+              marginTop: 6
             }}
           />
         </m.div>
 
         {/* Center dot */}
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-faded-fg"
+          className="bg-faded-fg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{ width: 4, height: 4 }}
         />
       </m.div>

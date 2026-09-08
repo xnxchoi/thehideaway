@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { createRichtext } from "@/payload/collections/Users/helpers/createRichtext";
 import RichText from "../../UX/RichText";
 import { useTheme } from "@/providers/Theme";
-import { SurfOverview } from "@/types/collections/surf";
+import { SurfOverview } from "@types/collections/surf";
 import { getClientSideURL } from "@/utilities/getURL";
 import { randomNumber } from "@/utilities/randomNumber";
 import { Property } from "csstype";

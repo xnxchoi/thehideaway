@@ -54,11 +54,11 @@ export function ComingSoonDialog({
       ) : null}
       <DialogContent className={cn("max-w-[520px]", className)}>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <span className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             {statusText}
           </span>
           <span className="h-px flex-1 bg-border/30" />
-          <span className="inline-flex items-center gap-1.5 border border-dashed border-border/40 px-2 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase">
+          <span className="inline-flex items-center gap-1.5 border border-dashed border-border/40 px-2 py-0.5 font-sans text-[9px] tracking-widest text-muted-foreground/70 uppercase">
             <span
               aria-hidden
               className="size-1 rounded-full bg-muted-foreground/50"
@@ -69,7 +69,7 @@ export function ComingSoonDialog({
         <DialogTitle className="mt-4 text-2xl font-light tracking-tight xl:text-3xl">
           {title}
         </DialogTitle>
-        <DialogDescription className="mt-2 font-mono text-[11px] leading-relaxed text-muted-foreground/80 xl:text-xs">
+        <DialogDescription className="mt-2 font-sans text-[11px] leading-relaxed text-muted-foreground/80 xl:text-xs">
           {body}
         </DialogDescription>
         {notify && (

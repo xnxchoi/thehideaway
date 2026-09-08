@@ -3,11 +3,11 @@ import type {
 	SinglePostSelector
 } from "@/payload/collections/Posts/api/queryBase";
 import type {
-	FetchedImageDoc,
-	ImageCollectionSlug,
-	ProcessedImageDoc,
-	RalueAsDataWithRelation
-} from "@/types/collections/image-collections";
+  FetchedImageDoc,
+  ImageCollectionSlug,
+  ProcessedImageDoc,
+  RalueAsDataWithRelation
+} from "@types/collections/image-collections";
 import {Post} from "@payload-types";
 import type {BasePayload, Where} from "payload";
 import {cache} from "react";

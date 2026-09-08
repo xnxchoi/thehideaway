@@ -23,7 +23,7 @@ export function LocaleSwitch() {
     <div
       role="group"
       aria-label="Language"
-      className="inline-flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase"
+      className="inline-flex items-center gap-1 font-sans text-[10px] tracking-widest uppercase"
     >
       {OPTIONS.map((option, index) => {
         const isActive = current === option.value;

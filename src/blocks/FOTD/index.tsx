@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import { FeaturedHero } from "@/components/sections/FeaturedHero";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { FrontImage } from "@/components/core/Media/FrontImage";
-import { PostOverview } from "@/types/collections/posts";
+import { PostOverview } from "@types/collections/posts";
 
 export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
   const { posts } = props;
@@ -24,7 +24,7 @@ export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
           {posts[1] && (
             <Link
               href={"/essays/" + (posts[1].slug ?? "")}
-              className="grid gap-y-[20px] border-t-[1px] border-r-[1px] border-b-[1px] border-solid border-foreground/50 bg-transparent p-[20px] pl-0 break-words decoration-[none] lg:col-[1/3] lg:row-[2] lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+              className="grid gap-y-[20px] border-t-[1px] border-r-[1px] border-b-[1px] border-solid border-foreground/50 bg-transparent p-[20px] pl-0 wrap-break-word decoration-[none] lg:col-[1/3] lg:row-[2] lg:mr-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
             >
               <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:row-[1/3]">
                 {posts[1].image && (
@@ -50,7 +50,7 @@ export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
           {posts[2] && (
             <Link
               href={"/essays/" + decodeURIComponent(posts[2].slug ?? "")}
-              className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-foreground/50 bg-transparent p-[20px] pr-0 break-words decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
+              className="grid gap-y-[20px] border-t-[1px] border-r-0 border-b-[1px] border-foreground/50 bg-transparent p-[20px] pr-0 wrap-break-word decoration-[none] lg:col-[3/5] lg:row-[2] lg:mr-[0px] lg:ml-[-10px] lg:grid-cols-[1fr_1fr] lg:gap-x-[20px]"
             >
               <div className="relative min-h-[1px] w-full min-w-[1px] self-start rounded-[5px] pt-[100%] lg:row-[1/3] lg:aspect-square">
                 {posts[2].image && (

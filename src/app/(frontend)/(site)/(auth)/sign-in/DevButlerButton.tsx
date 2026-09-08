@@ -34,7 +34,7 @@ export function DevButlerButton({ enabled, reason }: DevButlerButtonProps) {
 
   return (
     <div className="z-[120] flex w-full max-w-[384px] flex-col items-stretch gap-2 self-center">
-      <div className="flex items-center gap-3 font-mono text-[9px] tracking-[0.22em] text-foreground/40 uppercase">
+      <div className="flex items-center gap-3 font-sans text-[9px] tracking-[0.22em] text-foreground/40 uppercase">
         <span className="h-px flex-1 bg-foreground/15" />
         <span>dev only</span>
         <span className="h-px flex-1 bg-foreground/15" />
@@ -43,7 +43,7 @@ export function DevButlerButton({ enabled, reason }: DevButlerButtonProps) {
         type="button"
         onClick={onClick}
         disabled={!enabled || pending}
-        className="border border-dashed border-foreground/30 bg-foreground/[0.02] px-4 py-3 font-mono text-[11px] tracking-[0.18em] text-foreground/75 uppercase transition-colors hover:border-foreground/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+        className="border border-dashed border-foreground/30 bg-foreground/[0.02] px-4 py-3 font-sans text-[11px] tracking-[0.18em] text-foreground/75 uppercase transition-colors hover:border-foreground/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
       >
         {pending
           ? "Summoning butler…"
@@ -51,7 +51,7 @@ export function DevButlerButton({ enabled, reason }: DevButlerButtonProps) {
             ? "Sign in as Butler"
             : (reason ?? "Butler unavailable")}
       </button>
-      <p className="text-center font-mono text-[9px] tracking-wide text-foreground/30">
+      <p className="text-center font-sans text-[9px] tracking-wide text-foreground/30">
         Local development bypass. Never visible in production builds.
       </p>
     </div>

@@ -792,7 +792,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = (props) => {
       <div
         ref={blurRef}
         className={
-          "absolute top-0 left-0 z-[2] h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
+          "absolute top-0 left-0 z-2 h-full w-full opacity-[0.00001] backdrop-blur-[20px]"
         }
       />
       <div className="header-inner z-20" ref={inner}>

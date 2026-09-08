@@ -109,14 +109,14 @@ function ForbiddenView() {
           duration: 0.5,
           ease: [0.25, 0.46, 0.45, 0.94]
         }}
-        className="mb-4 block font-mono text-5xl"
+        className="mb-4 block font-sans text-5xl"
       >
         ○
       </m.span>
       <p className="text-base font-light text-foreground/70">
         Only staff can check in attendees.
       </p>
-      <p className="mt-1.5 max-w-md font-mono text-[11px] text-muted-foreground/50">
+      <p className="mt-1.5 max-w-md font-sans text-[11px] text-muted-foreground/50">
         If you&apos;re trying to use your own ticket, scroll down to the QR code
         on your ticket page — staff will scan it from there.
       </p>
@@ -150,7 +150,7 @@ function NotFoundView() {
           duration: 0.5,
           ease: [0.25, 0.46, 0.45, 0.94]
         }}
-        className="mb-4 block font-mono text-5xl"
+        className="mb-4 block font-sans text-5xl"
       >
         ○
       </m.span>
@@ -202,7 +202,7 @@ function ReadyView({
           "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
         )}
       >
-        <p className="mb-5 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
+        <p className="mb-5 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
           Ticket details
         </p>
         <dl className="flex flex-col gap-2">
@@ -232,10 +232,10 @@ function ReadyView({
               transition={{ duration: 0.3 }}
               className="flex flex-col gap-3"
             >
-              <p className="font-mono text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
+              <p className="font-sans text-[11px] tracking-widest text-[oklch(0.65_0.18_150)] uppercase">
                 Checked in{alreadyCheckedIn ? " (already)" : ""}
               </p>
-              <p className="font-mono text-[11px] text-muted-foreground/60">
+              <p className="font-sans text-[11px] text-muted-foreground/60">
                 You can close this page, or scan the next ticket.
               </p>
             </m.div>
@@ -249,7 +249,7 @@ function ReadyView({
               className="flex flex-col gap-4"
             >
               {status !== "active" ? (
-                <p className="font-mono text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
+                <p className="font-sans text-[11px] tracking-widest text-[oklch(0.7_0.18_30)] uppercase">
                   Ticket not active — confirm anyway?
                 </p>
               ) : null}
@@ -258,7 +258,7 @@ function ReadyView({
                   role="alert"
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="font-mono text-[11px] text-[oklch(0.7_0.18_30)]"
+                  className="font-sans text-[11px] text-[oklch(0.7_0.18_30)]"
                 >
                   {err}
                 </m.p>
@@ -296,13 +296,13 @@ function Field({
         "bg-foreground/[0.025] dark:bg-foreground/[0.03]"
       )}
     >
-      <dt className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase">
+      <dt className="font-sans text-[10px] tracking-widest text-muted-foreground/50 uppercase">
         {label}
       </dt>
       <dd
         className={
           mono
-            ? "font-mono text-sm text-foreground/80 tabular-nums"
+            ? "font-sans text-sm text-foreground/80 tabular-nums"
             : "text-sm font-light text-foreground/80"
         }
       >

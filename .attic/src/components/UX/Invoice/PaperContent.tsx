@@ -55,7 +55,7 @@ export function PaperContent({ invoice }: PaperContentProps) {
         </p>
       </div>
 
-      <p className="mt-[5%] self-end font-mono text-[10px] tracking-wide text-neutral-700">
+      <p className="mt-[5%] self-end font-sans text-[10px] tracking-wide text-neutral-700">
         {formatDate(issuedAt)}
       </p>
 
@@ -69,13 +69,13 @@ export function PaperContent({ invoice }: PaperContentProps) {
           {invoice.client.name ?? invoice.client.email ?? "—"}
         </p>
         {invoice.client.handle ? (
-          <p className="mt-0.5 font-mono text-[10px] text-neutral-600">
+          <p className="mt-0.5 font-sans text-[10px] text-neutral-600">
             @{invoice.client.handle}
           </p>
         ) : null}
       </div>
 
-      <dl className="mt-[4%] grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 font-mono text-[10px] text-neutral-700">
+      <dl className="mt-[4%] grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 font-sans text-[10px] text-neutral-700">
         <dt>Invoice number</dt>
         <dd>: {formatInvoiceNumber(invoice.invoice_number)}</dd>
         <dt>Plan</dt>
@@ -95,7 +95,7 @@ export function PaperContent({ invoice }: PaperContentProps) {
       </p>
 
       <div className="mt-[4%]">
-        <div className="flex justify-between font-mono text-[9px] tracking-widest text-neutral-500 uppercase">
+        <div className="flex justify-between font-sans text-[9px] tracking-widest text-neutral-500 uppercase">
           <span />
           <span className="flex gap-10">
             <span>Quantity</span>
@@ -106,13 +106,13 @@ export function PaperContent({ invoice }: PaperContentProps) {
           <span className={`${instrumentSerif.className} text-[15px]`}>
             {invoice.plan.title ?? "Membership"}
             {invoice.plan.description ? (
-              <span className="block font-mono text-[10px] text-neutral-500">
+              <span className="block font-sans text-[10px] text-neutral-500">
                 {invoice.plan.description}
               </span>
             ) : null}
           </span>
           <span className="flex items-baseline gap-10">
-            <span className="font-mono text-[11px]">1</span>
+            <span className="font-sans text-[11px]">1</span>
             <span className={`${instrumentSerif.className} text-[15px]`}>
               {formatAmount(subtotal, invoice.currency)}
             </span>
@@ -122,7 +122,7 @@ export function PaperContent({ invoice }: PaperContentProps) {
 
       <dl className="mt-[4%] space-y-1 self-end text-right">
         <div className="flex justify-end gap-10">
-          <dt className="font-mono text-[10px] tracking-widest text-neutral-500 uppercase">
+          <dt className="font-sans text-[10px] tracking-widest text-neutral-500 uppercase">
             Subtotal
           </dt>
           <dd className={`${instrumentSerif.className} text-[14px]`}>
@@ -130,7 +130,7 @@ export function PaperContent({ invoice }: PaperContentProps) {
           </dd>
         </div>
         <div className="flex justify-end gap-10">
-          <dt className="font-mono text-[10px] tracking-widest text-neutral-500 uppercase">
+          <dt className="font-sans text-[10px] tracking-widest text-neutral-500 uppercase">
             Tax
           </dt>
           <dd className={`${instrumentSerif.className} text-[14px]`}>
@@ -138,14 +138,14 @@ export function PaperContent({ invoice }: PaperContentProps) {
           </dd>
         </div>
         <div className="mt-1 flex items-baseline justify-end gap-10 border-t border-neutral-300 pt-2">
-          <dt className="font-mono text-[10px] tracking-widest text-neutral-700 uppercase">
+          <dt className="font-sans text-[10px] tracking-widest text-neutral-700 uppercase">
             Total
           </dt>
           <dd
             className={`${instrumentSerif.className} text-2xl tracking-tight`}
           >
             {formatAmount(total, invoice.currency)}{" "}
-            <span className="font-mono text-[10px] tracking-widest text-neutral-600">
+            <span className="font-sans text-[10px] tracking-widest text-neutral-600">
               {code}
             </span>
           </dd>

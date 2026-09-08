@@ -13,7 +13,7 @@ export function DemimondeClosing() {
       aria-label="Closing"
     >
       <div className="mx-auto flex max-w-[720px] flex-col gap-5">
-        <div className="font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+        <div className="font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
           {CLOSING.mark}
         </div>
         <p className="m-0 font-serif text-[clamp(28px,4vw,48px)] leading-[1.12] tracking-[-0.02em] text-balance text-[var(--ink)] italic">
@@ -27,7 +27,7 @@ export function DemimondeClosing() {
           <Link
             href={CLOSING.cta.href}
             aria-label={CLOSING.cta.aria}
-            className="mt-2 inline-flex w-fit items-baseline gap-2.5 border-b border-[var(--ink)] py-3.5 pr-6 font-mono text-[12px] tracking-[0.22em] text-[var(--ink)] uppercase no-underline transition-colors duration-200 hover:border-[var(--tomato)] hover:text-[var(--tomato)]"
+            className="mt-2 inline-flex w-fit items-baseline gap-2.5 border-b border-[var(--ink)] py-3.5 pr-6 font-sans text-[12px] tracking-[0.22em] text-[var(--ink)] uppercase no-underline transition-colors duration-200 hover:border-[var(--tomato)] hover:text-[var(--tomato)]"
           >
             {CLOSING.cta.text}
             <span aria-hidden> →</span>
@@ -36,7 +36,7 @@ export function DemimondeClosing() {
 
         {CLOSING.hosts ? (
           <p className="m-0 mt-7 border-t border-[var(--rule)] pt-6 text-[13px] leading-[1.6] text-[var(--ink-muted)]">
-            <span className="mr-1.5 font-mono text-[10px] tracking-[0.3em] text-[var(--ink-muted)] uppercase">
+            <span className="mr-1.5 font-sans text-[10px] tracking-[0.3em] text-[var(--ink-muted)] uppercase">
               {CLOSING.hosts.label}
             </span>{" "}
             {CLOSING.hosts.names}

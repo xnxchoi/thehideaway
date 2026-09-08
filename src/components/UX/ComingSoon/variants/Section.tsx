@@ -30,10 +30,10 @@ export function ComingSoonSection({
         className
       )}
     >
-      <m.p className="font-mono text-[11px] tracking-wide text-muted-foreground/60 xl:text-xs">
+      <m.p className="font-sans text-[11px] tracking-wide text-muted-foreground/60 xl:text-xs">
         {bodyCopy}
       </m.p>
-      <m.span className="inline-flex shrink-0 items-center gap-1.5 border border-dashed border-border/40 px-2 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase xl:text-[10px]">
+      <m.span className="inline-flex shrink-0 items-center gap-1.5 border border-dashed border-border/40 px-2 py-0.5 font-sans text-[9px] tracking-widest text-muted-foreground/70 uppercase xl:text-[10px]">
         <span
           aria-hidden
           className="size-1 rounded-full bg-muted-foreground/50"

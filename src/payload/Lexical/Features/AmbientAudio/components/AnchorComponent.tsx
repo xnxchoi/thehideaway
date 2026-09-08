@@ -207,7 +207,7 @@ export function AnchorComponent({
       role="button"
       tabIndex={-1}
       className={
-        "ambient-anchor inline-flex items-center gap-1 border-b align-baseline font-mono text-xs tracking-wider select-none"
+        "ambient-anchor inline-flex items-center gap-1 border-b align-baseline font-sans text-xs tracking-wider select-none"
       }
       onPointerEnter={() => setHoveredGroupId(groupId)}
       onPointerLeave={() => setHoveredGroupId(null)}

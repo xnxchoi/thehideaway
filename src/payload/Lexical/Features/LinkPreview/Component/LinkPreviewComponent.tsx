@@ -100,13 +100,13 @@ export function LinkPreviewComponent({
         contentEditable={false}
       >
         <form onSubmit={handleUrlSubmit} className="flex items-center gap-3">
-          <span className="shrink-0 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
+          <span className="shrink-0 font-sans text-[10px] tracking-widest text-muted-foreground/50 uppercase">
             Link Preview
           </span>
           <input
             ref={inputRef}
             autoFocus
-            className="min-w-0 flex-1 border-b border-border/30 bg-transparent pb-1 font-mono text-[11px] placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
+            className="min-w-0 flex-1 border-b border-border/30 bg-transparent pb-1 font-sans text-[11px] placeholder:text-muted-foreground/30 focus:border-foreground/40 focus:outline-none"
             placeholder="https://..."
             value={inputUrl}
             onChange={(e) => setInputUrl(e.target.value)}
@@ -117,14 +117,14 @@ export function LinkPreviewComponent({
           <button
             type="submit"
             disabled={!inputUrl.trim()}
-            className="shrink-0 border border-border/40 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-foreground/70 transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+            className="shrink-0 border border-border/40 px-3 py-1 font-sans text-[10px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
           >
             Add
           </button>
           <button
             type="button"
             onClick={handleDelete}
-            className="shrink-0 font-mono text-[10px] text-muted-foreground/40 transition-colors hover:text-foreground/70"
+            className="shrink-0 font-sans text-[10px] text-muted-foreground/40 transition-colors hover:text-foreground/70"
             aria-label="Remove"
           >
             ✕
@@ -161,7 +161,7 @@ export function LinkPreviewComponent({
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-sm border border-border/30 px-2.5 py-1 font-mono text-[11px] text-foreground/70 transition-colors hover:border-border/50 hover:text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-sm border border-border/30 px-2.5 py-1 font-sans text-[11px] text-foreground/70 transition-colors hover:border-border/50 hover:text-foreground"
           onClick={(e) => e.stopPropagation()}
         >
           {displayImage && (
@@ -176,7 +176,9 @@ export function LinkPreviewComponent({
           <span className="opacity-50">↗</span>
           <span>{displaySiteName ?? displayHost}</span>
           {displayTitle && (
-            <span className="max-w-[180px] truncate opacity-70">{displayTitle}</span>
+            <span className="max-w-[180px] truncate opacity-70">
+              {displayTitle}
+            </span>
           )}
         </a>
 
@@ -184,27 +186,29 @@ export function LinkPreviewComponent({
         {tooltipVisible && (displayTitle || displayDescription) && (
           <div className="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-72 rounded-sm border border-border/30 bg-background/95 p-3 shadow-lg backdrop-blur-sm">
             {displaySiteName && (
-              <p className="mb-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground/50">
+              <p className="mb-1 font-sans text-[9px] tracking-widest text-muted-foreground/50 uppercase">
                 {displaySiteName}
               </p>
             )}
             {displayTitle && (
-              <p className="text-[11px] font-medium leading-snug text-foreground/90">
+              <p className="text-[11px] leading-snug font-medium text-foreground/90">
                 {displayTitle}
               </p>
             )}
             {displayDescription && (
-              <p className="mt-1 line-clamp-2 font-mono text-[10px] leading-relaxed text-muted-foreground/60">
+              <p className="mt-1 line-clamp-2 font-sans text-[10px] leading-relaxed text-muted-foreground/60">
                 {displayDescription}
               </p>
             )}
-            <p className="mt-1.5 font-mono text-[9px] text-muted-foreground/40">{displayHost}</p>
+            <p className="mt-1.5 font-sans text-[9px] text-muted-foreground/40">
+              {displayHost}
+            </p>
           </div>
         )}
 
         <button
           onClick={handleDelete}
-          className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full border border-border/30 bg-background font-mono text-[8px] text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground/70"
+          className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full border border-border/30 bg-background font-sans text-[8px] text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground/70"
           aria-label="Remove"
         >
           ✕
@@ -230,7 +234,7 @@ export function LinkPreviewComponent({
         {/* Text content */}
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3.5 xl:p-4">
           {displaySiteName && (
-            <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/50">
+            <p className="font-sans text-[9px] tracking-widest text-muted-foreground/50 uppercase">
               {displaySiteName}
             </p>
           )}
@@ -239,7 +243,7 @@ export function LinkPreviewComponent({
             <div className="h-3.5 w-1/2 animate-pulse rounded-sm bg-muted/30" />
           ) : (
             displayTitle && (
-              <p className="line-clamp-2 text-sm font-medium leading-snug tracking-tight text-foreground/90">
+              <p className="line-clamp-2 text-sm leading-snug font-medium tracking-tight text-foreground/90">
                 {displayTitle}
               </p>
             )
@@ -249,13 +253,15 @@ export function LinkPreviewComponent({
             <div className="mt-0.5 h-3 w-3/4 animate-pulse rounded-sm bg-muted/20" />
           ) : (
             displayDescription && (
-              <p className="line-clamp-2 font-mono text-[10px] leading-relaxed text-muted-foreground/60">
+              <p className="line-clamp-2 font-sans text-[10px] leading-relaxed text-muted-foreground/60">
                 {displayDescription}
               </p>
             )
           )}
 
-          <p className="mt-0.5 font-mono text-[9px] text-muted-foreground/40">{displayHost}</p>
+          <p className="mt-0.5 font-sans text-[9px] text-muted-foreground/40">
+            {displayHost}
+          </p>
         </div>
 
         {/* Thumbnail */}
@@ -275,7 +281,7 @@ export function LinkPreviewComponent({
       {/* Delete control */}
       <button
         onClick={handleDelete}
-        className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-sm border border-border/30 bg-background font-mono text-[9px] text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground/70"
+        className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-sm border border-border/30 bg-background font-sans text-[9px] text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground/70"
         aria-label="Remove link preview"
       >
         ✕

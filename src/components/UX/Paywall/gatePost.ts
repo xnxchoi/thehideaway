@@ -13,8 +13,8 @@ export type PostLike = {
 };
 
 export type UserLike = {
-  id: string;
-  role?: Role | string | null;
+  id?: string;
+  role: Role;
 } | null;
 
 export type GateResult = {
@@ -52,7 +52,7 @@ const normalizeAuthor = (raw: PostLike["author"]): string | null => {
 export function gatePostForUser(post: PostLike, user: UserLike): GateResult {
   const requiredAuthority =
     post.locked && typeof post.authority === "number" ? post.authority : 0;
-  const currentRole = (user?.role ?? "guest") as Role;
+  const currentRole = user?.role || "guest";
   const currentAuthority = roleToAuthority(currentRole);
   const requiredRole =
     requiredAuthority > 0 ? authorityToRole(requiredAuthority) : null;
@@ -69,7 +69,7 @@ export function gatePostForUser(post: PostLike, user: UserLike): GateResult {
   }
 
   const author = normalizeAuthor(post.author);
-  if (user && author && author === user.id) {
+  if (user?.id && author && author === user.id) {
     return {
       readable: true,
       currentRole,
@@ -81,7 +81,7 @@ export function gatePostForUser(post: PostLike, user: UserLike): GateResult {
   }
 
   const allowList = normalizeAllowList(post.allowList);
-  if (user && allowList.includes(user.id)) {
+  if (user?.id && allowList.includes(user.id)) {
     return {
       readable: true,
       currentRole,
@@ -109,6 +109,6 @@ export function gatePostForUser(post: PostLike, user: UserLike): GateResult {
     requiredRole,
     requiredAuthority,
     currentAuthority,
-    reason: user ? "tier-required" : "auth-required"
+    reason: (!!user?.id && "tier-required") || "auth-required"
   };
 }

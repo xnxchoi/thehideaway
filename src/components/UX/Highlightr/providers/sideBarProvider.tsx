@@ -9,7 +9,7 @@ import type { HighlightedRange } from "@/components/UX/Highlightr/types";
 import { TWEEN_EASE } from "@/constants/animations";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useCursor } from "@/providers/RP_Pro";
-import type { AuthorOverview } from "@/types/collections/users";
+import type { AuthorOverview } from "@types/collections/users";
 import type { RequiredAndNonNullable } from "@/utilities/typeUtilities";
 import { useLenis } from "lenis/react";
 import { DateTime } from "luxon";

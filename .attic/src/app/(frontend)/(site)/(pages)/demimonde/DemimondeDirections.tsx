@@ -14,7 +14,7 @@ export function DemimondeDirections() {
     >
       <div className="mx-auto max-w-[1200px]">
         <header className="mb-14 flex flex-col gap-2 border-b border-[var(--rule)] pb-7 max-sm:mb-9">
-          <span className="font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+          <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
             {DIRECTIONS.eyebrow}
           </span>
           <h2
@@ -35,7 +35,7 @@ export function DemimondeDirections() {
                   isLastRowDesktop ? "md:border-b-0" : ""
                 }`}
               >
-                <dt className="pt-[3px] font-mono text-[11px] tracking-[0.22em] text-[var(--tomato)] uppercase">
+                <dt className="pt-[3px] font-sans text-[11px] tracking-[0.22em] text-[var(--tomato)] uppercase">
                   {item.label}
                 </dt>
                 <dd className="m-0 min-w-0">
@@ -45,7 +45,7 @@ export function DemimondeDirections() {
                   {item.link ? (
                     <Link
                       href={item.link.href}
-                      className="font-mono text-[11px] tracking-[0.14em] text-[var(--tomato)] uppercase underline underline-offset-[4px] transition-colors hover:text-[var(--ink)]"
+                      className="font-sans text-[11px] tracking-[0.14em] text-[var(--tomato)] uppercase underline underline-offset-[4px] transition-colors hover:text-[var(--ink)]"
                     >
                       {item.link.text}
                     </Link>

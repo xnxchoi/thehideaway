@@ -297,7 +297,7 @@ const DefaultState = ({
         <p className="font-sans text-sm font-light text-foreground/65">
           {t("search")} essays, surf, music, members
         </p>
-        <p className="mt-1 font-mono text-[11px] tracking-widest text-muted-foreground/55 uppercase">
+        <p className="mt-1 font-sans text-[11px] tracking-widest text-muted-foreground/55 uppercase">
           Type to begin
         </p>
       </div>
@@ -359,7 +359,7 @@ const ResultsList = ({
         onClick={onViewAll}
         className={cn(
           "flex w-full items-center justify-between rounded-xl border border-border/30 px-4 py-3",
-          "font-mono text-[11px] tracking-widest text-foreground/75 uppercase",
+          "font-sans text-[11px] tracking-widest text-foreground/75 uppercase",
           "touch-manipulation transition-colors active:bg-foreground/[0.05]"
         )}
       >
@@ -380,7 +380,7 @@ const EmptyState = ({
   onViewAll: () => void;
 }) => (
   <div className="flex flex-col items-center px-8 py-16 text-center">
-    <span className="mb-4 font-mono text-5xl opacity-10">○</span>
+    <span className="mb-4 font-sans text-5xl opacity-10">○</span>
     <p className="font-sans text-base font-light text-foreground/70">
       Nothing matched &ldquo;{value}&rdquo;
     </p>
@@ -388,7 +388,7 @@ const EmptyState = ({
       type="button"
       onClick={onViewAll}
       className={cn(
-        "mt-6 font-mono text-[11px] tracking-widest uppercase",
+        "mt-6 font-sans text-[11px] tracking-widest uppercase",
         "text-foreground/55 underline underline-offset-4",
         "transition-colors active:text-foreground/85"
       )}
@@ -408,7 +408,7 @@ const Section = ({
   children: ReactNode;
 }) => (
   <div className="pt-3">
-    <div className="px-5 pb-2 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
+    <div className="px-5 pb-2 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/55 uppercase">
       {label}
     </div>
     <ul className="flex flex-col px-2">{children}</ul>
@@ -443,7 +443,7 @@ const Row = ({
           {title}
         </span>
         {subtitle && (
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground/55 uppercase">
+          <span className="font-sans text-[10px] tracking-widest text-muted-foreground/55 uppercase">
             {subtitle}
           </span>
         )}

@@ -252,14 +252,14 @@ export const MentionComponent = ({ data, nodeKey }: MentionComponentProps) => {
                   }
                 : {})
             }}
-            className="inline-flex items-center gap-0.5 rounded-sm border px-1 font-mono text-[11px] text-foreground/80 transition-colors select-none"
+            className="inline-flex items-center gap-0.5 rounded-sm border px-1 font-sans text-[11px] text-foreground/80 transition-colors select-none"
           >
             <span className="opacity-50">@</span>
             {mentionedData.name}
           </span>
         )}
       />
-      <TooltipContent side="top" className="font-mono text-[10px]">
+      <TooltipContent side="top" className="font-sans text-[10px]">
         @{mentionedData.slug ?? mentionedData.name}
       </TooltipContent>
     </Tooltip>

@@ -22,7 +22,7 @@ const chipClass = (
   className?: string
 ) =>
   cn(
-    "inline-flex items-center gap-1.5 border px-2 py-0.5 font-mono tracking-widest uppercase transition-colors",
+    "inline-flex items-center gap-1.5 border px-2 py-0.5 font-sans tracking-widest uppercase transition-colors",
     "text-[9px] text-muted-foreground/70 xl:text-[10px]",
     tone === "soft"
       ? "border-dashed border-off-background/40 hover:border-off-background/70 hover:text-foreground/80"

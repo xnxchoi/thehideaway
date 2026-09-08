@@ -302,13 +302,13 @@ export function GuestsView({ guests, viewerId }: Props) {
       <main className="min-h-screen bg-off-black text-off-white">
         <Header count={0} />
         <section className="mx-auto flex max-w-2xl flex-col items-center justify-center px-6 py-32 text-center">
-          <span aria-hidden className="mb-4 font-mono text-5xl opacity-10">
+          <span aria-hidden className="mb-4 font-sans text-5xl opacity-10">
             ○
           </span>
           <p className="text-base font-light text-off-white/75">
             {t("empty.headline")}
           </p>
-          <p className="mt-1.5 max-w-xs font-mono text-[11px] text-off-white/45">
+          <p className="mt-1.5 max-w-xs font-sans text-[11px] text-off-white/45">
             {t("empty.body")}
           </p>
         </section>
@@ -374,7 +374,7 @@ function Header({ count }: { count: number }) {
     <header className="pointer-events-none fixed top-0 right-0 left-0 z-[60] mix-blend-difference">
       <div className="pointer-events-auto mx-auto flex max-w-7xl items-end justify-between gap-4 px-5 py-4 sm:gap-5 sm:px-6 sm:py-5 md:px-8 lg:px-10 xl:px-14 2xl:px-20">
         <div>
-          <p className="mb-1.5 font-mono text-[9px] tracking-[0.25em] text-off-white/75 uppercase sm:mb-2 sm:text-[10px] xl:text-[11px]">
+          <p className="mb-1.5 font-sans text-[9px] tracking-[0.25em] text-off-white/75 uppercase sm:mb-2 sm:text-[10px] xl:text-[11px]">
             {t("eyebrow")}
           </p>
           <h1 className="text-xl font-light tracking-tight text-off-white sm:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
@@ -382,12 +382,12 @@ function Header({ count }: { count: number }) {
           </h1>
         </div>
         <div className="flex flex-col items-end gap-1.5 text-right sm:gap-2">
-          <p className="font-mono text-[10px] text-off-white/75 tabular-nums sm:text-[11px] xl:text-xs">
+          <p className="font-sans text-[10px] text-off-white/75 tabular-nums sm:text-[11px] xl:text-xs">
             {count.toString().padStart(2, "0")}
           </p>
           <a
             href="/day-n-night"
-            className="font-mono text-[9px] tracking-widest text-off-white/85 uppercase transition-colors hover:text-off-white sm:text-[10px] xl:text-[11px]"
+            className="font-sans text-[9px] tracking-widest text-off-white/85 uppercase transition-colors hover:text-off-white sm:text-[10px] xl:text-[11px]"
           >
             ← {t("navigation.back")}
           </a>
@@ -608,7 +608,7 @@ function GuestSection({
         {/* Tier eyebrow lives above the name only in landscape — portrait
             stacks too tight to clear room for it without clutter. */}
         {orientation === "landscape" && (
-          <p className="mb-2.5 font-mono text-[9px] tracking-[0.32em] text-off-white/65 uppercase sm:mb-3 sm:text-[10px] sm:tracking-[0.35em] md:mb-4 md:text-[11px] lg:mb-5 xl:mb-6 xl:text-[12px] 2xl:text-[13px]">
+          <p className="mb-2.5 font-sans text-[9px] tracking-[0.32em] text-off-white/65 uppercase sm:mb-3 sm:text-[10px] sm:tracking-[0.35em] md:mb-4 md:text-[11px] lg:mb-5 xl:mb-6 xl:text-[12px] 2xl:text-[13px]">
             {tTier(guest.tier)}
           </p>
         )}
@@ -616,7 +616,7 @@ function GuestSection({
           type="button"
           onClick={onClick}
           className={cn(
-            "font-wide block max-w-full text-left font-light tracking-tight text-off-white",
+            "block max-w-full text-left font-wide font-light tracking-tight text-off-white",
             orientation === "landscape"
               ? "text-[16vw] leading-[0.95] sm:text-[14vw] md:text-[12vw] lg:text-[11vw] xl:text-[10.5vw] 2xl:text-[10vw]"
               : "text-[7.5vw] leading-[1.05]"
@@ -639,7 +639,7 @@ function GuestSection({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="font-mono text-[10px] tracking-widest text-off-white/65 uppercase transition-colors hover:text-off-white sm:text-[11px] xl:text-[12px]"
+                className="font-sans text-[10px] tracking-widest text-off-white/65 uppercase transition-colors hover:text-off-white sm:text-[11px] xl:text-[12px]"
               >
                 @{guest.igHandle}
               </a>
@@ -647,7 +647,7 @@ function GuestSection({
             <button
               type="button"
               onClick={onClick}
-              className="font-mono text-[10px] tracking-widest text-off-white/45 uppercase transition-colors hover:text-off-white/80 xl:text-[11px]"
+              className="font-sans text-[10px] tracking-widest text-off-white/45 uppercase transition-colors hover:text-off-white/80 xl:text-[11px]"
             >
               {t("actions.expand")}
             </button>
@@ -710,7 +710,7 @@ function FocusCard({ guest, isViewer, onClose }: FocusProps) {
             <header className="flex items-start justify-between gap-6 border-b border-off-white/10 px-6 py-5 xl:px-9 xl:py-7">
               <div>
                 {isViewer && (
-                  <p className="mb-2 font-mono text-[10px] tracking-[0.3em] text-off-white/65 uppercase">
+                  <p className="mb-2 font-sans text-[10px] tracking-[0.3em] text-off-white/65 uppercase">
                     {t("you")}
                   </p>
                 )}
@@ -722,7 +722,7 @@ function FocusCard({ guest, isViewer, onClose }: FocusProps) {
                     href={`https://instagram.com/${guest.igHandle}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] tracking-widest text-off-white/70 uppercase transition-colors hover:text-off-white"
+                    className="mt-2 inline-flex items-center gap-1.5 font-sans text-[11px] tracking-widest text-off-white/70 uppercase transition-colors hover:text-off-white"
                   >
                     @{guest.igHandle}
                     <span aria-hidden>↗</span>
@@ -733,7 +733,7 @@ function FocusCard({ guest, isViewer, onClose }: FocusProps) {
                 type="button"
                 onClick={onClose}
                 aria-label={t("actions.close")}
-                className="shrink-0 border border-off-white/30 px-3 py-1.5 font-mono text-[10px] tracking-widest text-off-white/70 uppercase transition-colors hover:border-off-white hover:text-off-white"
+                className="shrink-0 border border-off-white/30 px-3 py-1.5 font-sans text-[10px] tracking-widest text-off-white/70 uppercase transition-colors hover:border-off-white hover:text-off-white"
               >
                 {t("actions.close")}
               </button>
@@ -751,7 +751,7 @@ function FocusCard({ guest, isViewer, onClose }: FocusProps) {
                   </div>
                 )}
                 <div>
-                  <p className="mb-2 font-mono text-[10px] tracking-[0.3em] text-off-white/55 uppercase">
+                  <p className="mb-2 font-sans text-[10px] tracking-[0.3em] text-off-white/55 uppercase">
                     {t("intro.label")}
                   </p>
                   <p className="text-base leading-relaxed font-light text-off-white/90">
@@ -760,12 +760,12 @@ function FocusCard({ guest, isViewer, onClose }: FocusProps) {
                 </div>
               </div>
               <div className="flex flex-col gap-3">
-                <p className="font-mono text-[10px] tracking-[0.3em] text-off-white/55 uppercase">
+                <p className="font-sans text-[10px] tracking-[0.3em] text-off-white/55 uppercase">
                   {t("gallery.label")}
                 </p>
                 {guest.gallery.length === 0 ? (
                   <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-off-white/20">
-                    <p className="font-mono text-[11px] text-off-white/45">
+                    <p className="font-sans text-[11px] text-off-white/45">
                       {t("gallery.empty")}
                     </p>
                   </div>

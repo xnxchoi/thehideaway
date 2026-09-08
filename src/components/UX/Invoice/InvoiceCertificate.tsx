@@ -189,7 +189,7 @@ export function InvoiceCertificate({
         >
           {/* Eyebrow that names this column — labels the paper as the
           printable artifact, not the source of truth. */}
-          <p className="mb-3 font-mono text-[10px] tracking-[0.28em] text-muted-foreground/65 uppercase">
+          <p className="mb-3 font-sans text-[10px] tracking-[0.28em] text-muted-foreground/65 uppercase">
             {tCertChrome("printedLabel")}
           </p>
           <article
@@ -404,7 +404,7 @@ function PaperContent({ invoice }: { invoice: InvoiceDisplay }) {
         >
           The Hideaway
         </p>
-        <p className="mt-[8px] mb-[5px] font-mono text-[11px] font-bold tracking-[0.32em]">
+        <p className="mt-[8px] mb-[5px] font-sans text-[11px] font-bold tracking-[0.32em]">
           {t("subWordmark")}
         </p>
         {/* Brand tagline. Locked to English across every locale — this is
@@ -628,7 +628,7 @@ function ActionButton({ label, onClick, busy }: ActionButtonProps) {
       onClick={onClick}
       disabled={busy}
       className={cn(
-        "inline-flex w-full items-center justify-between gap-3 border border-border/30 bg-foreground/[0.02] px-4 py-3 font-mono text-[10.5px] tracking-[0.2em] text-foreground/75 uppercase transition-all",
+        "inline-flex w-full items-center justify-between gap-3 border border-border/30 bg-foreground/[0.02] px-4 py-3 font-sans text-[10.5px] tracking-[0.2em] text-foreground/75 uppercase transition-all",
         "hover:border-border/70 hover:bg-foreground/[0.05] hover:text-foreground",
         "disabled:cursor-progress disabled:opacity-60"
       )}
@@ -669,7 +669,7 @@ function StatusStamp({ status }: StatusStampProps) {
       style={{ transform: "rotate(-8deg)" }}
     >
       <span
-        className="block px-3 py-1 font-mono text-[11px] font-bold tracking-[0.32em] uppercase"
+        className="block px-3 py-1 font-sans text-[11px] font-bold tracking-[0.32em] uppercase"
         style={{
           color,
           border: `1.5px solid ${color}`,

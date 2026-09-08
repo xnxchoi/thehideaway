@@ -8,7 +8,7 @@ export function DemimondePacking() {
     >
       <div className="mx-auto max-w-[1200px]">
         <header className="mb-14 flex flex-col gap-2 border-b border-[var(--rule)] pb-7 max-sm:mb-9">
-          <span className="font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+          <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
             {PACKING.eyebrow}
           </span>
           <h2
@@ -28,7 +28,7 @@ export function DemimondePacking() {
               key={item.head}
               className="flex items-baseline gap-6 border-b border-dashed border-[var(--rule)] py-5 md:[&:nth-child(even)]:pl-8 md:[&:nth-child(odd)]:border-r md:[&:nth-child(odd)]:border-dashed md:[&:nth-child(odd)]:border-r-[var(--rule)] md:[&:nth-child(odd)]:pr-8"
             >
-              <span className="min-w-8 font-mono text-[11px] tracking-[0.18em] text-[var(--tomato)]">
+              <span className="min-w-8 font-sans text-[11px] tracking-[0.18em] text-[var(--tomato)]">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div className="min-w-0 flex-1">

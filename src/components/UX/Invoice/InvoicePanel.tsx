@@ -79,13 +79,13 @@ export function InvoicePanel({ invoice, className }: InvoicePanelProps) {
       "Reading copy" makes the contract explicit: this column is the
       legibility-first surface, the paper to the right is the artifact. */}
       <header className="flex flex-col gap-3">
-        <p className="font-mono text-[10px] tracking-[0.28em] text-muted-foreground/70 uppercase">
+        <p className="font-sans text-[10px] tracking-[0.28em] text-muted-foreground/70 uppercase">
           {tPanel("digitalLabel")}
         </p>
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="text-2xl font-light tracking-tight xl:text-3xl">
             {tPanel("heading")}{" "}
-            <span className="font-mono text-foreground/65 tabular-nums">
+            <span className="font-sans text-foreground/65 tabular-nums">
               {formatInvoiceNumber(invoice.invoice_number)}
             </span>
           </h2>
@@ -118,19 +118,19 @@ export function InvoicePanel({ invoice, className }: InvoicePanelProps) {
       {/* Member block — same fields the paper carries, but rendered with
       the same hierarchy you'd see anywhere else on the site. */}
       <section className="flex flex-col gap-1.5">
-        <p className="font-mono text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
+        <p className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
           {t("purchasedBy")}
         </p>
         <p className="text-base font-medium tracking-tight">
           {invoice.client.name ?? invoice.client.email ?? "—"}
         </p>
         {invoice.client.email ? (
-          <p className="font-mono text-xs text-foreground/65" lang="en">
+          <p className="font-sans text-xs text-foreground/65" lang="en">
             {invoice.client.email}
           </p>
         ) : null}
         {invoice.client.handle ? (
-          <p className="font-mono text-xs text-foreground/65" lang="en">
+          <p className="font-sans text-xs text-foreground/65" lang="en">
             hideawayseoul.com/@{invoice.client.handle}
           </p>
         ) : null}
@@ -146,17 +146,17 @@ export function InvoicePanel({ invoice, className }: InvoicePanelProps) {
       the Quantity column on the paper so the per-line breakdown is still
       explicit on the panel. */}
       <section className="flex flex-col gap-2.5">
-        <p className="font-mono text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
+        <p className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
           {tPanel("lineItemHeading")}
         </p>
         <div className="flex items-baseline justify-between gap-4 border-b border-border/30 pb-2.5">
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-medium">{planName}</span>
-            <span className="font-mono text-[11px] text-muted-foreground/55 tabular-nums">
+            <span className="font-sans text-[11px] text-muted-foreground/55 tabular-nums">
               {tPanel("lineQuantityShort", { n: lineQty })}
             </span>
           </div>
-          <span className="font-mono text-sm tabular-nums">{totalLabel}</span>
+          <span className="font-sans text-sm tabular-nums">{totalLabel}</span>
         </div>
         {invoice.plan.description ? (
           <p className="text-xs leading-relaxed text-foreground/65">
@@ -167,7 +167,7 @@ export function InvoicePanel({ invoice, className }: InvoicePanelProps) {
 
       {/* Totals — Subtotal / Tax / Total, with Total emphasized. */}
       <section className="flex flex-col gap-2">
-        <p className="font-mono text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
+        <p className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
           {tPanel("summaryHeading")}
         </p>
         <dl className="flex flex-col gap-1.5 text-sm">
@@ -181,7 +181,7 @@ export function InvoicePanel({ invoice, className }: InvoicePanelProps) {
       {/* Payment block — only for paid invoices. */}
       {isPaid && invoice.payment_method ? (
         <section className="flex flex-col gap-2.5">
-          <p className="font-mono text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.22em] text-muted-foreground/65 uppercase">
             {tPanel("paymentHeading")}
           </p>
           <ul className="flex flex-col gap-1.5 text-sm">
@@ -201,7 +201,7 @@ export function InvoicePanel({ invoice, className }: InvoicePanelProps) {
       built-in disclosure with keyboard support; we restyle the summary
       so it looks of-a-piece with the other eyebrow labels. */}
       <details className="group flex flex-col gap-2.5 border-t border-border/20 pt-5">
-        <summary className="flex cursor-pointer items-center justify-between gap-3 font-mono text-[10px] tracking-[0.22em] text-muted-foreground/70 uppercase transition-colors outline-none marker:hidden hover:text-foreground/80 [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer items-center justify-between gap-3 font-sans text-[10px] tracking-[0.22em] text-muted-foreground/70 uppercase transition-colors outline-none marker:hidden hover:text-foreground/80 [&::-webkit-details-marker]:hidden">
           <span>{tPanel("termsHeading")}</span>
           <span
             aria-hidden
@@ -233,7 +233,7 @@ type PanelRowProps = {
 function PanelRow({ label, value }: PanelRowProps) {
   return (
     <>
-      <dt className="self-baseline font-mono text-[11px] tracking-[0.2em] text-muted-foreground/65 uppercase">
+      <dt className="self-baseline font-sans text-[11px] tracking-[0.2em] text-muted-foreground/65 uppercase">
         {label}
       </dt>
       <dd className="text-foreground/85">{value}</dd>
@@ -261,7 +261,7 @@ function SummaryRow({
       </span>
       <span
         className={cn(
-          "font-mono tabular-nums",
+          "font-sans tabular-nums",
           emphasized ? "text-base font-medium" : "text-sm text-foreground/85"
         )}
       >
@@ -281,7 +281,7 @@ function PaymentRow({
   return (
     <li className="flex items-baseline justify-between gap-4">
       <span className="text-foreground/85">{methodLabel}</span>
-      <span className="font-mono tabular-nums">
+      <span className="font-sans tabular-nums">
         {formatAmount(method.amount, method.currency)}
       </span>
     </li>
@@ -306,7 +306,7 @@ function StatusChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[10px] tracking-[0.18em] uppercase",
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 font-sans text-[10px] tracking-[0.18em] uppercase",
         tone
       )}
     >
