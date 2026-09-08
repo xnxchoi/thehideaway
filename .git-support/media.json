@@ -3018,6 +3018,14 @@
       "gitTracked": true
     },
     {
+      "id": "asset_ff1dacb743e8c9c8aea9",
+      "path": "public/fonts/Doto/Doto-Regular.ttf",
+      "sha256": "23f7f9549d69cb6ad0db3e2528de89e4bfa1b83c3baee0dfa0e91d619678c164",
+      "bytes": 140856,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
       "id": "asset_16e6fb92e3a6a6d167dd",
       "path": "public/fonts/GeistMono-Regular.ttf",
       "sha256": "5a0de4b3d54ab272f76a1d8c84b7fb24c67bbec6591d5300e61c7bc10094b6c8",
@@ -3038,6 +3046,22 @@
       "path": "public/fonts/InstrumentSerif-Regular.ttf",
       "sha256": "498efd461f6ddfcb7a111bf9a565709d2085d48201d501ead960d93e84ffbb88",
       "bytes": 70012,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_ba1a170596d4473d9b77",
+      "path": "public/fonts/Mrs_Saint_Delafield/MrsSaintDelafield-Regular.ttf",
+      "sha256": "df389cd47a33a1250167876b4559c150bc18cca51c785ae13ea540ef01c2ea59",
+      "bytes": 47932,
+      "mimeType": "font/ttf",
+      "gitTracked": true
+    },
+    {
+      "id": "asset_87d312ee9edb39adf8ab",
+      "path": "public/fonts/Raleway_Dots/RalewayDots-Regular.ttf",
+      "sha256": "fc50ab6f151493c5392d3d46b05551f1080592b477095f0882b4a5bccf9ab76d",
+      "bytes": 443504,
       "mimeType": "font/ttf",
       "gitTracked": true
     },

@@ -1,5 +1,4 @@
 import localFont from "next/font/local";
-import { Doto, Mrs_Saint_Delafield, Raleway_Dots } from "next/font/google";
 const Caveat= localFont({
   src: [
     {
@@ -10,17 +9,20 @@ const Caveat= localFont({
   ],
   variable: "--font-marker"
 });
-const RalewayDots = Raleway_Dots({
+const RalewayDots = localFont({
   subsets: ["latin"],
+  path: "public/assets/fonts/RalewayDots/RalewayDots-Regular.ttf",
   variable: "--font-raleway-dots",
   weight: "400"
 });
-const Dots = Doto({
+const Dots = localFont({
   subsets: ["latin"],
+  path: "public/assets/fonts/Doto/Doto-Regular.ttf",
   variable: "--font-dots"
 });
-const Saint = Mrs_Saint_Delafield({
+const Saint = localFont({
   subsets: ["latin"],
+  path: "public/assets/fonts/Mrs_Saint_Delafield/MrsSaintDelafield-Regular.ttf",
   variable: "--font-saint",
   weight: "400"
 });
