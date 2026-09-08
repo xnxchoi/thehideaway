@@ -6,10 +6,9 @@
 # ── Agent / tool-generated verification artifacts ─────────────────────────────
 # Screenshots, page snapshots, and audit captures produced by Chrome/Playwright
 # MCP tooling during UI verification. Never source — regenerated on demand.
-.codex-screenshots/
-.playwright-mcp/
-output/*audit*/
-output/**/*audit*/
+**/.codex-screenshots
+**/.playwright-mcp
+**/output
 
 
 
@@ -26,19 +25,15 @@ output/**/*audit*/
 #   .env, .env.local, .env.development.local, .env.test.local,
 #   .env.production, .env.production.local
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production
-.env.production.local
+.env*
 !.env.production.template
 !.env.production.enc
 
 # Ignore node_modules folder
 node_modules/
-/reference/
-
-tests/
+reference
+.junie
+tests
 # Ignore MacOS .DS_Store file
 .hintrc
 .filenignore
@@ -46,38 +41,33 @@ tests/
 # .attic/ is intentionally tracked — it's the project's archival stash.
 # Files are moved here (never deleted) via `pnpm attic <path>`.
 # Excluded from Docker builds via .dockerignore.
-.vscode/
-.idea/
+.vscode
+.idea
+.codex
+.attic
 .next
+.claude
 .pnpm-store
 .turbo
+readmes
 .git-support/archive-worktree/
 .git-support/media.local.json
 /thehideaway.code-workspace
-/.claude/
-
-!/.claude/PRPs
-
 backup/
-migrations/
+
 test*/
 
-/src/lib/migrations/**/
-!/src/lib/migrations/
+tsconfig.tsbuildinfo
 
-/public/users/
-/public/media/
+
+/public/users
+/public/media
 /public/images/
 #!/public/assets/media
 
-!/public/assets/three/tape
 
 
-!/essays/DemoOfArchive.tsx
+/essays/DemoOfArchive.tsx
 *__backup.tsx
 
-/src/components/layouts/Registration/Plate/ThreeCSG.ts
-
-readmes
-tsconfig.tsbuildinfo
-.shit
+**/ThreeCSG.ts
