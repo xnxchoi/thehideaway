@@ -49,7 +49,7 @@ export default function AccountSwitcher() {
             className="group flex w-[250px] items-center justify-between rounded-sm border border-border/30 px-4 py-2 text-foreground transition-colors hover:border-border/60"
           >
             <div className="flex items-center gap-2.5">
-              <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+              <span className="font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase">
                 {open ? "Accounts" : "Current"}
               </span>
               <Avatar className="h-6 w-6">
@@ -143,7 +143,7 @@ export default function AccountSwitcher() {
                 className="group transition-colors duration-200 hover:bg-accent"
               >
                 <PlusCircle className="mr-2 h-5 w-5 text-foreground/70 transition-colors duration-200 group-hover:text-foreground" />
-                <span className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors duration-200 group-hover:text-foreground">
+                <span className="font-sans text-[11px] tracking-widest text-foreground/70 uppercase transition-colors duration-200 group-hover:text-foreground">
                   Add Account
                 </span>
               </CommandItem>

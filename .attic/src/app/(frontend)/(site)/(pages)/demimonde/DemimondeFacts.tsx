@@ -12,7 +12,7 @@ export function DemimondeFacts() {
       aria-label="The facts"
     >
       <div className="mx-auto mb-6 flex max-w-[1200px] items-center gap-4">
-        <span className="shrink-0 font-mono text-[10px] tracking-[0.34em] text-[var(--ink-muted)] uppercase">
+        <span className="shrink-0 font-sans text-[10px] tracking-[0.34em] text-[var(--ink-muted)] uppercase">
           The facts
         </span>
         <span className="h-px flex-1 bg-[var(--rule)]" aria-hidden />
@@ -24,21 +24,21 @@ export function DemimondeFacts() {
             key={fact.label}
             className="relative flex flex-col gap-1.5 pl-5 before:absolute before:top-1.5 before:bottom-1.5 before:left-0 before:w-px before:bg-[var(--rule)] before:content-[''] max-sm:pl-4"
           >
-            <span className="font-mono text-[10px] tracking-[0.3em] text-[var(--ink-muted)] uppercase">
+            <span className="font-sans text-[10px] tracking-[0.3em] text-[var(--ink-muted)] uppercase">
               {fact.label}
             </span>
             <span className="font-serif text-2xl leading-[1.15] text-[var(--ink)] italic">
               {fact.value}
             </span>
             {"note" in fact && fact.note ? (
-              <span className="mt-0.5 font-mono text-[10px] tracking-[0.18em] text-[var(--ink-muted)] uppercase">
+              <span className="mt-0.5 font-sans text-[10px] tracking-[0.18em] text-[var(--ink-muted)] uppercase">
                 {fact.note}
               </span>
             ) : null}
             {"link" in fact && fact.link ? (
               <Link
                 href={fact.link.href}
-                className="mt-1 w-fit font-mono text-[11px] tracking-[0.14em] text-[var(--tomato)] uppercase underline underline-offset-[3px] transition-colors hover:text-[var(--ink)]"
+                className="mt-1 w-fit font-sans text-[11px] tracking-[0.14em] text-[var(--tomato)] uppercase underline underline-offset-[3px] transition-colors hover:text-[var(--ink)]"
               >
                 {fact.link.text}
               </Link>

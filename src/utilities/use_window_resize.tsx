@@ -64,7 +64,7 @@ export const useWindowResize = ({
   useEffect(() => {
     if (!detectVisibilityChange) return;
     const handleVisibilityChange = () => {
-      setTimeout(() => setLastTimestamp(Date.now()), 50);
+      setTimeout(() => setLastTimestamp(performance.now()), 50);
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {

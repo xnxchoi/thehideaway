@@ -95,7 +95,7 @@ export function QuickActions({
           onClick={() => setOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={open}
-          className="inline-flex cursor-pointer appearance-none items-center rounded-full border px-[14px] py-[10px] font-mono text-[10px] font-medium tracking-[0.12em] uppercase transition-[background-color,color,border-color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] hover:border-[rgba(244,242,235,0.28)] hover:text-white active:scale-[0.985] lg:text-[11px]"
+          className="inline-flex cursor-pointer appearance-none items-center rounded-full border px-[14px] py-[10px] font-sans text-[10px] font-medium tracking-[0.12em] uppercase transition-[background-color,color,border-color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] hover:border-[rgba(244,242,235,0.28)] hover:text-white active:scale-[0.985] lg:text-[11px]"
           style={{
             color: FG,
             backgroundColor: "rgba(244, 242, 235, 0.08)",
@@ -107,7 +107,7 @@ export function QuickActions({
 
         <Link
           href={rsvpHref}
-          className="dn-rsvp-link group/dn-rsvp relative inline-flex cursor-pointer items-center gap-[8px] overflow-hidden rounded-full p-px font-mono text-[10px] font-semibold tracking-[0.14em] uppercase no-underline [perspective:760px] lg:text-[11px]"
+          className="dn-rsvp-link group/dn-rsvp relative inline-flex cursor-pointer items-center gap-[8px] overflow-hidden rounded-full p-px font-sans text-[10px] font-semibold tracking-[0.14em] uppercase no-underline [perspective:760px] lg:text-[11px]"
           aria-label={rsvpLabel}
           data-rsvped={isRsvped ? "true" : "false"}
           style={rsvpStyle}
@@ -260,7 +260,7 @@ function MusicChip({ enabled, onClick, ariaLabel }: MusicChipProps) {
       aria-pressed={enabled}
       data-dn-audio-toggle
       data-on={enabled ? "true" : "false"}
-      className="group/music inline-flex w-[44px] cursor-pointer appearance-none items-center justify-start gap-2 overflow-hidden rounded-full border px-[12px] py-[10px] font-mono text-[10px] font-medium tracking-[0.12em] uppercase transition-[width,background-color,color,border-color,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] active:scale-[0.985] lg:w-[46px]"
+      className="group/music inline-flex w-[44px] cursor-pointer appearance-none items-center justify-start gap-2 overflow-hidden rounded-full border px-[12px] py-[10px] font-sans text-[10px] font-medium tracking-[0.12em] uppercase transition-[width,background-color,color,border-color,transform] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] hover:scale-[1.015] active:scale-[0.985] lg:w-[46px]"
       style={{
         backgroundColor: enabled
           ? "rgba(244, 242, 235, 0.16)"

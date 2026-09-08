@@ -85,7 +85,7 @@ export function DetailsDrawer({
 
           <header className="flex items-center justify-between border-b border-[var(--dn-line)] px-8 pt-8 pb-6">
             <div className="grid gap-2">
-              <span className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+              <span className="font-sans text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
                 {t("details.eyebrow")}
               </span>
               <Drawer.Title className="font-serif text-[clamp(1.85rem,2.4vw,2.4rem)] leading-[1.05] font-bold tracking-[-0.015em]">
@@ -193,7 +193,7 @@ END:VCALENDAR`
             </PillButton>
             <Link
               href={rsvpHref}
-              className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-fg)] bg-[var(--dn-fg)] px-6 py-4 font-mono text-[12px] tracking-[0.28em] text-[var(--dn-bg)] uppercase no-underline transition-transform duration-300 hover:-translate-y-px"
+              className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-fg)] bg-[var(--dn-fg)] px-6 py-4 font-sans text-[12px] tracking-[0.28em] text-[var(--dn-bg)] uppercase no-underline transition-transform duration-300 hover:-translate-y-px"
             >
               <span>{t("rsvpCta.register")}</span>
               <span
@@ -205,7 +205,7 @@ END:VCALENDAR`
             </Link>
             <Link
               href="/day-n-night/guests"
-              className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-line)] px-6 py-3.5 font-mono text-[11px] tracking-[0.24em] text-[var(--dn-fg-mute)] uppercase no-underline transition-colors duration-300 hover:border-[var(--dn-fg)] hover:text-[var(--dn-fg)]"
+              className="group inline-flex w-full cursor-pointer items-center justify-between rounded-full border border-[var(--dn-line)] px-6 py-3.5 font-sans text-[11px] tracking-[0.24em] text-[var(--dn-fg-mute)] uppercase no-underline transition-colors duration-300 hover:border-[var(--dn-fg)] hover:text-[var(--dn-fg)]"
             >
               <span>{t("guestsTease.cta")}</span>
               <span
@@ -231,7 +231,7 @@ interface DetailsRowProps {
 function DetailsRow({ label, value, hint }: DetailsRowProps) {
   return (
     <div className="grid grid-cols-[110px_1fr] gap-x-5 border-t border-[var(--dn-line)] pt-[14px] first:border-t-0 first:pt-0">
-      <dt className="font-mono text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
+      <dt className="font-sans text-[10px] tracking-[0.32em] text-[var(--dn-fg-faint)] uppercase">
         {label}
       </dt>
       <dd className="grid gap-1">

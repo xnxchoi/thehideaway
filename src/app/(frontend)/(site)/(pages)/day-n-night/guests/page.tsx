@@ -165,7 +165,7 @@ export default async function DayNNightGuestsPage() {
       ) : (
         <section className="flex min-h-screen items-center justify-center bg-black px-6 py-28 text-white">
           <div className="grid max-w-xl gap-6 text-center">
-            <p className="m-0 font-mono text-[10px] tracking-[0.28em] text-white/55 uppercase">
+            <p className="m-0 font-sans text-[10px] tracking-[0.28em] text-white/55 uppercase">
               {tGuests("eyebrow")}
             </p>
             <h1 className="m-0 font-serif text-[clamp(3.5rem,8vw,7rem)] leading-[0.92] font-bold tracking-[-0.035em]">
@@ -176,7 +176,7 @@ export default async function DayNNightGuestsPage() {
             </p>
             <Link
               href="/tickets/day-n-night"
-              className="mx-auto mt-2 inline-flex items-center gap-3 rounded-full border border-white bg-white px-6 py-3 font-mono text-[11px] tracking-[0.22em] text-black uppercase no-underline transition-transform hover:-translate-y-px"
+              className="mx-auto mt-2 inline-flex items-center gap-3 rounded-full border border-white bg-white px-6 py-3 font-sans text-[11px] tracking-[0.22em] text-black uppercase no-underline transition-transform hover:-translate-y-px"
             >
               <span>{tDn("rsvpCta.register")}</span>
               <span aria-hidden>→</span>

@@ -95,7 +95,7 @@ export const ScrollHint = ({
       }}
       {...props}
     >
-      <span className="font-mono text-[0.6rem] tracking-widest uppercase">
+      <span className="font-sans text-[0.6rem] tracking-widest uppercase">
         scroll to explore
       </span>
       <svg

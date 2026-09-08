@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import {
   FetchedUnsplashImage,
   UnsplashFetchResult
-} from "@/types/ImageCollections/unsplash";
+} from "@types/ImageCollections/unsplash";
 import { MenuPopup, MenuPositioner } from "@/payload/components/Popover";
 import { errorToast } from "@/payload/components/sonner";
 import {
@@ -20,7 +20,7 @@ import {
   RalueWithRelation,
   RenderImageFields,
   TabNames
-} from "@/types/collections/image-collections";
+} from "@types/collections/image-collections";
 import { Menu } from "@base-ui/react";
 import { useAuth } from "@payloadcms/ui";
 import type { HTMLMotionProps } from "motion/react";

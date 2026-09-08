@@ -44,7 +44,7 @@ export const EditorialButton = forwardRef<
       ref={ref}
       disabled={loading || disabled}
       className={cn(
-        "relative inline-flex items-center gap-2 px-5 py-2.5 font-mono text-[11px] tracking-[0.18em] uppercase transition-all duration-200 disabled:opacity-40",
+        "relative inline-flex items-center gap-2 px-5 py-2.5 font-sans text-[11px] tracking-[0.18em] uppercase transition-all duration-200 disabled:opacity-40",
         toneClasses[tone],
         className
       )}

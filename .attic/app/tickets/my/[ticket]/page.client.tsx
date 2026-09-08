@@ -84,7 +84,7 @@ export function TicketDetailClient({
           >
             <Link
               href="/tickets/my"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+              className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
             >
               ← All tickets
             </Link>
@@ -169,15 +169,15 @@ export function TicketDetailClient({
                 "shadow-[0_2px_24px_-8px_rgba(0,0,0,0.4)] dark:shadow-[0_2px_28px_-8px_rgba(0,0,0,0.6)]"
               )}
             >
-              <p className="font-mono text-[10px] tracking-[0.32em] text-muted-foreground/55 uppercase">
+              <p className="font-sans text-[10px] tracking-[0.32em] text-muted-foreground/55 uppercase">
                 Payment
               </p>
               {paymentInstructions ? (
-                <p className="mt-4 font-mono text-[11px] leading-relaxed whitespace-pre-line text-foreground/80 xl:text-xs">
+                <p className="mt-4 font-sans text-[11px] leading-relaxed whitespace-pre-line text-foreground/80 xl:text-xs">
                   {paymentInstructions}
                 </p>
               ) : (
-                <p className="mt-4 font-mono text-[11px] leading-relaxed text-muted-foreground/65 xl:text-xs">
+                <p className="mt-4 font-sans text-[11px] leading-relaxed text-muted-foreground/65 xl:text-xs">
                   The host will reach out with payment details. Your ticket
                   activates the moment we confirm receipt.
                 </p>
@@ -187,11 +187,11 @@ export function TicketDetailClient({
 
           {/* Terminal-state copy */}
           {status === "used" ? (
-            <p className="mt-6 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+            <p className="mt-6 font-sans text-[11px] leading-relaxed text-muted-foreground/60">
               This ticket has been used. Thanks for being there.
             </p>
           ) : status === "canceled" ? (
-            <p className="mt-6 font-mono text-[11px] leading-relaxed text-muted-foreground/60">
+            <p className="mt-6 font-sans text-[11px] leading-relaxed text-muted-foreground/60">
               This ticket was canceled. If you think this is a mistake, reach
               out to the host.
             </p>
@@ -239,13 +239,13 @@ function Field({
         "bg-foreground/[0.025] dark:bg-foreground/[0.03]"
       )}
     >
-      <dt className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase">
+      <dt className="font-sans text-[10px] tracking-widest text-muted-foreground/50 uppercase">
         {label}
       </dt>
       <dd
         className={
           mono
-            ? "mt-0.5 font-mono text-sm text-foreground/80 tabular-nums"
+            ? "mt-0.5 font-sans text-sm text-foreground/80 tabular-nums"
             : "mt-0.5 text-sm font-light text-foreground/80"
         }
       >

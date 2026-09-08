@@ -5,14 +5,15 @@ import {useInfiniteQuery, useQueries} from "@tanstack/react-query";
 import type {Sort, TypedCollectionSelect, Where} from "payload";
 import {stringify} from "qs-esm";
 import {useCallback, useMemo} from "react";
-import {PayloadFindFetch} from "@/types/payload-api-helpers";
+import { PayloadFindFetch } from "@types/payload-api-helpers";
 import {
-	FetchedImageDoc, ImageCollectionSlug,
-	RalueAsDataWithRelation,
-	RalueWithRelation,
-	RenderImageFields
-} from "@/types/collections/image-collections";
-import {imageSelect} from "@/types/payload-api-selects";
+  FetchedImageDoc,
+  ImageCollectionSlug,
+  RalueAsDataWithRelation,
+  RalueWithRelation,
+  RenderImageFields
+} from "@types/collections/image-collections";
+import { imageSelect } from "@types/payload-api-selects";
 import {getClientSideURL} from "@/utilities/getURL";
 
 export const useGallery = ({type = "unsplash", query = {}, limit = 8, page = 1}: {

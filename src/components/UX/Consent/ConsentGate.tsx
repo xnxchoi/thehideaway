@@ -135,7 +135,7 @@ function CheckboxRow({
       />
       <span className="flex-1 leading-snug">
         <span
-          className={`mr-2 font-mono text-[10px] tracking-widest uppercase ${
+          className={`mr-2 font-sans text-[10px] tracking-widest uppercase ${
             badge.tone === "required"
               ? "text-foreground/70"
               : "text-foreground/40"
@@ -151,7 +151,7 @@ function CheckboxRow({
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-[10px] tracking-widest text-foreground/50 uppercase underline-offset-2 hover:underline"
+              className="font-sans text-[10px] tracking-widest text-foreground/50 uppercase underline-offset-2 hover:underline"
             >
               {link.label}
             </Link>
@@ -215,7 +215,7 @@ export function ConsentGate({ children }: ConsentGateProps) {
     return (
       <div className="flex flex-col gap-6">
         <div className="border border-border/30 bg-card/40 p-4">
-          <p className="font-mono text-[10px] tracking-widest text-foreground/50 uppercase">
+          <p className="font-sans text-[10px] tracking-widest text-foreground/50 uppercase">
             {copy.consented}
           </p>
           <p className="mt-2 text-xs leading-relaxed text-foreground/60">
@@ -224,7 +224,7 @@ export function ConsentGate({ children }: ConsentGateProps) {
           <button
             type="button"
             onClick={() => setCommitted(false)}
-            className="mt-3 font-mono text-[10px] tracking-widest text-foreground/50 uppercase underline-offset-2 hover:underline"
+            className="mt-3 font-sans text-[10px] tracking-widest text-foreground/50 uppercase underline-offset-2 hover:underline"
           >
             {copy.edit}
           </button>
@@ -292,7 +292,7 @@ export function ConsentGate({ children }: ConsentGateProps) {
         type="button"
         onClick={onCommit}
         disabled={!allRequired}
-        className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
+        className="border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
       >
         {allRequired ? copy.cta : copy.ctaDisabled}
       </button>

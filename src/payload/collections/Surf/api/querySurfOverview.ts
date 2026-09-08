@@ -1,6 +1,9 @@
 import {SurfSelect} from "@/payload-types";
-import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
-import {AuthorOverview} from "@/types/collections/users";
+import {
+  CategoryOverview,
+  TagOverview
+} from "@types/collections/meta-collections";
+import { AuthorOverview } from "@types/collections/users";
 
 import configPromise from "@payload-config";
 import {getPayload, PaginatedDocs, Payload, Where} from "payload";

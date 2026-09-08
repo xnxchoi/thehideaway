@@ -2,7 +2,7 @@ import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
 import { cn } from "@/lib/utils";
-import { PostOverview } from "@/types/collections/posts";
+import { PostOverview } from "@types/collections/posts";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { RelativeTime } from "@/components/sections/FeaturedHero/RelativeTime";
 import { getLocale } from "next-intl/server";
@@ -77,7 +77,7 @@ export const FeaturedHero = async ({
           </span>
         )}
 
-        <div className="mt-1 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
+        <div className="mt-1 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-[11px]">
           {authorName ? `By ${authorName}` : "Hideaway"}
           {article.publishedAt && (
             <>

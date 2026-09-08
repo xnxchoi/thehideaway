@@ -47,7 +47,7 @@ export default async function TaggedIndexPage() {
         <div className="relative flex w-full flex-col items-center justify-center">
           <div className="mx-auto w-full max-w-[calc(100vw-80px)] px-[20px]">
             <div className="mt-9 mb-[28px] min-lg:mt-[40px] min-lg:mb-[40px]">
-              <p className="mb-[6px] font-mono text-[11px] tracking-[0.2em] text-foreground/55 uppercase">
+              <p className="mb-[6px] font-sans text-[11px] tracking-[0.2em] text-foreground/55 uppercase">
                 Topics
               </p>
               <CatTitle className="py-1 font-serif font-light">
@@ -63,14 +63,14 @@ export default async function TaggedIndexPage() {
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <span
                   aria-hidden
-                  className="mb-4 font-mono text-5xl opacity-10"
+                  className="mb-4 font-sans text-5xl opacity-10"
                 >
                   ◇
                 </span>
                 <p className="text-base font-light text-foreground/70">
                   No tags published yet.
                 </p>
-                <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+                <p className="mt-1.5 max-w-xs font-sans text-[11px] text-muted-foreground/50">
                   As essays go live and earn tags, they will appear here.
                 </p>
               </div>

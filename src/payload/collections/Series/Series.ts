@@ -1,6 +1,6 @@
 import { type Admin, type User } from "@/payload-types";
 import { sanitizeAuthor } from "@/payload/fields/AuthorField/hooks";
-import { RelAuthor } from "@/types/collections/users";
+import { RelAuthor } from "@types/collections/users";
 import { AccessArgs, CollectionConfig, Where } from "payload";
 import { uuidv7 } from "uuidv7";
 import { populatePublishedAt } from "../../../hooks/populatePublishedAt";

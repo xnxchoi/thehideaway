@@ -145,7 +145,7 @@ export default function CompilationDetailClient({
             </>
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted/50 to-muted/10">
-              <span className="font-mono text-9xl font-light text-muted-foreground/8 select-none">
+              <span className="font-sans text-9xl font-light text-muted-foreground/8 select-none">
                 {compilation.title.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -157,7 +157,7 @@ export default function CompilationDetailClient({
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 xl:px-10">
             <Link
               href="/me/lists"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+              className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
             >
               ← Lists
             </Link>
@@ -166,14 +166,14 @@ export default function CompilationDetailClient({
                 <>
                   <RP_Btn
                     onClick={() => setAddPanelOpen(true)}
-                    className="font-mono text-[11px] tracking-widest text-foreground/70 uppercase underline decoration-dotted underline-offset-4 hover:opacity-60"
+                    className="font-sans text-[11px] tracking-widest text-foreground/70 uppercase underline decoration-dotted underline-offset-4 hover:opacity-60"
                   >
                     + Add
                   </RP_Btn>
                   <RP_Btn
                     onClick={() => setEditMode((e) => !e)}
                     className={cn(
-                      "font-mono text-[11px] tracking-widest uppercase transition-opacity",
+                      "font-sans text-[11px] tracking-widest uppercase transition-opacity",
                       editMode
                         ? "text-foreground"
                         : "text-muted-foreground/60 hover:text-foreground"
@@ -186,7 +186,7 @@ export default function CompilationDetailClient({
               {compilation.visibility === "public" && authorSlug && (
                 <Link
                   href={`/lists/${authorSlug}/${compilation.hashId}`}
-                  className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
+                  className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase hover:text-foreground"
                 >
                   Public view →
                 </Link>
@@ -214,14 +214,14 @@ export default function CompilationDetailClient({
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-20 text-center"
           >
-            <span className="mb-4 font-mono text-5xl text-foreground/8 select-none">
+            <span className="mb-4 font-sans text-5xl text-foreground/8 select-none">
               ◫
             </span>
             <p className="font-light text-foreground/60">This list is empty.</p>
             {isOwner && (
               <RP_Btn
                 onClick={() => setAddPanelOpen(true)}
-                className="mt-5 font-mono text-[11px] tracking-widest text-muted-foreground/50 uppercase underline decoration-dotted underline-offset-4 hover:text-foreground"
+                className="mt-5 font-sans text-[11px] tracking-widest text-muted-foreground/50 uppercase underline decoration-dotted underline-offset-4 hover:text-foreground"
               >
                 Add items from your saved
               </RP_Btn>
@@ -310,7 +310,7 @@ function CompilationMetaBlock({
           defaultValue={compilation.description ?? ""}
           rows={2}
           placeholder="Description…"
-          className="w-full resize-none border-b border-border/30 bg-transparent pb-1 font-mono text-xs text-muted-foreground focus:border-foreground/40 focus:outline-none"
+          className="w-full resize-none border-b border-border/30 bg-transparent pb-1 font-sans text-xs text-muted-foreground focus:border-foreground/40 focus:outline-none"
         />
         <div className="flex items-center gap-4">
           <RP_Btn
@@ -321,13 +321,13 @@ function CompilationMetaBlock({
               });
               setEditing(false);
             }}
-            className="font-mono text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 hover:opacity-60"
+            className="font-sans text-[11px] tracking-widest text-foreground/80 uppercase underline decoration-dotted underline-offset-4 hover:opacity-60"
           >
             Save
           </RP_Btn>
           <RP_Btn
             onClick={() => setEditing(false)}
-            className="font-mono text-[11px] text-muted-foreground/50 hover:text-foreground"
+            className="font-sans text-[11px] text-muted-foreground/50 hover:text-foreground"
           >
             Cancel
           </RP_Btn>
@@ -344,7 +344,7 @@ function CompilationMetaBlock({
             {compilation.title}
           </h1>
           {compilation.description && (
-            <p className="mt-1 font-mono text-xs text-muted-foreground/60 xl:text-sm">
+            <p className="mt-1 font-sans text-xs text-muted-foreground/60 xl:text-sm">
               {compilation.description}
             </p>
           )}
@@ -352,20 +352,20 @@ function CompilationMetaBlock({
         {isOwner && (
           <RP_Btn
             onClick={() => setEditing(true)}
-            className="mt-0.5 font-mono text-[10px] text-muted-foreground/30 opacity-0 transition-opacity group-hover/meta:opacity-100 hover:text-foreground"
+            className="mt-0.5 font-sans text-[10px] text-muted-foreground/30 opacity-0 transition-opacity group-hover/meta:opacity-100 hover:text-foreground"
           >
             edit
           </RP_Btn>
         )}
       </div>
       <div className="mt-2 flex items-center gap-4">
-        <span className="font-mono text-[10px] text-muted-foreground/50">
+        <span className="font-sans text-[10px] text-muted-foreground/50">
           {compilation.itemCount}{" "}
           {compilation.itemCount === 1 ? "item" : "items"}
         </span>
         <span
           className={cn(
-            "font-mono text-[9px] tracking-widest uppercase",
+            "font-sans text-[9px] tracking-widest uppercase",
             compilation.visibility === "public"
               ? "text-muted-foreground/40"
               : "text-muted-foreground/25"
@@ -381,7 +381,7 @@ function CompilationMetaBlock({
                   compilation.visibility === "public" ? "private" : "public"
               })
             }
-            className="font-mono text-[9px] tracking-widest text-muted-foreground/30 uppercase underline decoration-dotted underline-offset-2 hover:text-muted-foreground"
+            className="font-sans text-[9px] tracking-widest text-muted-foreground/30 uppercase underline decoration-dotted underline-offset-2 hover:text-muted-foreground"
           >
             toggle
           </RP_Btn>
@@ -429,7 +429,7 @@ function CompilationItemCard({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={onRemove}
-            className="absolute top-1 right-1 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-background/80 font-mono text-[10px] text-destructive shadow-sm backdrop-blur-sm hover:bg-destructive hover:text-white"
+            className="absolute top-1 right-1 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-background/80 font-sans text-[10px] text-destructive shadow-sm backdrop-blur-sm hover:bg-destructive hover:text-white"
           >
             ✕
           </m.button>
@@ -446,7 +446,7 @@ function CompilationItemCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <span className="font-mono text-4xl text-muted-foreground/15 select-none">
+            <span className="font-sans text-4xl text-muted-foreground/15 select-none">
               {collectionSlug.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -458,7 +458,7 @@ function CompilationItemCard({
         <p className="line-clamp-2 text-xs leading-snug font-medium tracking-tight xl:text-sm">
           {title}
         </p>
-        <p className="mt-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/40 uppercase xl:text-[10px]">
+        <p className="mt-0.5 font-sans text-[9px] tracking-widest text-muted-foreground/40 uppercase xl:text-[10px]">
           {TAB_LABELS[collectionSlug] ?? collectionSlug}
         </p>
       </div>
@@ -528,12 +528,12 @@ function AddFromBookmarksPanel({
       >
         {/* Panel header */}
         <div className="flex items-center justify-between border-b border-border/20 px-5 py-4">
-          <p className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase">
             Add from Saved
           </p>
           <RP_Btn
             onClick={onClose}
-            className="font-mono text-xs text-muted-foreground/50 hover:text-foreground"
+            className="font-sans text-xs text-muted-foreground/50 hover:text-foreground"
           >
             ✕
           </RP_Btn>
@@ -547,7 +547,7 @@ function AddFromBookmarksPanel({
                 key={t}
                 onClick={() => setActiveTab(t)}
                 className={cn(
-                  "shrink-0 font-mono text-[10px] tracking-widest uppercase transition-colors",
+                  "shrink-0 font-sans text-[10px] tracking-widest uppercase transition-colors",
                   activeTab === t
                     ? "text-foreground"
                     : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -563,7 +563,7 @@ function AddFromBookmarksPanel({
         <div className="flex-1 overflow-y-auto p-5">
           {allTabs.length === 0 ? (
             <div className="flex h-full items-center justify-center">
-              <p className="font-mono text-[11px] text-muted-foreground/40">
+              <p className="font-sans text-[11px] text-muted-foreground/40">
                 No saved items yet.
               </p>
             </div>
@@ -594,21 +594,21 @@ function AddFromBookmarksPanel({
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                          <span className="font-mono text-2xl text-muted-foreground/20">
+                          <span className="font-sans text-2xl text-muted-foreground/20">
                             {item.collection.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
                       {alreadyAdded && (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                          <span className="font-sans text-[10px] text-muted-foreground">
                             Added
                           </span>
                         </div>
                       )}
                       {adding === key && (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                          <span className="font-sans text-[10px] text-muted-foreground">
                             …
                           </span>
                         </div>

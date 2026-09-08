@@ -13,7 +13,7 @@ import {
 } from "@/payload/collections/Users/hooks/revalidateUser";
 import { beforeChangeUsers } from "@/payload/collections/Users/hooks/beforeChange";
 import { userHandleField } from "@/payload/fields/handle";
-import { enforceUserFields } from "@/types/collections/users";
+import { enforceUserFields } from "@types/collections/users";
 import { generatePreviewPath } from "@/utilities/generatePreviewPath";
 import { getServerSideURL } from "@/utilities/getURL";
 import { generateName } from "@/utilities/names";

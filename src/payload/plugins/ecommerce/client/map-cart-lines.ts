@@ -1,6 +1,6 @@
 import { catalogUnitAmount } from "../catalog-money";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
-import type { LostCartLineClient } from "@/lib/lost-commerce/useLostCart";
+import type { StoreCartLine } from "@/lib/lost-commerce/useStoreCart";
 import type { LostCurrency, LostOrderMode } from "@/lib/lost-commerce/types";
 
 const MODES: readonly LostOrderMode[] = [
@@ -56,7 +56,7 @@ function mediaUrl(value: unknown): string | null {
 }
 
 export function pluginCartAddItem(
-  line: LostCartLineClient
+  line: StoreCartLine
 ): Record<string, unknown> {
   return {
     product: line.productId,
@@ -75,7 +75,7 @@ export function pluginCartAddItem(
 export function mapPluginCartLines(
   cart: { items?: unknown[] | null } | null | undefined,
   currencyCode: string
-): LostCartLineClient[] {
+): StoreCartLine[] {
   if (!Array.isArray(cart?.items)) return [];
   return cart.items.flatMap((raw) => {
     if (!isRecord(raw)) return [];

@@ -9,7 +9,7 @@ import {
 } from "@/lib/lost-commerce/queries";
 import enMessages from "../../../../../../messages/en.json";
 import koMessages from "../../../../../../messages/ko.json";
-import { getLostBusinessFooterProps } from "../business-footer-props";
+import { getLostBusinessFooterProps } from "@lostinseoul/parts/Footer/business-footer-props";
 import { LostFragranceChapter, type LostFragranceCopy } from "./page.client";
 
 export const instant = false;

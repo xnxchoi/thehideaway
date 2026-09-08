@@ -28,16 +28,23 @@ describe("LostEcommerceProvider wiring", () => {
     expect(migration).toContain('ALTER TABLE "carts_items" ALTER COLUMN "id" TYPE varchar');
   });
 
-  it("keeps useLostCart as a plugin useCart adapter that returns the add promise", () => {
+  it("keeps useStoreCart as a plugin useCart adapter that returns the add promise", () => {
     const adapter = readFileSync(
-      new URL("../../../../lib/lost-commerce/useLostCart.tsx", import.meta.url),
+      new URL(
+        "../../../../lib/lost-commerce/useStoreCart.tsx",
+        import.meta.url
+      ),
       "utf8"
     );
-    expect(adapter).toContain('from "@payloadcms/plugin-ecommerce/client/react"');
+    expect(adapter).toContain(
+      'from "@payloadcms/plugin-ecommerce/client/react"'
+    );
     expect(adapter).toContain("useCart");
     expect(adapter).toContain("mapPluginCartLines");
     expect(adapter).toContain("pluginCartAddItem");
-    expect(adapter).toContain("addItem(pluginCartAddItem(line) as never, line.quantity)");
+    expect(adapter).toContain(
+      "addItem(pluginCartAddItem(line) as never, line.quantity)"
+    );
     expect(adapter).not.toContain("lostinseoul.cart.v2");
     expect(adapter).not.toContain("/api/lost/cart");
   });
@@ -51,6 +58,6 @@ describe("LostEcommerceProvider wiring", () => {
       "utf8"
     );
     expect(layout).toContain("LostEcommerceProvider");
-    expect(layout).toContain("LostChromeProvider");
+    expect(layout).toContain("ChromeProvider");
   });
 });

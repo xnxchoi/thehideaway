@@ -130,7 +130,8 @@
         "phoneLabel": "전화",
         "emailLabel": "이메일",
         "domainLabel": "서비스 URL",
-        "privacyOfficerLabel": "개인정보 보호책임자"
+        "privacyOfficerLabel": "개인정보 보호책임자",
+        "privacyOfficerName": "개인정보 보호 창구"
       },
       "copyright": "LOSTINSEOUL 2026"
     },

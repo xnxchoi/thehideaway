@@ -114,19 +114,19 @@ export function UserCard() {
                 className="object-cover"
               />
             ) : (
-              <AvatarFallback className="bg-foreground/10 font-mono text-sm">
+              <AvatarFallback className="bg-foreground/10 font-sans text-sm">
                 {currentUser?.name?.charAt(0)}
               </AvatarFallback>
             )}
           </Avatar>
           <div className="flex flex-col gap-1">
-            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
               Signed in as
             </p>
             <p className="text-lg font-light tracking-tight">
               {currentUser?.name}
             </p>
-            <p className="font-mono text-[11px] text-muted-foreground/70">
+            <p className="font-sans text-[11px] text-muted-foreground/70">
               {currentUser?.email}
             </p>
           </div>
@@ -137,7 +137,7 @@ export function UserCard() {
         {currentUser?.emailVerified ? null : (
           <Alert className="flex flex-col gap-3 rounded-sm border border-border/30 bg-muted/20 p-5">
             <div className="flex flex-col gap-1.5">
-              <AlertTitle className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+              <AlertTitle className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                 Email unverified
               </AlertTitle>
               <AlertDescription className="text-sm font-light tracking-tight text-foreground/80">
@@ -147,7 +147,7 @@ export function UserCard() {
             </div>
             <div className="flex justify-start">
               <Button
-                className="w-full border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground sm:w-auto"
+                className="w-full border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground sm:w-auto"
                 disabled={emailVerificationPending}
                 onClick={async () => {
                   await client.sendVerificationEmail(
@@ -185,10 +185,10 @@ export function UserCard() {
         {sessions && sessions.length > 0 && (
           <div className="flex w-full flex-col gap-4">
             <div className="flex items-baseline gap-2.5">
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+              <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                 Active Sessions
               </p>
-              <span className="font-mono text-[11px] text-muted-foreground/50 tabular-nums">
+              <span className="font-sans text-[11px] text-muted-foreground/50 tabular-nums">
                 {sessions.filter((s) => s?.userAgent).length}
               </span>
             </div>
@@ -230,12 +230,12 @@ export function UserCard() {
                         </span>
                       </span>
                       {(session?.session.id === sessionData.id && (
-                        <div className="font-mono text-[9px] tracking-widest text-foreground/70 uppercase">
+                        <div className="font-sans text-[9px] tracking-widest text-foreground/70 uppercase">
                           Current
                         </div>
                       )) || (
                         <Button
-                          className="border border-border/40 px-2.5 py-1 font-mono text-[9px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+                          className="border border-border/40 px-2.5 py-1 font-sans text-[9px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
                           onClick={async () => {
                             setIsTerminating(sessionData.id);
                             const res = await client.revokeSession({
@@ -271,7 +271,7 @@ export function UserCard() {
         )}
         <div className="grid grid-cols-1 gap-8 border-t border-border/20 pt-8 md:grid-cols-2 md:gap-10">
           <div className="flex flex-col gap-4">
-            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
               Passkeys
             </p>
             <div className="flex items-center gap-3">
@@ -280,7 +280,7 @@ export function UserCard() {
             </div>
           </div>
           <div className="flex flex-col gap-4">
-            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
               Two Factor
             </p>
             <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export function UserCard() {
                   <DialogTrigger
                     nativeButton={true}
                     render={() => (
-                      <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest uppercase transition-colors hover:border-border">
+                      <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest uppercase transition-colors hover:border-border">
                         <QrCode size={14} />
                         <span>Scan QR</span>
                       </Button>
@@ -297,7 +297,7 @@ export function UserCard() {
                   />
                   <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
                     <DialogHeader>
-                      <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                      <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                         Security
                       </p>
                       <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
@@ -313,7 +313,7 @@ export function UserCard() {
                           <QRCode value={twoFactorVerifyURI} />
                         </div>
                         <div className="flex items-center justify-center gap-2">
-                          <p className="font-mono text-[11px] text-muted-foreground/70">
+                          <p className="font-sans text-[11px] text-muted-foreground/70">
                             Copy URI to clipboard
                           </p>
                           <CopyButton textToCopy={twoFactorVerifyURI} />
@@ -330,7 +330,7 @@ export function UserCard() {
                           className="border-0 border-b border-border/30 bg-transparent px-0 text-sm font-light tracking-tight placeholder:text-muted-foreground/40 focus:border-foreground/40 focus:outline-none focus-visible:ring-0"
                         />
                         <Button
-                          className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground"
+                          className="border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground"
                           onClick={async () => {
                             if (twoFaPassword.length < 8) {
                               toast.error(
@@ -368,7 +368,7 @@ export function UserCard() {
                   render={() => (
                     <Button
                       className={cn(
-                        "flex items-center justify-center gap-2 border px-4 py-2 font-mono text-[11px] tracking-widest uppercase transition-colors",
+                        "flex items-center justify-center gap-2 border px-4 py-2 font-sans text-[11px] tracking-widest uppercase transition-colors",
                         currentUser?.twoFactorEnabled
                           ? "border-border text-foreground hover:border-foreground"
                           : "border-border/40 text-foreground/70 hover:border-border hover:text-foreground"
@@ -389,7 +389,7 @@ export function UserCard() {
                 />
                 <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
                   <DialogHeader>
-                    <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                    <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                       Security
                     </p>
                     <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
@@ -411,7 +411,7 @@ export function UserCard() {
                       <div className="flex flex-col gap-2">
                         <Label
                           htmlFor="password"
-                          className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                          className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
                         >
                           Scan the QR code with your TOTP app
                         </Label>
@@ -429,7 +429,7 @@ export function UserCard() {
                     <div className="mt-4 flex flex-col gap-2">
                       <Label
                         htmlFor="password"
-                        className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                        className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
                       >
                         Password
                       </Label>
@@ -446,7 +446,7 @@ export function UserCard() {
                   )}
                   <DialogFooter className="mt-6">
                     <Button
-                      className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
+                      className="border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
                       disabled={isPendingTwoFa}
                       onClick={async () => {
                         if (twoFaPassword.length < 8 && !twoFactorVerifyURI) {
@@ -528,7 +528,7 @@ export function UserCard() {
             return account.scopes.includes("credential");
           }) && <ChangePassword />}
         <Button
-          className="ml-auto flex items-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+          className="ml-auto flex items-center gap-2 border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
           onClick={async () => {
             setIsSignOut(true);
             await signOut({
@@ -577,7 +577,7 @@ function ChangePassword() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="flex items-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
+          <Button className="flex items-center gap-2 border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="0.85em"
@@ -595,7 +595,7 @@ function ChangePassword() {
       />
       <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Security
           </p>
           <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
@@ -609,7 +609,7 @@ function ChangePassword() {
           <div className="flex flex-col gap-2">
             <Label
               htmlFor="current-password"
-              className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+              className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
             >
               Current Password
             </Label>
@@ -627,7 +627,7 @@ function ChangePassword() {
           <div className="flex flex-col gap-2">
             <Label
               htmlFor="new-password"
-              className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+              className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
             >
               New Password
             </Label>
@@ -644,7 +644,7 @@ function ChangePassword() {
           <div className="flex flex-col gap-2">
             <Label
               htmlFor="password"
-              className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+              className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
             >
               Confirm Password
             </Label>
@@ -664,14 +664,14 @@ function ChangePassword() {
                 checked ? setSignOutDevices(true) : setSignOutDevices(false)
               }
             />
-            <span className="font-mono text-[11px] tracking-wide text-foreground/80 uppercase">
+            <span className="font-sans text-[11px] tracking-wide text-foreground/80 uppercase">
               Sign out from other devices
             </span>
           </label>
         </div>
         <DialogFooter className="mt-6">
           <Button
-            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
+            className="border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
             onClick={async () => {
               if (newPassword !== confirmPassword) {
                 toast.error("Passwords do not match");
@@ -910,7 +910,7 @@ function EditUserDialog({
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
+          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
             <Edit size={12} />
             <span>Edit</span>
           </Button>
@@ -918,7 +918,7 @@ function EditUserDialog({
       />
       <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Your Account
           </p>
           <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
@@ -938,7 +938,7 @@ function EditUserDialog({
               <div className="flex flex-col gap-2">
                 <Label
                   htmlFor="firstName"
-                  className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                  className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
                 >
                   First Name
                 </Label>
@@ -956,7 +956,7 @@ function EditUserDialog({
               <div className="flex flex-col gap-2">
                 <Label
                   htmlFor="lastName"
-                  className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                  className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
                 >
                   Last Name
                 </Label>
@@ -975,7 +975,7 @@ function EditUserDialog({
             <div className="flex flex-col gap-3">
               <Label
                 htmlFor="image"
-                className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
               >
                 Profile Image
               </Label>
@@ -1108,7 +1108,7 @@ function EditUserDialog({
         </div>
         <DialogFooter className="mt-6">
           <Button
-            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
+            className="border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
             disabled={isLoading}
             onClick={async () => {
               setIsLoading(true);
@@ -1210,7 +1210,7 @@ function AddPasskey() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
+          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
             <Plus size={13} />
             <span>Add Passkey</span>
           </Button>
@@ -1218,7 +1218,7 @@ function AddPasskey() {
       />
       <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Security
           </p>
           <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
@@ -1232,7 +1232,7 @@ function AddPasskey() {
         <div className="mt-4 flex flex-col gap-2">
           <Label
             htmlFor="passkey-name"
-            className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+            className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
           >
             Passkey Name
           </Label>
@@ -1248,7 +1248,7 @@ function AddPasskey() {
             disabled={isLoading}
             type="submit"
             onClick={handleAddPasskey}
-            className="flex w-full items-center justify-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
+            className="flex w-full items-center justify-center gap-2 border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
           >
             {isLoading ? (
               <Loader2 size={13} className="animate-spin" />
@@ -1293,12 +1293,12 @@ function ListPasskeys() {
       <DialogTrigger
         nativeButton={true}
         render={() => (
-          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
+          <Button className="flex items-center gap-2 border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground">
             <Fingerprint size={13} />
             <span className="flex items-center gap-1.5">
               Passkeys
               {data?.length ? (
-                <span className="font-mono text-[10px] text-muted-foreground/60 tabular-nums">
+                <span className="font-sans text-[10px] text-muted-foreground/60 tabular-nums">
                   {data?.length}
                 </span>
               ) : null}
@@ -1308,7 +1308,7 @@ function ListPasskeys() {
       />
       <DialogContent className="w-11/12 rounded-sm sm:max-w-[425px]">
         <DialogHeader>
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Security
           </p>
           <DialogTitle className="mt-0.5 text-2xl font-light tracking-tight">
@@ -1359,7 +1359,7 @@ function ListPasskeys() {
             ))}
           </ul>
         ) : (
-          <p className="my-6 text-center font-mono text-[11px] text-muted-foreground/60">
+          <p className="my-6 text-center font-sans text-[11px] text-muted-foreground/60">
             No passkeys found
           </p>
         )}
@@ -1368,7 +1368,7 @@ function ListPasskeys() {
             <div className="flex flex-col gap-2">
               <Label
                 htmlFor="passkey-name"
-                className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
+                className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase"
               >
                 Add new passkey
               </Label>
@@ -1383,7 +1383,7 @@ function ListPasskeys() {
             <Button
               type="submit"
               onClick={handleAddPasskey}
-              className="flex w-full items-center justify-center gap-2 border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
+              className="flex w-full items-center justify-center gap-2 border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground disabled:opacity-40"
             >
               {isLoading ? (
                 <Loader2 size={13} className="animate-spin" />
@@ -1398,7 +1398,7 @@ function ListPasskeys() {
         )}
         <DialogFooter className="mt-6">
           <Button
-            className="border border-border/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground"
+            className="border border-border/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:bg-transparent hover:text-foreground"
             onClick={() => setIsOpen(false)}
           >
             Close

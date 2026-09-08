@@ -1,8 +1,8 @@
-import { Header } from "../../components/Shells/Header/Component";
+import { Header } from "@/components/Shells/Header/Component";
 import { AnimatedFavicon } from "@/components/core/AnimatedFavicon";
 import { Main } from "@/components/core/Main";
 import { Toaster } from "@/components/ui/sonner";
-import { ContentMask } from "../../components/Shells/ContentMask";
+import { ContentMask } from "@/components/Shells/ContentMask";
 import { EscapeInAppBrowser } from "@/components/UX/escapeInAppBrowser";
 import VGradient from "@/components/UX/Gradient";
 import { MenuMediaPreview } from "@/components/UX/MediaPreview/MenuMediaPreview";

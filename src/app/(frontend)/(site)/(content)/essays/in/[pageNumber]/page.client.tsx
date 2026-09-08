@@ -7,7 +7,7 @@ import { PaginatedDocs } from "payload";
 import { useEffect, useRef, useState } from "react";
 import { InView } from "react-intersection-observer";
 import { ArticleArchiveItem } from "../../../../../../../components/layouts/Tagged/Item";
-import type { PostOverview } from "@/types/collections/posts";
+import type { PostOverview } from "@types/collections/posts";
 
 const PageClient = (props: { posts: PaginatedDocs<PostOverview> }) => {
   const [posts, setPosts] = useState<PaginatedDocs<PostOverview>>(props.posts);

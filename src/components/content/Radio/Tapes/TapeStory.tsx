@@ -71,13 +71,13 @@ function Block({ block }: { block: StoryBlock }) {
       {hasImage ? (
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16 xl:gap-24">
           <div className={`lg:col-span-6 ${imageOnLeft ? "lg:order-2" : ""}`}>
-            <p className="mb-4 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
+            <p className="mb-4 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
               {block.eyebrow}
             </p>
             <h2 className="mb-6 text-xl font-light tracking-tight xl:text-2xl 2xl:text-3xl">
               {block.heading}
             </h2>
-            <p className="max-w-prose font-mono text-[11px] leading-relaxed text-muted-foreground/70 xl:text-xs">
+            <p className="max-w-prose font-sans text-[11px] leading-relaxed text-muted-foreground/70 xl:text-xs">
               {block.body}
             </p>
           </div>
@@ -97,13 +97,13 @@ function Block({ block }: { block: StoryBlock }) {
         </div>
       ) : (
         <div className="mx-auto max-w-3xl">
-          <p className="mb-4 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
+          <p className="mb-4 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
             {block.eyebrow}
           </p>
           <h2 className="mb-6 text-xl font-light tracking-tight xl:text-2xl 2xl:text-3xl">
             {block.heading}
           </h2>
-          <p className="font-mono text-[12px] leading-relaxed text-muted-foreground/70 xl:text-[13px]">
+          <p className="font-sans text-[12px] leading-relaxed text-muted-foreground/70 xl:text-[13px]">
             {block.body}
           </p>
         </div>

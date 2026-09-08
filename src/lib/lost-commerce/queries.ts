@@ -14,7 +14,7 @@ import type { LostCurrency, LostOrderMode } from "./types";
 
 type AnyDoc = Record<string, unknown>;
 
-export type LostProductCard = {
+export type ProductListing = {
   id: string;
   name: string;
   slug: string;
@@ -34,7 +34,7 @@ export type LostProductCard = {
 
 export type { LostDropCard };
 
-export type LostProductVariant = NormalizedLostProductVariant & {
+export type ProductType = NormalizedLostProductVariant & {
   actionableModes: LostOrderMode[];
   stockState: "in_stock" | "out_of_stock" | "on_request" | null;
 };

@@ -17,13 +17,13 @@ export default function PageClient() {
     <div className="py-16">
       <div className="mx-auto max-w-7xl px-6 xl:px-10">
         <header className="mb-16 border-b border-border/30 pb-8">
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Dev / ComingSoon
           </p>
           <h1 className="mt-2 text-3xl font-light tracking-tight xl:text-4xl">
             Coming Soon System
           </h1>
-          <p className="mt-3 max-w-xl font-mono text-[11px] leading-relaxed text-muted-foreground/70">
+          <p className="mt-3 max-w-xl font-sans text-[11px] leading-relaxed text-muted-foreground/70">
             Components in realistic layout contexts.
           </p>
         </header>
@@ -87,7 +87,7 @@ function MockNav() {
   ];
   return (
     <nav className="flex items-center gap-8 border-b border-border/30 px-6 py-4">
-      <span className="font-mono text-xs tracking-widest text-foreground/80 uppercase">
+      <span className="font-sans text-xs tracking-widest text-foreground/80 uppercase">
         The Hideaway
       </span>
       <div className="ml-auto flex items-center gap-6">
@@ -95,7 +95,7 @@ function MockNav() {
           <a
             key={item.label}
             href={item.href}
-            className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
+            className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
           >
             {item.label}
           </a>
@@ -103,7 +103,7 @@ function MockNav() {
         <button
           type="button"
           onClick={() => nudge("unavailable")}
-          className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
+          className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
         >
           Compilations
         </button>
@@ -118,7 +118,7 @@ function MockPageHeader() {
     <div>
       <header className="flex items-end justify-between border-b border-border/30 px-6 py-5">
         <div>
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
             Discover
           </p>
           <h1 className="mt-1 text-2xl font-light tracking-tight">Read</h1>
@@ -128,12 +128,12 @@ function MockPageHeader() {
             <a
               key={item}
               href="#"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
+              className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground"
             >
               {item}
             </a>
           ))}
-          <span className="flex items-center gap-1.5 font-mono text-[11px] tracking-widest text-muted-foreground/40 uppercase">
+          <span className="flex items-center gap-1.5 font-sans text-[11px] tracking-widest text-muted-foreground/40 uppercase">
             Series
             <ComingSoonTag preset="soon" tooltip="inProgress" tone="firm" />
           </span>
@@ -141,12 +141,12 @@ function MockPageHeader() {
       </header>
       <div className="px-6 pt-8">
         <div className="flex items-center gap-3">
-          <p className="font-mono text-[11px] tracking-[0.15em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-[11px] tracking-[0.15em] text-muted-foreground/60 uppercase">
             Long reads
           </p>
           <ComingSoonTag preset="draft" tooltip="draft" tone="soft" />
         </div>
-        <p className="mt-1 font-mono text-sm text-muted-foreground/40">
+        <p className="mt-1 font-sans text-sm text-muted-foreground/40">
           This section is not available yet.
         </p>
       </div>
@@ -159,19 +159,19 @@ function MockCreateToolbar() {
   return (
     <div className="px-6 py-8">
       <div className="mb-6 flex items-center gap-3 border-b border-border/20 pb-6">
-        <p className="mr-auto font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+        <p className="mr-auto font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
           Vault / Content
         </p>
         <button
           type="button"
-          className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+          className="border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
         >
           New Essay
         </button>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-muted-foreground/40 uppercase transition-colors hover:border-border/60 hover:text-foreground/60"
+          className="flex items-center gap-2 border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-muted-foreground/40 uppercase transition-colors hover:border-border/60 hover:text-foreground/60"
         >
           New Series
           <ComingSoonTag preset="soon" tone="firm" tooltip={false} />
@@ -222,10 +222,10 @@ function MockEssayRows() {
             {row.title}
           </p>
           <div className="flex items-center gap-6">
-            <span className="font-mono text-[10px] text-muted-foreground/50">
+            <span className="font-sans text-[10px] text-muted-foreground/50">
               {row.date}
             </span>
-            <span className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase">
+            <span className="font-sans text-[10px] tracking-widest text-muted-foreground/50 uppercase">
               {row.status}
             </span>
           </div>
@@ -257,7 +257,7 @@ function MockPostCard({ title, cat }: { title: string; cat: string }) {
   return (
     <div className="group flex flex-col overflow-hidden rounded-sm border border-border/20 bg-card/40 transition-colors hover:border-border/40">
       <div className="flex aspect-[3/4] items-center justify-center bg-muted/20">
-        <span className="font-mono text-[10px] tracking-widest text-muted-foreground/20 uppercase">
+        <span className="font-sans text-[10px] tracking-widest text-muted-foreground/20 uppercase">
           {cat}
         </span>
       </div>
@@ -324,11 +324,11 @@ function Scene({
       <div className="mx-auto max-w-7xl px-6 xl:px-10">
         <div className="mb-3 flex items-center justify-between border-b border-border/20 pb-3">
           <div className="flex items-baseline gap-3">
-            <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
               {label}
             </p>
             {hint && (
-              <span className="font-mono text-[10px] text-muted-foreground/40 italic">
+              <span className="font-sans text-[10px] text-muted-foreground/40 italic">
                 {hint}
               </span>
             )}
@@ -336,7 +336,7 @@ function Scene({
           <button
             type="button"
             onClick={() => setDark((d) => !d)}
-            className="font-mono text-[9px] tracking-widest text-muted-foreground/40 uppercase transition-colors hover:text-muted-foreground/80"
+            className="font-sans text-[9px] tracking-widest text-muted-foreground/40 uppercase transition-colors hover:text-muted-foreground/80"
           >
             {dark ? "light ↕" : "dark ↕"}
           </button>

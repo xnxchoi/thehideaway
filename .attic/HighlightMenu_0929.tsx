@@ -19,7 +19,7 @@ import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { cn } from "@/lib/utils";
 import type { Bookmark, User } from "@/payload-types";
 import { FeaturedCard } from "@/payload/blocks/heros/ArtHero/FeatureHero";
-import type { AuthorOverview, SingleArticle } from "@/types/collections/posts";
+import type { AuthorOverview, SingleArticle } from "@types/collections/posts";
 import RichText from "@/payload/fields/RichText";
 import { useNavEvents } from "@/providers/Navigation/_client-nav-events";
 import { useCursor } from "@/providers/RP_Pro";

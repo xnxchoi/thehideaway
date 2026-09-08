@@ -30,7 +30,7 @@ export function ClaimGate({ ticketId }: { ticketId: string }) {
         </p>
         <Link
           href="/day-n-night/my"
-          className="mt-7 inline-flex border border-off-white/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white"
+          className="mt-7 inline-flex border border-off-white/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white"
         >
           {t("success.cta")}
         </Link>
@@ -77,7 +77,7 @@ export function ClaimGate({ ticketId }: { ticketId: string }) {
         <p
           role="alert"
           aria-live="polite"
-          className="mt-4 font-mono text-[11px] tracking-widest text-off-white/80 uppercase"
+          className="mt-4 font-sans text-[11px] tracking-widest text-off-white/80 uppercase"
         >
           {errorMessage}
         </p>
@@ -86,7 +86,7 @@ export function ClaimGate({ ticketId }: { ticketId: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-7 border border-off-white/40 px-5 py-2.5 font-mono text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-7 border border-off-white/40 px-5 py-2.5 font-sans text-[11px] tracking-widest text-off-white/85 uppercase transition-colors hover:border-off-white hover:text-off-white disabled:cursor-not-allowed disabled:opacity-40"
       >
         {pending ? t("submitting") : t("submit")}
       </button>

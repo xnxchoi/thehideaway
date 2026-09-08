@@ -37,7 +37,7 @@ export default function InvoicePreviewPage() {
     <RPage type="pages" slug={["invoice"]}>
       <div className="mx-auto w-full max-w-512 px-6 py-16 xl:px-10 xl:py-24">
         <div className="mb-16">
-          <p className="font-mono text-small tracking-[0.3em] text-muted-foreground/60 uppercase">
+          <p className="font-sans text-small tracking-[0.3em] text-muted-foreground/60 uppercase">
             Details
           </p>
           <h1 className="mt-2 text-3xl font-light tracking-tight xl:text-4xl">

@@ -204,8 +204,8 @@ Rule of thumb: settings/vault = mostly sans, lightly seasoned with mono. Marketi
 // Page section heading      text-3xl xl:text-4xl 2xl:text-5xl font-light tracking-tight
 // Sub-section / detail       text-2xl xl:text-3xl 2xl:text-4xl font-light tracking-tight
 // Nav label (sans, active)   text-sm font-medium tracking-tight
-// Metadata label (mono)      font-mono text-[10px] uppercase tracking-[0.2em] xl:text-xs
-// Tabular metadata (mono)    font-mono text-[10px] tabular-nums xl:text-[11px]
+// Metadata label (mono)      font-sans text-[10px] uppercase tracking-[0.2em] xl:text-xs
+// Tabular metadata (mono)    font-sans text-[10px] tabular-nums xl:text-[11px]
 // Card title                 text-base font-medium leading-snug tracking-tight xl:text-lg
 // Prose body                 text-base font-normal leading-relaxed
 ```
@@ -236,8 +236,11 @@ Informative tiers target ≥ 4.5:1 (WCAG AA). Tempted by `/40`–`/30` for reada
 - **Cards:** `rounded-lg`, `border-border/20` (→ `/50` on hover). Image `aspect-*` locked + `overflow-hidden`, gradient overlay `to-background/60`, hover `scale(1.04)` `transition-transform duration-500`. Body `p-3.5 xl:p-4`. Optional footer for count / badge / menu.
 - **Sticky header:** `sticky top-0 z-20 border-b border-border/30 bg-background/90 backdrop-blur-md`; inner
   `mx-auto px-6 py-5 xl:px-10`, flex `items-end justify-between` (label + h1 left, mono nav links right).
-- **Hero (full-bleed):** `relative h-[55vh] w-full overflow-hidden`; cover image or gradient fallback; overlay `from-black/30 via-black/40 to-background`; content bottom-left in `max-w-7xl`. Initial-letter fallback `text-[20vw] font-mono font-light text-foreground/[0.04]`.
-- **Empty state:** centered `py-24`; symbol `font-mono text-5xl opacity-10` (`◫` saved · `⊞` lists · `○` profiles); headline `text-base font-light text-foreground/70`; mono sub; bordered mono-caps CTA.
+- **Hero (full-bleed):** `relative h-[55vh] w-full overflow-hidden`; cover image or gradient fallback; overlay
+  `from-black/30 via-black/40 to-background`; content bottom-left in `max-w-7xl`. Initial-letter fallback
+  `text-[20vw] font-sans font-light text-foreground/[0.04]`.
+- **Empty state:** centered `py-24`; symbol `font-sans text-5xl opacity-10` (`◫` saved · `⊞` lists · `○` profiles);
+  headline `text-base font-light text-foreground/70`; mono sub; bordered mono-caps CTA.
 - **Forms:** borderless, bottom-border-only inputs (`border-b border-border/30 bg-transparent … focus:border-foreground/40`). Submit = bordered mono-caps button, no fill. Action communicated via weight/underline/border visibility, not fill color.
 
 ### Animation

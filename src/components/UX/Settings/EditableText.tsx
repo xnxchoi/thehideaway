@@ -156,7 +156,7 @@ export const EditableText = (props: EditableTextProps) => {
           <span
             aria-live="polite"
             className={cn(
-              "font-mono text-[10px] tracking-widest tabular-nums",
+              "font-sans text-[10px] tracking-widest tabular-nums",
               // Floor-compliant: ≥ /60 light, /55 dark for informative.
               remaining < 0
                 ? "text-rouge-500"

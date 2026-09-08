@@ -97,18 +97,18 @@ export function SelectModeOverlay() {
           >
             <span
               aria-hidden
-              className="font-mono text-[9px] tracking-[0.24em] text-muted-foreground/50 uppercase"
+              className="font-sans text-[9px] tracking-[0.24em] text-muted-foreground/50 uppercase"
             >
               Ambient
             </span>
-            <span className="font-mono text-[10px] tracking-widest text-foreground/85 uppercase">
+            <span className="font-sans text-[10px] tracking-widest text-foreground/85 uppercase">
               {label}
             </span>
             <Button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={exitSelectMode}
-              className="border border-border/30 px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
+              className="border border-border/30 px-1.5 py-0.5 font-sans text-[9px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border hover:text-foreground"
             >
               Esc
             </Button>

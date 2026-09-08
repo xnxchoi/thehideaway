@@ -44,7 +44,9 @@ export function BackupCodesDialog({
         className={classNames?.dialog?.content}
       >
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
+          <DialogTitle
+            className={cn("text-base md:text-xl", classNames?.title)}
+          >
             {localization.BACKUP_CODES}
           </DialogTitle>
 
@@ -59,7 +61,7 @@ export function BackupCodesDialog({
           {backupCodes.map((code, index) => (
             <div
               key={index}
-              className="rounded-md bg-muted p-2 text-center font-mono text-sm"
+              className="rounded-md bg-muted p-2 text-center font-sans text-sm"
             >
               {code}
             </div>

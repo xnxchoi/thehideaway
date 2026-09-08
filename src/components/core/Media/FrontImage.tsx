@@ -10,8 +10,8 @@ import {
   ImageCollectionSlug,
   RalueWithRelation,
   RenderImageFields
-} from "@/types/collections/image-collections";
-import { imageSelect } from "@/types/payload-api-selects";
+} from "@types/collections/image-collections";
+import { imageSelect } from "@types/payload-api-selects";
 
 import { getFallbackImage } from "@/utilities/getFallbackImage";
 import { getClientSideURL } from "@/utilities/getURL";

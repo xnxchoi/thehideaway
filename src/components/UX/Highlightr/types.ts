@@ -1,5 +1,5 @@
 import {Citation} from "@/payload-types";
-import {AuthorOverview} from "@/types/collections/users";
+import { AuthorOverview } from "@types/collections/users";
 import type {Operation} from "payload";
 import type * as rangey from "rangy";
 

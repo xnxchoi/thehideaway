@@ -297,7 +297,7 @@ export function FriendsTorrent({
       {(title || caption) && (
         <div className="absolute right-6 bottom-[calc(132px+env(safe-area-inset-bottom))] left-6 z-10 grid max-w-[min(30rem,calc(100vw-3rem))] gap-3 text-[oklch(96%_0.005_80)] md:right-auto md:left-10 lg:left-14">
           {title ? (
-            <p className="m-0 font-mono text-[10px] leading-[1.4] tracking-[0.32em] text-white/62 uppercase md:text-[11px]">
+            <p className="m-0 font-sans text-[10px] leading-[1.4] tracking-[0.32em] text-white/62 uppercase md:text-[11px]">
               {title}
             </p>
           ) : null}

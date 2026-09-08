@@ -1,4 +1,4 @@
-import {UserOverview} from "@/types/collections/users";
+import { UserOverview } from "@types/collections/users";
 
 export type MentionItem = Pick<UserOverview, "id" | "name" | "slug" | "image">;
 export type MentionFields = {

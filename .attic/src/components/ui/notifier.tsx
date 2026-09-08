@@ -2,7 +2,7 @@
 
 import { ReferencedLink } from "@/components/core/Link/ReferencedLink";
 import { useTheme } from "@/providers/Theme";
-import { AuthorOverview } from "@/types/collections/users";
+import { AuthorOverview } from "@types/collections/users";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
 import type { CollectionSlug } from "payload";

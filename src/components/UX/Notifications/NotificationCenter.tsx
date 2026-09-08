@@ -215,13 +215,13 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
           <div className="flex items-center gap-3">
             <Bell className="size-5 text-foreground/70" />
             <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+              <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                 Inbox
               </p>
               <h1 className="text-3xl font-light tracking-tight xl:text-4xl">
                 Notifications
               </h1>
-              <p className="mt-1 font-mono text-[11px] text-muted-foreground/65 tabular-nums xl:text-xs">
+              <p className="mt-1 font-sans text-[11px] text-muted-foreground/65 tabular-nums xl:text-xs">
                 {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
               </p>
             </div>
@@ -583,12 +583,12 @@ const EmptyState = ({
     >
       <span
         aria-hidden
-        className="mb-4 font-mono text-5xl text-foreground/[0.10]"
+        className="mb-4 font-sans text-5xl text-foreground/[0.10]"
       >
         ○
       </span>
       <p className="text-base font-light text-foreground/70">{headline}</p>
-      <p className="mt-1.5 max-w-xs font-mono text-[11px] tracking-wide text-muted-foreground/55">
+      <p className="mt-1.5 max-w-xs font-sans text-[11px] tracking-wide text-muted-foreground/55">
         {sub}
       </p>
     </motion.div>

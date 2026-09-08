@@ -284,10 +284,10 @@ export const Justification = (props: {
                     transition={{ ease: [0.44, 0, 0.56, 1], type: "tween" }}
                     style={{ flex: "0 0 auto" }}
                   >
-                    <m.div className="relative h-auto w-full flex-none shrink-0 justify-start break-words whitespace-pre-wrap opacity-70 outline-none">
+                    <m.div className="relative h-auto w-full flex-none shrink-0 justify-start wrap-break-word whitespace-pre-wrap opacity-70 outline-none">
                       <m.p>Don&#39;t Trust Us-</m.p>
                     </m.div>
-                    <m.div className="relative h-auto w-full flex-none shrink-0 justify-start break-words whitespace-pre-wrap outline-none">
+                    <m.div className="relative h-auto w-full flex-none shrink-0 justify-start wrap-break-word whitespace-pre-wrap outline-none">
                       <m.p>Trust The Process.</m.p>
                     </m.div>
                   </m.div>

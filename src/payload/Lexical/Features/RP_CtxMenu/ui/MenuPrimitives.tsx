@@ -103,7 +103,7 @@ export function MenuItem({
             {children}
           </span>
           {hint ? (
-            <span className="font-mono text-[10px] tracking-widest text-muted-foreground/50">
+            <span className="font-sans text-[10px] tracking-widest text-muted-foreground/50">
               {hint}
             </span>
           ) : null}
@@ -148,7 +148,7 @@ export function SubmenuTriggerItem({
           <span className="flex-1 truncate font-light tracking-tight">
             {children}
           </span>
-          <span className="font-mono text-[10px] tracking-widest text-muted-foreground/50">
+          <span className="font-sans text-[10px] tracking-widest text-muted-foreground/50">
             {hint ?? "›"}
           </span>
         </div>
@@ -170,7 +170,7 @@ export function MenuSeparator() {
 export function MenuGroupLabel({ children }: { children: ReactNode }) {
   return (
     <div
-      className="px-3.5 py-1.5 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase select-none"
+      className="px-3.5 py-1.5 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase select-none"
       data-rp-ctxmenu="group-label"
     >
       {children}

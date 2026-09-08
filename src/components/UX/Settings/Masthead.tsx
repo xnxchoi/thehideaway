@@ -95,7 +95,7 @@ export function Masthead({
         </h1>
         <div className="flex flex-col items-end gap-0.5 text-sm text-foreground/65 dark:text-foreground/60">
           {handle ? <span>@{handle}</span> : null}
-          <span className="font-mono text-xs tracking-tight text-foreground/55 tabular-nums dark:text-foreground/50">
+          <span className="font-sans text-xs tracking-tight text-foreground/55 tabular-nums dark:text-foreground/50">
             {email}
           </span>
         </div>

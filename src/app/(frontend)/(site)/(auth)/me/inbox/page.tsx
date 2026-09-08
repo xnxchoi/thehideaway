@@ -22,7 +22,7 @@ async function InboxBody() {
           <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
             <div className="flex items-end justify-between">
               <div>
-                <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+                <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                   Your Account
                 </p>
                 <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">

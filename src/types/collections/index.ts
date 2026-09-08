@@ -1,17 +1,20 @@
 import {postOverviewSelect} from "@/payload/collections/Posts/api/queryBase";
 import {surfOverviewSelect} from "@/payload/collections/Surf/api/querySurfOverview";
 import type {FrontEndCollections} from "@/stores/Routing/RP_Voyageur";
-import {ImageCollectionSlug, ProcessedImageDoc} from "@/types/collections/image-collections";
 import {
-	CategoryOverview,
-	categoryOverviewSelect,
-	TagOverview,
-	tagOverviewSelect
-} from "@/types/collections/meta-collections";
-import {PostOverview} from "@/types/collections/posts";
-import {SurfOverview} from "@/types/collections/surf";
-import {UserOverview, userOverviewSelect} from "@/types/collections/users";
-import {imageSelect} from "@/types/payload-api-selects";
+  ImageCollectionSlug,
+  ProcessedImageDoc
+} from "@types/collections/image-collections";
+import {
+  CategoryOverview,
+  categoryOverviewSelect,
+  TagOverview,
+  tagOverviewSelect
+} from "@types/collections/meta-collections";
+import { PostOverview } from "@types/collections/posts";
+import { SurfOverview } from "@types/collections/surf";
+import { UserOverview, userOverviewSelect } from "@types/collections/users";
+import { imageSelect } from "@types/payload-api-selects";
 import {PagesSelect} from "@payload-types";
 import type {SelectFromCollectionSlug} from "node_modules/payload/dist/collections/config/types";
 import {CollectionSlug} from "payload";

@@ -117,7 +117,7 @@ export const SeekKnob = ({ size = 56, className }: SeekKnobProps) => {
       onMouseEnter={onMouseEnter}
     >
       {/* Position label */}
-      <span className="text-faded-fg font-mono text-[0.6rem] tracking-tight tabular-nums">
+      <span className="text-faded-fg font-sans text-[0.6rem] tracking-tight tabular-nums">
         {formatTime(e)}
       </span>
 

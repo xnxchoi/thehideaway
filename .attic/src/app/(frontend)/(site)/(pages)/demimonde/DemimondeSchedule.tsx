@@ -9,7 +9,7 @@ export function DemimondeSchedule() {
     >
       <div className="mx-auto max-w-[1200px]">
         <header className="mb-14 flex flex-col gap-2 border-b border-[var(--rule)] pb-7 max-sm:mb-9">
-          <span className="font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+          <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
             {SCHEDULE.eyebrow}
           </span>
           <h2
@@ -34,13 +34,13 @@ export function DemimondeSchedule() {
               } ${isFirst ? "pt-0" : ""}`}
             >
               <div className="self-start md:sticky md:top-8">
-                <div className="mb-2 font-mono text-[11px] tracking-[0.3em] text-[var(--tomato)] uppercase">
+                <div className="mb-2 font-sans text-[11px] tracking-[0.3em] text-[var(--tomato)] uppercase">
                   {day.label}
                 </div>
                 <h3 className="mb-3 font-serif text-4xl leading-[0.96] font-normal text-[var(--ink)] italic max-sm:text-3xl">
                   {day.title}
                 </h3>
-                <div className="font-mono text-[11px] tracking-[0.18em] text-[var(--ink-muted)]">
+                <div className="font-sans text-[11px] tracking-[0.18em] text-[var(--ink-muted)]">
                   {day.date}
                 </div>
               </div>
@@ -55,7 +55,7 @@ export function DemimondeSchedule() {
                         : "border-t border-dashed border-[var(--rule)]"
                     }`}
                   >
-                    <div className="pt-[3px] font-mono text-[12px] font-medium tracking-[0.1em] text-[var(--ink)]">
+                    <div className="pt-[3px] font-sans text-[12px] font-medium tracking-[0.1em] text-[var(--ink)]">
                       {block.time}
                     </div>
                     <div>
@@ -63,7 +63,7 @@ export function DemimondeSchedule() {
                         {block.head}
                         {"star" in block && block.star ? (
                           <span
-                            className="ml-2 inline-block font-mono text-[var(--citrus)]"
+                            className="ml-2 inline-block font-sans text-[var(--citrus)]"
                             aria-label="featured"
                           >
                             ★

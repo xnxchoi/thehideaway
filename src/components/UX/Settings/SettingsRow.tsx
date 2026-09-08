@@ -30,7 +30,7 @@ export const SettingsGroup = ({
   const head = (
     <div className="flex items-start justify-between gap-6">
       <div className="flex flex-col gap-2">
-        <h2 className="font-mono text-[10px] tracking-[0.22em] text-foreground/65 uppercase">
+        <h2 className="font-sans text-[10px] tracking-[0.22em] text-foreground/65 uppercase">
           {title}
         </h2>
         {description ? (
@@ -40,7 +40,7 @@ export const SettingsGroup = ({
         ) : null}
       </div>
       {meta ? (
-        <div className="shrink-0 font-mono text-[10px] tracking-widest text-foreground/60 tabular-nums dark:text-foreground/55">
+        <div className="shrink-0 font-sans text-[10px] tracking-widest text-foreground/60 tabular-nums dark:text-foreground/55">
           {meta}
         </div>
       ) : null}
@@ -107,7 +107,7 @@ export const SettingsRow = ({
       )}
     >
       <div className="flex flex-col gap-1">
-        <span className="font-mono text-[10px] tracking-[0.18em] text-foreground/70 uppercase">
+        <span className="font-sans text-[10px] tracking-[0.18em] text-foreground/70 uppercase">
           {label}
         </span>
         {description ? (
@@ -120,7 +120,7 @@ export const SettingsRow = ({
         {children}
       </div>
       {meta ? (
-        <div className="font-mono text-[10px] tracking-widest text-foreground/60 tabular-nums md:text-right dark:text-foreground/55">
+        <div className="font-sans text-[10px] tracking-widest text-foreground/60 tabular-nums md:text-right dark:text-foreground/55">
           {meta}
         </div>
       ) : null}

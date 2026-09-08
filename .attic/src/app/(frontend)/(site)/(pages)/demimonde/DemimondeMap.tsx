@@ -15,7 +15,7 @@ export function DemimondeMap() {
     >
       <div className="mx-auto max-w-[1200px]">
         <header className="mb-14 flex flex-col gap-2 border-b border-[var(--rule)] pb-7 max-sm:mb-9">
-          <span className="font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+          <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
             {MAP.eyebrow}
           </span>
           <h2
@@ -64,7 +64,7 @@ export function DemimondeMap() {
                 x="500"
                 y="490"
                 fontStyle="italic"
-                className="fill-[var(--ink-muted)] font-mono text-[10px] tracking-[0.28em] uppercase"
+                className="fill-[var(--ink-muted)] font-sans text-[10px] tracking-[0.28em] uppercase"
               >
                 river
               </text>
@@ -78,7 +78,7 @@ export function DemimondeMap() {
               <text
                 x="105"
                 y="360"
-                className="fill-[var(--ink-muted)] font-mono text-[10px] tracking-[0.28em] uppercase"
+                className="fill-[var(--ink-muted)] font-sans text-[10px] tracking-[0.28em] uppercase"
               >
                 PARK
               </text>
@@ -100,21 +100,21 @@ export function DemimondeMap() {
               <text
                 x="60"
                 y="155"
-                className="fill-[var(--ink-muted)] font-mono text-[10px] tracking-[0.28em] uppercase"
+                className="fill-[var(--ink-muted)] font-sans text-[10px] tracking-[0.28em] uppercase"
               >
                 STATION
               </text>
               <text
                 x="450"
                 y="200"
-                className="fill-[var(--ink-muted)] font-mono text-[10px] tracking-[0.28em] uppercase"
+                className="fill-[var(--ink-muted)] font-sans text-[10px] tracking-[0.28em] uppercase"
               >
                 BAKERY
               </text>
               <text
                 x="120"
                 y="540"
-                className="fill-[var(--ink-muted)] font-mono text-[10px] tracking-[0.28em] uppercase"
+                className="fill-[var(--ink-muted)] font-sans text-[10px] tracking-[0.28em] uppercase"
               >
                 CORNER STORE
               </text>
@@ -148,7 +148,7 @@ export function DemimondeMap() {
                 <text
                   x="115"
                   y="-22"
-                  className="fill-[var(--tomato)] font-mono text-[10px] tracking-[0.18em] uppercase"
+                  className="fill-[var(--tomato)] font-sans text-[10px] tracking-[0.18em] uppercase"
                 >
                   est. 14:00
                 </text>
@@ -178,7 +178,7 @@ export function DemimondeMap() {
                 <text
                   y="-32"
                   textAnchor="middle"
-                  className="fill-[var(--ink-muted)] font-mono text-[10px] tracking-[0.28em] uppercase"
+                  className="fill-[var(--ink-muted)] font-sans text-[10px] tracking-[0.28em] uppercase"
                 >
                   N
                 </text>
@@ -198,19 +198,19 @@ export function DemimondeMap() {
                 <text
                   x="0"
                   y="18"
-                  className="fill-[var(--ink-muted)] font-mono text-[10px] tracking-[0.28em] uppercase"
+                  className="fill-[var(--ink-muted)] font-sans text-[10px] tracking-[0.28em] uppercase"
                 >
                   100m
                 </text>
               </g>
             </svg>
-            <figcaption className="text-center font-mono text-[10px] tracking-[0.22em] text-[var(--ink-muted)] uppercase">
+            <figcaption className="text-center font-sans text-[10px] tracking-[0.22em] text-[var(--ink-muted)] uppercase">
               {MAP.caption}
             </figcaption>
           </figure>
 
           <aside className="min-w-0">
-            <p className="m-0 mb-3 font-mono text-[10px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+            <p className="m-0 mb-3 font-sans text-[10px] tracking-[0.32em] text-[var(--tomato)] uppercase">
               The address
             </p>
             <p className="m-0 mb-8 font-serif text-[clamp(22px,2.4vw,30px)] leading-[1.25] font-normal tracking-[-0.015em] text-[var(--ink)] italic">
@@ -225,7 +225,7 @@ export function DemimondeMap() {
                   key={item.label}
                   className="grid grid-cols-1 gap-1 border-b border-dashed border-[var(--rule)] py-4 sm:grid-cols-[140px_1fr] sm:gap-[18px]"
                 >
-                  <span className="pt-[3px] font-mono text-[10px] tracking-[0.28em] text-[var(--ink-muted)] uppercase">
+                  <span className="pt-[3px] font-sans text-[10px] tracking-[0.28em] text-[var(--ink-muted)] uppercase">
                     {item.label}
                   </span>
                   <span className="text-[14.5px] leading-[1.5] text-[var(--ink)]">
@@ -240,7 +240,7 @@ export function DemimondeMap() {
                 <Link
                   key={cta.text}
                   href={cta.href}
-                  className="group inline-flex w-fit items-baseline justify-between gap-3 border-b border-[var(--ink)] py-3.5 pr-6 font-mono text-[11px] tracking-[0.22em] text-[var(--ink)] uppercase no-underline transition-[color,border-color,padding] duration-200 hover:border-[var(--tomato)] hover:pr-8 hover:text-[var(--tomato)]"
+                  className="group inline-flex w-fit items-baseline justify-between gap-3 border-b border-[var(--ink)] py-3.5 pr-6 font-sans text-[11px] tracking-[0.22em] text-[var(--ink)] uppercase no-underline transition-[color,border-color,padding] duration-200 hover:border-[var(--tomato)] hover:pr-8 hover:text-[var(--tomato)]"
                 >
                   {cta.text}
                   <span aria-hidden> ↗</span>

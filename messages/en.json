@@ -130,7 +130,8 @@
         "phoneLabel": "Phone",
         "emailLabel": "Email",
         "domainLabel": "Service URL",
-        "privacyOfficerLabel": "Privacy officer"
+        "privacyOfficerLabel": "Privacy officer",
+        "privacyOfficerName": "Privacy desk"
       },
       "copyright": "LOSTINSEOUL 2026"
     },

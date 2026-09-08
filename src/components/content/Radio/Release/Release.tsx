@@ -61,7 +61,7 @@ export function Release({ release }: ReleaseProps) {
       <header className="border-b border-border/20 pt-24 pb-16 xl:pt-32 xl:pb-20">
         <div className="mx-auto max-w-7xl px-6 xl:px-10">
           {/* Eyebrow */}
-          <p className="mb-10 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+          <p className="mb-10 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
             <span aria-hidden="true">· </span>
             Hideaway FM
             <span className="mx-2 text-muted-foreground/30">/</span>
@@ -84,7 +84,7 @@ export function Release({ release }: ReleaseProps) {
                     priority
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center font-mono text-[20vw] leading-none text-foreground/[0.04] uppercase lg:text-[10vw]">
+                  <div className="flex h-full items-center justify-center font-sans text-[20vw] leading-none text-foreground/[0.04] uppercase lg:text-[10vw]">
                     {(release.data.title ?? "—").slice(0, 1)}
                   </div>
                 )}
@@ -107,7 +107,7 @@ export function Release({ release }: ReleaseProps) {
               )}
 
               {/* Factual line — date · runtime · count */}
-              <p className="mt-4 font-mono text-[11px] text-muted-foreground/60 xl:text-xs">
+              <p className="mt-4 font-sans text-[11px] text-muted-foreground/60 xl:text-xs">
                 <ReleaseDate date={releaseDate} />
                 <Sep />
                 <Runtime seconds={totalRuntimeSec} />
@@ -126,7 +126,7 @@ export function Release({ release }: ReleaseProps) {
 
               {/* Description */}
               {release.data.description && (
-                <p className="mt-12 max-w-prose font-mono text-[12px] leading-relaxed text-foreground/80 xl:text-[13px]">
+                <p className="mt-12 max-w-prose font-sans text-[12px] leading-relaxed text-foreground/80 xl:text-[13px]">
                   {release.data.description}
                 </p>
               )}
@@ -142,7 +142,7 @@ export function Release({ release }: ReleaseProps) {
                       return (
                         <span
                           key={tag.id}
-                          className="font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase xl:text-[11px]"
+                          className="font-sans text-[10px] tracking-widest text-muted-foreground/50 uppercase xl:text-[11px]"
                         >
                           · {tag.title ?? tag.id}
                         </span>
@@ -158,7 +158,7 @@ export function Release({ release }: ReleaseProps) {
       {/* ── Tracklist ─────────────────────────────────────────────────────── */}
       <section className="border-b border-border/20 py-20 xl:py-24">
         <div className="mx-auto max-w-7xl px-6 xl:px-10">
-          <p className="mb-10 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
+          <p className="mb-10 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
             · Tracklist
           </p>
           {/* TODO(side-A-B): once Albums carry a sideA/sideB grouping,
@@ -175,7 +175,7 @@ export function Release({ release }: ReleaseProps) {
       {/* ── Colophon ──────────────────────────────────────────────────────── */}
       <footer className="py-16 xl:py-20">
         <div className="mx-auto max-w-7xl px-6 xl:px-10">
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase xl:text-[11px]">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase xl:text-[11px]">
             {/* TODO(colophon): wire to colophon.{recordedAt, mixedBy,
                 masteredBy, masteredAt, edition} once those fields land
                 on Albums/Playlists. */}
@@ -228,7 +228,7 @@ function ActionPill({ children, primary, onClick }: ActionPillProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        "border px-5 py-2.5 font-mono text-[11px] tracking-widest uppercase transition-colors",
+        "border px-5 py-2.5 font-sans text-[11px] tracking-widest uppercase transition-colors",
         primary
           ? "border-foreground/60 text-foreground hover:bg-foreground hover:text-background"
           : "border-border/40 text-foreground/60 hover:border-border hover:text-foreground"
@@ -246,7 +246,7 @@ interface TracklistProps {
 function Tracklist({ tracks }: TracklistProps) {
   if (tracks.length === 0) {
     return (
-      <p className="font-mono text-[11px] text-muted-foreground/40 xl:text-xs">
+      <p className="font-sans text-[11px] text-muted-foreground/40 xl:text-xs">
         No tracks yet.
       </p>
     );
@@ -269,16 +269,16 @@ function TrackRow({ track, index }: TrackRowProps) {
   const number = track.track_number ?? index + 1;
   return (
     <li className="group flex items-baseline gap-4 py-4 transition-colors hover:bg-muted/5 xl:gap-6">
-      <span className="w-8 shrink-0 font-mono text-[10px] text-muted-foreground/40 xl:text-[11px]">
+      <span className="w-8 shrink-0 font-sans text-[10px] text-muted-foreground/40 xl:text-[11px]">
         {String(number).padStart(2, "0")}
       </span>
       <span className="flex-1 truncate text-sm font-medium tracking-tight text-foreground/90 xl:text-base">
         {track.title}
       </span>
-      <span className="hidden flex-1 truncate font-mono text-[11px] text-muted-foreground/50 sm:block xl:text-xs">
+      <span className="hidden flex-1 truncate font-sans text-[11px] text-muted-foreground/50 sm:block xl:text-xs">
         {track.artist}
       </span>
-      <span className="shrink-0 font-mono text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
+      <span className="shrink-0 font-sans text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
         <Runtime seconds={track.duration ?? 0} />
       </span>
     </li>

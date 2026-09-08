@@ -109,7 +109,7 @@ export function DayNNightFollowupSections({
       <SectionFrame id="music" eyebrow={t("music.eyebrow")}>
         <div className="grid min-h-[72svh] gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div className="grid gap-7">
-            <p className="font-mono text-[10px] tracking-[0.32em] text-white/55 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.32em] text-white/55 uppercase">
               {t("music.kicker")}
             </p>
             <h2 className="font-serif text-[clamp(4rem,10vw,10rem)] leading-[0.8] font-bold tracking-[-0.055em] text-white">
@@ -120,7 +120,7 @@ export function DayNNightFollowupSections({
             </p>
           </div>
           <div className="grid aspect-[4/5] content-end overflow-hidden border border-white/18 bg-white/[0.045] p-5 shadow-[0_30px_120px_rgba(0,0,0,0.4)]">
-            <p className="font-mono text-[10px] tracking-[0.26em] text-white/45 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.26em] text-white/45 uppercase">
               {t("music.assetNote")}
             </p>
           </div>
@@ -173,12 +173,12 @@ export function DayNNightMainPage({
         className="relative z-10 min-h-svh px-6 py-24 xl:px-10"
       >
         <div className="mx-auto grid min-h-[calc(100svh-12rem)] max-w-7xl grid-rows-[auto_1fr_auto]">
-          <div className="flex items-start justify-between gap-4 font-mono text-[10px] tracking-[0.24em] text-white/55 uppercase">
+          <div className="flex items-start justify-between gap-4 font-sans text-[10px] tracking-[0.24em] text-white/55 uppercase">
             <span>{t("intro.date")}</span>
             <span>{t("intro.place")}</span>
           </div>
           <div className="grid content-center gap-7">
-            <p className="font-mono text-[10px] tracking-[0.32em] text-white/60 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.32em] text-white/60 uppercase">
               {t("intro.eyebrow")}
             </p>
             <h1 className="max-w-[9ch] font-serif text-[clamp(5.2rem,16vw,16rem)] leading-[0.76] font-bold tracking-[-0.055em] text-white">
@@ -189,7 +189,7 @@ export function DayNNightMainPage({
               {t("intro.lede")}
             </p>
           </div>
-          <div className="grid gap-4 border-t border-white/18 pt-5 font-mono text-[10px] tracking-[0.22em] text-white/58 uppercase sm:grid-cols-3">
+          <div className="grid gap-4 border-t border-white/18 pt-5 font-sans text-[10px] tracking-[0.22em] text-white/58 uppercase sm:grid-cols-3">
             <span>{t("intro.theme")}</span>
             <span>{t("intro.price")}</span>
             <span>{t("intro.hosts")}</span>
@@ -249,7 +249,7 @@ export function DayNNightMainPage({
       <SectionFrame id="music" eyebrow={t("music.eyebrow")}>
         <div className="grid min-h-[72svh] gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <div className="grid gap-7">
-            <p className="font-mono text-[10px] tracking-[0.32em] text-white/55 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.32em] text-white/55 uppercase">
               {t("music.kicker")}
             </p>
             <h2 className="font-serif text-[clamp(4rem,10vw,10rem)] leading-[0.8] font-bold tracking-[-0.055em] text-white">
@@ -260,7 +260,7 @@ export function DayNNightMainPage({
             </p>
           </div>
           <div className="grid aspect-[4/5] content-end overflow-hidden border border-white/18 bg-white/[0.045] p-5 shadow-[0_30px_120px_rgba(0,0,0,0.4)]">
-            <p className="font-mono text-[10px] tracking-[0.26em] text-white/45 uppercase">
+            <p className="font-sans text-[10px] tracking-[0.26em] text-white/45 uppercase">
               {t("music.assetNote")}
             </p>
           </div>
@@ -286,7 +286,7 @@ function LandingChrome() {
     <nav className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 px-4 py-4 text-white sm:px-6 xl:px-10">
       <Link
         href="/"
-        className="rounded-full border border-white/15 bg-black/25 px-3.5 py-2 font-mono text-[10px] tracking-[0.22em] text-white/65 uppercase backdrop-blur-xl transition-colors hover:text-white"
+        className="rounded-full border border-white/15 bg-black/25 px-3.5 py-2 font-sans text-[10px] tracking-[0.22em] text-white/65 uppercase backdrop-blur-xl transition-colors hover:text-white"
       >
         ← Hideaway
       </Link>
@@ -296,7 +296,7 @@ function LandingChrome() {
             key={key}
             type="button"
             onClick={() => lenis?.scrollTo(`#${key}`)}
-            className="rounded-full px-3 py-1.5 font-mono text-[9px] tracking-[0.2em] text-white/55 uppercase transition-colors hover:bg-white/10 hover:text-white"
+            className="rounded-full px-3 py-1.5 font-sans text-[9px] tracking-[0.2em] text-white/55 uppercase transition-colors hover:bg-white/10 hover:text-white"
           >
             {t(`nav.${key}`)}
           </button>
@@ -304,7 +304,7 @@ function LandingChrome() {
       </div>
       <Link
         href="/tickets/day-n-night"
-        className="rounded-full border border-white/35 bg-white px-4 py-2 font-mono text-[10px] tracking-[0.22em] text-black uppercase transition-transform hover:-translate-y-px"
+        className="rounded-full border border-white/35 bg-white px-4 py-2 font-sans text-[10px] tracking-[0.22em] text-black uppercase transition-transform hover:-translate-y-px"
       >
         {t("nav.rsvp")}
       </Link>
@@ -331,7 +331,7 @@ function SectionFrame({
       <div
         className={cn(fullBleed ? "mx-auto max-w-none" : "mx-auto max-w-7xl")}
       >
-        <p className="mb-10 font-mono text-[10px] tracking-[0.28em] text-white/48 uppercase">
+        <p className="mb-10 font-sans text-[10px] tracking-[0.28em] text-white/48 uppercase">
           {eyebrow}
         </p>
         {children}
@@ -343,7 +343,7 @@ function SectionFrame({
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[7rem_1fr] gap-4 border-b border-white/10 pb-3">
-      <dt className="font-mono text-[10px] tracking-[0.18em] text-white/42 uppercase">
+      <dt className="font-sans text-[10px] tracking-[0.18em] text-white/42 uppercase">
         {label}
       </dt>
       <dd className="m-0 text-white/76">{value}</dd>
@@ -400,7 +400,7 @@ function ScrollSyncedFriends() {
         <h2 className="max-w-[11ch] font-serif text-[clamp(3.2rem,8vw,8rem)] leading-[0.84] font-bold tracking-[-0.05em] text-white">
           {t("friends.title")}
         </h2>
-        <p className="mt-5 font-mono text-[11px] tracking-[0.12em] text-white/62">
+        <p className="mt-5 font-sans text-[11px] tracking-[0.12em] text-white/62">
           {t("friends.caption")}
         </p>
       </div>
@@ -583,7 +583,7 @@ function ReactiveRsvpButton({
           y: ((event.clientY - rect.top) / rect.height) * 100
         });
       }}
-      className="mt-8 inline-flex h-14 min-w-44 items-center justify-center rounded-full border border-white/50 bg-white px-7 font-mono text-[11px] tracking-[0.24em] text-black uppercase shadow-[0_0_45px_oklch(60%_0.12_50/0.45)] transition-transform hover:-translate-y-1"
+      className="mt-8 inline-flex h-14 min-w-44 items-center justify-center rounded-full border border-white/50 bg-white px-7 font-sans text-[11px] tracking-[0.24em] text-black uppercase shadow-[0_0_45px_oklch(60%_0.12_50/0.45)] transition-transform hover:-translate-y-1"
       style={{
         background: `radial-gradient(circle at ${pos.x}% ${pos.y}%, oklch(76% 0.13 48), white 34%, oklch(70% 0.11 255) 120%)`
       }}

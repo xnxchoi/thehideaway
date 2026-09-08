@@ -43,12 +43,12 @@ import {
   RalueWithRelation,
   RenderImageFields,
   TabNames
-} from "@/types/collections/image-collections";
-import { ImageMetadata } from "@/types/ImageCollections/schema";
+} from "@types/collections/image-collections";
+import { ImageMetadata } from "@types/ImageCollections/schema";
 import type {
   SavedMetadataUnsplash,
   UnsplashCollectionDoc
-} from "@/types/ImageCollections/unsplash";
+} from "@types/ImageCollections/unsplash";
 import { getClientSideURL, toRelativeIfSameOrigin } from "@/utilities/getURL";
 import { clamp } from "@/utilities/mathUtilities";
 import { delay } from "@/utilities/rp_utils";

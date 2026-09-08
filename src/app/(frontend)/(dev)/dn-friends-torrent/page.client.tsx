@@ -50,7 +50,7 @@ export function PageClient() {
   const captions = useMemo(
     () => [
       <div key="qa" className="grid gap-3">
-        <span className="font-mono text-[10px] tracking-[0.32em] text-white/65 uppercase md:text-[11px]">
+        <span className="font-sans text-[10px] tracking-[0.32em] text-white/65 uppercase md:text-[11px]">
           {t("topic")}
         </span>
         <span className="font-serif text-[clamp(1.35rem,2vw,1.85rem)] leading-[1.25] text-white/95">
@@ -233,7 +233,7 @@ function ControlsPanel(props: ControlsPanelProps) {
 
   return (
     <div
-      className="absolute top-4 right-4 z-50 flex max-h-[92vh] w-[300px] flex-col gap-3 overflow-y-auto rounded-lg p-4 font-mono text-[11px] text-white/85 backdrop-blur-md"
+      className="absolute top-4 right-4 z-50 flex max-h-[92vh] w-[300px] flex-col gap-3 overflow-y-auto rounded-lg p-4 font-sans text-[11px] text-white/85 backdrop-blur-md"
       style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
     >
       <div className="flex items-center justify-between">

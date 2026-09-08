@@ -5,8 +5,8 @@ import {
   SyncedAsset,
   SyncedNotification
 } from "@/payload/collections/Notifications/hooks/types";
-import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
-import { imageSelect } from "@/types/payload-api-selects";
+import { RalueAsDataWithRelation } from "@types/collections/image-collections";
+import { imageSelect } from "@types/payload-api-selects";
 import { getFallbackImage } from "@/utilities/getFallbackImage";
 import type { OptionalKeys } from "@/utilities/typeUtilities";
 import config from "@payload-config";

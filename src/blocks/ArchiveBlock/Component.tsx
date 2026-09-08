@@ -4,7 +4,7 @@ import { CollectionArchive } from "@/payload/components/CollectionArchive";
 import RichText from "../../components/UX/RichText";
 import type { ArchiveBlock as ArchiveBlockProps } from "@/payload-types";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
-import { PostOverview } from "@/types/collections/posts";
+import { PostOverview } from "@types/collections/posts";
 
 export const ArchiveBlock: React.FC<
   ArchiveBlockProps & {

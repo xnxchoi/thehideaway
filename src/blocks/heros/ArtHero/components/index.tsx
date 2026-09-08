@@ -5,11 +5,11 @@ import {
   FrontImageProps
 } from "@/components/core/Media/FrontImage";
 import { cn } from "@/lib/utils";
-import { SingleArticle } from "@/types/collections/posts";
+import { SingleArticle } from "@types/collections/posts";
 import {
   RalueAsDataWithRelation,
   RalueWithRelation
-} from "@/types/collections/image-collections";
+} from "@types/collections/image-collections";
 import { formatDateTime } from "@/utilities/formatDateTime";
 import { ComponentProps, ComponentPropsWithoutRef, useEffect } from "react";
 

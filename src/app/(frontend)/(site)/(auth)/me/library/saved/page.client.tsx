@@ -58,13 +58,13 @@ export default function SavedPageClient({ userId, items }: Props) {
         <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
           <div className="flex items-end justify-between">
             <div>
-              <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+              <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
                 Your Library
               </p>
               <h1 className="mt-0.5 text-2xl font-light tracking-tight xl:text-3xl">
                 Saved
                 {totalCount > 0 && (
-                  <span className="ml-2.5 font-mono text-sm text-muted-foreground/50 tabular-nums">
+                  <span className="ml-2.5 font-sans text-sm text-muted-foreground/50 tabular-nums">
                     {totalCount}
                   </span>
                 )}
@@ -72,7 +72,7 @@ export default function SavedPageClient({ userId, items }: Props) {
             </div>
             <Link
               href="/me/library/lists"
-              className="font-mono text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
+              className="font-sans text-[11px] tracking-widest text-muted-foreground/60 uppercase transition-colors hover:text-foreground xl:text-xs"
             >
               My Lists →
             </Link>
@@ -87,7 +87,7 @@ export default function SavedPageClient({ userId, items }: Props) {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={cn(
-                      "relative shrink-0 pb-3 font-mono text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
+                      "relative shrink-0 pb-3 font-sans text-[11px] tracking-widest uppercase transition-colors xl:text-xs",
                       activeTab === tab
                         ? "text-foreground"
                         : "text-muted-foreground/50 hover:text-muted-foreground"
@@ -195,17 +195,17 @@ function BookmarkCard({
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {"author" in item && item.author && (
-              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-sans text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {typeof item.author === "object" && item.author.name}
               </span>
             )}
             {"source" in item && item.source && (
-              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-sans text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {item.source}
               </span>
             )}
             {"artist" in item && item.artist && (
-              <span className="font-mono text-[10px] text-muted-foreground/60 xl:text-[11px]">
+              <span className="font-sans text-[10px] text-muted-foreground/60 xl:text-[11px]">
                 {item.artist}
               </span>
             )}
@@ -273,9 +273,9 @@ function SavedEmptyState({ tab }: { tab: CompilationItemType }) {
       exit={{ opacity: 0 }}
       className="flex flex-col items-center justify-center py-24 text-center"
     >
-      <span className="mb-4 font-mono text-5xl opacity-10">◫</span>
+      <span className="mb-4 font-sans text-5xl opacity-10">◫</span>
       <p className="text-base font-light text-foreground/70">{msg.headline}</p>
-      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/50">
+      <p className="mt-1.5 max-w-xs font-sans text-[11px] text-muted-foreground/50">
         {msg.sub}
       </p>
     </m.div>

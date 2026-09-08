@@ -48,7 +48,9 @@ export function ApiKeyDisplayDialog({
         className={classNames?.dialog?.content}
       >
         <DialogHeader className={classNames?.dialog?.header}>
-          <DialogTitle className={cn("text-base md:text-xl", classNames?.title)}>
+          <DialogTitle
+            className={cn("text-base md:text-xl", classNames?.title)}
+          >
             {localization.API_KEY_CREATED}
           </DialogTitle>
 
@@ -59,7 +61,7 @@ export function ApiKeyDisplayDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-md bg-muted p-4 font-mono text-sm break-all">
+        <div className="rounded-md bg-muted p-4 font-sans text-sm break-all">
           {apiKey}
         </div>
 

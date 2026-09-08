@@ -16,13 +16,13 @@ type RowProps = {
 
 const Row = ({ label, value, mono = true }: RowProps) => (
   <div className="flex items-baseline justify-between gap-6 border-b border-border/15 py-3">
-    <span className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+    <span className="font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase">
       {label}
     </span>
     <span
       className={
         mono
-          ? "font-mono text-[11px] text-foreground/90"
+          ? "font-sans text-[11px] text-foreground/90"
           : `${instrumentSerif.className} text-[15px] text-foreground`
       }
     >
@@ -52,10 +52,10 @@ export function InvoiceMeta({
     <div className="flex h-full w-full flex-col">
       {/* Eyebrow */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground/60 uppercase">
+        <span className="font-sans text-[10px] tracking-[0.3em] text-muted-foreground/60 uppercase">
           Receipt
         </span>
-        <span className="inline-flex items-center gap-2 font-mono text-[10px] tracking-widest text-foreground/80 uppercase">
+        <span className="inline-flex items-center gap-2 font-sans text-[10px] tracking-widest text-foreground/80 uppercase">
           <span
             className="inline-block h-1.5 w-1.5 rounded-full"
             style={{
@@ -73,14 +73,14 @@ export function InvoiceMeta({
 
       {/* Hero amount */}
       <div className="mt-8">
-        <p className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+        <p className="font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase">
           Total
         </p>
         <p
           className={`${instrumentSerif.className} mt-2 text-6xl leading-none tracking-tight text-foreground xl:text-7xl`}
         >
           {formatAmount(invoice.amount, invoice.currency)}
-          <span className="ml-3 align-top font-mono text-xs tracking-widest text-muted-foreground/60">
+          <span className="ml-3 align-top font-sans text-xs tracking-widest text-muted-foreground/60">
             {code}
           </span>
         </p>
@@ -88,7 +88,7 @@ export function InvoiceMeta({
 
       {/* Issued to */}
       <div className="mt-8 border-t border-border/15 pt-6">
-        <p className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+        <p className="font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase">
           Issued to
         </p>
         <p
@@ -97,7 +97,7 @@ export function InvoiceMeta({
           {clientPrimary}
         </p>
         {invoice.client.handle ? (
-          <p className="mt-0.5 font-mono text-[11px] text-muted-foreground/70">
+          <p className="mt-0.5 font-sans text-[11px] text-muted-foreground/70">
             @{invoice.client.handle}
           </p>
         ) : null}
@@ -164,8 +164,8 @@ function ActionButton({ label, onClick, muted }: ActionButtonProps) {
       onClick={onClick}
       className={
         muted
-          ? "border border-border/30 px-5 py-2.5 font-mono text-[11px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border/60 hover:text-foreground"
-          : "border border-border/50 bg-foreground/[0.04] px-5 py-2.5 font-mono text-[11px] tracking-widest text-foreground uppercase transition-colors hover:border-border hover:bg-foreground/[0.07]"
+          ? "border border-border/30 px-5 py-2.5 font-sans text-[11px] tracking-widest text-muted-foreground/70 uppercase transition-colors hover:border-border/60 hover:text-foreground"
+          : "border border-border/50 bg-foreground/[0.04] px-5 py-2.5 font-sans text-[11px] tracking-widest text-foreground uppercase transition-colors hover:border-border hover:bg-foreground/[0.07]"
       }
     >
       {label}

@@ -61,7 +61,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           <div className="mx-auto max-w-7xl px-6 py-5 xl:px-10">
             <div className="flex items-end justify-between gap-6">
               <div>
-                <p className="mb-2 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+                <p className="mb-2 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
                   <Link
                     href={`/users/${url}`}
                     className="hover:text-foreground"
@@ -75,7 +75,7 @@ export default async function Page({ params: paramsPromise }: Args) {
                   Latest Writing
                 </h1>
               </div>
-              <p className="font-mono text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
+              <p className="font-sans text-[11px] text-muted-foreground/60 tabular-nums xl:text-xs">
                 {posts.totalDocs} {posts.totalDocs === 1 ? "essay" : "essays"}
               </p>
             </div>
@@ -85,7 +85,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         <section className="mx-auto max-w-7xl px-6 py-10 xl:px-10 xl:py-14">
           {posts.docs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <span className="mb-4 font-mono text-5xl opacity-10">◦</span>
+              <span className="mb-4 font-sans text-5xl opacity-10">◦</span>
               <p className="text-base font-light text-foreground/70">
                 Nothing published yet.
               </p>

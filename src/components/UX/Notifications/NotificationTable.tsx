@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/core/Button";
 import { useHumanDate } from "@/hooks/useLocaleDate";
-import type { DataTableRowAction } from "@/types/data-table";
+import type { DataTableRowAction } from "@types/data-table";
 import { NAction } from "./Table/ActionBar";
 
 export const NotificationTable = () => {
@@ -180,7 +180,7 @@ export const NotificationTable = () => {
           // floor for UI labels) so they sit behind the title without
           // disappearing.
           return (
-            <span className="font-mono text-[11px] text-muted-foreground/65 tabular-nums">
+            <span className="font-sans text-[11px] text-muted-foreground/65 tabular-nums">
               {rt}
             </span>
           );

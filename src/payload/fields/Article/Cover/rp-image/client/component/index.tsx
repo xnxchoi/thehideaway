@@ -25,7 +25,7 @@ import {
 } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
 import { useCursor } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
-import { ImageCollectionSlug } from "@/types/collections/image-collections";
+import { ImageCollectionSlug } from "@types/collections/image-collections";
 import { ContextMenu, Dialog, Menu } from "@base-ui/react";
 import {
   $getNodeByKey,

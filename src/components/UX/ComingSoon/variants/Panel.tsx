@@ -44,17 +44,17 @@ export function ComingSoonPanel({
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute -top-10 -left-10 font-mono text-[30vw] leading-none font-light text-foreground/[0.03] select-none sm:text-[22vw] lg:text-[16vw]"
+        className="pointer-events-none absolute -top-10 -left-10 font-sans text-[30vw] leading-none font-light text-foreground/[0.03] select-none sm:text-[22vw] lg:text-[16vw]"
       >
         ◌
       </span>
       <div className="relative mx-auto w-full max-w-2xl px-6 py-24 xl:py-32">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
+          <span className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase xl:text-xs">
             {statusText}
           </span>
           <span className="h-px flex-1 bg-border/30" />
-          <span className="inline-flex items-center gap-1.5 border border-dashed border-border/40 px-2 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground/70 uppercase xl:text-[10px]">
+          <span className="inline-flex items-center gap-1.5 border border-dashed border-border/40 px-2 py-0.5 font-sans text-[9px] tracking-widest text-muted-foreground/70 uppercase xl:text-[10px]">
             <span
               aria-hidden
               className="size-1 rounded-full bg-muted-foreground/50"
@@ -67,7 +67,7 @@ export function ComingSoonPanel({
           {title}
         </h1>
 
-        <p className="mt-6 max-w-xl font-mono text-[11px] leading-relaxed text-muted-foreground/80 xl:text-xs">
+        <p className="mt-6 max-w-xl font-sans text-[11px] leading-relaxed text-muted-foreground/80 xl:text-xs">
           {body}
         </p>
 

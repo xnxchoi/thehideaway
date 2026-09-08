@@ -1,7 +1,7 @@
 import { Narrateur } from "@/components/UX/Highlightr";
 import { PrevNext } from "@/components/UX/Highlightr/prevNext";
 import { RPage } from "@/components/UX/Transition";
-import { queryPostBySlug } from "@/payload/collections/Posts/api/queryPostBySlug";
+import { queryPostForUserBySlug } from "@/payload/collections/Posts/api/queryPostBySlug";
 import { PayloadRedirects } from "@/payload/components/PayloadRedirects";
 import { generateMeta } from "@/utilities/generateMeta";
 import configPromise from "@payload-config";
@@ -31,7 +31,7 @@ async function PostBody({ params }: Args) {
     return <></>;
   }
   if (slug.length < 1) return <PayloadRedirects url={"/home"} />;
-  const p = await queryPostBySlug({ slug });
+  const p = await queryPostForUserBySlug({ slug });
   if (!p) return <PayloadRedirects url={"/home"} />;
   const { post, prev, next, gate } = p;
 

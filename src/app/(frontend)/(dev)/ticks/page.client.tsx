@@ -40,13 +40,13 @@ export default function PageClient() {
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 xl:px-10">
       <header className="mb-16 border-b border-border/30 pb-8">
-        <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
+        <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/60 uppercase">
           Dev / Indicators
         </p>
         <h1 className="mt-2 text-3xl font-light tracking-tight xl:text-4xl">
           Tick Indicator
         </h1>
-        <p className="mt-3 max-w-xl font-mono text-[11px] leading-relaxed text-muted-foreground/70">
+        <p className="mt-3 max-w-xl font-sans text-[11px] leading-relaxed text-muted-foreground/70">
           Discrete chronograph-style indicators adapted from Fey into Hideaway
           tokens. Adjust below to verify magnification, focal behavior, and prop
           sync.
@@ -190,13 +190,13 @@ export default function PageClient() {
 
       <section className="mt-20">
         <div className="mb-6 flex items-center justify-between">
-          <p className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
+          <p className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
             Entrance — staggered radial / horizontal sweep
           </p>
           <button
             type="button"
             onClick={replayEntrance}
-            className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+            className="border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
           >
             Replay
           </button>
@@ -359,7 +359,7 @@ function Controls({
         <button
           type="button"
           onClick={() => setAutoplay(!autoplay)}
-          className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+          className="border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
         >
           {autoplay ? "Pause" : "Start"}
         </button>
@@ -444,7 +444,7 @@ function Controls({
         <button
           type="button"
           onClick={() => setMagnifyAtEnds(!magnifyAtEnds)}
-          className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+          className="border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
         >
           {magnifyAtEnds ? "Disable" : "Enable"}
         </button>
@@ -455,7 +455,7 @@ function Controls({
           <button
             type="button"
             onClick={() => setUseAccent(!useAccent)}
-            className="border border-border/40 px-3 py-1.5 font-mono text-[10px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+            className="border border-border/40 px-3 py-1.5 font-sans text-[10px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
           >
             {useAccent ? "Mono" : "Accent"}
           </button>
@@ -503,7 +503,7 @@ function Controls({
         <button
           type="button"
           onClick={replayEntrance}
-          className="border border-border/40 px-4 py-2 font-mono text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
+          className="border border-border/40 px-4 py-2 font-sans text-[11px] tracking-widest text-foreground/80 uppercase transition-colors hover:border-border hover:text-foreground"
         >
           Replay
         </button>
@@ -524,11 +524,11 @@ function Field({
   return (
     <label className="flex flex-col gap-2">
       <span className="flex items-baseline justify-between">
-        <span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
+        <span className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
           {label}
         </span>
         {hint ? (
-          <span className="font-mono text-[10px] text-muted-foreground/60">
+          <span className="font-sans text-[10px] text-muted-foreground/60">
             {hint}
           </span>
         ) : null}
@@ -547,7 +547,7 @@ function Variant({
 }) {
   return (
     <figure className="flex flex-col gap-4">
-      <figcaption className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
+      <figcaption className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/70 uppercase">
         {label}
       </figcaption>
       <div className="flex min-h-[60px] items-center rounded-sm border border-border/20 bg-card p-5">

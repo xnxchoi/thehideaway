@@ -36,7 +36,7 @@ export function BroadcastHub({ releases }: BroadcastHubProps) {
         <AmbientBackgroundAuto />
       </Suspense>
 
-      <div className="relative z-[2] flex flex-col">
+      <div className="relative z-2 flex flex-col">
         {/* ── Zone 1: On Air — full-screen player ──────────────────────────── */}
         <section
           aria-labelledby="on-air"
@@ -47,7 +47,7 @@ export function BroadcastHub({ releases }: BroadcastHubProps) {
           <div className="absolute top-28 left-1/2 -translate-x-1/2 sm:top-12">
             <p
               id="on-air"
-              className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs"
+              className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs"
             >
               · On Air
             </p>
@@ -82,11 +82,11 @@ function BroadcastArchive({ releases }: BroadcastArchiveProps) {
         <header className="mb-8 flex items-end justify-between border-b border-border/30 pb-6 sm:mb-12 sm:pb-8 xl:mb-14">
           <p
             id="archive"
-            className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground/65 uppercase xl:text-xs"
+            className="font-sans text-[10px] tracking-[0.2em] text-muted-foreground/65 uppercase xl:text-xs"
           >
             · The Archive
           </p>
-          <p className="font-mono text-[10px] text-muted-foreground/60 tabular-nums xl:text-[11px]">
+          <p className="font-sans text-[10px] text-muted-foreground/60 tabular-nums xl:text-[11px]">
             {String(releases.length).padStart(3, "0")}{" "}
             {releases.length === 1 ? "release" : "releases"}
           </p>
@@ -131,7 +131,7 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
         className="group flex items-center gap-4 py-6 transition-colors hover:bg-muted/5 sm:gap-6 sm:py-8 xl:gap-8 xl:py-10"
       >
         {/* Catalog no. — desktop only; mobile shows it inline above the title */}
-        <span className="hidden w-12 shrink-0 self-center font-mono text-[11px] text-muted-foreground/40 tabular-nums sm:block xl:w-14">
+        <span className="hidden w-12 shrink-0 self-center font-sans text-[11px] text-muted-foreground/40 tabular-nums sm:block xl:w-14">
           {catalogNo}
         </span>
 
@@ -147,7 +147,7 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
                 sizes="(max-width: 640px) 56px, (max-width: 1280px) 80px, 96px"
               />
             ) : (
-              <span className="flex h-full items-center justify-center font-mono text-2xl text-foreground/[0.15] uppercase">
+              <span className="flex h-full items-center justify-center font-sans text-2xl text-foreground/[0.15] uppercase">
                 {(release.title ?? "—").slice(0, 1)}
               </span>
             )}
@@ -158,13 +158,13 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 sm:flex-row sm:items-center sm:gap-6">
           <div className="flex min-w-0 flex-col gap-0.5 sm:gap-1">
             {/* Catalog no. inline on mobile only */}
-            <span className="font-mono text-[10px] text-muted-foreground/40 tabular-nums sm:hidden">
+            <span className="font-sans text-[10px] text-muted-foreground/40 tabular-nums sm:hidden">
               {catalogNo}
             </span>
             <span className="truncate text-base font-light tracking-tight text-foreground/90 transition-colors group-hover:text-foreground sm:text-lg xl:text-xl 2xl:text-2xl">
               {release.title}
             </span>
-            <span className="truncate font-mono text-[10px] tracking-widest text-muted-foreground/50 uppercase xl:text-[11px]">
+            <span className="truncate font-sans text-[10px] tracking-widest text-muted-foreground/50 uppercase xl:text-[11px]">
               {kindLabel}
               {release.artist && (
                 <>
@@ -176,7 +176,7 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
           </div>
 
           {/* Date · runtime · count — wraps gracefully at narrow widths */}
-          <span className="flex shrink-0 flex-wrap items-baseline gap-x-2 font-mono text-[10px] text-muted-foreground/50 tabular-nums sm:flex-col sm:items-end sm:gap-1 xl:flex-row xl:items-baseline xl:gap-3 xl:text-[11px]">
+          <span className="flex shrink-0 flex-wrap items-baseline gap-x-2 font-sans text-[10px] text-muted-foreground/50 tabular-nums sm:flex-col sm:items-end sm:gap-1 xl:flex-row xl:items-baseline xl:gap-3 xl:text-[11px]">
             <ReleaseDate date={release.releaseDate} />
             <span className="hidden xl:inline">
               <Sep />
@@ -201,11 +201,11 @@ function ArchiveRow({ release, index }: ArchiveRowProps) {
 function ArchiveEmpty() {
   return (
     <div className="flex flex-col items-center py-16 text-center">
-      <span className="mb-4 font-mono text-5xl text-foreground/20">○</span>
+      <span className="mb-4 font-sans text-5xl text-foreground/20">○</span>
       <p className="text-base font-light text-foreground/85">
         Nothing in rotation yet.
       </p>
-      <p className="mt-1.5 max-w-xs font-mono text-[11px] text-muted-foreground/65">
+      <p className="mt-1.5 max-w-xs font-sans text-[11px] text-muted-foreground/65">
         The first volume drops soon.
       </p>
     </div>
@@ -223,7 +223,7 @@ function Forthcoming() {
       <div className="mx-auto w-full max-w-7xl px-6 xl:px-10">
         <p
           id="forthcoming"
-          className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/65 uppercase xl:text-xs"
+          className="mb-6 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/65 uppercase xl:text-xs"
         >
           · Forthcoming
         </p>
@@ -233,7 +233,7 @@ function Forthcoming() {
         <p className="max-w-prose text-lg font-light text-foreground/85 xl:text-xl">
           Untitled · Spring 2026
         </p>
-        <p className="mt-3 font-mono text-[11px] text-muted-foreground/65 xl:text-xs">
+        <p className="mt-3 font-sans text-[11px] text-muted-foreground/65 xl:text-xs">
           Sign up for the dispatch{" "}
           <span className="text-muted-foreground/50">→</span>
           <span className="ml-2 text-muted-foreground/50">[coming soon]</span>

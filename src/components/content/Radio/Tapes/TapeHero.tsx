@@ -47,7 +47,7 @@ export function TapeHero({ eyebrow, title, subhead }: TapeHeroProps) {
     >
       <div className="relative z-10 mx-auto max-w-7xl px-6 xl:px-10">
         <m.div style={{ y: titleY, opacity: titleOpacity }}>
-          <p className="mb-6 font-mono text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
+          <p className="mb-6 font-sans text-[10px] tracking-[0.2em] text-muted-foreground/50 uppercase xl:text-xs">
             {eyebrow}
           </p>
           <h1 className="max-w-4xl text-3xl font-light tracking-tight sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl">
@@ -56,7 +56,7 @@ export function TapeHero({ eyebrow, title, subhead }: TapeHeroProps) {
         </m.div>
 
         <m.div style={{ y: subY, opacity: subOpacity }} className="mt-8">
-          <p className="max-w-lg font-mono text-[11px] leading-relaxed text-muted-foreground/60 xl:text-xs">
+          <p className="max-w-lg font-sans text-[11px] leading-relaxed text-muted-foreground/60 xl:text-xs">
             {subhead}
           </p>
         </m.div>

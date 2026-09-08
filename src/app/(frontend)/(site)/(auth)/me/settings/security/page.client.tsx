@@ -794,7 +794,7 @@ function DeleteAccountDialog() {
           </DialogTitle>
           <DialogDescription className="mt-1 text-sm font-light text-foreground/65">
             This permanently removes your account access. To confirm, type{" "}
-            <span className="font-mono text-foreground/85">
+            <span className="font-sans text-foreground/85">
               delete my account
             </span>
             .

@@ -4,9 +4,9 @@ import {singlePostSelect} from "@/payload/collections/Posts/api/queryBase";
 import {roleToAuthority} from "@/payload/plugins/locker/fields/authority/utils";
 import {RP_Roles} from "@/stores/Notification/NotificationStore";
 
-import {TagOverview} from "@/types/collections/meta-collections";
-import {PostOverview, SingleArticle} from "@/types/collections/posts";
-import {AuthorSingle} from "@/types/collections/users";
+import { TagOverview } from "@types/collections/meta-collections";
+import { PostOverview, SingleArticle } from "@types/collections/posts";
+import { AuthorSingle } from "@types/collections/users";
 import {draftMode} from "next/headers";
 import {headersWithCors, type PayloadRequest} from "payload";
 import {getPostBookMarks} from "./getPostBookmarks";

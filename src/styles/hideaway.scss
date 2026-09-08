@@ -312,14 +312,14 @@ body {
   white-space: nowrap;
 }
 
-.menu__button-close {
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: calc(100% - (var(--button-px-sm) * 2));
-  transform: translateY(102%);
-}
+//.menu__button-close {
+//  white-space: nowrap;
+//  display: flex;
+//  align-items: center;
+//  justify-content: center;
+//  width: calc(100% - (var(--button-px-sm) * 2));
+//  transform: translateY(102%);
+//}
 
 .menu__button-icon {
   width: 1.2rem;

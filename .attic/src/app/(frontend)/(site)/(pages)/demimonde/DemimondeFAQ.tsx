@@ -12,7 +12,7 @@ export function DemimondeFAQ() {
     >
       <div className="mx-auto max-w-[1200px]">
         <header className="mb-14 flex flex-col gap-2 border-b border-[var(--rule)] pb-7 max-sm:mb-9">
-          <span className="font-mono text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
+          <span className="font-sans text-[11px] tracking-[0.32em] text-[var(--tomato)] uppercase">
             {FAQ.eyebrow}
           </span>
           <h2
@@ -30,7 +30,7 @@ export function DemimondeFAQ() {
               className="grid grid-cols-1 gap-5 border-b border-[var(--rule)] py-9 max-sm:py-7 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)] md:gap-14"
             >
               <div className="flex items-baseline gap-4">
-                <span className="min-w-9 shrink-0 font-mono text-[11px] tracking-[0.18em] text-[var(--tomato)]">
+                <span className="min-w-9 shrink-0 font-sans text-[11px] tracking-[0.18em] text-[var(--tomato)]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="m-0 font-serif text-[clamp(20px,2.2vw,28px)] leading-[1.2] font-normal tracking-[-0.015em] text-[var(--ink)] italic max-sm:text-[19px]">

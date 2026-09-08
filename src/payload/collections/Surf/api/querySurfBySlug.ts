@@ -6,8 +6,8 @@ import { RP_Roles } from "@/stores/Notification/NotificationStore";
 import {
   CategoryOverview,
   TagOverview
-} from "@/types/collections/meta-collections";
-import { AuthorSingle } from "@/types/collections/users";
+} from "@types/collections/meta-collections";
+import { AuthorSingle } from "@types/collections/users";
 import configPromise from "@payload-config";
 import { draftMode } from "next/headers";
 import { getPayload, Payload, Where } from "payload";

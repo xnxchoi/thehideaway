@@ -1,12 +1,12 @@
 "use server";
 import { getImageMedia } from "@/payload/collections/Posts/api/getImageMedia";
 import { postOverviewSelect } from "@/payload/collections/Posts/api/queryBase";
-import { OverviewSlugs } from "@/types/collections/index";
+import { OverviewSlugs } from "@types/collections/index";
 import {
   CategoryOverview,
   TagOverview
-} from "@/types/collections/meta-collections";
-import { userOverviewSelect } from "@/types/collections/users";
+} from "@types/collections/meta-collections";
+import { userOverviewSelect } from "@types/collections/users";
 
 import configPromise from "@payload-config";
 import {

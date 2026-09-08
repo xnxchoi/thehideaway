@@ -4,13 +4,10 @@ import { FrontImage } from "@/components/core/Media/FrontImage";
 import { AspectRatio } from "@/components/core/Media/types";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
-import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
-import {
-  CollectionOverviewMap,
-  OverviewSlugs
-} from "@/types/collections/index";
-import { TagOverview } from "@/types/collections/meta-collections";
-import { AuthorOverview } from "@/types/collections/users";
+import { RalueAsDataWithRelation } from "@types/collections/image-collections";
+import { CollectionOverviewMap, OverviewSlugs } from "@types/collections/index";
+import { TagOverview } from "@types/collections/meta-collections";
+import { AuthorOverview } from "@types/collections/users";
 import type { ComponentProps, ReactNode } from "react";
 
 export type OverviewItem<T extends OverviewSlugs = OverviewSlugs> = {
@@ -284,7 +281,7 @@ function CoverPlaceholder({ symbol = "◇" }: { symbol?: string }) {
       aria-hidden
       className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[5px] bg-foreground/[0.04]"
     >
-      <span className="font-mono text-[clamp(56px,9vw,128px)] font-light text-foreground/[0.08] select-none">
+      <span className="font-sans text-[clamp(56px,9vw,128px)] font-light text-foreground/[0.08] select-none">
         {symbol}
       </span>
     </div>

@@ -1,6 +1,9 @@
 import type {Surf} from "@/payload-types";
-import {CategoryOverview, TagOverview} from "@/types/collections/meta-collections";
-import {AuthorOverview, AuthorSingle} from "@/types/collections/users";
+import {
+  CategoryOverview,
+  TagOverview
+} from "@types/collections/meta-collections";
+import { AuthorOverview, AuthorSingle } from "@types/collections/users";
 import type {PostOverview} from "./posts";
 
 export type SurfOverview = Omit<ReqSurf, "author"> & {

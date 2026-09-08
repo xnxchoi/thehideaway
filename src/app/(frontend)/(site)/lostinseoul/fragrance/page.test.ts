@@ -13,12 +13,12 @@ describe("fragrance chapter Phase 7 cart wiring", () => {
     expect(page).not.toContain('from "@payloadcms/translations"');
   });
 
-  it("adds through useLostCart and keeps product links on the LOSTINSEOUL route", () => {
+  it("adds through useStoreCart and keeps product links on the LOSTINSEOUL route", () => {
     const client = readFileSync(
       new URL("./page.client.tsx", import.meta.url),
       "utf8"
     );
-    expect(client).toContain("useLostCart");
+    expect(client).toContain("useStoreCart");
     expect(client).toContain("labels: ChromeLabels");
     expect(client).toContain('locale: "en" | "ko"');
     expect(client).toContain("Promise.resolve(");

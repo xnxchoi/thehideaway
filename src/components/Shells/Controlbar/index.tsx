@@ -200,7 +200,7 @@ const NotificationsTrigger = ({
           className={cn(
             "absolute top-2 right-2 inline-flex min-w-[18px] items-center justify-center",
             "rounded-full bg-foreground px-1 py-0.5",
-            "font-mono text-[10px] leading-none text-background tabular-nums"
+            "font-sans text-[10px] leading-none text-background tabular-nums"
           )}
         >
           {unread > 99 ? "99+" : unread}

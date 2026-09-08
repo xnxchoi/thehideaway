@@ -8,25 +8,20 @@ import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
 import type { LostProductDetail } from "@/lib/lost-commerce/queries";
 import type { LostOrderMode } from "@/lib/lost-commerce/types";
-import { useLostCart } from "@/lib/lost-commerce/useLostCart";
-import {
-  LostAnnouncementBar,
-  LostFooter,
-  LostGlobalFooterOverride,
-  LostHeader
-} from "../components";
-import { useLostBag, useLostCommerceRootRef } from "../lost-page-state";
+import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
+import { Footer } from "@lostinseoul/parts/Footer";
+import { useCartOpen } from "@lostinseoul/page-status";
 import type {
   LostBusinessDisclosureIdentifiers,
   LostBusinessDisclosureLabels
-} from "../business-footer";
+} from "@lostinseoul/parts/Footer/business-footer";
 import {
   canUseLostProductActions,
   getLostProductDetailPrice,
   getLostProductVariantPrice,
   getLostProductVariantsForMode,
   hasLostPrivatePresetPrice
-} from "../product-price-display";
+} from "@lostinseoul/product-price-display";
 import {
   getLostFragranceRenderTier,
   readLostFragranceTierInput,
@@ -36,7 +31,7 @@ import {
   getLostFragranceSceneMode,
   type LostFragranceSceneMode
 } from "./fragrance-scene-selection";
-import "../index.css";
+import "@lostinseoul/index.css";
 import "./fragrance.css";
 
 // Legacy imperative scene, kept mountable via `?scene=legacy` for
@@ -134,7 +129,6 @@ const beatReveal = {
 export function LostFragranceChapter({
   copy,
   checkoutEnabled,
-  drops,
   labels,
   locale,
   product
@@ -151,8 +145,7 @@ export function LostFragranceChapter({
   const display = copy[displayLocale];
 
   const chapterRef = useRef<HTMLDivElement>(null);
-  const commerceRootRef = useLostCommerceRootRef();
-  const { open: bagOpen } = useLostBag();
+  const { open: bagOpen } = useCartOpen();
   const [tier, setTier] = useState<LostFragranceRenderTier>("editorial");
   const [sceneReady, setSceneReady] = useState(false);
   // window.location instead of useSearchParams: a dev-only toggle shouldn't
@@ -161,7 +154,7 @@ export function LostFragranceChapter({
   const [added, setAdded] = useState(false);
   const [hintFaded, setHintFaded] = useState(false);
   const [affordanceVisible, setAffordanceVisible] = useState(false);
-  const { add } = useLostCart();
+  const { add } = useStoreCart();
   const [mode, setMode] = useState<LostOrderMode | null>(
     product?.modes[0] ?? null
   );
@@ -260,17 +253,11 @@ export function LostFragranceChapter({
 
   return (
     <MotionConfig reducedMotion="user">
-      <LostGlobalFooterOverride />
-      <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
-        <LostAnnouncementBar>{labels.announcement}</LostAnnouncementBar>
-        <LostHeader drops={drops} />
-      </div>
-      <main
-        className="lost-commerce-root lost-fragrance-root relative z-[1001] min-h-screen"
+      <div
+        className="lost-fragrance-root relative z-[1001] min-h-screen"
         data-lost-cursor-theme="dark"
         data-lost-fragrance-scene-ready={sceneReady}
         data-lost-fragrance-tier={tier}
-        ref={commerceRootRef}
       >
         <div ref={chapterRef}>
           {tier === "webgl" && sceneMode === "r3f" ? (
@@ -459,19 +446,8 @@ export function LostFragranceChapter({
           </m.a>
         ) : null}
 
-        <LostFooter
-          archiveLabel={labels.archiveLabel}
-          footerBusinessIdentifiers={labels.footerBusinessIdentifiers}
-          footerBusinessLabels={labels.footerBusinessLabels}
-          footerContactLabel={labels.footerContactLabel}
-          footerCopyrightLabel={labels.footerCopyrightLabel}
-          footerInfoLabel={labels.footerInfoLabel}
-          footerPrivacyLabel={labels.footerPrivacyLabel}
-          footerReturnsLabel={labels.footerReturnsLabel}
-          footerTermsLabel={labels.footerTermsLabel}
-          shopLabel={labels.shopLabel}
-        />
-      </main>
+        <Footer />
+      </div>
     </MotionConfig>
   );
 }

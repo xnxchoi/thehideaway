@@ -102,7 +102,7 @@ export function StationHideawayHero({ className }: StationHideawayHeroProps) {
           className="pointer-events-none absolute top-6 right-6 z-[30] flex flex-col items-end gap-0.5 text-right select-none"
           aria-hidden="true"
         >
-          <span className="text-faded-fg/80 text-md font-mono tracking-[0.2em] uppercase">
+          <span className="text-faded-fg/80 text-md font-sans tracking-[0.2em] uppercase">
             · Hideaway FM
           </span>
         </div>

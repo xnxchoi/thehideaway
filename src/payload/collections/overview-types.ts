@@ -5,16 +5,16 @@ import {
   ProfileOverviewSelect
 } from "@/payload/collections/Profile";
 import { SurfOverviewSelect } from "@/payload/collections/Surf/api/querySurfOverview";
-import { ImageCollectionOverviewSelect } from "@/types/collections/image-collections";
+import { ImageCollectionOverviewSelect } from "@types/collections/image-collections";
 import {
   CategoryOverview,
   CategoryOverviewSelect,
   TagOverview,
   TagOverviewSelect
-} from "@/types/collections/meta-collections";
-import { PostOverview } from "@/types/collections/posts";
-import { SurfOverview } from "@/types/collections/surf";
-import { UserOverview, UserOverviewSelect } from "@/types/collections/users";
+} from "@types/collections/meta-collections";
+import { PostOverview } from "@types/collections/posts";
+import { SurfOverview } from "@types/collections/surf";
+import { UserOverview, UserOverviewSelect } from "@types/collections/users";
 
 export type OverviewMap = {
   posts: PostOverview;

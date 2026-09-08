@@ -1,4 +1,4 @@
-import {ImageCollectionOverviewSelect} from "@/types/collections/image-collections";
+import { ImageCollectionOverviewSelect } from "@types/collections/image-collections";
 
 export const imageSelect = (): ImageCollectionOverviewSelect => ({
 	url: true,  

@@ -32,7 +32,7 @@ export function DemimondeHero() {
     >
       <div className="relative mx-auto grid w-full max-w-[1200px] grid-cols-1 items-end gap-14 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-20">
         <m.div className="min-w-0" style={{ y: titleY }}>
-          <p className="m-0 mb-6 inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.34em] text-[var(--tomato)] uppercase before:h-px before:w-7 before:bg-[var(--tomato)] before:content-['']">
+          <p className="m-0 mb-6 inline-flex items-center gap-3 font-sans text-[11px] tracking-[0.34em] text-[var(--tomato)] uppercase before:h-px before:w-7 before:bg-[var(--tomato)] before:content-['']">
             {HERO.eyebrow}
           </p>
           <h1
@@ -52,7 +52,7 @@ export function DemimondeHero() {
           <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-5 border-t border-[var(--rule)] pt-7 max-sm:grid-cols-1 max-sm:gap-4">
             {HERO.meta.map((item) => (
               <div key={item.label} className="m-0 flex flex-col gap-1.5">
-                <dt className="font-mono text-[10px] tracking-[0.28em] text-[var(--ink-muted)] uppercase">
+                <dt className="font-sans text-[10px] tracking-[0.28em] text-[var(--ink-muted)] uppercase">
                   {item.label}
                 </dt>
                 <dd className="m-0 text-[15px] leading-[1.4] font-medium text-[var(--ink)]">
@@ -74,7 +74,7 @@ export function DemimondeHero() {
             imgClassName="block w-full bg-[var(--paper-deep)] object-cover"
             aspectRatio={3 / 4}
           />
-          <figcaption className="absolute right-3.5 bottom-3.5 left-3.5 text-center font-mono text-[10px] tracking-[0.22em] text-[var(--ink-muted)] uppercase">
+          <figcaption className="absolute right-3.5 bottom-3.5 left-3.5 text-center font-sans text-[10px] tracking-[0.22em] text-[var(--ink-muted)] uppercase">
             {banner.tag}
           </figcaption>
         </m.figure>

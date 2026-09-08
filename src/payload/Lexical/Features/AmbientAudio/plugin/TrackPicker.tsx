@@ -164,15 +164,15 @@ export function TrackPicker() {
           onValueChange={setQuery}
           autoFocus
           placeholder="Search tracks…"
-          className="w-full border-b border-border/30 bg-transparent px-3 py-2 font-mono text-[11px] placeholder:text-muted-foreground/40 focus:outline-none"
+          className="w-full border-b border-border/30 bg-transparent px-3 py-2 font-sans text-[11px] placeholder:text-muted-foreground/40 focus:outline-none"
         />
         <CommandList className="max-h-72 overflow-y-auto">
           {loading ? (
-            <div className="px-3 py-2 font-mono text-[10px] text-muted-foreground/60">
+            <div className="px-3 py-2 font-sans text-[10px] text-muted-foreground/60">
               Searching…
             </div>
           ) : null}
-          <CommandEmpty className="px-3 py-4 font-mono text-[10px] text-muted-foreground/50">
+          <CommandEmpty className="px-3 py-4 font-sans text-[10px] text-muted-foreground/50">
             No tracks
           </CommandEmpty>
           <CommandGroup>
@@ -201,7 +201,7 @@ export function TrackPicker() {
                     <div className="truncate text-xs text-foreground/90">
                       {track.title ?? "Untitled"}
                     </div>
-                    <div className="truncate font-mono text-[10px] text-muted-foreground/60">
+                    <div className="truncate font-sans text-[10px] text-muted-foreground/60">
                       {track.artist ?? "—"}
                       {track.duration
                         ? ` · ${Math.floor(track.duration / 60)}:${String(

@@ -58,7 +58,7 @@ export default async function LostOrderPage({ params }: Props) {
           <h1 className="mt-8 font-serif text-6xl font-bold tracking-tight">
             {t("title")}
           </h1>
-          <p className="mt-4 font-mono text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
+          <p className="mt-4 font-sans text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
             {order.order_ref}
           </p>
           <dl className="mt-8 grid gap-4 border-y border-[oklch(from_var(--fg)_l_c_h_/_0.15)] py-6 sm:grid-cols-3">
@@ -83,17 +83,14 @@ export default async function LostOrderPage({ params }: Props) {
                 {t("total")}
               </dt>
               <dd className="mt-1 text-base font-medium">
-                {formatLostMoney(
-                  Number(order.amount ?? 0),
-                  order.currency
-                )}
+                {formatLostMoney(Number(order.amount ?? 0), order.currency)}
               </dd>
             </div>
           </dl>
           <div className="mt-8 divide-y divide-[oklch(from_var(--fg)_l_c_h_/_0.15)]">
             <div className="flex justify-between py-4">
               <span>{firstItem?.product_name ?? ""}</span>
-              <span className="font-mono text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
+              <span className="font-sans text-xs text-[oklch(from_var(--fg)_l_c_h_/_0.65)]">
                 x {firstItem?.quantity ?? 0}
               </span>
             </div>

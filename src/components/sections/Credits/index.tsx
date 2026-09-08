@@ -811,7 +811,7 @@ const CreditsInner = (props: CreditComponentProps) => {
                         .map((item, index) => (
                           <m.div
                             key={index + item}
-                            className="relative h-auto w-full flex-none shrink-0 justify-start break-words whitespace-pre-wrap outline-none"
+                            className="relative h-auto w-full flex-none shrink-0 justify-start wrap-break-word whitespace-pre-wrap outline-none"
                           >
                             <m.p className="text-2xl">{item}</m.p>
                           </m.div>

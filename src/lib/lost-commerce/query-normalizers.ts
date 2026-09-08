@@ -2,7 +2,7 @@ import { catalogUnitAmount } from "@/payload/plugins/ecommerce/catalog-money";
 
 type AnyDoc = Record<string, unknown>;
 
-export type LostProductVariant = {
+export type ProductItem = {
   id: string;
   sku?: string | null;
   label: string;
@@ -11,7 +11,7 @@ export type LostProductVariant = {
   amount?: number | null;
 };
 
-export type LostDropCard = {
+export type DropOverview = {
   title: string;
   slug: string;
   kicker?: string;

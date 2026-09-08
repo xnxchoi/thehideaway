@@ -172,7 +172,7 @@ color utility to any element that depends on these defaults.
   }
 
   code {
-    @apply font-mono text-base leading-[1.75] tracking-[0.03px];
+      @apply font-sans text-base leading-[1.75] tracking-[0.03px];
   }
 }
 

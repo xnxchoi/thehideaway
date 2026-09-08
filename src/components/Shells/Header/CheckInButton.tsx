@@ -6,7 +6,7 @@ import { HTMLMotionProps } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-
+import * as m from "motion/react-m";
 const ARC_PATHS = [
   "M6.23454 19.3052C6.42429 18.8483 6.59884 18.3835 6.75758 17.9114",
   "M14.4235 21.0018C14.6981 20.2273 14.9417 19.4381 15.1528 18.6357C15.3443 17.9077 15.5091 17.1689 15.646 16.4204",
@@ -124,12 +124,13 @@ export const CheckInButton = ({
       <MotionLink
         id="checker"
         aria-label="Check-In"
-        data-state={navIsOpen}
         key="checker"
         className={cn(
-          "group relative inline-flex min-h-[40px] touch-manipulation items-center justify-center data-[state=true]:border-current!",
+          "group relative inline-flex min-h-[40px] touch-manipulation items-center justify-center",
           "max-sm:size-[40px] max-sm:rounded-full sm:gap-2",
-          "[@media(hover:hover)]:hover:border-current! [@media(hover:hover)]:hover:bg-transparent!",
+          "hover:border-current hover:bg-transparent",
+          navIsOpen && "border-current!",
+          navIsOpen && "fg-nav-foreground",
           className
         )}
         href="/sign-in"
@@ -145,7 +146,7 @@ export const CheckInButton = ({
           aria-hidden="true"
         >
           {ARC_PATHS.map((d, i) => (
-            <path
+            <m.path
               key={`a-${i}`}
               data-arc={i}
               d={d}
@@ -156,7 +157,14 @@ export const CheckInButton = ({
             />
           ))}
         </svg>
-        <span className="max-sm:sr-only sm:mr-5">Check-In</span>
+        <span
+          className={cn(
+            "max-sm:sr-only sm:mr-5",
+            navIsOpen ? "fg-nav-foreground" : "fg-foreground"
+          )}
+        >
+          Check In
+        </span>
       </MotionLink>
     )
   );

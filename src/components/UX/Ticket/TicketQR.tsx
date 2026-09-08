@@ -15,7 +15,7 @@ export function TicketQR({ value, size = 240, label }: TicketQRProps) {
         <QRCodeSVG value={value} size={size} level="M" includeMargin={false} />
       </div>
       {label ? (
-        <p className="font-mono text-[10px] tracking-widest text-muted-foreground/60 uppercase">
+        <p className="font-sans text-[10px] tracking-widest text-muted-foreground/60 uppercase">
           {label}
         </p>
       ) : null}

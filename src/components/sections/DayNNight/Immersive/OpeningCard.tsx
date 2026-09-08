@@ -82,13 +82,13 @@ export function OpeningCard() {
           style={{ borderColor: "var(--dn-line)" }}
         >
           <span
-            className="font-mono text-[10px] tracking-[0.32em] uppercase"
+            className="font-sans text-[10px] tracking-[0.32em] uppercase"
             style={{ color: "var(--dn-fg)" }}
           >
             {t("opening.invitationLabel")}
           </span>
           <span
-            className="font-mono text-[10px] tracking-[0.18em] uppercase tabular-nums"
+            className="font-sans text-[10px] tracking-[0.18em] uppercase tabular-nums"
             style={{ color: "var(--dn-fg-mute)" }}
           >
             {t("date.short")}

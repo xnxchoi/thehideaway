@@ -10,23 +10,17 @@ import { Link } from "@/components/core/Link/Link";
 import RichText from "@/components/UX/RichText";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
 import type {
-  LostProductCard,
+  ProductListing,
   LostProductDetail
 } from "@/lib/lost-commerce/queries";
 import type { LostOrderMode } from "@/lib/lost-commerce/types";
-import { useLostCart } from "@/lib/lost-commerce/useLostCart";
+import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
 import { cn } from "@/lib/utils";
-import {
-  LostAnnouncementBar,
-  LostGlobalFooterOverride,
-  LostHeader,
-  LostProductSection
-} from "../../components";
-import { useLostCommerceRootRef } from "../../lost-page-state";
+import { ProductSection } from "@lostinseoul/components";
 import {
   getLostProductPanelState,
   lostProductPanelTransition
-} from "../../product-panel-motion";
+} from "@lostinseoul/product-panel-motion";
 import { LostProductStage } from "../../fragrance/product-stage/LostProductStage";
 import {
   getLostProductDesktopSlideClassName,
@@ -45,8 +39,8 @@ import {
   getLostProductDetailPrice,
   getLostProductVariantsForMode,
   hasLostPrivatePresetPrice
-} from "../../product-price-display";
-import "../../index.css";
+} from "@lostinseoul/product-price-display";
+import "@lostinseoul/index.css";
 
 type Labels = {
   announcement: string;
@@ -130,14 +124,14 @@ export function LostProductDetailClient({
 }: {
   drops: Array<{ title: string; slug: string }>;
   product: LostProductDetail;
-  relatedProducts: LostProductCard[];
+  relatedProducts: ProductListing[];
   commerce: CommerceInfo;
   labels: Labels;
   checkoutEnabled: boolean;
   /** Fragrance product only — swaps the left image gallery for the WebGL flacon stage. */
   enableProductStage?: boolean;
 }) {
-  const { add } = useLostCart();
+  const { add } = useStoreCart();
   const router = useRouter();
   const [mode, setMode] = useState<LostOrderMode | null>(
     product.modes[0] ?? null
@@ -147,7 +141,6 @@ export function LostProductDetailClient({
   const [quoteSubmitting, setQuoteSubmitting] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [activePanel, setActivePanel] = useState<string | null>(null);
-  const commerceRootRef = useLostCommerceRootRef();
   const quoteSubmissionRef = useRef<symbol | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState(
     () =>
@@ -391,15 +384,7 @@ export function LostProductDetailClient({
 
   return (
     <>
-      <LostGlobalFooterOverride />
-      <div className="lost-commerce-chrome fixed inset-x-0 top-0 z-[1002]">
-        <LostAnnouncementBar>{labels.announcement}</LostAnnouncementBar>
-        <LostHeader drops={drops} />
-      </div>
-      <main
-        className="lost-commerce-root lost-product-page relative z-[1001] min-h-screen bg-[var(--n-s-bg)] pb-32 text-[var(--n-s-fg)] selection:bg-[var(--n-s-fg)] selection:text-[var(--n-s-bg)] lg:pb-0"
-        ref={commerceRootRef}
-      >
+      <div className="lost-product-page relative z-[1001] min-h-screen bg-[var(--n-s-bg)] pb-32 text-[var(--n-s-fg)] selection:bg-[var(--n-s-fg)] selection:text-[var(--n-s-bg)] lg:pb-0">
         <section
           className="grid bg-[var(--n-s-bg)] pt-[12.3rem] lg:min-h-screen lg:grid-cols-2 lg:pt-0"
           data-section-product-id={product.id}
@@ -569,7 +554,7 @@ export function LostProductDetailClient({
               <div className="grid gap-4 pt-8 pb-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-8 lg:pt-0">
                 <div className="grid min-w-0">
                   <h1
-                    className="col-span-full row-span-full font-sans text-[2.8rem] leading-none font-medium break-words text-[var(--n-s-fg)] lg:text-[4rem] 2xl:text-[4.8rem]"
+                    className="col-span-full row-span-full font-sans text-[2.8rem] leading-none font-medium wrap-break-word text-[var(--n-s-fg)] lg:text-[4rem] 2xl:text-[4.8rem]"
                     data-product-title-current
                   >
                     {product.name}
@@ -633,7 +618,7 @@ export function LostProductDetailClient({
 
                 {mode === "request_to_order" && product.campaign ? (
                   <div className="lost-product-campaign">
-                    <p className="font-mono text-[1.1rem] leading-none tracking-[0.2em] uppercase">
+                    <p className="font-sans text-[1.1rem] leading-none tracking-[0.2em] uppercase">
                       {labels.campaign}
                     </p>
                     <p className="mt-3 text-[1.8rem] leading-tight font-medium">
@@ -647,7 +632,7 @@ export function LostProductDetailClient({
                             style={{ width: `${campaignPercent}%` }}
                           />
                         </div>
-                        <p className="mt-3 font-mono text-[1.1rem] leading-none text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)]">
+                        <p className="mt-3 font-sans text-[1.1rem] leading-none text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)]">
                           {labels.progress} {campaignPercent}%
                         </p>
                       </div>
@@ -657,7 +642,7 @@ export function LostProductDetailClient({
 
                 {variantsForMode.length > 1 ? (
                   <div className="grid gap-y-4">
-                    <p className="font-mono text-[1.1rem] leading-none tracking-[0.12em] text-[var(--n-s-fg)] uppercase lg:text-[1.3rem]">
+                    <p className="font-sans text-[1.1rem] leading-none tracking-[0.12em] text-[var(--n-s-fg)] uppercase lg:text-[1.3rem]">
                       {labels.variants}
                     </p>
                     <ul
@@ -782,7 +767,7 @@ export function LostProductDetailClient({
                   {quoteFailed || added ? (
                     <p
                       aria-live="polite"
-                      className="font-mono text-[1.1rem] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)]"
+                      className="font-sans text-[1.1rem] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)]"
                       role="status"
                     >
                       {quoteFailed ? labels.quoteFailed : labels.added}
@@ -847,7 +832,7 @@ export function LostProductDetailClient({
                 aria-label={commerce.eyebrow}
                 className="grid gap-y-5 border-t border-[oklch(from_var(--white)_l_c_h_/_0.14)] pt-8"
               >
-                <p className="font-mono text-[1.1rem] tracking-[0.18em] text-[oklch(from_var(--white)_l_c_h_/_0.5)] uppercase">
+                <p className="font-sans text-[1.1rem] tracking-[0.18em] text-[oklch(from_var(--white)_l_c_h_/_0.5)] uppercase">
                   {commerce.eyebrow}
                 </p>
                 <div className="grid gap-y-2">
@@ -867,7 +852,7 @@ export function LostProductDetailClient({
                   </p>
                 </div>
                 <Link
-                  className="justify-self-start font-mono text-[1.2rem] tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.85)] underline underline-offset-[0.3em] transition-opacity hover:opacity-70"
+                  className="justify-self-start font-sans text-[1.2rem] tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.85)] underline underline-offset-[0.3em] transition-opacity hover:opacity-70"
                   href="/refund"
                 >
                   {commerce.link}
@@ -886,23 +871,7 @@ export function LostProductDetailClient({
         />
 
         {relatedProducts.length > 0 ? (
-          <LostProductSection
-            cartLabel={labels.cart}
-            emptyLabel=""
-            incomingLabel={labels.related}
-            layout="recommendations"
-            privateModeLabel={labels.private}
-            products={relatedProducts}
-            productsLabel={labels.related}
-            requestQuoteLabel={labels.requestQuote}
-            requestModeLabel={labels.request}
-            searchLabel={labels.related}
-            searchNoResultsLabel=""
-
-            searchResultsLabel={labels.related}
-            standardModeLabel={labels.standard}
-            viewProductLabel={labels.viewProduct}
-          />
+          <ProductSection layout="recommendations" products={relatedProducts} />
         ) : null}
 
         <div className={getLostProductMobileBuybarClassName()}>
@@ -940,7 +909,7 @@ export function LostProductDetailClient({
             </div>
           ) : null}
         </div>
-      </main>
+      </div>
       <AnimatePresence>
         {activeDetail?.panelContent ? (
           <ProductDetailPanel
@@ -994,7 +963,7 @@ function ProductCollectionPush({
           />
         ) : null}
       </div>
-      <div className="z-[2] col-span-full row-span-full grid items-center overflow-hidden">
+      <div className="z-2 col-span-full row-span-full grid items-center overflow-hidden">
         <div className="lost-product-marquee flex w-max flex-nowrap">
           {[0, 1].map((track) => (
             <div
