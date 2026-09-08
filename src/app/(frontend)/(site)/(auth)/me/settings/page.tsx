@@ -10,19 +10,10 @@ import type { User } from "@payload-types";
 import { readLocaleCookie } from "@/i18n/cookie";
 
 import SettingsHubClient from "./page.client";
-import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default function SettingsHubPage() {
-  return (
-    <Suspense>
-      <SettingsHubBody />
-    </Suspense>
-  );
-}
-
-async function SettingsHubBody() {
+export default async function SettingsHubPage() {
   const user = (await currentUser()) as User | null;
   if (!user) return redirect("/sign-in?next=/me/settings");
 

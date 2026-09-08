@@ -188,6 +188,7 @@ export type TransitionContext = {
  *   override         → IMMEDIATE / explicit caller intent
  *   menu open        → FROM_MENU
  *   LOSTINSEOUL internal handoff → LOST_PRODUCT
+ *   /me/settings ↔ /me/settings/* → SHELL (shell stays; pane owns the fade)
  *   from.group ≠ to  → CURTAIN
  *   default          → FADE
  */
@@ -203,6 +204,18 @@ export function pickTransitionType(ctx: TransitionContext): TransitionDecision {
   if (fromLost && toLost && from.pathname !== to.pathname) {
     return { type: "LOST_PRODUCT", from, to };
   }
+  if (
+    isSettingsPath(from.pathname) &&
+    isSettingsPath(to.pathname) &&
+    from.pathname !== to.pathname
+  ) {
+    return { type: "SHELL", from, to };
+  }
   if (from.group !== to.group) return { type: "CURTAIN", from, to };
   return { type: "FADE", from, to };
+}
+
+function isSettingsPath(pathname: string): boolean {
+  const path = normalizePath(pathname);
+  return path === "/me/settings" || path.startsWith("/me/settings/");
 }

@@ -5,7 +5,7 @@
  */
 
 import { errorToast } from "@/components/ui/sonner";
-import { useTransitionRouter } from "next-transition-router";
+import { useIsHydrated } from "@/lib/auth/useIsHydrated";
 import { useTransition } from "react";
 import { butlerLoginAction } from "./butlerLogin.action";
 
@@ -17,7 +17,7 @@ interface DevButlerButtonProps {
 }
 
 export function DevButlerButton({ enabled, reason }: DevButlerButtonProps) {
-  const router = useTransitionRouter();
+  const isHydrated = useIsHydrated();
   const [pending, start] = useTransition();
 
   const onClick = () => {
@@ -27,13 +27,15 @@ export function DevButlerButton({ enabled, reason }: DevButlerButtonProps) {
         errorToast(res.error ?? "Couldn't sign in as Butler.");
         return;
       }
-      router.push("/me/settings/profile");
-      router.refresh();
+      window.location.assign("/me/settings/profile");
     });
   };
 
   return (
-    <div className="z-[120] flex w-full max-w-[384px] flex-col items-stretch gap-2 self-center">
+    <div
+      className="z-[120] flex w-full max-w-[384px] flex-col items-stretch gap-2 self-center"
+      data-auth-ready={isHydrated ? "true" : "false"}
+    >
       <div className="flex items-center gap-3 font-sans text-[9px] tracking-[0.22em] text-foreground/40 uppercase">
         <span className="h-px flex-1 bg-foreground/15" />
         <span>dev only</span>
@@ -42,7 +44,7 @@ export function DevButlerButton({ enabled, reason }: DevButlerButtonProps) {
       <button
         type="button"
         onClick={onClick}
-        disabled={!enabled || pending}
+        disabled={!enabled || pending || !isHydrated}
         className="border border-dashed border-foreground/30 bg-foreground/[0.02] px-4 py-3 font-sans text-[11px] tracking-[0.18em] text-foreground/75 uppercase transition-colors hover:border-foreground/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
       >
         {pending

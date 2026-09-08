@@ -1,10 +1,7 @@
-import { fileURLToPath } from "url";
 import { defineConfig, globalIgnores } from "eslint/config";
 import prettier from "eslint-config-prettier";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTS from "eslint-config-next/typescript";
-
-const __filename = fileURLToPath(import.meta.url);
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -19,7 +16,7 @@ const eslintConfig = defineConfig([
       "react-hooks/refs": "off",
       "react-hooks/exhaustive-deps": "warn",
       "react-hooks/set-state-in-effect": "off",
-	    "react-hooks/immutability": "off",
+      "react-hooks/immutability": "off",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {

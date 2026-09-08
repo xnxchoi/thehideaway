@@ -29,9 +29,6 @@
       "@payload-auth/better-auth/plugin/client": [
         "./src/lib/auth/payload-auth/better-auth/plugin/payload/exports/client.ts"
       ],
-
-      "@betterauth-ui": ["./src/lib/external/betterauth-ui/src"],
-      "@betterauth-ui/*": ["./src/lib/external/betterauth-ui/src/*"],
       "@/AccessControlled/*": ["./src/payload/fields/AccessControlled/*"]
     },
     "plugins": [

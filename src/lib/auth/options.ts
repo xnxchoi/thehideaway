@@ -23,7 +23,6 @@ import { emailHarmony } from "better-auth-harmony";
 import { nextCookies } from "better-auth/next-js";
 import { admin as adminPlugin } from "better-auth/plugins/admin";
 import { emailOTP } from "better-auth/plugins/email-otp";
-import { genericOAuth } from "better-auth/plugins/generic-oauth";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { multiSession } from "better-auth/plugins/multi-session";
 import { organization } from "better-auth/plugins/organization";
@@ -194,6 +193,13 @@ const options = {
           onboarded: false
         };
       }
+    },
+    kakao: {
+      clientId: process.env.AUTH_KAKAO_ID!,
+      clientSecret: process.env.AUTH_KAKAO_SECRET!,
+      disableDefaultScope: true,
+      scope: ["profile_nickname", "account_email"],
+      mapProfileToUser: mapKakaoProfileToUser
     }
   },
   emailVerification: {
@@ -370,47 +376,6 @@ export const betterAuthPlugins = [
     }
   }),
   multiSession(),
-  genericOAuth({
-    config: [
-      {
-        providerId: "naver",
-        clientId: process.env.AUTH_NAVER_ID!,
-        clientSecret: process.env.AUTH_NAVER_SECRET!,
-        authorizationUrl: "https://nid.naver.com/oauth2.0/authorize",
-        tokenUrl: "https://nid.naver.com/oauth2.0/token",
-        userInfoUrl: "https://openapi.naver.com/v1/nid/me",
-        scopes: ["profile", "email"],
-        mapProfileToUser: async (profile) => {
-          // Naver user info is nested under profile.response
-          const p = (profile as any).response || profile;
-          const email = p.email || "";
-          const username = email.split("@")[0] || p.nickname || p.id;
-          return {
-            email,
-            name: p.name || p.nickname || username,
-            username,
-            displayUsername: p.nickname || p.name || username,
-            emailVerified: false,
-            slug: formatUserHandle(username),
-            firstName: p.name?.split(" ")[0],
-            image: p.profile_image,
-            banned: false,
-            onboarded: false
-          };
-        }
-      },
-      {
-        providerId: "kakao",
-        clientId: process.env.AUTH_KAKAO_ID!,
-        clientSecret: process.env.AUTH_KAKAO_SECRET!,
-        authorizationUrl: "https://kauth.kakao.com/oauth/authorize",
-        tokenUrl: "https://kauth.kakao.com/oauth/token",
-        userInfoUrl: "https://kapi.kakao.com/v2/user/me",
-        scopes: ["profile_nickname", "account_email"],
-        mapProfileToUser: mapKakaoProfileToUser
-      }
-    ]
-  }),
   // openAPI(),
   nextCookies()
 ] satisfies BetterAuthOptionsType["plugins"];

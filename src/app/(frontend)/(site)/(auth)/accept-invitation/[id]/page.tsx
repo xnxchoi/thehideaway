@@ -15,6 +15,7 @@ import { useParams } from "next/navigation";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient, organization } from "@/lib/auth/client";
+import { DevAuthLabMount } from "@/lib/auth/dev/lab/DevAuthLabMount";
 import { InvitationError } from "./invitation-error";
 import { RPage } from "@/components/UX/Transition";
 import { useTransitionRouter } from "next-transition-router";
@@ -156,6 +157,11 @@ export default function InvitationPage() {
         ) : (
           <InvitationSkeleton />
         )}
+        {process.env.NODE_ENV !== "production" ? (
+          <div className="absolute bottom-6 left-1/2 z-10 w-full max-w-md -translate-x-1/2 px-4">
+            <DevAuthLabMount />
+          </div>
+        ) : null}
       </div>
     </RPage>
   );

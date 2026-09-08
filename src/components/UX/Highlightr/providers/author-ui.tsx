@@ -13,11 +13,8 @@ import {
 import { GradientSeparator } from "@/components/ui/separator";
 import { Link } from "@/components/core/Link/Link";
 import type { AuthorOverview } from "@types/collections/users";
-import {
-  AuthUIContext,
-  socialProviders
-} from "@/lib/external/betterauth-ui/src";
-import { ProviderButton } from "@/lib/external/betterauth-ui/src/components/auth/provider-button";
+import { ProviderButton } from "@/components/auth";
+import { AUTH_PROVIDERS } from "@/lib/auth/providers";
 import { cn } from "@/lib/utils";
 import { delay, isHangul } from "@/utilities/rp_utils";
 import { useTranslations } from "next-intl";
@@ -26,7 +23,6 @@ import {
   ComponentPropsWithoutRef,
   MouseEventHandler,
   useCallback,
-  useContext,
   useEffect,
   useState
 } from "react";
@@ -86,7 +82,6 @@ export const SignInCard = (
   }
 ) => {
   const { onSignInClick, ...rest } = props;
-  const { localization, social } = useContext(AuthUIContext);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const t = useTranslations("UI.SignIn");
   useEffect(() => {
@@ -114,10 +109,10 @@ export const SignInCard = (
     },
     [onSignInClick, router]
   );
-  const lyt =
-    social?.providers && social.providers.length > 2
-      ? "horizontal"
-      : "vertical";
+  const highlightProviders = AUTH_PROVIDERS.filter(
+    (provider) => provider.id === "google"
+  );
+  const lyt = highlightProviders.length > 2 ? "horizontal" : "vertical";
 
   return (
     <div className={cn("flex flex-col gap-9")}>
@@ -130,22 +125,15 @@ export const SignInCard = (
                 lyt === "horizontal" ? "flex-wrap" : "flex-col"
               )}
             >
-              {social?.providers?.map((provider) => {
-                const socialProvider = socialProviders.find(
-                  (socialProvider) => socialProvider.provider === provider
-                );
-                if (!socialProvider) return null;
-                return (
-                  <ProviderButton
-                    key={provider}
-                    isSubmitting={isSubmitting}
-                    localization={localization}
-                    provider={socialProvider}
-                    setIsSubmitting={setIsSubmitting}
-                    socialLayout={lyt}
-                  />
-                );
-              })}
+              {highlightProviders.map((provider) => (
+                <ProviderButton
+                  key={provider.id}
+                  isSubmitting={isSubmitting}
+                  provider={provider}
+                  setIsSubmitting={setIsSubmitting}
+                  socialLayout={lyt}
+                />
+              ))}
             </div>
             <GradientSeparator caption={t("separator")} />
             <UIBtn

@@ -1,17 +1,22 @@
-import { accountViewPaths } from "@betterauth-ui/lib/view-paths";
-import { AccountView } from "@betterauth-ui/components/account/account-view";
-export function generateStaticParams() {
-  return Object.values(accountViewPaths).map((path) => ({ path }));
-}
+import { connection } from "next/server";
+import { redirect } from "next/navigation";
+
+export const instant = false;
+
+const ACCOUNT_PATH_REDIRECTS: Record<string, string> = {
+  settings: "/me/settings",
+  security: "/me/settings/security",
+  teams: "/me/settings",
+  "api-keys": "/me/settings",
+  organizations: "/me/settings"
+};
+
 export default async function AccountPage({
   params
 }: {
   params: Promise<{ path: string }>;
 }) {
+  await connection();
   const { path } = await params;
-  return (
-    <main className="container p-4 md:p-6">
-      <AccountView path={path} />
-    </main>
-  );
+  redirect(ACCOUNT_PATH_REDIRECTS[path] ?? "/me/settings");
 }

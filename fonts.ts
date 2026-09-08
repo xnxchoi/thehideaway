@@ -2,12 +2,12 @@ import localFont from "next/font/local";
 export const instrumentSerif = localFont({
   src: [
     {
-      path: "public/assets/fonts/InstrumentSerif/InnstrumentSerif-Regular.ttf",
+      path: "public/assets/fonts/InstrumentSerif/InstrumentSerif-Regular.ttf",
       weight: "400",
       style: "normal"
     },
     {
-      path: "public/assets/fonts/InstrumentSerif/InnstrumentSerif-Italic.ttf",
+      path: "public/assets/fonts/InstrumentSerif/InstrumentSerif-Italic.ttf",
       weight: "400",
       style: "italic"
     }
@@ -28,7 +28,7 @@ const Caveat = localFont({
 const RalewayDots = localFont({
   src: [
     {
-      path: "public/assets/fonts/RalewayDots/RalewayDots-Regular.ttf",
+      path: "public/assets/fonts/Raleway_Dots/RalewayDots-Regular.ttf",
       weight: "400"
     }
   ],

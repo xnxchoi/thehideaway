@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@/components/core/Link/Link";
+import { useTransitionSetter } from "@/components/UX/Transition/useTransitionSetter";
 import {
   Bell,
   IdCard,
@@ -9,11 +9,14 @@ import {
   UserRound,
   type LucideIcon
 } from "lucide-react";
+import { LayoutGroup } from "motion/react";
+import * as m from "motion/react-m";
 import { useTranslations } from "next-intl";
-import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
+import { useSettingsNav } from "./SettingsNav";
 import { SETTINGS_SECTION_SLUGS, type SettingsSectionSlug } from "./sections";
 
 /**
@@ -65,52 +68,70 @@ const isActive = (pathname: string, slug: SettingsSectionSlug) =>
   pathname.startsWith(`${SETTINGS_BASE}/${slug}/`);
 
 export function SettingsRail() {
-  const pathname = usePathname();
   const t = useTranslations("Settings");
   const tSections = useTranslations("Settings.sections");
+  const { setGenericPageTransition } = useTransitionSetter();
+  const { pathname, pendingHref, setPendingHref } = useSettingsNav();
+  const activePath = pendingHref ?? pathname;
 
   return (
-    <nav
-      aria-label={t("navAria")}
-      className="flex w-full flex-col justify-around"
-    >
-      {SETTINGS_SECTION_SLUGS.map((slug) => {
-        const active = isActive(pathname, slug);
-        const decor = RAIL_DECOR[slug];
-        const Icon = decor.icon;
-        const label = tSections(`${slug}.label`);
-        return (
-          <Link
-            key={slug}
-            href={`${SETTINGS_BASE}/${slug}`}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "group flex items-center gap-9 rounded-2xl px-6 py-6 transition-colors duration-150 ease-out-power2",
-              active ? "bg-foreground/10" : "hover:bg-foreground/5"
-            )}
-          >
-            <span
-              aria-hidden="true"
+    <LayoutGroup id="settings-rail">
+      <nav
+        aria-label={t("navAria")}
+        className="flex w-full flex-col justify-around"
+      >
+        {SETTINGS_SECTION_SLUGS.map((slug) => {
+          const href = `${SETTINGS_BASE}/${slug}`;
+          const active = isActive(activePath, slug);
+          const decor = RAIL_DECOR[slug];
+          const Icon = decor.icon;
+          const label = tSections(`${slug}.label`);
+          return (
+            <Link
+              key={slug}
+              href={href}
+              scroll={false}
+              prefetch
+              aria-current={active ? "page" : undefined}
+              onClick={() => {
+                setPendingHref(href);
+                setGenericPageTransition(href, { override: "SHELL" });
+              }}
               className={cn(
-                "flex size-14 shrink-0 items-center justify-center rounded-[14px]",
-                TILE_TONES[decor.tone]
+                "group relative flex items-center gap-9 rounded-2xl px-6 py-6 transition-colors duration-150 ease-out-power2",
+                !active && "hover:bg-foreground/5"
               )}
             >
-              <Icon size={35} strokeWidth={1.4} />
-            </span>
-            <span
-              className={cn(
-                "text-base tracking-tight transition-colors duration-150",
-                active
-                  ? "font-medium text-foreground"
-                  : "text-foreground/75 group-hover:text-foreground dark:text-foreground/65"
-              )}
-            >
-              {label}
-            </span>
-          </Link>
-        );
-      })}
-    </nav>
+              {active ? (
+                <m.span
+                  layoutId="settings-rail-active"
+                  className="absolute inset-0 rounded-2xl bg-foreground/10"
+                  transition={{ type: "spring", bounce: 0.15, duration: 0.35 }}
+                />
+              ) : null}
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "relative z-10 flex size-14 shrink-0 items-center justify-center rounded-[14px]",
+                  TILE_TONES[decor.tone]
+                )}
+              >
+                <Icon size={35} strokeWidth={1.4} />
+              </span>
+              <span
+                className={cn(
+                  "relative z-10 text-base tracking-tight transition-colors duration-150",
+                  active
+                    ? "font-medium text-foreground"
+                    : "text-foreground/75 group-hover:text-foreground dark:text-foreground/65"
+                )}
+              >
+                {label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </LayoutGroup>
   );
 }

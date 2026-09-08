@@ -32,7 +32,7 @@ const payloadUserTypeSource = payloadTypesSource.slice(
   userInterfaceEnd
 );
 
-const BETTER_AUTH_VERSION = "1.6.25";
+const BETTER_AUTH_VERSION = "^1.7.3";
 const BETTER_AUTH_RUNTIME_PACKAGES = [
   "better-auth",
   "@better-auth/core",
@@ -80,10 +80,10 @@ describe("Better Auth security upgrade contract", () => {
     expect(packageJSON.devDependencies["@better-auth/scim"]).toBeUndefined();
   });
 
-  it("aligns Better Auth support packages with the 1.6.25 peer contract", () => {
-    expect(packageJSON.dependencies["@better-auth/utils"]).toBe("0.4.2");
-    expect(packageJSON.dependencies["@better-fetch/fetch"]).toBe("1.3.1");
-    expect(packageJSON.dependencies["better-call"]).toBe("1.3.7");
+  it("aligns Better Auth support packages with the 1.7.3 peer contract", () => {
+    expect(packageJSON.dependencies["@better-auth/utils"]).toBe("^0.5.0");
+    expect(packageJSON.dependencies["@better-fetch/fetch"]).toBe("^1.3.1");
+    expect(packageJSON.dependencies["better-call"]).toBe("^1.4.0");
   });
 
   it("infers customized client fields from the server options and keeps them in Payload types", () => {

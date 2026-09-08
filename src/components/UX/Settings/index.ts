@@ -32,6 +32,8 @@ export { SectionLink, SectionGroup } from "./SectionLink";
 export { QuickStrip } from "./QuickStrip";
 export { SubRouteHeader } from "./SubRouteHeader";
 export { SettingsRail } from "./SettingsRail";
+export { SettingsPane } from "./SettingsPane";
+export { SettingsNavProvider } from "./SettingsNav";
 export {
   FieldRow,
   LockedField,

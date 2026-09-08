@@ -15,7 +15,9 @@ export const socialProviders = [
   "roblox",
   "vk",
   "kick",
-  "reddit"
+  "reddit",
+  "kakao",
+  "naver"
 ] as const;
 
 export const loginMethods = [

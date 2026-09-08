@@ -33,7 +33,8 @@ export type PageTransitionType =
   | "FROM_MENU"
   | "CURTAIN"
   | "LOST_PRODUCT"
-  | "IMMEDIATE";
+  | "IMMEDIATE"
+  | "SHELL";
 /**
  * @description Information on the transition trigger.
  * @property origin - what caused the navigation, default null
@@ -255,6 +256,21 @@ export const transitionMappings: TransitionMap<Transitions> = {
         ease: "easeOut"
       }
     }
+  },
+  SHELL: {
+    start: {},
+    enter: {
+      opacity: 1,
+      transition: {
+        duration: 0
+      }
+    },
+    exit: {
+      opacity: 1,
+      transition: {
+        duration: 0
+      }
+    }
   }
 };
 export const getPageTransitionVariants = (l: PageTransitionType) => {
@@ -264,6 +280,7 @@ export const getPageTransitionVariants = (l: PageTransitionType) => {
     l === "CURTAIN" && (c = transitionMappings.CURTAIN),
     l === "LOST_PRODUCT" && (c = transitionMappings.LOST_PRODUCT),
     l === "IMMEDIATE" && (c = transitionMappings.IMMEDIATE),
+    l === "SHELL" && (c = transitionMappings.SHELL),
     c
   );
 };

@@ -24,14 +24,13 @@ socialProviders: {
 }
 ```
 
-**Non-native provider** (Naver, Kakao, etc. — use `genericOAuth`):
+**Provider without a built-in helper** (use `genericOAuth`, which registers as a social provider in Better Auth 1.7):
 
 ```ts
-// Already imported: import { genericOAuth } from "better-auth/plugins/generic-oauth"
-// Add to betterAuthPlugins array alongside existing genericOAuth config:
+import { genericOAuth } from "better-auth/plugins/generic-oauth";
+
 genericOAuth({
   config: [
-    // existing naver config...
     {
       providerId: "yourprovider",
       clientId: process.env.YOUR_PROVIDER_CLIENT_ID!,
@@ -43,12 +42,13 @@ genericOAuth({
       mapProfileToUser: async (profile) => ({
         email: profile.email,
         name: profile.name
-        // ...
       })
     }
   ]
 });
 ```
+
+Sign-in is the same as a native provider: `authClient.signIn.social({ provider: "yourprovider" })`. Callback URL is `/api/auth/callback/yourprovider`.
 
 Also add to `account.accountLinking.trustedProviders`:
 
@@ -60,9 +60,9 @@ trustedProviders: ["google", "email-password", "naver", "yourprovider"];
 
 For native providers: no client plugin needed, sign-in uses `authClient.signIn.social({ provider: "yourprovider" })`.
 
-For genericOAuth providers: already included via `genericOAuthClient()` — no additional changes needed.
+For every provider, including ones registered through `genericOAuth`, sign-in is `authClient.signIn.social({ provider: "yourprovider" })`. No extra client plugin.
 
-### Step 3 — UI: `src/lib/auth/betterauth-ui/src/components/provider-icons.tsx`
+### Step 3 — UI: `src/components/auth/icons.tsx`
 
 Add the provider icon:
 
@@ -78,23 +78,18 @@ export const YourProviderIcon: ProviderIcon = ({ className }) => (
 );
 ```
 
-### Step 4 — UI: `src/app/(frontend)/(site)/(auth)/authProviders.tsx`
+### Step 4 — UI: `src/lib/auth/providers.ts`
 
-**Native provider** — add to `social.providers`:
+**Native provider** — `kind: "social"`:
 
-```tsx
-social={{ providers: ["google", "yourprovider"] }}
+```ts
+{ id: "yourprovider", name: "Your Provider", icon: YourProviderIcon, kind: "social" }
 ```
 
-**genericOAuth provider** — add to `genericOAuth.providers`:
+Add the same provider to `AUTH_PROVIDERS` with `kind: "social"` (Better Auth 1.7 treats generic OAuth as a social provider):
 
-```tsx
-genericOAuth={{
-  providers: [
-    { provider: "naver", name: "Naver", icon: NaverIcon },
-    { provider: "yourprovider", name: "Your Provider", icon: YourProviderIcon }
-  ]
-}}
+```ts
+{ id: "yourprovider", name: "Your Provider", icon: YourProviderIcon, kind: "social" }
 ```
 
 ### Step 5 — Environment variables
@@ -115,7 +110,7 @@ YOUR_PROVIDER_CLIENT_SECRET=
 | Item                             | Value                                                          |
 | -------------------------------- | -------------------------------------------------------------- |
 | **Google callback URL**        | `https://hideawayseoul.com/api/auth/callback/google`        |
-| **Generic OAuth callback URL** | `https://hideawayseoul.com/api/auth/oauth2/callback/{id}`   |
+| **Generic OAuth callback URL** | `https://hideawayseoul.com/api/auth/callback/{id}`   |
 | **Homepage URL**               | `https://hideawayseoul.com`                                 |
 | **Privacy Policy URL**         | `https://hideawayseoul.com/privacy`                         |
 | **Terms of Service URL**       | `https://hideawayseoul.com/terms`                           |
@@ -166,7 +161,7 @@ Google's verification process typically takes **3–5 business days** for apps r
 
 - [ ] Naver developer account created
 - [ ] Application registered with service type: `Web`
-- [ ] Callback URL registered: `https://hideawayseoul.com/api/auth/oauth2/callback/naver`
+- [ ] Callback URL registered: `https://hideawayseoul.com/api/auth/callback/naver`
 - [ ] Required permissions requested: `회원이름(name)`, `이메일 주소(email)`
 - [ ] Service description (Korean required): 회원가입 및 간편 로그인
 - [ ] Icon/logo uploaded
@@ -191,18 +186,15 @@ AUTH_NAVER_SECRET= # "Client Secret" from Naver developer console
 
 **Developer Console:** https://developers.kakao.com/
 
-Kakao is integrated as a Better Auth generic OAuth provider.
+Kakao is a built-in Better Auth social provider.
 
 ### Implementation notes
 
-- Use `genericOAuth` (Kakao is not a native better-auth provider)
-- Authorization URL: `https://kauth.kakao.com/oauth/authorize`
-- Token URL: `https://kauth.kakao.com/oauth/token`
-- User info URL: `https://kapi.kakao.com/v2/user/me`
-- Scopes: `profile_nickname`, `account_email`
+- Configure under `socialProviders.kakao` in `options.ts`
+- Keep `disableDefaultScope: true` and `scope: ["profile_nickname", "account_email"]` so we do not request `profile_image`
 - User info response path: `profile.kakao_account.profile`, `profile.kakao_account.email`
 - Required env vars: `AUTH_KAKAO_ID`, `AUTH_KAKAO_SECRET`
-- Production callback shape: `https://hideawayseoul.com/api/auth/oauth2/callback/kakao`
+- Production callback shape: `https://hideawayseoul.com/api/auth/callback/kakao`
 
 ### Approval notes
 
@@ -217,10 +209,10 @@ Kakao is integrated as a Better Auth generic OAuth provider.
 
 1. Register app at provider's developer portal, get `CLIENT_ID` and `CLIENT_SECRET`
 2. Register callback URL: native providers use `/api/auth/callback/<providerId>`;
-   generic OAuth providers use `/api/auth/oauth2/callback/<providerId>`
+   generic OAuth providers now also use `/api/auth/callback/<providerId>`
 3. Add env vars to `.env` and deployment
-4. Add to `options.ts` (native via `socialProviders` or generic via `genericOAuth`)
-5. Add icon to `provider-icons.tsx`
-6. Add to `authProviders.tsx` (`social.providers` or `genericOAuth.providers`)
+4. Add to `options.ts` (`socialProviders` when Better Auth has a built-in helper; otherwise `genericOAuth`, which still signs in through `signIn.social`)
+5. Add icon to `src/components/auth/icons.tsx`
+6. Add to `src/lib/auth/providers.ts` with `kind: "social"`
 7. If needed, add to `account.accountLinking.trustedProviders` in `options.ts`
 8. Submit for provider's app verification per their checklist above

@@ -1,9 +1,13 @@
 import { getTranslations } from "next-intl/server";
-import { AuthView as AuthCard } from "@betterauth-ui";
+import { connection } from "next/server";
+import { AuthView as AuthCard } from "@/components/auth";
 import { Link } from "@/components/core/Link/Link";
 import { RPage } from "@/components/UX/Transition";
+import { DevAuthLabMount } from "@/lib/auth/dev/lab/DevAuthLabMount";
 import { signInRedirectTarget } from "@/lib/routes/auth";
 import "@lostinseoul/index.css";
+
+export const instant = false;
 
 type SearchParams = Promise<{
   redirectTo?: string | string[];
@@ -15,6 +19,7 @@ type SearchParams = Promise<{
 export default async function LostSignInPage(props: {
   searchParams?: SearchParams;
 }) {
+  await connection();
   const searchParams = props.searchParams ? await props.searchParams : {};
   const redirectTo = signInRedirectTarget(searchParams);
   const t = await getTranslations("LOSTINSEOUL");
@@ -40,6 +45,11 @@ export default async function LostSignInPage(props: {
 
           <section className="border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.16)] bg-[oklch(from_var(--n-s-bg)_l_c_h_/_0.72)] p-5 backdrop-blur-xl md:p-7">
             <AuthCard view="SIGN_IN" redirectTo={redirectTo} />
+            {process.env.NODE_ENV !== "production" ? (
+              <div className="mt-6">
+                <DevAuthLabMount />
+              </div>
+            ) : null}
           </section>
         </div>
       </main>

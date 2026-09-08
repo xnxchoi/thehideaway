@@ -1,21 +1,23 @@
-import { RPage } from "@/components/UX/Transition";
-import { AuthView, authViewPaths } from "@betterauth-ui";
+import { connection } from "next/server";
+import { redirect } from "next/navigation";
 
-export function generateStaticParams() {
-  return Object.values(authViewPaths).map((path) => ({ path }));
-}
+export const instant = false;
+
+const AUTH_PATH_REDIRECTS: Record<string, string> = {
+  "sign-in": "/sign-in",
+  "sign-up": "/sign-up",
+  "forgot-password": "/forgot-password",
+  "reset-password": "/reset-password",
+  "two-factor": "/two-factor"
+};
+
 export default async function AuthPage({
   params
 }: {
   params: Promise<{ path: string }>;
 }) {
+  await connection();
   const { path } = await params;
-
-  return (
-    <RPage type="auth" slug={[path]}>
-      <main className="container flex grow flex-col items-center justify-center self-center p-4 md:p-6">
-        <AuthView redirectTo={"/me"} path={path} />
-      </main>
-    </RPage>
-  );
+  const target = AUTH_PATH_REDIRECTS[path] ?? "/sign-in";
+  redirect(target);
 }

@@ -14,7 +14,7 @@ import {
 import { useTransitionRouter } from "next-transition-router";
 import { useTranslations } from "next-intl";
 import QRCode from "react-qr-code";
-import { use, useMemo, useState } from "react";
+import { Suspense, use, useMemo, useState } from "react";
 import { UAParser } from "ua-parser-js";
 
 import { RP_Btn } from "@/components/core/Button";
@@ -63,29 +63,6 @@ interface SecuritySectionClientProps {
 export default function SecuritySectionClient({
   user
 }: SecuritySectionClientProps) {
-  const { sessionPromise, deviceSessionsPromise, userAccountsPromise } =
-    useBetterAuth();
-
-  const combined = useMemo(
-    () => Promise.all([sessionPromise, deviceSessionsPromise]),
-    [sessionPromise, deviceSessionsPromise]
-  );
-  const [session, sessions] = use(combined);
-
-  const accounts = use(userAccountsPromise);
-  const passkeys = authClient.useListPasskeys();
-
-  const linked = useMemo(() => {
-    const set = new Set<string>();
-    accounts?.forEach((a) => {
-      if (a.providerId) set.add(a.providerId);
-      a.scopes?.forEach((s) => set.add(s));
-    });
-    return set;
-  }, [accounts]);
-
-  const activeCount = sessions?.filter((s) => s?.userAgent).length ?? 0;
-
   return (
     <RPage type="account" slug={[]}>
       <div className="flex w-full flex-col gap-8">
@@ -95,161 +72,242 @@ export default function SecuritySectionClient({
         />
 
         <PanelBento>
-          {/* Two-factor */}
-          <Panel>
-            <PanelGrid>
-              <PanelHeader
-                eyebrow="Two-factor"
-                blurb="An authenticator app generates a 6-digit code that's required after your password."
-                meta={
-                  user.twoFactorEnabled ? (
-                    <span className="text-foreground/85">Enabled</span>
-                  ) : (
-                    <span className="text-foreground/65 dark:text-foreground/60">
-                      Off
-                    </span>
-                  )
-                }
-              />
-              <PanelControls>
-                <ActionField
-                  label="Authenticator"
-                  description={
-                    user.twoFactorEnabled
-                      ? "2FA is active for sign-in."
-                      : "Add an extra layer of security."
-                  }
-                >
-                  {user.twoFactorEnabled ? <ShowQrDialog /> : null}
-                  <TwoFactorToggleDialog
-                    enabled={Boolean(user.twoFactorEnabled)}
-                  />
-                </ActionField>
-              </PanelControls>
-            </PanelGrid>
-          </Panel>
-
-          {/* Active sessions */}
-          <Panel>
-            <PanelGrid>
-              <PanelHeader
-                eyebrow="Sessions"
-                blurb="If a device looks unfamiliar, terminate it."
-                meta={
-                  <span className="text-foreground/75 tabular-nums">
-                    {String(activeCount).padStart(2, "0")} active
-                  </span>
-                }
-              />
-              <PanelControls>
-                {(sessions ?? [])
-                  .filter((s) => s?.userAgent)
-                  .map((s) => {
-                    const ua = new UAParser(s.userAgent || "");
-                    const isMobile = ua.getDevice().type === "mobile";
-                    const os = ua.getOS().name ?? "Unknown";
-                    const browser = ua.getBrowser().name ?? "Unknown";
-                    const isCurrent = session?.session.id === s.id;
-                    return (
-                      <SessionRow
-                        key={s.id}
-                        token={s.token}
-                        isCurrent={isCurrent}
-                        isMobile={isMobile}
-                        os={os}
-                        browser={browser}
-                      />
-                    );
-                  })}
-                <ActionField
-                  label="Sign out everywhere else"
-                  description="Terminate every session except the one you're using right now."
-                >
-                  <RevokeOthers />
-                </ActionField>
-              </PanelControls>
-            </PanelGrid>
-          </Panel>
-
-          {/* Sign-in providers (folded in from /connected) */}
-          <Panel>
-            <PanelGrid>
-              <PanelHeader
-                eyebrow="Providers"
-                blurb="Sign in with any of these. First sign-in with a provider links it automatically."
-              />
-              <PanelControls>
-                <ProviderRow
-                  slug="credential"
-                  isLinked={linked.has("credential")}
-                />
-                <ProviderRow slug="google" isLinked={linked.has("google")} />
-                <ProviderRow slug="naver" isLinked={linked.has("naver")} />
-                <ProviderRow slug="kakao" isLinked={linked.has("kakao")} />
-              </PanelControls>
-            </PanelGrid>
-          </Panel>
-
-          {/* Passkeys (folded in from /connected) */}
-          <Panel>
-            <PanelGrid>
-              <PanelHeader
-                eyebrow="Passkeys"
-                blurb="Hardware-backed sign-in via Face ID, Touch ID, Windows Hello, or a security key."
-                meta={
-                  <span className="text-foreground/75 tabular-nums">
-                    {String(passkeys.data?.length ?? 0).padStart(2, "0")} added
-                  </span>
-                }
-              />
-              <PanelControls>
-                {(passkeys.data ?? []).length === 0 ? (
-                  <div className="rounded-lg bg-foreground/[0.025] px-4 py-3 text-sm text-foreground/65 dark:bg-foreground/[0.03] dark:text-foreground/60">
-                    No passkeys yet. Add one to skip the password.
-                  </div>
-                ) : (
-                  passkeys.data?.map((pk) => (
-                    <PasskeyRow
-                      key={pk.id}
-                      id={pk.id}
-                      name={pk.name ?? "My Passkey"}
-                      createdAt={
-                        pk.createdAt as Date | string | number | undefined
-                      }
-                    />
-                  ))
-                )}
-                <ActionField
-                  label="Add a passkey"
-                  description="Register a new device or security key."
-                >
-                  <AddPasskeyDialog />
-                </ActionField>
-              </PanelControls>
-            </PanelGrid>
-          </Panel>
-
-          {/* Danger */}
-          <Panel>
-            <PanelGrid>
-              <PanelHeader
-                eyebrow="Account closure"
-                blurb="Permanently removes your access. Authored content may be retained per our policy."
-              />
-              <PanelControls>
-                <ActionField
-                  label="Delete account"
-                  description="This action is permanent."
-                  tone="danger"
-                >
-                  <DeleteAccountDialog />
-                </ActionField>
-              </PanelControls>
-            </PanelGrid>
-          </Panel>
+          <TwoFactorPanel enabled={Boolean(user.twoFactorEnabled)} />
+          <SessionsPanel />
+          <ProvidersPanel />
+          <PasskeysPanel />
+          <DangerPanel />
         </PanelBento>
       </div>
     </RPage>
+  );
+}
+
+function TwoFactorPanel({ enabled }: { enabled: boolean }) {
+  return (
+    <Panel>
+      <PanelGrid>
+        <PanelHeader
+          eyebrow="Two-factor"
+          blurb="An authenticator app generates a 6-digit code that's required after your password."
+          meta={
+            enabled ? (
+              <span className="text-foreground/85">Enabled</span>
+            ) : (
+              <span className="text-foreground/65 dark:text-foreground/60">
+                Off
+              </span>
+            )
+          }
+        />
+        <PanelControls>
+          <ActionField
+            label="Authenticator"
+            description={
+              enabled
+                ? "2FA is active for sign-in."
+                : "Add an extra layer of security."
+            }
+          >
+            {enabled ? <ShowQrDialog /> : null}
+            <TwoFactorToggleDialog enabled={enabled} />
+          </ActionField>
+        </PanelControls>
+      </PanelGrid>
+    </Panel>
+  );
+}
+
+function SessionsPanel() {
+  return (
+    <Panel>
+      <PanelGrid>
+        <PanelHeader
+          eyebrow="Sessions"
+          blurb="If a device looks unfamiliar, terminate it."
+          meta={
+            <Suspense
+              fallback={
+                <span className="text-foreground/40 tabular-nums">—</span>
+              }
+            >
+              <SessionCount />
+            </Suspense>
+          }
+        />
+        <PanelControls>
+          <Suspense fallback={<QueryRowsFallback rows={3} />}>
+            <SessionRows />
+          </Suspense>
+          <ActionField
+            label="Sign out everywhere else"
+            description="Terminate every session except the one you're using right now."
+          >
+            <RevokeOthers />
+          </ActionField>
+        </PanelControls>
+      </PanelGrid>
+    </Panel>
+  );
+}
+
+function SessionCount() {
+  const { deviceSessionsPromise } = useBetterAuth();
+  const sessions = use(deviceSessionsPromise);
+  const activeCount = sessions?.filter((s) => s?.userAgent).length ?? 0;
+  return (
+    <span className="text-foreground/75 tabular-nums">
+      {String(activeCount).padStart(2, "0")} active
+    </span>
+  );
+}
+
+function SessionRows() {
+  const { sessionPromise, deviceSessionsPromise } = useBetterAuth();
+  const combined = useMemo(
+    () => Promise.all([sessionPromise, deviceSessionsPromise]),
+    [sessionPromise, deviceSessionsPromise]
+  );
+  const [session, sessions] = use(combined);
+
+  return (
+    <>
+      {(sessions ?? [])
+        .filter((s) => s?.userAgent)
+        .map((s) => {
+          const ua = new UAParser(s.userAgent || "");
+          const isMobile = ua.getDevice().type === "mobile";
+          const os = ua.getOS().name ?? "Unknown";
+          const browser = ua.getBrowser().name ?? "Unknown";
+          const isCurrent = session?.session.id === s.id;
+          return (
+            <SessionRow
+              key={s.id}
+              token={s.token}
+              isCurrent={isCurrent}
+              isMobile={isMobile}
+              os={os}
+              browser={browser}
+            />
+          );
+        })}
+    </>
+  );
+}
+
+function ProvidersPanel() {
+  return (
+    <Panel>
+      <PanelGrid>
+        <PanelHeader
+          eyebrow="Providers"
+          blurb="Sign in with any of these. First sign-in with a provider links it automatically."
+        />
+        <PanelControls>
+          <Suspense fallback={<QueryRowsFallback rows={4} />}>
+            <ProviderRows />
+          </Suspense>
+        </PanelControls>
+      </PanelGrid>
+    </Panel>
+  );
+}
+
+function ProviderRows() {
+  const { userAccountsPromise } = useBetterAuth();
+  const accounts = use(userAccountsPromise);
+  const linked = useMemo(() => {
+    const set = new Set<string>();
+    accounts?.forEach((a) => {
+      if (a.providerId) set.add(a.providerId);
+      a.scopes?.forEach((s) => set.add(s));
+    });
+    return set;
+  }, [accounts]);
+
+  return (
+    <>
+      <ProviderRow slug="credential" isLinked={linked.has("credential")} />
+      <ProviderRow slug="google" isLinked={linked.has("google")} />
+      <ProviderRow slug="naver" isLinked={linked.has("naver")} />
+      <ProviderRow slug="kakao" isLinked={linked.has("kakao")} />
+    </>
+  );
+}
+
+function PasskeysPanel() {
+  const passkeys = authClient.useListPasskeys();
+  return (
+    <Panel>
+      <PanelGrid>
+        <PanelHeader
+          eyebrow="Passkeys"
+          blurb="Hardware-backed sign-in via Face ID, Touch ID, Windows Hello, or a security key."
+          meta={
+            <span className="text-foreground/75 tabular-nums">
+              {String(passkeys.data?.length ?? 0).padStart(2, "0")} added
+            </span>
+          }
+        />
+        <PanelControls>
+          {(passkeys.data ?? []).length === 0 ? (
+            <div className="rounded-lg bg-foreground/[0.025] px-4 py-3 text-sm text-foreground/65 dark:bg-foreground/[0.03] dark:text-foreground/60">
+              No passkeys yet. Add one to skip the password.
+            </div>
+          ) : (
+            passkeys.data?.map((pk) => (
+              <PasskeyRow
+                key={pk.id}
+                id={pk.id}
+                name={pk.name ?? "My Passkey"}
+                createdAt={pk.createdAt as Date | string | number | undefined}
+              />
+            ))
+          )}
+          <ActionField
+            label="Add a passkey"
+            description="Register a new device or security key."
+          >
+            <AddPasskeyDialog />
+          </ActionField>
+        </PanelControls>
+      </PanelGrid>
+    </Panel>
+  );
+}
+
+function DangerPanel() {
+  return (
+    <Panel>
+      <PanelGrid>
+        <PanelHeader
+          eyebrow="Account closure"
+          blurb="Permanently removes your access. Authored content may be retained per our policy."
+        />
+        <PanelControls>
+          <ActionField
+            label="Delete account"
+            description="This action is permanent."
+            tone="danger"
+          >
+            <DeleteAccountDialog />
+          </ActionField>
+        </PanelControls>
+      </PanelGrid>
+    </Panel>
+  );
+}
+
+function QueryRowsFallback({ rows }: { rows: number }) {
+  return (
+    <div aria-hidden className="flex flex-col gap-2">
+      {Array.from({ length: rows }, (_, index) => (
+        <div
+          key={index}
+          className="h-14 rounded-lg bg-foreground/[0.025] dark:bg-foreground/[0.03]"
+        />
+      ))}
+    </div>
   );
 }
 

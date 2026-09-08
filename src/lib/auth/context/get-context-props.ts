@@ -1,6 +1,7 @@
 import type {BetterPaidAccount, BetterPaidDeviceSession} from "@/lib/auth/types"
 import {getPayload} from "@/lib/payload"
 import {headers as requestHeaders} from "next/headers"
+import { cache } from "react"
 
 export const getSession = async () => {
 	try {
@@ -34,7 +35,7 @@ export const getDeviceSessions = async (): Promise<BetterPaidDeviceSession[] | n
 	}
 }
 
-export const currentUser = async () => {
+export const currentUser = cache(async () => {
 	try {
 		const payload = await getPayload()
 		const headers = await requestHeaders()
@@ -43,7 +44,7 @@ export const currentUser = async () => {
 	} catch {
 		return null
 	}
-}
+})
 
 export const getContextProps = () => {
 	const sessionPromise = getSession()

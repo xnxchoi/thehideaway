@@ -10,19 +10,10 @@ import {
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { RPage } from "@/components/UX/Transition";
-import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Notifications · Settings" };
 
-export default function NotificationsSettingsPage() {
-  return (
-    <Suspense>
-      <NotificationsSettingsBody />
-    </Suspense>
-  );
-}
-
-async function NotificationsSettingsBody() {
+export default async function NotificationsSettingsPage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in?next=/me/settings/notifications");
 

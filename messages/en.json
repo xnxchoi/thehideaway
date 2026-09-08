@@ -31,6 +31,127 @@
       "previous": "Previous"
     }
   },
+  "Auth": {
+    "signIn": {
+      "title": "Sign In",
+      "description": "Enter your email below to login to your account",
+      "action": "Login",
+      "usernamePlaceholder": "Username or email",
+      "forgotPasswordLink": "Forgot your password?"
+    },
+    "signUp": {
+      "title": "Sign Up",
+      "description": "Enter your information to create an account",
+      "action": "Create an account",
+      "emailSent": "Check your email for the verification link."
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "description": "Enter your email to reset your password",
+      "action": "Send reset link",
+      "emailSent": "Check your email for the password reset link."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your new password below",
+      "action": "Save new password",
+      "success": "Password reset successfully",
+      "invalidToken": "Invalid token",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "New Password",
+      "newPasswordRequired": "New password is required"
+    },
+    "fields": {
+      "email": "Email",
+      "username": "Username",
+      "password": "Password",
+      "name": "Name",
+      "location": "Location",
+      "bio": "Bio",
+      "link": "Link",
+      "passwordPlaceholder": "Password",
+      "emailPlaceholder": "m@example.com",
+      "namePlaceholder": "Name",
+      "usernamePlaceholder": "Username",
+      "locationPlaceholder": "Seoul, South Korea",
+      "bioPlaceholder": "I am an artist...",
+      "linkPlaceholder": "",
+      "isRequired": "is required",
+      "isInvalid": "is invalid",
+      "passwordRequired": "Password is required"
+    },
+    "providers": {
+      "signInWith": "Sign in with",
+      "orContinueWith": "Or continue with",
+      "passkey": "Passkey"
+    },
+    "footer": {
+      "dontHaveAccount": "Don't have an account?",
+      "alreadyHaveAccount": "Already have an account?",
+      "goBack": "Go back",
+      "termsLead": "By clicking continue, you agree to our",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "termsAnd": "and"
+    },
+    "twoFactor": {
+      "title": "Two-factor",
+      "totpDescription": "Enter the 6-digit code from your authenticator app.",
+      "otpDescription": "Enter the 6-digit code sent to your email.",
+      "codePlaceholder": "000000",
+      "verify": "Verify",
+      "sendEmail": "Send email code",
+      "sentTo": "Sent to {email}.",
+      "useEmail": "Use email instead",
+      "useApp": "Use authenticator app",
+      "invalidLength": "Enter a 6-digit code.",
+      "invalidCode": "Invalid code.",
+      "sendFailed": "Could not send the code."
+    },
+    "consent": {
+      "title": "Before you sign up",
+      "intro": "Korean privacy law requires us to collect each consent separately. Please review and check the boxes below.",
+      "selectAll": "Agree to all",
+      "age": "I am 14 years of age or older.",
+      "terms": "I have read and agree to the Terms of Service.",
+      "privacy": "I consent to the collection and use of my personal information as described in the Privacy Policy.",
+      "marketing": "I agree to receive marketing emails and promotional communications.",
+      "required": "Required",
+      "optional": "Optional",
+      "viewTerms": "View Terms",
+      "viewPrivacy": "View Privacy Policy",
+      "cta": "Continue",
+      "ctaDisabled": "Check the required items to continue",
+      "edit": "Edit consent",
+      "consented": "Consent recorded. You may now create your account."
+    },
+    "requestFailed": "Request failed",
+    "errors": {
+      "USER_NOT_FOUND": "User not found",
+      "INVALID_PASSWORD": "Invalid password",
+      "INVALID_EMAIL": "Invalid email",
+      "INVALID_EMAIL_OR_PASSWORD": "Invalid email or password",
+      "INVALID_USERNAME_OR_PASSWORD": "invalid username or password",
+      "SOCIAL_ACCOUNT_ALREADY_LINKED": "Social account already linked",
+      "PROVIDER_NOT_FOUND": "Provider not found",
+      "INVALID_TOKEN": "Invalid token",
+      "USER_EMAIL_NOT_FOUND": "User email not found",
+      "EMAIL_NOT_VERIFIED": "Email not verified",
+      "PASSWORD_TOO_SHORT": "Password too short",
+      "PASSWORD_TOO_LONG": "Password too long",
+      "USER_ALREADY_EXISTS": "User already exists",
+      "CREDENTIAL_ACCOUNT_NOT_FOUND": "Credential account not found",
+      "SESSION_EXPIRED": "Session expired. Re-authenticate to perform this action.",
+      "USERNAME_IS_ALREADY_TAKEN": "username is already taken. please try another.",
+      "USERNAME_TOO_SHORT": "username is too short",
+      "USERNAME_TOO_LONG": "username is too long",
+      "INVALID_USERNAME": "username is invalid",
+      "AUTHENTICATION_FAILED": "Authentication failed",
+      "CHALLENGE_NOT_FOUND": "Challenge not found",
+      "PASSKEY_NOT_FOUND": "Passkey not found",
+      "INVALID_OAUTH_CONFIGURATION": "Invalid OAuth configuration"
+    }
+  },
   "LOSTINSEOUL": {
     "meta": {
       "title": "LOSTINSEOUL",

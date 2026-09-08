@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/components/core/Link/Link";
-import { UserAvatar } from "@/lib/external/betterauth-ui/src";
+import { UserAvatar } from "@/components/auth";
 import { useRPSession } from "@/lib/auth/session/RP_SessionProvider";
 import { useRPStore } from "@/providers/RP_Pro";
 import { Menu } from "@base-ui/react";

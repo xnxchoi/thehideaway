@@ -10,12 +10,13 @@ describe("settings layout Instant UI contract", () => {
     expect(src).not.toMatch(/export default async function SettingsLayout\(/);
   });
 
-  it("reads currentUser inside a Suspense child", () => {
-    expect(src).toMatch(/<Suspense/);
-    const layoutFn = src.slice(
-      src.indexOf("export default function SettingsLayout"),
-      src.indexOf("async function")
-    );
-    expect(layoutFn).not.toMatch(/currentUser\(/);
+  it("does not replace the pane with a layout fallback while the next section loads", () => {
+    expect(src).not.toMatch(/SettingsMainFallback/);
+    expect(src).not.toMatch(/EnsureSettingsUser/);
+  });
+
+  it("prerenders the rail outside the page slot", () => {
+    expect(src).toMatch(/SettingsRail/);
+    expect(src).toMatch(/<aside[\s\S]*SettingsRail/);
   });
 });

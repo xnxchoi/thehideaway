@@ -14,6 +14,7 @@
 
 import { getPayload } from "@/lib/payload";
 import { BUTLER_DEV_EMAIL } from "@/lib/auth/dev/seedButler";
+import { headers } from "next/headers";
 
 export async function butlerLoginAction(): Promise<{
   ok: boolean;
@@ -33,7 +34,8 @@ export async function butlerLoginAction(): Promise<{
     // the session cookie on the Next.js response automatically when called
     // from a server action.
     await payload.betterAuth.api.signInEmail({
-      body: { email: BUTLER_DEV_EMAIL, password }
+      body: { email: BUTLER_DEV_EMAIL, password },
+      headers: await headers()
     });
     return { ok: true };
   } catch (e) {

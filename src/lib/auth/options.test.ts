@@ -5,10 +5,7 @@ const source = readFileSync(new URL("./options.ts", import.meta.url), {
   encoding: "utf8"
 });
 const authProvidersSource = readFileSync(
-  new URL(
-    "../../app/(frontend)/(site)/(auth)/authProviders.tsx",
-    import.meta.url
-  ),
+  new URL("./providers.ts", import.meta.url),
   {
     encoding: "utf8"
   }
@@ -30,18 +27,13 @@ describe("auth options", () => {
     expect(source).not.toContain('rpID: new URL("http://localhost:3000")');
   });
 
-  it("configures Kakao as a generic OAuth provider with minimal account scopes", () => {
-    expect(source).toContain('providerId: "kakao"');
+  it("configures Kakao as a social provider with minimal account scopes", () => {
+    expect(source).toContain("kakao: {");
     expect(source).toContain("process.env.AUTH_KAKAO_ID");
     expect(source).toContain("process.env.AUTH_KAKAO_SECRET");
-    expect(source).toContain(
-      'authorizationUrl: "https://kauth.kakao.com/oauth/authorize"'
-    );
-    expect(source).toContain('tokenUrl: "https://kauth.kakao.com/oauth/token"');
-    expect(source).toContain(
-      'userInfoUrl: "https://kapi.kakao.com/v2/user/me"'
-    );
-    expect(source).toContain('scopes: ["profile_nickname", "account_email"]');
+    expect(source).toContain("disableDefaultScope: true");
+    expect(source).toContain('scope: ["profile_nickname", "account_email"]');
+    expect(source).not.toContain("genericOAuth");
   });
 
   it("requires Kakao email before mapping a social user", () => {
@@ -55,9 +47,8 @@ describe("auth options", () => {
     expect(source).not.toContain(
       "account.is_email_verified ?? account.email_verified ?? true"
     );
-    expect(
-      source.match(/emailVerified: false/g)?.length
-    ).toBeGreaterThanOrEqual(2);
+    expect(source).toContain("emailVerified: false");
+    expect(source).toContain("account.is_email_verified === true");
   });
 
   it("disables account linking on the vulnerable Better Auth version", () => {
@@ -72,11 +63,10 @@ describe("auth options", () => {
     expect(source).toContain('"https://www.lostinseoul.com"');
   });
 
-  it("renders Kakao in the generic OAuth provider list", () => {
+  it("renders Kakao in the social provider list", () => {
     expect(authProvidersSource).toContain("KakaoIcon");
-    expect(authProvidersSource).toContain(
-      '{ provider: "kakao", name: "Kakao", icon: KakaoIcon }'
-    );
+    expect(authProvidersSource).toContain('id: "kakao"');
+    expect(authProvidersSource).toContain('kind: "social"');
   });
 
   it("declares Kakao secrets in runtime and type env schemas", () => {

@@ -1,5 +1,5 @@
 "use client";
-import { useAuthenticate } from "@betterauth-ui";
+import { useAuthenticate } from "@/lib/auth/useAuthenticate";
 
 export const PageClient = () => {
   useAuthenticate();

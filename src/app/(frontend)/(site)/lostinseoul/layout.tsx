@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { connection } from "next/server";
 
 import { LostEcommerceProvider } from "@/payload/plugins/ecommerce/client/provider";
 import { getLostHomeData } from "@/lib/lost-commerce/queries";
@@ -10,7 +11,10 @@ import {
 import { StoreChrome } from "@lostinseoul/store-chrome";
 import "@lostinseoul/index.css";
 
+export const instant = false;
+
 export default async function Layout({ children }: { children: ReactNode }) {
+  await connection();
   const data = await getLostHomeData().catch(() => ({
     products: [],
     drops: []

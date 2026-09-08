@@ -1,6 +1,5 @@
 "use client";
 
-import { Providers as AuthProviders } from "@/app/(frontend)/(site)/(auth)/authProviders";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { TourOrchestrator, TourProvider } from "@/components/UX/Tour";
 import { PortalProvider } from "@/components/UX/Transition/Portaller";
@@ -47,39 +46,37 @@ export const Providers: React.FC<{
     <QueryProvider>
       <DeviceProvider>
         <Voyageur>
-          <AuthProviders>
-            <SessionProvider>
-              <GlobalNotificationProvider>
-                <HAStoreProvider>
-                  <ThemeProvider>
-                    <LazyMotion features={motion} strict={true}>
-                      <CursorProvider>
-                        <PortalProvider>
-                          <TransitionProvider>
-                            <MenuProvider>
-                              <SearchBarProvider>
-                                <MiddleMan>
-                                  <TooltipProvider>
-                                    <CMDKeyManager />
-                                    <TourProvider>
-                                      <TourOrchestrator />
-                                      <HeaderThemeProvider>
-                                        {children}
-                                      </HeaderThemeProvider>
-                                    </TourProvider>
-                                  </TooltipProvider>
-                                </MiddleMan>
-                              </SearchBarProvider>
-                            </MenuProvider>
-                          </TransitionProvider>
-                        </PortalProvider>
-                      </CursorProvider>
-                    </LazyMotion>
-                  </ThemeProvider>
-                </HAStoreProvider>
-              </GlobalNotificationProvider>
-            </SessionProvider>
-          </AuthProviders>
+          <SessionProvider>
+            <GlobalNotificationProvider>
+              <HAStoreProvider>
+                <ThemeProvider>
+                  <LazyMotion features={motion} strict={true}>
+                    <CursorProvider>
+                      <PortalProvider>
+                        <TransitionProvider>
+                          <MenuProvider>
+                            <SearchBarProvider>
+                              <MiddleMan>
+                                <TooltipProvider>
+                                  <CMDKeyManager />
+                                  <TourProvider>
+                                    <TourOrchestrator />
+                                    <HeaderThemeProvider>
+                                      {children}
+                                    </HeaderThemeProvider>
+                                  </TourProvider>
+                                </TooltipProvider>
+                              </MiddleMan>
+                            </SearchBarProvider>
+                          </MenuProvider>
+                        </TransitionProvider>
+                      </PortalProvider>
+                    </CursorProvider>
+                  </LazyMotion>
+                </ThemeProvider>
+              </HAStoreProvider>
+            </GlobalNotificationProvider>
+          </SessionProvider>
         </Voyageur>
       </DeviceProvider>
     </QueryProvider>

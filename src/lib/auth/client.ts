@@ -14,7 +14,6 @@ import {passkeyClient} from "@better-auth/passkey/client";
 import {
 	adminClient,
 	emailOTPClient,
-	genericOAuthClient,
 	inferAdditionalFields,
 	magicLinkClient,
 	multiSessionClient,
@@ -37,7 +36,6 @@ export const authClient = createAuthClient({
 		passkeyClient(),
 		magicLinkClient(),
 		emailOTPClient(),
-		genericOAuthClient(),
 		organizationClient(),
 		adminClient({
 			ac: accessControl,

@@ -160,6 +160,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   cacheComponents: true,
+
   async redirects() {
     return [
       {
@@ -209,6 +210,36 @@ const nextConfig: NextConfig = {
         source: "/me/notifications/:path*",
         destination: "/me/inbox/:path*",
         permanent: true
+      },
+      {
+        source: "/auth/sign-in",
+        destination: "/sign-in",
+        permanent: false
+      },
+      {
+        source: "/auth/sign-up",
+        destination: "/sign-up",
+        permanent: false
+      },
+      {
+        source: "/auth/forgot-password",
+        destination: "/forgot-password",
+        permanent: false
+      },
+      {
+        source: "/auth/reset-password",
+        destination: "/reset-password",
+        permanent: false
+      },
+      {
+        source: "/auth/two-factor",
+        destination: "/two-factor",
+        permanent: false
+      },
+      {
+        source: "/auth/:path*",
+        destination: "/sign-in",
+        permanent: false
       }
     ];
   },

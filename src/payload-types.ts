@@ -1125,7 +1125,7 @@ export interface Album {
   };
   tagged?: (string | Tag)[] | null;
   description?: string | null;
-  visibility: "public" | "private";
+  visibility: 'public' | 'private';
   publishedAt?: string | null;
   author: string | User;
   slugKey?: string | null;
@@ -1144,10 +1144,10 @@ export interface Album {
   /**
    * Who can read this. 'Curated list only' restricts to users picked in Allow List below.
    */
-  audience?: ("public" | "any_user" | "members" | "patrons" | "curated") | null;
+  audience?: ('public' | 'any_user' | 'members' | 'patrons' | 'curated') | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ("draft" | "published") | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1252,18 +1252,18 @@ export interface FolderInterface {
   documentsAndFolders?: {
     docs?: (
       | {
-          relationTo?: "payload-folders";
+          relationTo?: 'payload-folders';
           value: string | FolderInterface;
         }
       | {
-          relationTo?: "userMedia";
+          relationTo?: 'userMedia';
           value: string | UserMedia;
         }
     )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: "userMedia"[] | null;
+  folderType?: 'userMedia'[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1289,47 +1289,38 @@ export interface Notification {
   recipient: string | User;
   trigger?:
     | ({
-        relationTo: "posts";
+        relationTo: 'posts';
         value: string | Post;
       } | null)
     | ({
-        relationTo: "surf";
+        relationTo: 'surf';
         value: string | Surf;
       } | null)
     | ({
-        relationTo: "users";
+        relationTo: 'users';
         value: string | User;
       } | null)
     | ({
-        relationTo: "profile";
+        relationTo: 'profile';
         value: string | Profile;
       } | null)
     | ({
-        relationTo: "bookmarks";
+        relationTo: 'bookmarks';
         value: string | Bookmark;
       } | null)
     | ({
-        relationTo: "follows";
+        relationTo: 'follows';
         value: string | Follow;
       } | null)
     | ({
-        relationTo: "responses";
+        relationTo: 'responses';
         value: string | Response;
       } | null);
   thumbnail?: (string | null) | Asset;
   type:
-    | "comment"
-    | "follow"
-    | "mention"
-    | "system"
-    | "access"
-    | "bookmark"
-    | "profile"
-    | "post"
-    | "surf"
-    | "notification";
+    'comment' | 'follow' | 'mention' | 'system' | 'access' | 'bookmark' | 'profile' | 'post' | 'surf' | 'notification';
   importance: number;
-  status: "unread" | "read" | "dismissed";
+  status: 'unread' | 'read' | 'dismissed';
   read: boolean;
   dismissed: boolean;
   readAt?: string | null;
@@ -1337,43 +1328,43 @@ export interface Notification {
   title: string;
   content: string;
   actionLink: {
-    type: "reference" | "custom";
+    type: 'reference' | 'custom';
     newTab: boolean;
     reference?:
       | ({
-          relationTo: "pages";
+          relationTo: 'pages';
           value: string | Page;
         } | null)
       | ({
-          relationTo: "posts";
+          relationTo: 'posts';
           value: string | Post;
         } | null)
       | ({
-          relationTo: "surf";
+          relationTo: 'surf';
           value: string | Surf;
         } | null)
       | ({
-          relationTo: "users";
+          relationTo: 'users';
           value: string | User;
         } | null)
       | ({
-          relationTo: "albums";
+          relationTo: 'albums';
           value: string | Album;
         } | null)
       | ({
-          relationTo: "tracks";
+          relationTo: 'tracks';
           value: string | Track;
         } | null)
       | ({
-          relationTo: "playlists";
+          relationTo: 'playlists';
           value: string | Playlist;
         } | null)
       | ({
-          relationTo: "organizations";
+          relationTo: 'organizations';
           value: string | Organization;
         } | null)
       | ({
-          relationTo: "categories";
+          relationTo: 'categories';
           value: string | Category;
         } | null);
     url?: string | null;
@@ -1381,7 +1372,7 @@ export interface Notification {
     /**
      * Choose how the link should be rendered.
      */
-    appearance?: ("default" | "outline") | null;
+    appearance?: ('default' | 'outline') | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1400,8 +1391,8 @@ export interface Response {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ("ltr" | "rtl") | null;
-      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
       indent: number;
       version: number;
     };
@@ -1410,11 +1401,11 @@ export interface Response {
   author: string | User;
   target:
     | {
-        relationTo: "posts";
+        relationTo: 'posts';
         value: string | Post;
       }
     | {
-        relationTo: "surf";
+        relationTo: 'surf';
         value: string | Surf;
       };
   isEdited: boolean;
@@ -1422,11 +1413,11 @@ export interface Response {
   hash: string;
   parent?:
     | ({
-        relationTo: "responses";
+        relationTo: 'responses';
         value: string | Response;
       } | null)
     | ({
-        relationTo: "citations";
+        relationTo: 'citations';
         value: string | Citation;
       } | null);
   mentions?: (string | User)[] | null;
@@ -1436,7 +1427,7 @@ export interface Response {
   isSticky: boolean;
   updatedAt: string;
   createdAt: string;
-  _status?: ("draft" | "published") | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1456,11 +1447,11 @@ export interface Citation {
   author: string | User;
   target:
     | {
-        relationTo: "surf";
+        relationTo: 'surf';
         value: string | Surf;
       }
     | {
-        relationTo: "posts";
+        relationTo: 'posts';
         value: string | Post;
       };
   cited: string | User;
@@ -1696,6 +1687,7 @@ export interface Team {
    * The name of the team.
    */
   name: string;
+  memberCount: number;
   /**
    * The organization that the team belongs to.
    */
@@ -2192,6 +2184,7 @@ export interface TeamMember {
    * The user that is a member of the team.
    */
   user: string | User;
+  membershipKey?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -3795,6 +3788,7 @@ export interface OrganizationsSelect<T extends boolean = true> {
  */
 export interface TeamsSelect<T extends boolean = true> {
   name?: T;
+  memberCount?: T;
   organization?: T;
   createdAt?: T;
   updatedAt?: T;
@@ -3806,6 +3800,7 @@ export interface TeamsSelect<T extends boolean = true> {
 export interface TeamMembersSelect<T extends boolean = true> {
   team?: T;
   user?: T;
+  membershipKey?: T;
   createdAt?: T;
   updatedAt?: T;
 }

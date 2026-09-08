@@ -5,19 +5,8 @@ import { describe, expect, it } from "vitest";
 const src = readFileSync(resolve(import.meta.dirname, "page.tsx"), "utf8");
 
 describe("settings account Instant UI contract", () => {
-  it("exports a synchronous page so session cookies do not block navigation after login", () => {
-    expect(src).toMatch(/export default function AccountSettingsPage\(/);
-    expect(src).not.toMatch(
-      /export default async function AccountSettingsPage\(/
-    );
-  });
-
-  it("reads currentUser inside a Suspense child", () => {
-    expect(src).toMatch(/<Suspense/);
-    const pageFn = src.slice(
-      src.indexOf("export default function AccountSettingsPage"),
-      src.indexOf("async function")
-    );
-    expect(pageFn).not.toMatch(/currentUser\(/);
+  it("does not wrap the page in Suspense so the previous pane stays until ready", () => {
+    expect(src).toMatch(/export default async function AccountSettingsPage\(/);
+    expect(src).not.toMatch(/<Suspense/);
   });
 });

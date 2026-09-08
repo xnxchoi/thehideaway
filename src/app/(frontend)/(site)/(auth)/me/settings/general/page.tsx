@@ -6,19 +6,10 @@ import { currentUser } from "@/lib/auth/context/get-context-props";
 import { readLocaleCookie } from "@/i18n/cookie";
 
 import GeneralSectionClient from "./page.client";
-import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "General · Settings" };
 
-export default function GeneralSettingsPage() {
-  return (
-    <Suspense>
-      <GeneralSettingsBody />
-    </Suspense>
-  );
-}
-
-async function GeneralSettingsBody() {
+export default async function GeneralSettingsPage() {
   const user = await currentUser();
   if (!user) return redirect("/sign-in?next=/me/settings/general");
 
