@@ -2,7 +2,9 @@
 
 import * as m from "motion/react-m";
 import { cn } from "@/lib/utils";
-import { Caveat } from "../../../../../fonts";
+import { useMotionTemplate, useMotionValue, useSpring } from "motion/react";
+import { SPRING_EASE } from "@/constants/animations";
+import { useEffect } from "react";
 
 interface MarkerTextProps {
   text: string;
@@ -23,12 +25,20 @@ export function MarkerText({
   active = false,
   className
 }: MarkerTextProps) {
+  const activeValue = useMotionValue(active ? 0 : 105);
+  const activeV = useSpring(activeValue, {
+    ...SPRING_EASE.power2.out,
+    duration: 0.3
+  });
+  useEffect(() => {
+    activeValue.set(active ? 0 : 105);
+  }, [active, activeValue]);
+  const clipPath = useMotionTemplate`inset(-10% ${activeV}% -10% -5%)`;
   const words = text.split(" ");
   return (
     <m.div
       className={cn(
-        "flex flex-wrap items-baseline gap-x-[0.38em]",
-        Caveat.className,
+        "flex flex-wrap items-baseline gap-x-[0.38em] font-caveat",
         className
       )}
       initial="hidden"
@@ -40,6 +50,7 @@ export function MarkerText({
     >
       {words.map((word, i) => (
         <m.span
+          style={{ clipPath }}
           key={`${word}-${i}`}
           variants={wordVariants}
           className={cn("inline-block")}

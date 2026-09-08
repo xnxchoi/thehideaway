@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
-const Caveat= localFont({
+
+const Caveat = localFont({
   src: [
     {
       path: "public/assets/fonts/Caveat/Caveat-VariableFont_wght.ttf",
@@ -7,24 +8,29 @@ const Caveat= localFont({
       style: "normal"
     }
   ],
-  variable: "--font-marker"
+  variable: "--font-caveat"
 });
 const RalewayDots = localFont({
-  subsets: ["latin"],
-  path: "public/assets/fonts/RalewayDots/RalewayDots-Regular.ttf",
-  variable: "--font-raleway-dots",
-  weight: "400"
+  src: [
+    {
+      path: "public/assets/fonts/RalewayDots/RalewayDots-Regular.ttf",
+      weight: "400"
+    }
+  ],
+  variable: "--font-raleway-dots"
 });
 const Dots = localFont({
-  subsets: ["latin"],
-  path: "public/assets/fonts/Doto/Doto-Regular.ttf",
+  src: [{ path: "public/assets/fonts/Doto/Doto-Regular.ttf", weight: "400" }],
   variable: "--font-dots"
 });
 const Saint = localFont({
-  subsets: ["latin"],
-  path: "public/assets/fonts/Mrs_Saint_Delafield/MrsSaintDelafield-Regular.ttf",
-  variable: "--font-saint",
-  weight: "400"
+  src: [
+    {
+      path: "public/assets/fonts/Mrs_Saint_Delafield/MrsSaintDelafield-Regular.ttf",
+      weight: "400"
+    }
+  ],
+  variable: "--font-saint"
 });
 const Siegfried = localFont({
   src: [
@@ -152,4 +158,13 @@ const NarcissianNectare = localFont({
   variable: "--font-narcissianNectare",
   fallback: ["blase"]
 });
-export { Blase, Siegfried, Dots,Caveat, RalewayDots, Suit, Saint, NarcissianNectare };
+export {
+  Blase,
+  Siegfried,
+  Dots,
+  Caveat,
+  RalewayDots,
+  Suit,
+  Saint,
+  NarcissianNectare
+};

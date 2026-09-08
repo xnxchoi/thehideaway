@@ -1036,6 +1036,7 @@ Colors
   /*noinspection CssUnresolvedCustomProperty*/
   --font-serif: var(--font-narcissianNectare);
   --font-wide: var(--font-blase);
+    --font-caveat: var(--font-caveat);
   --font-dots: var(--font-dots);
   --font-siegfried: var(--font-siegfried);
   --radius-sm: calc(var(--radius) - 4px);
