@@ -633,13 +633,15 @@
     },
     "terms": "Physical products purchased from The Hideaway may be exchanged or returned for a refund within 7 days of receiving the goods. Returns of products past the initial week of reception will not be guaranteed. Refunds are only issued to the original purchaser via original method of payment. Product must be presented in its original packaging and accompanied by the appropriate sales documentation and International Limited Warranty. Non ready-made products which include, but are not limited to, items from: personalized orders; custom-ordered; airdropped and/or gifted, are void from any guarantee of refund or exchange. Items that show signs of wear also do not qualify for a return or an exchange. Before accepting any return or exchange, The Hideaway reserves its right to verify the product and proceed with necessary evaluations to confirm authenticity. Any services, products or other goods non-physical in form will not be eligible for refund.",
     "planFallback": "Membership",
+    "status": {
+      "paid": "Paid",
+      "draft": "Draft",
+      "void": "Void",
+      "pending": "Pending"
+    },
     "panel": {
       "heading": "Invoice",
-      "status": {
-        "paid": "Paid",
-        "pending": "Pending",
-        "void": "Void"
-      },
+
       "issuedLabel": "Issued",
       "cycleLabel": "Service period",
       "lineItemHeading": "Item",

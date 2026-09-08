@@ -5,7 +5,7 @@ export type InvoiceCurrency = "krw" | "usd" | "eur";
  * Stripe-style `draft → open → paid | void`. `pending` remains as a
  * legacy alias for `open` to mirror the DB enum.
  */
-export type InvoiceStatus = "draft" | "open" | "paid" | "pending" | "void";
+export type InvoiceStatus = "draft" | "paid" | "pending" | "void";
 
 export type InvoicePaymentMethod = {
   method: "bank_transfer" | "cash";

@@ -9,7 +9,6 @@ import {
   CRESTS_SVG_WIDTH,
   HIDEAWAY_LOGO_DATA_URL
 } from "./branding";
-import { instrumentSerif } from "./fonts";
 import {
   formatAmount,
   formatInvoiceNumber,
@@ -17,6 +16,7 @@ import {
 } from "./format";
 import { InvoicePanel } from "./InvoicePanel";
 import type { InvoiceCertificateProps, InvoiceDisplay } from "./types";
+import { instrumentSerif } from "../../../../fonts";
 
 const PAPER_TEXTURE = "/assets/three/materials/paper/paper_d.png";
 const PDF_ENDPOINT = "/api/invoice/pdf";
@@ -183,8 +183,7 @@ export function InvoiceCertificate({
         mobile the paper centers and respects a maximum width. */}
         <div
           className={cn(
-            instrumentSerif.className,
-            "relative mx-auto flex w-full max-w-[520px] flex-col items-center lg:max-w-none"
+            "relative mx-auto flex w-full max-w-[520px] flex-col items-center font-instrument lg:max-w-none"
           )}
         >
           {/* Eyebrow that names this column — labels the paper as the
@@ -653,31 +652,38 @@ function ActionButton({ label, onClick, busy }: ActionButtonProps) {
 type StatusStampProps = { status: InvoiceDisplay["status"] };
 
 function StatusStamp({ status }: StatusStampProps) {
-  const t = useTranslations("Invoice.panel.status");
+  const t = useTranslations("Invoice");
+
   // Pending invoices read as the document's default state — no stamp.
-  if (status === "pending") return null;
   const isPaid = status === "paid";
   const color = isPaid ? "#7a2e2a" : "#666060";
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        "pointer-events-none absolute top-[8%] right-[7%] origin-center",
-        "transition-[opacity,transform] duration-500 ease-out",
-        "opacity-65 group-hover/paper:opacity-90"
-      )}
-      style={{ transform: "rotate(-8deg)" }}
-    >
-      <span
-        className="block px-3 py-1 font-sans text-[11px] font-bold tracking-[0.32em] uppercase"
-        style={{
-          color,
-          border: `1.5px solid ${color}`,
-          backgroundColor: "transparent"
-        }}
-      >
-        {t(status)}
-      </span>
-    </div>
-  );
+  switch (status) {
+    case "paid":
+    case "draft":
+    case "pending":
+      return (
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute top-[8%] right-[7%] origin-center",
+            "transition-[opacity,transform] duration-500 ease-out",
+            "opacity-65 group-hover/paper:opacity-90"
+          )}
+          style={{ transform: "rotate(-8deg)" }}
+        >
+          <span
+            className="block px-3 py-1 font-sans text-[11px] font-bold tracking-[0.32em] uppercase"
+            style={{
+              color,
+              border: `1.5px solid ${color}`,
+              backgroundColor: "transparent"
+            }}
+          >
+            {t(`panel.status.${status}`)}
+          </span>
+        </div>
+      );
+    default:
+      return null;
+  }
 }

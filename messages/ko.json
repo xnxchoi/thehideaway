@@ -599,6 +599,12 @@
     "serviceHours": "주말, 공휴일 12:00–24:00 \n (주중 휴무)"
   },
   "Invoice": {
+    "status": {
+      "paid": "결제 완료",
+      "pending": "결제 대기",
+      "draft": "연체",
+      "void": "취소"
+    },
     "subWordmark": "SEOUL · PARIS",
     "tagline": "a restored project",
     "purchasedBy": "구매자",
@@ -635,11 +641,7 @@
     "planFallback": "멤버십",
     "panel": {
       "heading": "청구서",
-      "status": {
-        "paid": "결제 완료",
-        "pending": "결제 대기",
-        "void": "취소"
-      },
+
       "issuedLabel": "발행일",
       "cycleLabel": "이용 기간",
       "lineItemHeading": "구매 항목",
