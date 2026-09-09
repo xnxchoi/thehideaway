@@ -19,4 +19,13 @@ describe("settings layout Instant UI contract", () => {
     expect(src).toMatch(/SettingsRail/);
     expect(src).toMatch(/<aside[\s\S]*SettingsRail/);
   });
+
+  it("keeps the shell clear of the FX frame at both vertical ends", () => {
+    expect(src).toMatch(/pt-\[14rem\]/);
+    expect(src).toMatch(/pb-\[14rem\]/);
+    expect(src).toMatch(/xl:pt-\[18rem\]/);
+    expect(src).toMatch(/xl:pb-\[18rem\]/);
+    expect(src).toMatch(/xl:top-\[18rem\]/);
+    expect(src).toMatch(/xl:max-h-\[calc\(100vh-36rem\)\]/);
+  });
 });

@@ -1,8 +1,11 @@
+"use client";
+
 import { Link } from "@/components/core/Link/Link";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { useSettingsNav } from "./SettingsNav";
 
 /**
  * Hub navigation row — Apple Settings cadence translated into our chrome.
@@ -55,9 +58,15 @@ export function SectionLink({
   tone = "neutral",
   className
 }: SectionLinkProps) {
+  const { pathname, pendingHref, setPendingHref } = useSettingsNav();
+  const activePath = pendingHref ?? pathname;
   return (
     <Link
       href={href}
+      onClick={() => {
+        if (href === activePath) return;
+        setPendingHref(href);
+      }}
       className={cn(
         "group flex items-center gap-4 rounded-lg px-4 py-3.5 transition-colors",
         // Same inset chrome as FieldRow for visual cohesion across the

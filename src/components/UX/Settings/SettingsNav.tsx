@@ -4,16 +4,17 @@ import { usePathname } from "next/navigation";
 import {
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useState,
-  type ReactNode
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction
 } from "react";
 
 type SettingsNavValue = {
   pathname: string;
   pendingHref: string | null;
-  setPendingHref: (href: string | null) => void;
+  setPendingHref: Dispatch<SetStateAction<string | null>>;
 };
 
 const SettingsNavContext = createContext<SettingsNavValue | null>(null);
@@ -21,10 +22,6 @@ const SettingsNavContext = createContext<SettingsNavValue | null>(null);
 export function SettingsNavProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "";
   const [pendingHref, setPendingHref] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPendingHref(null);
-  }, [pathname]);
 
   const value = useMemo(
     () => ({ pathname, pendingHref, setPendingHref }),

@@ -766,6 +766,10 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
           });
         });
         void transition.finished;
+      } else if (tro.current === "SHELL") {
+        scheduleTransitionWork(() => {
+          next();
+        });
       } else {
         scheduleTransitionWork(() => {
           completeExfil();
@@ -778,6 +782,13 @@ const TransitionManager = ({ children }: { children: ReactNode }) => {
   const enterer = useCallback(
     (next: () => void, from?: string, to?: string) => {
       const enteringTransition = tro.current;
+      if (enteringTransition === "SHELL") {
+        scheduleTransitionWork(() => {
+          next();
+          setTransitionOutType(null);
+        });
+        return;
+      }
       if (enteringTransition === "LOST_PRODUCT") {
         document.body.dataset.lostRouteTransition = "restoring";
       }

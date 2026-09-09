@@ -30,7 +30,8 @@ export const metadata: Metadata = {
  * `overflow-x-clip` on the outer wrapper is a localised guardrail for
  * RPage's inner `w-screen` (Transition/index.tsx renders the page surface
  * at viewport width, which would otherwise overflow the constrained main
- * column).
+ * column). Vertical padding (and the sticky rail's top / max-height)
+ * keeps the first and last items out of the FXFrame frosted bands.
  */
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   return (
@@ -48,8 +49,8 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
       />
 
       <SettingsNavProvider>
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-x-8 px-6 pt-24 pb-20 xl:grid-cols-[224px_minmax(0,1fr)] xl:gap-x-8 xl:px-10 xl:pt-32 2xl:max-w-[1440px] 2xl:gap-x-10 2xl:px-12">
-          <aside className="hidden xl:sticky xl:top-32 xl:block xl:self-start">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-x-8 px-6 pt-[14rem] pb-[14rem] xl:grid-cols-[224px_minmax(0,1fr)] xl:gap-x-8 xl:px-10 xl:pt-[18rem] xl:pb-[18rem] 2xl:max-w-[1440px] 2xl:gap-x-10 2xl:px-12">
+          <aside className="hidden xl:sticky xl:top-[18rem] xl:block xl:max-h-[calc(100vh-36rem)] xl:self-start">
             <SettingsRail />
           </aside>
           <main className="min-w-0">

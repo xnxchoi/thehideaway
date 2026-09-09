@@ -94,6 +94,7 @@ export function SettingsRail() {
               prefetch
               aria-current={active ? "page" : undefined}
               onClick={() => {
+                if (href === activePath) return;
                 setPendingHref(href);
                 setGenericPageTransition(href, { override: "SHELL" });
               }}

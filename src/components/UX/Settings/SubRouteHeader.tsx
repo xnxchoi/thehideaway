@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
+import { useSettingsNav } from "./SettingsNav";
 
 /**
  * Sub-route header for `/me/settings/*` pages.
@@ -43,11 +44,17 @@ export function SubRouteHeader({
   className
 }: SubRouteHeaderProps) {
   const t = useTranslations("Settings");
+  const { pathname, pendingHref, setPendingHref } = useSettingsNav();
   const resolvedBackLabel = backLabel ?? t("back");
+  const activePath = pendingHref ?? pathname;
   return (
     <header className={cn("flex flex-col gap-3", className)}>
       <Link
         href={backHref}
+        onClick={() => {
+          if (backHref === activePath) return;
+          setPendingHref(backHref);
+        }}
         className={cn(
           "group inline-flex w-fit items-center gap-1.5 text-xs text-foreground/55 transition-colors hover:text-foreground/85",
 

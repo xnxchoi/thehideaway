@@ -18,4 +18,8 @@ describe("SettingsRail in-shell highlight", () => {
     expect(src).toMatch(/from ["']next\/link["']/);
     expect(src).not.toMatch(/@\/components\/core\/Link\/Link/);
   });
+
+  it("does not restart a fade when the active row is clicked again", () => {
+    expect(src).toMatch(/if \(href === activePath\) return/);
+  });
 });
