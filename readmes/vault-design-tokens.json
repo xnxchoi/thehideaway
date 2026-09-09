@@ -1,0 +1,42 @@
+{
+  "name": "Hideaway Vault",
+  "principle": "Paint Payload. Do not replace it. Fey method, Hideaway palette.",
+  "lineage": "Glass / Layered → Vault / Operating Room",
+  "delivery": "src/payload/scss/vault-theme.scss → Payload --color-base-* / --theme-*",
+  "canvas": {
+    "dark": "oklch(9.7% 0.01 23.79)",
+    "light": "oklch(98.5% 0.01 23.79)",
+    "grain": "0.03"
+  },
+  "text": {
+    "dark": "oklch(89.4% 0.008 24)",
+    "light": "oklch(13.1% 0.009 24)",
+    "mutedRatio": 0.6
+  },
+  "elevation": {
+    "note": "Payload inverts --theme-elevation-* in dark. Dark canvas is elevation-0 = base-900.",
+    "lifted": "elevation-50",
+    "inset": "elevation-100"
+  },
+  "radius": {
+    "s": "4px",
+    "m": "8px",
+    "l": "16px"
+  },
+  "nav": {
+    "width": "232px",
+    "interaction": "existing peek/hover drawer",
+    "surface": "lifted pool, no backdrop-filter"
+  },
+  "type": {
+    "body": "SUIT / --font-sans",
+    "mono": "Payload --font-sans (metadata only)"
+  },
+  "doNot": [
+    "Fey/Oscura hex as product color",
+    "glassmorphism on nav or doc-controls",
+    "Panel around every Payload field",
+    "settings 3-column shell on List/Edit",
+    "a second Tailwind theme parallel to --theme-*"
+  ]
+}

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # attic — move files/dirs into .attic/ mirroring their source path.
 #
-# Convention: .attic/ is the project's tracked archive. Nothing gets rm'd;
-# overlapping-but-dormant code is parked under .attic/<original-path> so it's
-# recoverable and the diff always shows a "move", never a "delete".
+# Convention: .attic/ is the project's local, gitignored archive.
+# Nothing gets rm'd; overlapping-but-dormant code is parked under
+# .attic/<original-path>. Docker, rsync, and tsconfig all exclude it.
 #
 # Usage:
 #   pnpm attic <path> [<path> ...]

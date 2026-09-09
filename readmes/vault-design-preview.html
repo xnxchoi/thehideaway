@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vault design preview — The Hideaway</title>
+    <style>
+      :root {
+        --canvas: oklch(9.7% 0.01 23.79);
+        --lift: oklch(11.2% 0.01 24);
+        --inset: oklch(13.1% 0.009 24);
+        --text: oklch(89.4% 0.008 24);
+        --muted: oklch(60.2% 0.006 24);
+        --hair: color-mix(in oklch, var(--text) 12%, transparent);
+        --sans: "SUIT Variable", "Helvetica Neue", sans-serif;
+        --radius-l: 16px;
+        --radius-m: 8px;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--canvas);
+        color: var(--text);
+        font-family: var(--sans);
+      }
+      body { padding: 32px; }
+      h1 { font-weight: 500; font-size: 22px; letter-spacing: -0.02em; margin: 0 0 8px; }
+      .lede { color: var(--muted); max-width: 52ch; line-height: 1.5; margin: 0 0 32px; font-size: 14px; }
+      .shell {
+        display: grid;
+        grid-template-columns: 232px 1fr;
+        gap: 20px;
+        min-height: 420px;
+      }
+      .rail, .panel {
+        position: relative;
+        background: var(--lift);
+        border-radius: var(--radius-l);
+        box-shadow: 0 2px 24px -8px rgba(0,0,0,0.45);
+      }
+      .rail::before, .panel::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        top: 0;
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--hair), transparent);
+      }
+      .rail { padding: 20px 16px; }
+      .rail p { margin: 0 0 18px; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+      .rail a {
+        display: block;
+        color: var(--text);
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 10px;
+        border-radius: var(--radius-m);
+      }
+      .rail a[aria-current] { background: var(--inset); }
+      .canvas { padding: 8px 8px 8px 0; }
+      .panel { padding: 28px; }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: oklch(13.1% 0.009 24);
+        border-radius: var(--radius-m);
+        padding: 12px 16px;
+        margin-top: 8px;
+      }
+      .row span { font-size: 14px; }
+      .row em { font-style: normal; color: var(--muted); font-size: 12px; }
+      .dont {
+        margin-top: 36px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Vault — paint Payload</h1>
+    <p class="lede">
+      Uniform canvas. Lifted rail and panel. No glass. Fey’s method, Hideaway’s
+      warm oklch. This is the surface language, not a Fey clone and not a
+      settings-page pasted onto List/Edit.
+    </p>
+    <div class="shell">
+      <nav class="rail" aria-label="Collections">
+        <p>Collections</p>
+        <a href="#" aria-current="page">Posts</a>
+        <a href="#">Users</a>
+        <a href="#">Media</a>
+      </nav>
+      <div class="canvas">
+        <section class="panel">
+          <div class="row"><span>Title</span><em>visible field</em></div>
+          <div class="row"><span>Status</span><em>draft</em></div>
+          <div class="row"><span>Published</span><em>—</em></div>
+        </section>
+      </div>
+    </div>
+    <p class="dont">
+      Do not: backdrop-filter on chrome, Fey/Oscura hex as product color,
+      Panel around every Payload field, a second Tailwind theme.
+    </p>
+  </body>
+</html>

@@ -38,18 +38,16 @@ tests
 .hintrc
 .filenignore
 .DS_Store
-# .attic/ is intentionally tracked — it's the project's archival stash.
-# Files are moved here (never deleted) via `pnpm attic <path>`.
-# Excluded from Docker builds via .dockerignore.
+# .attic/ is the local archival stash (`pnpm attic <path>`). Gitignored.
+# Never rm dormant code — park it here. Excluded from Docker + tsconfig.
+.attic
 .vscode
 .idea
 .codex
-.attic
 .next
 .claude
 .pnpm-store
 .turbo
-readmes
 .git-support/archive-worktree/
 .git-support/media.local.json
 /thehideaway.code-workspace

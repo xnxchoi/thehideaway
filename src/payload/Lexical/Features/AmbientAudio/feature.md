@@ -7,8 +7,8 @@ fades in, follows their scroll position as a virtual seek, and fades out
 on exit. HideawayFM is snapshotted on take-over and restored on release.
 
 > **Version:** v2 (2026-04-20) — Payload `InlineBlocks`-backed anchors.
-> For the previous custom-`DecoratorNode` architecture see
-> [`feature.v1.md`](./feature.v1.md). The migration dropped `nodes/AmbientAudioStartNode.tsx`,
+> The previous custom-`DecoratorNode` write-up is attic'd
+> (`.attic/src/payload/Lexical/Features/AmbientAudio/feature.v1.md`). The migration dropped `nodes/AmbientAudioStartNode.tsx`,
 > `nodes/AmbientAudioEndNode.tsx`, `server/populateRegion.ts`, and
 > `server/validateRegion.ts` (all in `.attic/`), along with the legacy
 > serialized types and track-snapshot helpers in `nodes/types.ts`.
@@ -111,10 +111,7 @@ src/payload/Lexical/Features/AmbientAudio/
 │                                  a track doc → AmbientSourceInternal
 │                                  and builds the public URL as
 │                                  /track_media/<filename>.
-├── feature.md                     This file.
-├── feature.v1.md                  Pre-migration snapshot (DecoratorNode
-│                                  era).
-└── plan.md                        Original sketch. Superseded.
+└── feature.md                     This file.
 
 src/components/UX/AmbientAudio/
 ├── AnchorMarkers.tsx              Frontend-only. Rendered by the

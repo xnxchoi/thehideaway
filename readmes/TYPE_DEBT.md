@@ -37,9 +37,11 @@ The heaviest remaining cluster. Custom Payload field, still in progress. Fix onc
 
 ---
 
-### 🟠 Cluster 2 — `betterauth-ui` vendored library (13 errors, ~10 files) — **reference candidate**
+### 🟠 Cluster 2 — `betterauth-ui` — **closed**
 
-Still vendored under `src/lib/auth/betterauth-ui/`. Consider moving to `reference/` and importing only the ported pieces, or adding it to `tsconfig.json#exclude`.
+First-party auth UI replaced the vendored layer (2026-09). Do not revive
+`src/lib/external/betterauth-ui`. Recount with `pnpm tsc --noEmit` before
+treating any file in this cluster as open.
 
 ---
 
@@ -134,7 +136,7 @@ pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l
 # Errors in a specific subsystem
 pnpm tsc --noEmit --pretty false 2>&1 | grep "BulkUpload"
 
-# Move a file to .attic/ (auto mirrors path)
+# Park dormant code in .attic/ (gitignored; mirrors source path)
 pnpm attic src/components/layouts/Profile/ShadeMarquee.tsx
 
 # Regenerate payload types (fixes stale field errors). Requires DB up.

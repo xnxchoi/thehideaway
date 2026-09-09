@@ -1,12 +1,6 @@
 # Vault (`/vault`)
 
-Payload admin at `/vault`. Visual grammar lives in `readmes/DESIGN_SYSTEM.md` → “Vault / Operating Room”. Load `.claude/skills/admin-fey-surfaces/SKILL.md` before changing this surface.
-
-This file is the session handoff. Open it first after a compact.
-
----
-
-## Resume after compact
+Payload admin at `/vault`. Visual grammar lives in `DESIGN_SYSTEM.md` → “Vault / Operating Room”. Load `.claude/skills/admin-fey-surfaces/SKILL.md` before changing this surface.
 
 **Do not build the bird’s-eye dashboard next.**
 
@@ -80,7 +74,7 @@ Period for views is **not chosen**. Pick it when implementing (7 days vs 30 days
 
 ## Next: end-to-end functional admin
 
-This is the work after compact. Goal: a staff member can list, open, edit, save, publish, and preview posts/surf/pages without a 500, without a ghost shell, and without schedule-publish crashing the compile.
+Goal: a staff member can list, open, edit, save, publish, and preview posts/surf/pages without a 500, without a ghost shell, and without schedule-publish crashing the compile.
 
 ### Checklist
 

@@ -39,14 +39,53 @@ Read the matching `readmes/*.md` before working on any of these.
 - **Audio (Radio)** — Howler.js playback. Stream endpoint at `Radio/endpoints/stream.ts`; `RadioProvider.tsx`; UI in `components/content/Radio/` + `UX/TapePlayer/`.
 - **Access (Locker plugin)** — role-based, collection + field level. Roles descending: `admin`, `cofounder`, `editor`, `author`, `patron`, `resident`, `user` (+ `guest` sentinel). `cofounder` sits in both `PAID_ROLES` (`resident`, `patron`, `cofounder`) and `STAFF_ROLES` (`editor`, `cofounder`, `admin`) by design.
 - **Image Search plugin** — admin-side search across Unsplash/Pexels/Pixabay with LRU cache.
-- **Provider SSR** — Device/Mobile/AMG hydrate after mount; `TransitionProvider` + `MiddleMan` are direct imports; TransitionManager is still client-gated. → `readmes/SSR_PROVIDER_HANDOFF.md`
+- **Provider SSR** — Device/Mobile/AMG hydrate after mount; `TransitionProvider` + `MiddleMan` are direct imports; TransitionManager is still client-gated. Do not bring back `ssr: false` wrappers.
 - **Vault (`/vault`)** — Payload admin. Paint Payload CSS variables; custom work-queue home is interim. Bird’s-eye dashboard is deferred until admin is end-to-end functional. → `readmes/VAULT.md`
+- **Settings / user shell** — `/me/settings` persistent rail + pane fade (`SHELL`). Convenience lanes: UserDropdown, SideDrawer, ⌘K. → `readmes/SETTINGS.md`
+- **LOSTINSEOUL** — storefront under `src/lostinseoul/`. Naming, ecommerce, fragrance are separate docs. → `readmes/LOSTINSEOUL.md`
+
+### Docs map
+
+One file per scope. Session dumps belong in `.attic/`, not here.
+
+| Scope | File |
+|---|---|
+| This operating brief | `AGENTS.md` → `CLAUDE.md` (symlink pair) |
+| Copy | `readmes/VOICE.md` |
+| Visual / interaction | `readmes/DESIGN_SYSTEM.md` |
+| Settings + user shell | `readmes/SETTINGS.md` |
+| Vault | `readmes/VAULT.md` |
+| LOSTINSEOUL storefront | `readmes/LOSTINSEOUL.md` |
+| Catalog / cart / orders | `readmes/ECOMMERCE.md` |
+| Fragrance chapter | `readmes/LOSTINSEOUL_FRAGRANCE.md` |
+| Highlightr | `readmes/HIGHLIGHTR.md` |
+| Notifications | `readmes/NOTIFICATIONS.md` |
+| Tour | `readmes/TOUR.md` |
+| Migrations | `readmes/MIGRATIONS.md` |
+| Deploy / launch / ops | `readmes/DEPLOY.md`, `GOING_PUBLIC.md`, `SERVER_HARDENING.md` |
+| Auth provider approval | `readmes/OAUTH_APPROVAL_FORM.md` |
+| Email | `readmes/BREVO_SETUP.md` |
+| Type backlog | `readmes/TYPE_DEBT.md` |
+
+### Open work
+
+1. Vault e2e list / edit / publish / preview. Not the bird’s-eye dashboard.
+2. LOSTINSEOUL structural cleanup, then WebGL/R3F.
+3. Settings Controlbar back-link, ⌘K context suggestions, `/me/posts` table controls.
+4. Notifications Phase B (SSE). Polling stays until that ships.
+5. Type debt, incrementally, post-launch.
 
 ---
 
 ## Authentication
 
-Better Auth integrated with Payload. Providers: email/password, Google, Naver, Passkeys (WebAuthn), TOTP 2FA. Routes at `/api/auth/[...all]`. Cookie session, server-validated via `payload.betterAuth`. Client hook: `useRPSession`. On init, seeds a `concierge` admin if none exists.
+Better Auth 1.7 integrated with Payload. First-party screens in
+`src/components/auth/` — do not reintroduce vendored betterauth-ui. Kakao and
+Naver live in `socialProviders` (`signIn.social({ provider })`). Also:
+email/password, Google, Passkeys (WebAuthn), TOTP 2FA. Routes at
+`/api/auth/[...all]`. Cookie session, server-validated via `payload.betterAuth`.
+Client hook: `useRPSession`. On init, seeds a `concierge` admin if none exists.
+Dev-only auth lab: `src/lib/auth/dev/lab/`.
 
 ---
 
@@ -82,7 +121,7 @@ pnpm generate:schema
 pnpm lint · pnpm format
 ```
 
-Docker-based deploy (dev/prod.Dockerfile) behind Nginx. → `readmes/DEPLOYMENT.md`.
+Docker-based deploy (dev/prod.Dockerfile) behind Nginx. → `readmes/DEPLOY.md`.
 
 ### File conventions
 
@@ -97,11 +136,11 @@ Docker-based deploy (dev/prod.Dockerfile) behind Nginx. → `readmes/DEPLOYMENT.
 
 Two directories sit outside `src/`, excluded from the production build.
 
-- **`.attic/` — archived dormant code.** **Never `rm` a file — always `pnpm attic <path>`** (mirrors the source path). Git-tracked; excluded from Docker + tsconfig, so type errors inside don't hit CI.
+- **`.attic/` — archived dormant code.** **Never `rm` a file — always `pnpm attic <path>`** (mirrors the source path). Gitignored local stash; excluded from Docker + tsconfig, so type errors inside don't hit CI. Role and usage: `scripts/attic.sh` and this section.
 - **`reference/` — optional local-only study/benchmark code.** Git-ignored external material for reading/porting only,
   never imported by production. When ready to use, port into `src/` properly — don't import directly.
 
-**Type debt:** ~537 TS errors deferred post-launch. `typescript.ignoreBuildErrors: true` keeps the build green. Backlog + fix order in **`readmes/TYPE_DEBT.md`**. Count: `pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l`.
+**Type debt:** deferred post-launch. `typescript.ignoreBuildErrors: true` keeps the build green. Backlog in **`readmes/TYPE_DEBT.md`**. Count: `pnpm tsc --noEmit 2>&1 | grep "error TS" | wc -l`.
 
 ---
 
