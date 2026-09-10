@@ -43,6 +43,7 @@ Read the matching `readmes/*.md` before working on any of these.
 - **Vault (`/vault`)** — Payload admin. Paint Payload CSS variables; custom work-queue home is interim. Bird’s-eye dashboard is deferred until admin is end-to-end functional. → `readmes/VAULT.md`
 - **Settings / user shell** — `/me/settings` persistent rail + pane fade (`SHELL`). Convenience lanes: UserDropdown, SideDrawer, ⌘K. → `readmes/SETTINGS.md`
 - **LOSTINSEOUL** — storefront under `src/lostinseoul/`. Naming, ecommerce, fragrance are separate docs. → `readmes/LOSTINSEOUL.md`
+- **Ecommerce** — official `@payloadcms/plugin-ecommerce` owns catalog/cart/orders/transactions; warehouse ledger owns stock; membership and tickets stay separate. Phases 0–8 done; Phase 9 (nginx `/api/carts/` + `/api/payments/` on the LOST host, then PortOne **sandbox**) is next. → `readmes/ECOMMERCE.md`
 
 ### Docs map
 
@@ -70,7 +71,7 @@ One file per scope. Session dumps belong in `.attic/`, not here.
 ### Open work
 
 1. Vault e2e list / edit / publish / preview. Not the bird’s-eye dashboard.
-2. LOSTINSEOUL structural cleanup, then WebGL/R3F.
+2. Ecommerce Phase 9 (`readmes/ECOMMERCE.md`) — staging prove, nginx allowlist, PortOne sandbox. Not a production dashboard click. Storefront WebGL/CSS leftovers are a separate lane (`readmes/LOSTINSEOUL.md`).
 3. Settings Controlbar back-link, ⌘K context suggestions, `/me/posts` table controls.
 4. Notifications Phase B (SSE). Polling stays until that ships.
 5. Type debt, incrementally, post-launch.

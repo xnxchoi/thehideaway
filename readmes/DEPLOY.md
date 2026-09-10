@@ -454,6 +454,18 @@ curl -I https://lostinseoul.com/
 Expected: health returns `200`; `www.lostinseoul.com` may redirect to
 `lostinseoul.com`, but `curl -L` should end at `200`.
 
+### LOST host API allowlist (ecommerce Phase 9)
+
+`nginx/sites-enabled/production.conf` 404s generic `/api/` on
+`$is_lostinseoul_host`. Today the LOST host may reach `/api/auth/`,
+`/api/health`, `/api/lost/`, and `/api/commerce/`. Plugin checkout uses
+`/api/carts/` and `/api/payments/` — those prefixes are not allowlisted yet.
+
+Do not open generic `/api/` or `/vault/` on `lostinseoul.com`. Product
+PortOne sandbox webhooks go to `/api/payments/portone/webhooks`. Membership
+plan webhooks stay `/api/lost/webhooks/portone`. Full procedure:
+`readmes/ECOMMERCE.md` Phase 9.
+
 ---
 
 ### Step 6 — Run the wrapper
