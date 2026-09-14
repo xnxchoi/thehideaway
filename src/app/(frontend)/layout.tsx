@@ -1,3 +1,4 @@
+import { DomainProvider } from "@/lib/lostinseoul/DomainProvider";
 import { Header } from "@/components/Shells/Header/Component";
 import { AnimatedFavicon } from "@/components/core/AnimatedFavicon";
 import { Main } from "@/components/core/Main";
@@ -84,37 +85,39 @@ export default async function RootLayout({
       </head>
       <body data-themed={"color, background-color"}>
         <Suspense>
-          <NextIntlClientProvider>
-            <BetterAuthProvider {...getContextProps()}>
-              <ClientProviders>
-                <HideawayFMProvider>
-                  {/* Server-rendered components */}
-                  <EscapeInAppBrowser />
-                  <AnimatedFavicon />
-                  <Toaster />
-                  <LivePreviewListener />
-                  <Header />
-                  <RP_Menu />
-                  <ScrollIndicator />
-                  <Main>
-                    <ClientLayout>
-                      <Suspense>
-                        <MenuMediaPreview>
-                          <VGradient />
-                        </MenuMediaPreview>
-                        <ContentMask>
-                          {children}
-                          <SideDrawer />
-                          <SideDrawerPullTab />
-                          <SearchSheet />
-                        </ContentMask>
-                      </Suspense>
-                    </ClientLayout>
-                  </Main>
-                </HideawayFMProvider>
-              </ClientProviders>
-            </BetterAuthProvider>
-          </NextIntlClientProvider>
+          <DomainProvider>
+            <NextIntlClientProvider>
+              <BetterAuthProvider {...getContextProps()}>
+                <ClientProviders>
+                  <HideawayFMProvider>
+                    {/* Server-rendered components */}
+                    <EscapeInAppBrowser />
+                    <AnimatedFavicon />
+                    <Toaster />
+                    <LivePreviewListener />
+                    <Header />
+                    <RP_Menu />
+                    <ScrollIndicator />
+                    <Main>
+                      <ClientLayout>
+                        <Suspense>
+                          <MenuMediaPreview>
+                            <VGradient />
+                          </MenuMediaPreview>
+                          <ContentMask>
+                            {children}
+                            <SideDrawer />
+                            <SideDrawerPullTab />
+                            <SearchSheet />
+                          </ContentMask>
+                        </Suspense>
+                      </ClientLayout>
+                    </Main>
+                  </HideawayFMProvider>
+                </ClientProviders>
+              </BetterAuthProvider>
+            </NextIntlClientProvider>
+          </DomainProvider>
         </Suspense>
       </body>
     </html>

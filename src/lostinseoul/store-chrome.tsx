@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useRoutePathname } from "@/lib/lostinseoul/domain-context";
 import {
   Announcement,
   EntrySequence,
@@ -14,7 +14,7 @@ export function StoreChrome({
 }: {
   drops: Array<{ title: string; slug: string }>;
 }) {
-  const pathname = usePathname() ?? "";
+  const pathname = useRoutePathname() ?? "";
   if (!isShopChromePath(pathname)) return null;
 
   return (

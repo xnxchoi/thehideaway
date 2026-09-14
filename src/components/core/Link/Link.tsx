@@ -7,7 +7,11 @@ import { isInternalLink } from "@/utilities/isInternalLink";
 import { useLenis } from "lenis/react";
 import * as m from "motion/react-m";
 import { Link as NextLink } from "next-transition-router";
-import { usePathname } from "next/navigation";
+import {
+  useRoutePathname,
+  useLostDomain
+} from "@/lib/lostinseoul/domain-context";
+import { lostPublicHref, lostRoutePath } from "@/lib/lostinseoul/domain";
 
 import {
   type ComponentProps,
@@ -49,7 +53,7 @@ export const isLostInSeoulPathNavigation = ({
 
 const RP_Link = (props: RPLinkPropsWithRef) => {
   const {
-    href,
+    href: sourceHref,
     onClick,
     onMouseLeave: doML,
     onMouseEnter: doME,
@@ -58,8 +62,10 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
     ...rest
   } = props;
 
+  const onLostHost = useLostDomain();
+  const href = lostPublicHref(sourceHref, onLostHost);
   const lenis = useLenis();
-  const currentPath = usePathname();
+  const currentPath = useRoutePathname();
   const { isActivePath } = useLinkPaths({ href });
   const isActivePathRef = useRef(isActivePath);
   const disabledRef = useRef(disabled);
@@ -87,12 +93,20 @@ const RP_Link = (props: RPLinkPropsWithRef) => {
 
   const [isAnchor, setIsAnchor] = useState(false);
   useEffect(() => {
-    setIsAnchor(href.startsWith("#") || href.startsWith(`${currentPath}#`));
-  }, [href, currentPath]);
+    setIsAnchor(
+      href.startsWith("#") ||
+        href.startsWith(`${lostPublicHref(currentPath, onLostHost)}#`)
+    );
+  }, [href, currentPath, onLostHost]);
   const { goToPage, setGenericPageTransition } = useTransitionSetter();
   const isLostInternalNavigation = useMemo(
-    () => isLostInSeoulPathNavigation({ currentPath, href, isAnchor }),
-    [currentPath, href, isAnchor]
+    () =>
+      isLostInSeoulPathNavigation({
+        currentPath,
+        href: lostRoutePath(href.split(/[?#]/)[0], onLostHost),
+        isAnchor
+      }),
+    [currentPath, href, isAnchor, onLostHost]
   );
 
   const handleClick: MouseEventHandler<HTMLAnchorElement> = useCallback(
@@ -182,14 +196,15 @@ export function LinkUnderlined(
 }
 
 export const useLinkPaths = ({ href }: { href: string }) => {
+  const onLostHost = useLostDomain();
   const path = useMemo(() => {
     if (!href) {
       return "";
     }
     const url = new URL(href, "http://localhost");
-    return url.pathname;
-  }, [href]);
-  const currentPath = usePathname();
+    return lostRoutePath(url.pathname, onLostHost);
+  }, [href, onLostHost]);
+  const currentPath = useRoutePathname();
   const [isActivePath, setIsActivePath] = useState(currentPath === path);
   useEffect(() => {
     if (path === "/" || path === "/home") {

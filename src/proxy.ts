@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { hasLostGateCookie } from "@/lib/lostinseoul/gate";
 import { isLostCommercePaymentPreviewEnabled } from "@/lib/lost-commerce/payment-preview";
 import { signInRedirectPath } from "@/lib/routes/auth";
+import {
+  isLostHost,
+  lostInternalPath,
+  lostHostAuthority,
+  lostPublicHref
+} from "@/lib/lostinseoul/domain";
 
 /**
  * Proxy (Next 16 — replaces `middleware.ts`). Runs in the Node.js
@@ -18,15 +24,6 @@ const SESSION_COOKIE_NAMES = [
   "__Secure-better-auth.session_token"
 ];
 
-const LOST_HOSTS = new Set(["lostinseoul.com", "www.lostinseoul.com"]);
-const LOST_PUBLIC_ROUTE_REWRITES = new Map([
-  ["/", "/lostinseoul"],
-  ["/gate", "/lostinseoul/gate"],
-  ["/privacy", "/lostinseoul/privacy"],
-  ["/terms", "/lostinseoul/terms"],
-  ["/refund", "/lostinseoul/refund"]
-]);
-
 const RETIRED_COMMERCE_API_PREFIXES = [
   "/api/invoice",
   "/api/lost/cart",
@@ -38,44 +35,6 @@ function isRetiredCommerceApiPath(pathname: string): boolean {
   return RETIRED_COMMERCE_API_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
-}
-
-function hostnameFromHostHeader(host: string): string {
-  const value = host.trim().toLowerCase();
-  if (value.startsWith("[")) {
-    const bracketEnd = value.indexOf("]");
-    return bracketEnd === -1 ? value : value.slice(1, bracketEnd);
-  }
-  return value.split(":")[0] ?? value;
-}
-
-function isLoopbackHostname(hostname: string): boolean {
-  return (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname === "::1" ||
-    hostname === "0.0.0.0"
-  );
-}
-
-function isLostHost(host: string | null | undefined): boolean {
-  if (!host) return false;
-  const normalized = hostnameFromHostHeader(host);
-  if (normalized && LOST_HOSTS.has(normalized)) return true;
-
-  const configured = process.env.NEXT_PUBLIC_LOSTINSEOUL_URL;
-  if (!configured) return false;
-  try {
-    const configuredHost = new URL(configured).hostname.toLowerCase();
-    if (isLoopbackHostname(configuredHost)) return false;
-    return normalized === configuredHost;
-  } catch {
-    return false;
-  }
-}
-
-function lostRootRewritePath(pathname: string): string | null {
-  return LOST_PUBLIC_ROUTE_REWRITES.get(pathname) ?? null;
 }
 
 function isLostPublicAssetPath(pathname: string): boolean {
@@ -93,12 +52,28 @@ function isLostImageOptimizerPath(pathname: string): boolean {
   return pathname === "/_next/image";
 }
 
+function isLostAllowedApiPath(pathname: string): boolean {
+  return (
+    ["/api/health", "/api/carts", "/api/users/me", "/api/addresses"].includes(
+      pathname
+    ) ||
+    [
+      "/api/auth/",
+      "/api/lost/",
+      "/api/commerce/",
+      "/api/carts/",
+      "/api/payments/"
+    ].some((prefix) => pathname.startsWith(prefix))
+  );
+}
+
 function isLostScopedPath(pathname: string): boolean {
   return (
     pathname === "/api" ||
     pathname.startsWith("/api/") ||
-    pathname === "/lostinseoul" ||
-    pathname.startsWith("/lostinseoul/") ||
+    ((pathname === "/lostinseoul" || pathname.startsWith("/lostinseoul/")) &&
+      lostInternalPath(pathname.slice("/lostinseoul".length) || "/") !==
+        null) ||
     pathname.startsWith("/_next/") ||
     isLostPublicAssetPath(pathname)
   );
@@ -233,7 +208,7 @@ export async function proxy(request: NextRequest) {
     request.headers.get("host") || request.nextUrl.hostname
   );
   const lostRewritePathname = isLostRequest
-    ? lostRootRewritePath(originalPathname)
+    ? lostInternalPath(originalPathname)
     : null;
 
   if (
@@ -242,6 +217,29 @@ export async function proxy(request: NextRequest) {
     !isLostScopedPath(originalPathname)
   ) {
     return new NextResponse(null, { status: 404 });
+  }
+
+  if (
+    isLostRequest &&
+    (request.method === "GET" || request.method === "HEAD")
+  ) {
+    const canonicalPath = lostPublicHref(originalPathname, true);
+    if (canonicalPath !== originalPathname) {
+      const url = request.nextUrl.clone();
+      // Nginx forwards the public Host and protocol while the upstream URL
+      // may still identify the private application container.
+      const publicHost = lostHostAuthority(request.headers.get("host"));
+      if (publicHost) {
+        const origin = new URL(`${url.protocol}//${publicHost}`);
+        url.hostname = origin.hostname;
+        url.port = origin.port;
+      }
+      const protocol = request.headers.get("x-forwarded-proto");
+      if (protocol === "https" || protocol === "http")
+        url.protocol = `${protocol}:`;
+      url.pathname = canonicalPath;
+      return NextResponse.redirect(url, 308);
+    }
   }
 
   const pathname = lostRewritePathname ?? originalPathname;
@@ -270,6 +268,14 @@ export async function proxy(request: NextRequest) {
       { success: false, error: "commerce-api-retired" },
       { status: 410 }
     );
+  }
+
+  if (
+    isLostRequest &&
+    (pathname === "/api" || pathname.startsWith("/api/")) &&
+    !isLostAllowedApiPath(pathname)
+  ) {
+    return new NextResponse(null, { status: 404 });
   }
 
   // --- 1. Rate limiting on API routes ---

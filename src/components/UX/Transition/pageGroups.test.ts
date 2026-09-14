@@ -29,3 +29,30 @@ describe("pickTransitionType settings shell", () => {
     expect(decision.type).not.toBe("SHELL");
   });
 });
+
+describe("LOST host transition handoff", () => {
+  it.each([
+    ["/", "/products/coat"],
+    ["/products/coat", "/products/jacket?variant=blue"],
+    ["/collections/archive", "/cart"]
+  ])("keeps %s to %s inside storefront transitions", (fromHref, toHref) => {
+    expect(
+      pickTransitionType({
+        fromHref,
+        toHref,
+        navIsOpen: false,
+        onLostHost: true
+      }).type
+    ).toBe("LOST_PRODUCT");
+  });
+  it("preserves primary-host home and editorial transitions", () => {
+    expect(
+      pickTransitionType({
+        fromHref: "/",
+        toHref: "/essays/a",
+        navIsOpen: false,
+        onLostHost: false
+      }).type
+    ).toBe("CURTAIN");
+  });
+});

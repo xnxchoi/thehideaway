@@ -1,6 +1,7 @@
 "use client";
 
 import type { PageTransitionType } from "./index";
+import { lostRoutePath } from "@/lib/lostinseoul/domain";
 
 /**
  * Higher-level grouping that drives transition selection.
@@ -179,6 +180,7 @@ export type TransitionContext = {
   fromHref: string;
   toHref: string;
   navIsOpen: boolean;
+  onLostHost?: boolean;
   override?: PageTransitionType | null;
 };
 
@@ -193,8 +195,12 @@ export type TransitionContext = {
  *   default          → FADE
  */
 export function pickTransitionType(ctx: TransitionContext): TransitionDecision {
-  const from = classifyPath(ctx.fromHref);
-  const to = classifyPath(ctx.toHref);
+  const from = classifyPath(
+    lostRoutePath(normalizePath(ctx.fromHref), ctx.onLostHost ?? false)
+  );
+  const to = classifyPath(
+    lostRoutePath(normalizePath(ctx.toHref), ctx.onLostHost ?? false)
+  );
 
   if (ctx.override) return { type: ctx.override, from, to };
   if (ctx.navIsOpen) return { type: "FROM_MENU", from, to };

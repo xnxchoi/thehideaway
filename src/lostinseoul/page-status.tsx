@@ -10,7 +10,7 @@ import {
   useRef,
   useState
 } from "react";
-import { usePathname } from "next/navigation";
+import { useRoutePathname } from "@/lib/lostinseoul/domain-context";
 import { type EntryPhase, useEntrySequence } from "./entry-motion";
 import { isEntryPath } from "./routes";
 
@@ -64,7 +64,7 @@ export function ChromeProvider({ children }: { children: ReactNode }) {
 }
 
 export function EntryProvider({ children }: { children: ReactNode }) {
-  const pathname = usePathname() ?? "";
+  const pathname = useRoutePathname() ?? "";
   const [sceneReady, setSceneReady] = useState(false);
   const markSceneReady = useCallback(() => {
     setSceneReady(true);

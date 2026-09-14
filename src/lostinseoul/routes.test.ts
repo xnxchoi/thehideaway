@@ -21,3 +21,22 @@ describe("lostinseoul route chrome", () => {
     expect(isEntryPath("/lostinseoul/cart")).toBe(false);
   });
 });
+
+describe("clean LOST chrome routes", () => {
+  it.each([
+    "/",
+    "/products/coat",
+    "/collections/archive",
+    "/fragrance",
+    "/policy/privacy"
+  ])("keeps shop chrome on %s", (path) => {
+    expect(isShopChromePath(path)).toBe(true);
+  });
+  it("keeps entry limited to home and collections", () => {
+    expect(isEntryPath("/")).toBe(true);
+    expect(isEntryPath("/collections/archive")).toBe(true);
+    expect(isEntryPath("/products/coat")).toBe(false);
+    expect(isShopChromePath("/checkout")).toBe(false);
+    expect(isShopChromePath("/cart")).toBe(false);
+  });
+});

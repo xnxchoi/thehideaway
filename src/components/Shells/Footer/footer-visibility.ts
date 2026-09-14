@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useRoutePathname } from "@/lib/lostinseoul/domain-context";
 import { useEffect } from "react";
 import { createStore, useStore } from "zustand";
 
@@ -108,7 +108,7 @@ export function useFooterVisibility(state: Override = null): void {
  * wants to mirror the same visibility signal.
  */
 export function useFooterVisible(): boolean {
-  const pathname = usePathname();
+  const pathname = useRoutePathname();
   const override = useStore(footerVisibilityStore, (s) => s.override);
   if (override === "show") return true;
   if (override === "hide") return false;

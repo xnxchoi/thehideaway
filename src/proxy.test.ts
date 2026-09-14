@@ -216,18 +216,18 @@ describe("proxy routing", () => {
     );
   });
 
-  it.each([
-    "/api/lost/private-quotes",
-    "/api/lost/inventory/commands"
-  ])("password-gates concrete LOST API route %s", async (pathname) => {
-    const res = await proxy(
-      makeRequest(pathname, undefined, "https://lostinseoul.com")
-    );
+  it.each(["/api/lost/private-quotes", "/api/lost/inventory/commands"])(
+    "password-gates concrete LOST API route %s",
+    async (pathname) => {
+      const res = await proxy(
+        makeRequest(pathname, undefined, "https://lostinseoul.com")
+      );
 
-    expect(res.headers.get("location")).toBe(
-      `https://lostinseoul.com/gate?returnTo=${encodeURIComponent(pathname)}`
-    );
-  });
+      expect(res.headers.get("location")).toBe(
+        `https://lostinseoul.com/gate?returnTo=${encodeURIComponent(pathname)}`
+      );
+    }
+  );
 
   it.each([
     "/api/lost/cart",
@@ -283,7 +283,7 @@ describe("proxy routing", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("lets gated scoped lostinseoul.com product paths pass through", async () => {
+  it("canonicalizes gated scoped lostinseoul.com product paths", async () => {
     const res = await proxy(
       makeRequest(
         "/lostinseoul/products/coat",
@@ -293,7 +293,9 @@ describe("proxy routing", () => {
     );
 
     expect(res.headers.get("x-middleware-rewrite")).toBeNull();
-    expect(res.headers.get("location")).toBeNull();
+    expect(res.headers.get("location")).toBe(
+      "https://lostinseoul.com/products/coat"
+    );
   });
 
   it("lets the LOST gate page and submit endpoint pass without a gate cookie", async () => {
@@ -332,7 +334,11 @@ describe("proxy routing", () => {
 
   it("does not expose root-level product shortcuts on lostinseoul.com", async () => {
     const res = await proxy(
-      makeRequest("/products/coat", undefined, "https://lostinseoul.com")
+      makeRequest(
+        "/products/coat/unknown",
+        undefined,
+        "https://lostinseoul.com"
+      )
     );
 
     expect(res.status).toBe(404);
@@ -368,6 +374,31 @@ describe("proxy routing", () => {
     expect(res.headers.get("location")).toBe(
       "https://lostinseoul.com/gate?returnTo=%2Fapi%2Fauth%2Fsession"
     );
+  });
+
+  it.each(["/api/users/me", "/api/addresses"])(
+    "allows the exact plugin identity route %s",
+    async (path) => {
+      const response = await proxy(
+        makeRequest(path, lostGateCookie, "https://lostinseoul.com")
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+    }
+  );
+
+  it.each([
+    "/api/users",
+    "/api/users/other",
+    "/api/users/me/other",
+    "/api/addresses/other",
+    "/api/unknown",
+    "/vault"
+  ])("denies unrelated LOST host route %s", async (path) => {
+    const response = await proxy(
+      makeRequest(path, lostGateCookie, "https://lostinseoul.com")
+    );
+    expect(response.status).toBe(404);
   });
 
   it("password-gates the exact API root on lostinseoul.com", async () => {
@@ -463,5 +494,130 @@ describe("proxy routing", () => {
       "/lostinseoul/checkout/:path*",
       "/lostinseoul/orders/:path*"
     ]);
+  });
+});
+
+describe("canonical LOST storefront routes", () => {
+  it.each([
+    "/",
+    "/products/coat",
+    "/collections/archive",
+    "/fragrance",
+    "/cart",
+    "/checkout",
+    "/orders/order-ref",
+    "/payment/return",
+    "/payment/success",
+    "/payment/failure",
+    "/payment/pending",
+    "/auth/sign-in",
+    "/policy",
+    "/policy/privacy"
+  ])("rewrites %s only on the LOST host, preserving query", async (path) => {
+    const cookie = `${lostGateCookie}; better-auth.session_token=abc`;
+    const res = await proxy(
+      makeRequest(`${path}?currency=KRW`, cookie, "https://lostinseoul.com")
+    );
+    expect(res.headers.get("x-middleware-rewrite")).toBe(
+      `https://lostinseoul.com/lostinseoul${path === "/" ? "" : path}?currency=KRW`
+    );
+    expect(res.headers.get("location")).toBeNull();
+    const primary = await proxy(makeRequest(path, cookie));
+    expect(primary.headers.get("x-middleware-rewrite")).toBeNull();
+  });
+
+  it.each(["GET", "HEAD"])(
+    "canonicalizes legacy %s links with query preserved",
+    async (method) => {
+      const res = await proxy(
+        new NextRequest(
+          "https://lostinseoul.com/lostinseoul/products/coat?variant=blue",
+          { method, headers: { cookie: lostGateCookie } }
+        )
+      );
+      expect(res.status).toBe(308);
+      expect(res.headers.get("location")).toBe(
+        "https://lostinseoul.com/products/coat?variant=blue"
+      );
+    }
+  );
+
+  it.each([
+    "lostinseoul.com:443@evil.test",
+    "lostinseoul.com:443/evil",
+    "lostinseoul.com:443?evil",
+    "lostinseoul.com:65536"
+  ])("does not redirect a malformed Host %s", async (host) => {
+    const response = await proxy(
+      new NextRequest("https://hideawayseoul.com/lostinseoul/products/coat", {
+        headers: { host, cookie: lostGateCookie }
+      })
+    );
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("preserves a valid non-default public port", async () => {
+    const response = await proxy(
+      new NextRequest("http://payload:3000/lostinseoul/cart", {
+        headers: {
+          host: "lostinseoul.com:8443",
+          "x-forwarded-proto": "https",
+          cookie: lostGateCookie
+        }
+      })
+    );
+    expect(response.headers.get("location")).toBe(
+      "https://lostinseoul.com:8443/cart"
+    );
+  });
+
+  it("canonicalizes behind nginx to the public host and protocol", async () => {
+    const response = await proxy(
+      new NextRequest("http://payload:3000/lostinseoul/cart?currency=KRW", {
+        headers: {
+          host: "lostinseoul.com",
+          "x-forwarded-proto": "https",
+          cookie: lostGateCookie
+        }
+      })
+    );
+    expect(response.headers.get("location")).toBe(
+      "https://lostinseoul.com/cart?currency=KRW"
+    );
+  });
+
+  it("forwards legacy server action POST bodies without canonical redirect", async () => {
+    const res = await proxy(
+      new NextRequest("https://lostinseoul.com/lostinseoul/products/coat", {
+        method: "POST",
+        body: "action-body",
+        headers: { cookie: lostGateCookie, "next-action": "example" }
+      })
+    );
+    expect(res.headers.get("location")).toBeNull();
+    expect(res.status).toBe(200);
+  });
+
+  it.each([
+    "/essays",
+    "/products",
+    "/products/coat/extra",
+    "/lostinseoul/unknown",
+    "/auth/sign-up",
+    "/payment/unknown"
+  ])("rejects unrelated route %s", async (path) => {
+    const res = await proxy(
+      makeRequest(path, lostGateCookie, "https://lostinseoul.com")
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("keeps guest checkout on the existing storefront sign-in flow", async () => {
+    const res = await proxy(
+      makeRequest("/checkout", lostGateCookie, "https://lostinseoul.com")
+    );
+    expect(res.headers.get("location")).toBe(
+      "https://lostinseoul.com/auth/sign-in?redirectTo=%2Fcheckout"
+    );
   });
 });

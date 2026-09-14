@@ -39,14 +39,21 @@ describe("production LOSTINSEOUL nginx boundary", () => {
     expect(locationBlock(config, "= /gate")).not.toContain("proxy_pass");
   });
 
-  it.each(["/api/lost/", "/api/commerce/", "/api/auth/", "= /api/health"])(
-    "allows the LOSTINSEOUL API boundary %s",
-    (declaration) => {
-      expect(locationBlock(productionNginx, declaration)).toContain(
-        "proxy_pass http://hideaway_upstream;"
-      );
-    }
-  );
+  it.each([
+    "/api/lost/",
+    "/api/commerce/",
+    "/api/auth/",
+    "= /api/carts",
+    "/api/carts/",
+    "/api/payments/",
+    "= /api/health",
+    "= /api/users/me",
+    "= /api/addresses"
+  ])("allows the LOSTINSEOUL API boundary %s", (declaration) => {
+    expect(locationBlock(productionNginx, declaration)).toContain(
+      "proxy_pass http://hideaway_upstream;"
+    );
+  });
 
   it("caps commerce API request bodies", () => {
     expect(locationBlock(productionNginx, "/api/commerce/")).toContain(
@@ -59,6 +66,36 @@ describe("production LOSTINSEOUL nginx boundary", () => {
       /if \(\$is_lostinseoul_host\) \{\s*return 404;/
     );
   });
+
+  it("forwards the domain root without bouncing back to the internal prefix", () => {
+    const root = locationBlock(productionNginx, "= /");
+    expect(root).toContain("proxy_pass http://hideaway_upstream;");
+    expect(root).not.toContain("return 302 /lostinseoul");
+  });
+
+  it.each(["/cart", "/checkout", "/fragrance", "/policy", "/auth/sign-in"])(
+    "forwards clean storefront page %s",
+    (route) =>
+      expect(locationBlock(productionNginx, `= ${route}`)).toContain(
+        "proxy_pass http://hideaway_upstream;"
+      )
+  );
+
+  it.each(["products", "collections", "orders", "payment", "policy"])(
+    "forwards clean storefront descendants under %s",
+    (route) =>
+      expect(locationBlock(productionNginx, `^~ /${route}/`)).toContain(
+        "proxy_pass http://hideaway_upstream;"
+      )
+  );
+
+  it.each(["/vault/", "/api/notifications/stream"])(
+    "keeps the separate %s location closed on the LOST host",
+    (route) =>
+      expect(locationBlock(productionNginx, route)).toMatch(
+        /if \(\$is_lostinseoul_host\) \{\s*return 404;/
+      )
+  );
 
   it("continues to reject arbitrary Hideaway paths on the LOSTINSEOUL host", () => {
     expect(productionNginx).toMatch(

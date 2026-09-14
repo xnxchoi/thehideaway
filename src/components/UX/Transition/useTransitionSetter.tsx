@@ -2,7 +2,10 @@
 
 import { useRPStore } from "@/providers/RP_Pro";
 import { useTransitionRouter } from "next-transition-router";
-import { usePathname } from "next/navigation";
+import {
+  useRoutePathname,
+  useLostDomain
+} from "@/lib/lostinseoul/domain-context";
 import { startTransition, useCallback, useEffect, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 import type { PageTransitionType } from "./index";
@@ -28,7 +31,8 @@ export const useTransitionSetter = () => {
     setIsTransitioningWipe = useRPStore((l) => l.setIsTransitioningWipe),
     router = useTransitionRouter(),
     navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
-  const currentPath = usePathname();
+  const currentPath = useRoutePathname();
+  const onLostHost = useLostDomain();
   useEffect(() => {
     navisopref.current = navIsOpen;
   }, [navIsOpen]);
@@ -46,6 +50,7 @@ export const useTransitionSetter = () => {
       const decision = pickTransitionType({
         fromHref,
         toHref,
+        onLostHost,
         navIsOpen: navisopref.current,
         override: options?.override ?? null
       });
@@ -57,7 +62,8 @@ export const useTransitionSetter = () => {
     [
       setTransitionOutType,
       setIsTransitioningWipe,
-      setNavigationPageItemSelected
+      setNavigationPageItemSelected,
+      onLostHost
     ]
   );
   const goToPage = useCallback(

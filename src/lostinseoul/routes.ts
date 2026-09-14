@@ -1,5 +1,8 @@
+import { lostInternalPath } from "@/lib/lostinseoul/domain";
+
 export function isShopChromePath(pathname: string) {
-  const path = pathname.replace(/\/$/, "") || "/";
+  const path =
+    lostInternalPath(pathname) ?? (pathname.replace(/\/$/, "") || "/");
   if (path === "/lostinseoul") return true;
   return [
     "/lostinseoul/collections",
@@ -13,7 +16,8 @@ export function isShopChromePath(pathname: string) {
 }
 
 export function isEntryPath(pathname: string) {
-  const path = pathname.replace(/\/$/, "") || "/";
+  const path =
+    lostInternalPath(pathname) ?? (pathname.replace(/\/$/, "") || "/");
   return (
     path === "/lostinseoul" || path.startsWith("/lostinseoul/collections/")
   );

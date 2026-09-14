@@ -1,3 +1,4 @@
+import { lostHostRedirectPattern } from "./src/lib/lostinseoul/domain";
 import { withPayload } from "@payloadcms/next/withPayload";
 
 import createNextIntlPlugin from "next-intl/plugin";
@@ -213,31 +214,37 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/auth/sign-in",
+        missing: [{ type: "host", value: lostHostRedirectPattern() }],
         destination: "/sign-in",
         permanent: false
       },
       {
         source: "/auth/sign-up",
+        missing: [{ type: "host", value: lostHostRedirectPattern() }],
         destination: "/sign-up",
         permanent: false
       },
       {
         source: "/auth/forgot-password",
+        missing: [{ type: "host", value: lostHostRedirectPattern() }],
         destination: "/forgot-password",
         permanent: false
       },
       {
         source: "/auth/reset-password",
+        missing: [{ type: "host", value: lostHostRedirectPattern() }],
         destination: "/reset-password",
         permanent: false
       },
       {
         source: "/auth/two-factor",
+        missing: [{ type: "host", value: lostHostRedirectPattern() }],
         destination: "/two-factor",
         permanent: false
       },
       {
         source: "/auth/:path*",
+        missing: [{ type: "host", value: lostHostRedirectPattern() }],
         destination: "/sign-in",
         permanent: false
       }
