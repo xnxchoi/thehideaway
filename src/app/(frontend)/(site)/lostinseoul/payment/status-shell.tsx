@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/components/core/Link/Link";
 import { CheckoutColophon } from "@/components/Shells/Footer/CheckoutColophon";
 import "@lostinseoul/index.css";
@@ -10,25 +11,26 @@ type LostPaymentStatusShellProps = {
   title: string;
 };
 
-export function LostPaymentStatusShell({
+export async function LostPaymentStatusShell({
   actionHref,
   actionLabel,
   eyebrow,
   order,
   title
 }: LostPaymentStatusShellProps) {
+  const t = await getTranslations("LOSTINSEOUL.payment");
   return (
     <main className="lost-standalone-root grid min-h-[100svh] bg-[var(--n-s-bg)] px-4 py-5 text-[var(--n-s-fg)] [--n-s-bg:var(--black)] [--n-s-fg:var(--white)] selection:bg-[var(--n-s-fg)] selection:text-[var(--n-s-bg)] md:px-10 md:py-8">
       <header className="grid min-h-[56px] grid-cols-[1fr_auto_1fr] items-start gap-4 border-b border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] pb-5">
         <Link
-          aria-label="LOSTINSEOUL home"
+          aria-label={t("homeLabel")}
           className="inline-flex min-h-[44px] items-center font-sans text-sm font-bold tracking-[0.24em] uppercase"
           href="/lostinseoul"
         >
           LOSTINSEOUL
         </Link>
         <p className="pt-3 font-sans text-[11px] font-bold tracking-[0.22em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.62)] uppercase">
-          Payment
+          {t("heading")}
         </p>
         <span aria-hidden />
       </header>

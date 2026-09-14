@@ -1,168 +1,124 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
-
 import { createPortOneInitiatePayment } from "./initiate-payment";
 
-function payloadStub(overrides: Record<string, unknown> = {}) {
-  return {
-    create: vi.fn(async () => ({ id: "txn-1" })),
-    logger: { error: vi.fn() },
-    ...overrides
-  };
-}
+const mocks = vi.hoisted(() => ({ attempt: vi.fn() }));
+vi.mock("../checkout-attempt", () => ({
+  getOrCreateCheckoutAttempt: mocks.attempt,
+  relationID: (id: unknown) => (typeof id === "string" ? id : undefined)
+}));
+vi.mock("@/utilities/getURL", () => ({
+  getServerSideURL: () => "https://hideawayseoul.com"
+}));
+const input = () => ({
+  req: {
+    headers: new Headers({ origin: "https://lostinseoul.com" })
+  } as PayloadRequest,
+  transactionsSlug: "transactions",
+  data: {
+    cart: { id: "cart-1", subtotal: 1 },
+    currency: "KRW",
+    customerEmail: "buyer@example.com",
+    checkoutSnapshot: {
+      amount: 120000,
+      currency: "KRW",
+      items: [{ product: "prod-1", quantity: 1 }]
+    }
+  }
+});
+const buildPayload = vi.fn((input) => ({
+  storeId: "store-1",
+  channelKey: "channel-1",
+  paymentId: input.orderRef,
+  totalAmount: input.amount
+}));
+const deps = {
+  buildPayload,
+  isCheckoutEnabled: () => true,
+  makePaymentId: () => "candidate-pay-id",
+  requireLiveChannel: () => false
+};
 
-function reqStub(payload: ReturnType<typeof payloadStub>): PayloadRequest {
-  return {
-    payload,
-    user: { id: "user-1", email: "buyer@example.com" },
-    headers: new Headers({ origin: "http://localhost:3000" }),
-    data: { amount: 1, cartID: "cart-1" }
-  } as unknown as PayloadRequest;
-}
-
-describe("createPortOneInitiatePayment", () => {
-  it("creates a pending transaction from the server cart total, not the client amount", async () => {
-    const payload = payloadStub();
-    const buildPayload = vi.fn(() => ({
-      storeId: "store",
-      paymentId: "pay_1",
-      totalAmount: 120000
-    }));
-    const initiate = createPortOneInitiatePayment({
-      buildPayload,
-      makePaymentId: () => "pay_1",
-      isCheckoutEnabled: () => true
-    });
-
-    const result = await initiate({
-      data: {
-        cart: {
-          id: "cart-1",
-          subtotal: 120000,
-          currency: "KRW",
-          items: [
-            {
-              id: "row-1",
-              product: "prod-1",
-              variant: "var-1",
-              quantity: 2,
-              mode: "standard_purchase",
-              line_amount: 120000
-            }
-          ]
-        },
-        currency: "KRW",
-        customerEmail: "buyer@example.com",
-        billingAddress: {} as never
+describe("PortOne initiation contract", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.attempt.mockResolvedValue({
+      order: { id: "purchase-1", order_ref: "lis-purchase" },
+      attempt: {
+        id: "attempt-1",
+        portone: { paymentId: "original-pay-id" },
+        provider_expectation: {
+          storeId: "store-1",
+          channelKey: "channel-1",
+          channelType: "TEST"
+        }
       },
-      req: reqStub(payload),
-      transactionsSlug: "transactions"
+      purchaseAccessToken: "guest-capability"
     });
-
-    expect(payload.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: "transactions",
-        data: expect.objectContaining({
-          amount: 120000,
-          currency: "KRW",
-          paymentMethod: "portone",
-          status: "pending",
-          cart: "cart-1",
-          customer: "user-1",
-          portone: expect.objectContaining({
-            paymentId: "pay_1"
-          })
-        })
-      })
-    );
-    expect(payload.create).toHaveBeenCalledTimes(1);
-    expect(buildPayload).toHaveBeenCalledWith(
-      expect.objectContaining({
-        orderRef: "pay_1",
-        amount: 120000,
-        currency: "KRW",
-        origin: "http://localhost:3000"
-      })
-    );
+  });
+  it("returns the reusable attempt and purchase capability with authoritative totals", async () => {
+    const result = await createPortOneInitiatePayment(deps)(input());
     expect(result).toMatchObject({
-      message: "Payment initiated successfully",
-      paymentId: "pay_1",
-      transactionID: "txn-1"
+      paymentId: "original-pay-id",
+      orderID: "purchase-1",
+      customerID: null,
+      order_ref: "lis-purchase",
+      transactionID: "attempt-1",
+      purchaseAccessToken: "guest-capability",
+      clientPayload: {
+        totalAmount: 120000,
+        paymentId: "original-pay-id",
+        noticeUrls: ["https://hideawayseoul.com/api/payments/portone/webhooks"]
+      }
     });
-    expect(result.clientPayload).toMatchObject({
-      noticeUrls: ["http://localhost:3000/api/payments/portone/webhooks"]
-    });
-  });
-
-  it("pins noticeUrls to the server origin even if the request Origin is foreign", async () => {
-    process.env.NEXT_PUBLIC_SERVER_URL = "http://localhost:3000";
-    const payload = payloadStub();
-    const initiate = createPortOneInitiatePayment({
-      buildPayload: () => ({ storeId: "store", paymentId: "pay_1" }),
-      makePaymentId: () => "pay_1",
-      isCheckoutEnabled: () => true
-    });
-    const req = reqStub(payload);
-    (req as { headers: Headers }).headers = new Headers({
-      origin: "https://evil.example"
-    });
-
-    const result = await initiate({
-      data: {
-        cart: {
-          id: "cart-1",
-          subtotal: 120000,
-          items: [{ id: "row-1", product: "prod-1", quantity: 1, line_amount: 120000 }]
-        },
-        currency: "KRW",
-        customerEmail: "buyer@example.com",
-        billingAddress: {} as never
-      },
-      req,
-      transactionsSlug: "transactions"
-    });
-
-    expect(result.clientPayload).toMatchObject({
-      noticeUrls: ["http://localhost:3000/api/payments/portone/webhooks"]
-    });
-  });
-
-  it("refuses to initiate when checkout is dark or the cart has no payable total", async () => {
-    const payload = payloadStub();
-    const dark = createPortOneInitiatePayment({
-      isCheckoutEnabled: () => false
-    });
-    await expect(
-      dark({
-        data: {
-          cart: {
-            id: "cart-1",
-            subtotal: 120000,
-            items: [{ id: "row-1", product: "prod-1", quantity: 1 }]
-          },
-          currency: "KRW",
-          customerEmail: "buyer@example.com",
-          billingAddress: {} as never
-        },
-        req: reqStub(payload),
-        transactionsSlug: "transactions"
+    expect(mocks.attempt).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerExpectation: {
+          paymentId: "candidate-pay-id",
+          storeId: "store-1",
+          channelKey: "channel-1",
+          channelType: "TEST"
+        }
       })
+    );
+  });
+  it("refuses missing authoritative snapshots without creating an attempt", async () => {
+    const request = input();
+    await expect(
+      createPortOneInitiatePayment(deps)({
+        ...request,
+        data: { ...request.data, checkoutSnapshot: undefined }
+      })
+    ).rejects.toThrow("checkout-snapshot-required");
+    expect(mocks.attempt).not.toHaveBeenCalled();
+  });
+  it("does not rebuild a payable retry under a changed provider configuration", async () => {
+    await expect(
+      createPortOneInitiatePayment({
+        ...deps,
+        buildPayload: () => ({
+          storeId: "foreign-store",
+          channelKey: "channel-1"
+        })
+      })(input())
+    ).rejects.toThrow("payment-configuration-changed");
+  });
+  it("refuses initiation when checkout is disabled", async () => {
+    await expect(
+      createPortOneInitiatePayment({ ...deps, isCheckoutEnabled: () => false })(
+        input()
+      )
     ).rejects.toThrow("portone-not-configured");
-
-    const unpaid = createPortOneInitiatePayment({
-      isCheckoutEnabled: () => true
+    expect(mocks.attempt).not.toHaveBeenCalled();
+  });
+  it("returns the stored purchase owner rather than client-supplied identity", async () => {
+    const guestOutcome = await mocks.attempt();
+    mocks.attempt.mockResolvedValue({
+      ...guestOutcome,
+      order: { ...guestOutcome.order, customer: "stored-owner" },
+      purchaseAccessToken: undefined
     });
-    await expect(
-      unpaid({
-        data: {
-          cart: { id: "cart-1", subtotal: 0, items: [] },
-          currency: "KRW",
-          customerEmail: "buyer@example.com",
-          billingAddress: {} as never
-        },
-        req: reqStub(payload),
-        transactionsSlug: "transactions"
-      })
-    ).rejects.toThrow("invalid-cart-amount");
+    const result = await createPortOneInitiatePayment(deps)(input());
+    expect(result.customerID).toBe("stored-owner");
   });
 });

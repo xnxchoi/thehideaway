@@ -1,9 +1,14 @@
 import type { CollectionOverride } from "@payloadcms/plugin-ecommerce/types";
 
-import { CART_LINE_SCHEMA_VERSION, appendLostLineFields } from "./lost-line-fields";
+import {
+  CART_LINE_SCHEMA_VERSION,
+  appendLostLineFields
+} from "./lost-line-fields";
+import { checkoutOrderFields } from "./checkout-fields";
 import {
   pluginOrderLifecycleOptions,
-  protectPluginOrderLifecycle
+  protectPluginOrderLifecycle,
+  recordPluginOrderCreated
 } from "./order-lifecycle";
 import { releasePluginOrderReservations } from "./order-reservations";
 
@@ -29,11 +34,13 @@ export const ordersCollectionOverride: CollectionOverride = ({
       ...(defaultCollection.hooks?.beforeChange ?? [])
     ],
     afterChange: [
+      recordPluginOrderCreated,
       ...(defaultCollection.hooks?.afterChange ?? []),
       async ({ doc, operation, previousDoc, req }) => {
         if (operation !== "update") return doc;
         const next = doc as { id?: string; lifecycle_status?: string };
-        const previous = previousDoc as { lifecycle_status?: string } | undefined;
+        const previous = previousDoc as
+          { lifecycle_status?: string } | undefined;
         if (
           next.lifecycle_status !== "canceled" ||
           previous?.lifecycle_status === "canceled" ||
@@ -72,7 +79,12 @@ export const ordersCollectionOverride: CollectionOverride = ({
     ]
   },
   fields: [
-    ...appendLostLineFields(defaultCollection.fields),
+    ...appendLostLineFields(defaultCollection.fields).map((field) =>
+      "name" in field && field.name === "status" && field.type === "select"
+        ? { ...field, options: [...field.options, "pending"] }
+        : field
+    ),
+    ...checkoutOrderFields,
     {
       name: "order_ref",
       type: "text",

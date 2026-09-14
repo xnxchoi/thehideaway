@@ -36,11 +36,12 @@ export default async function LostPaymentPendingPage({ searchParams }: Props) {
     }
   });
   const ownedOrder = orders.docs[0] as
-    | { payment_status?: string; lifecycle_status?: string }
-    | undefined;
+    { payment_status?: string; lifecycle_status?: string } | undefined;
   if (
     !ownedOrder ||
-    ownedOrder.payment_status === "paid" ||
+    !["unpaid", "pending", "pending_manual"].includes(
+      ownedOrder.payment_status ?? ""
+    ) ||
     ownedOrder.lifecycle_status === "paid"
   ) {
     notFound();

@@ -28,6 +28,7 @@ const INPUT = {
 
 function makePayload(docs: Record<string, unknown>[] = []) {
   return {
+    collections: { "commerce-commands": {} },
     find: vi.fn(async () => ({ docs })),
     create: vi.fn(async ({ data }) => ({ id: "command-row-1", ...data })),
     update: vi.fn(async ({ data }) => ({ id: "command-row-1", ...data })),
@@ -467,5 +468,62 @@ describe("CommerceCommands collection", () => {
 
     expect(rawToken).toBeUndefined();
     expect(tokenHash).toMatchObject({ type: "text", required: false });
+  });
+});
+
+describe("commerce journal fail-closed binding", () => {
+  it("refuses an unregistered collection before opening a transaction", async () => {
+    const payload = makePayload();
+    payload.collections = {};
+    await expect(
+      claimCommerceCommand({
+        payload,
+        commandKey: VALID_KEY,
+        validatedInput: INPUT,
+        businessKey: "order-1"
+      })
+    ).rejects.toThrow("commerce-command-collection-unavailable");
+    expect(payload.db.beginTransaction).not.toHaveBeenCalled();
+  });
+  it("refuses completion with an absent collection before a write", async () => {
+    const payload = makePayload();
+    payload.collections = {};
+    await expect(
+      completeCommerceCommand({
+        payload,
+        req: { payload, transactionID: "tx" } as never,
+        commandKey: VALID_KEY,
+        requestHash: hashCommerceCommandInput(INPUT),
+        leaseToken: "token",
+        response: {},
+        resource: { type: "orders", id: "order-1" }
+      })
+    ).rejects.toThrow("commerce-command-collection-unavailable");
+    expect(payload.update).not.toHaveBeenCalled();
+  });
+  it("does not let an unbound caller replay a bound command", async () => {
+    const payload = makePayload([
+      {
+        id: "command-1",
+        business_key: "order-1",
+        request_hash: hashCommerceCommandInput(INPUT),
+        actor_id: "admin-1",
+        operation: "mark_processing",
+        target_type: "orders",
+        target_id: "order-1",
+        reason_code: "operator_update",
+        audit_source: "operator",
+        status: "succeeded",
+        safe_response: { status: "processing" }
+      }
+    ]);
+    expect(
+      await claimCommerceCommand({
+        payload,
+        commandKey: VALID_KEY,
+        validatedInput: INPUT,
+        businessKey: "order-1"
+      })
+    ).toEqual({ kind: "conflict" });
   });
 });

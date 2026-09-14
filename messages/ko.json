@@ -153,6 +153,10 @@
     }
   },
   "LOSTINSEOUL": {
+    "error": {
+      "title": "스토어를 불러올 수 없습니다",
+      "retry": "다시 시도"
+    },
     "meta": {
       "title": "LOSTINSEOUL",
       "description": "Limited Seoul objects, editions, and commitments from RESTORED PROJECT."
@@ -227,6 +231,16 @@
     },
     "cart": {
       "title": "카트",
+      "quantity": "수량",
+      "increase": "{product} 수량 늘리기",
+      "decrease": "{product} 수량 줄이기",
+      "removeLabel": "{product} 삭제",
+      "updating": "카트 변경 중…",
+      "updateUnconfirmed": "카트 변경을 확인할 수 없습니다. 카트를 새로고침해 확인해 주세요.",
+      "reload": "카트 새로고침",
+      "preview": "카트 미리보기",
+      "closePreview": "카트 미리보기 닫기",
+      "home": "LOSTINSEOUL 홈",
       "empty": "카트가 비어 있습니다.",
       "checkout": "결제하기",
       "remove": "삭제",
@@ -268,12 +282,18 @@
       "recovering": "결제 확인 중",
       "recovery": "결제 확인",
       "failed": "주문 접수에 실패했습니다.",
-      "portoneUnavailable": "카드 결제 추후 지원 예정",
+      "portoneUnavailable": "카드 결제를 이용할 수 없습니다.",
       "name": "이름",
       "email": "이메일",
       "phone": "전화번호",
       "address": "주소",
-      "note": "배송 메모"
+      "note": "배송 메모",
+      "totalChanged": "결제 전에 장바구니를 확인해 주세요.",
+      "unavailable": "구매할 수 없는 상품이 있습니다.",
+      "accessDenied": "구매 정보에 접근할 수 없습니다.",
+      "paymentFailed": "결제에 실패했습니다.",
+      "rateLimited": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+      "verificationPending": "결제 확인 대기 중입니다."
     },
     "payment": {
       "pendingLabel": "결제 확인 중",
@@ -284,14 +304,52 @@
       "failureTitle": "결제에 실패했습니다.",
       "continue": "계속",
       "retry": "카트로 돌아가기",
-      "viewOrder": "주문 보기"
+      "viewOrder": "주문 보기",
+      "verify": "결제 확인",
+      "refundedTitle": "결제가 환불되었습니다.",
+      "partiallyRefundedTitle": "결제가 부분 환불되었습니다.",
+      "verificationUnavailable": "결제를 확인할 수 없습니다.",
+      "heading": "결제",
+      "homeLabel": "LOSTINSEOUL 홈"
     },
     "order": {
       "title": "주문",
       "back": "스토어로 돌아가기",
       "status": "상태",
       "payment": "결제",
-      "total": "합계"
+      "total": "합계",
+      "quantity": "× {quantity}",
+      "states": {
+        "draft": "작성 중",
+        "quote_requested": "견적 요청",
+        "quote_ready": "견적 준비 완료",
+        "pending_payment": "결제 대기",
+        "paid": "결제 완료",
+        "paid_inventory_review": "확인 중",
+        "committed": "진행 중",
+        "confirmed": "확정",
+        "converted": "완료",
+        "failed": "실패",
+        "canceled": "취소",
+        "refunded": "환불 완료",
+        "pending": "결제 대기",
+        "processing": "처리 중",
+        "completed": "완료",
+        "cancelled": "취소",
+        "unknown": "상태 확인 불가"
+      },
+      "payments": {
+        "unpaid": "미결제",
+        "pending": "결제 대기",
+        "pending_manual": "결제 대기",
+        "manual_pending": "결제 대기",
+        "initiated": "결제 대기",
+        "paid": "결제 완료",
+        "failed": "실패",
+        "refunded": "환불 완료",
+        "partially_refunded": "부분 환불 완료",
+        "unknown": "상태 확인 불가"
+      }
     },
     "fragrance": {
       "metaTitle": "CATALYST — LOSTINSEOUL",
@@ -451,6 +509,41 @@
             }
           }
         }
+      }
+    },
+    "orders": {
+      "title": "주문 내역",
+      "back": "스토어로 돌아가기",
+      "detail": "주문 상세",
+      "empty": "주문 내역이 없습니다.",
+      "pagination": "주문 내역 페이지",
+      "previous": "이전",
+      "next": "다음",
+      "page": "{page} / {total}",
+      "fulfillment": "이행 상태",
+      "unavailable": "정보 없음",
+      "items": "상품",
+      "sku": "SKU: {sku}",
+      "quantity": "수량",
+      "unitPrice": "단가",
+      "lineTotal": "상품 합계",
+      "shippingAddress": "배송지",
+      "billingAddress": "청구지",
+      "deliveryNote": "배송 요청 사항",
+      "shippingAmount": "배송비",
+      "taxAmount": "세금",
+      "guestHelp": "이 브라우저에 저장된 주문 조회 코드로 주문을 조회하거나 조회 코드를 입력합니다.",
+      "accessCode": "주문 조회 코드",
+      "loading": "불러오는 중",
+      "viewOrder": "주문 조회",
+      "lookupError": "주문을 조회하지 못했습니다.",
+      "fulfillments": {
+        "unfulfilled": "이행 전",
+        "reserved": "예약됨",
+        "in_production": "제작 중",
+        "fulfilled": "이행 완료",
+        "canceled": "취소",
+        "unknown": "상태 확인 불가"
       }
     }
   },

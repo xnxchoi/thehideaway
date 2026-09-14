@@ -5,6 +5,8 @@ const notFound = vi.fn(() => {
   throw new Error("not-found");
 });
 
+vi.mock("next/server", () => ({ connection: vi.fn(async () => undefined) }));
+vi.mock("../purchase-status", () => ({ PurchaseStatus: () => null }));
 vi.mock("@payload-config", () => ({ default: {} }));
 vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock("next/navigation", () => ({ notFound }));

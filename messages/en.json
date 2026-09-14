@@ -153,6 +153,10 @@
     }
   },
   "LOSTINSEOUL": {
+    "error": {
+      "title": "Unable to load the store",
+      "retry": "Try again"
+    },
     "meta": {
       "title": "LOSTINSEOUL",
       "description": "Limited Seoul objects, editions, and commitments from RESTORED PROJECT."
@@ -227,6 +231,16 @@
     },
     "cart": {
       "title": "Cart",
+      "quantity": "Quantity",
+      "increase": "Increase quantity for {product}",
+      "decrease": "Decrease quantity for {product}",
+      "removeLabel": "Remove {product}",
+      "updating": "Updating cart…",
+      "updateUnconfirmed": "Could not confirm the cart update. Reload the cart to check.",
+      "reload": "Reload cart",
+      "preview": "Cart preview",
+      "closePreview": "Close cart preview",
+      "home": "LOSTINSEOUL home",
       "empty": "Your cart is empty.",
       "checkout": "Checkout",
       "remove": "Remove",
@@ -273,7 +287,13 @@
       "email": "Email",
       "phone": "Phone",
       "address": "Address",
-      "note": "Delivery note"
+      "note": "Delivery note",
+      "totalChanged": "Review your cart before paying.",
+      "unavailable": "An item is unavailable.",
+      "accessDenied": "This purchase could not be accessed.",
+      "paymentFailed": "Payment failed.",
+      "rateLimited": "Too many requests. Try again later.",
+      "verificationPending": "Payment verification is pending."
     },
     "payment": {
       "pendingLabel": "Payment pending",
@@ -284,14 +304,52 @@
       "failureTitle": "Payment failed.",
       "continue": "Continue",
       "retry": "Return to cart",
-      "viewOrder": "View order"
+      "viewOrder": "View order",
+      "verify": "Verify payment",
+      "refundedTitle": "Payment refunded.",
+      "partiallyRefundedTitle": "Payment partially refunded.",
+      "verificationUnavailable": "Payment could not be verified.",
+      "heading": "Payment",
+      "homeLabel": "LOSTINSEOUL home"
     },
     "order": {
       "title": "Order",
       "back": "Back to store",
       "status": "Status",
       "payment": "Payment",
-      "total": "Total"
+      "total": "Total",
+      "quantity": "× {quantity}",
+      "states": {
+        "draft": "Draft",
+        "quote_requested": "Quote requested",
+        "quote_ready": "Quote ready",
+        "pending_payment": "Payment pending",
+        "paid": "Paid",
+        "paid_inventory_review": "Under review",
+        "committed": "In progress",
+        "confirmed": "Confirmed",
+        "converted": "Completed",
+        "failed": "Failed",
+        "canceled": "Canceled",
+        "refunded": "Refunded",
+        "pending": "Payment pending",
+        "processing": "Processing",
+        "completed": "Completed",
+        "cancelled": "Canceled",
+        "unknown": "Status unavailable"
+      },
+      "payments": {
+        "unpaid": "Unpaid",
+        "pending": "Payment pending",
+        "pending_manual": "Payment pending",
+        "manual_pending": "Payment pending",
+        "initiated": "Payment pending",
+        "paid": "Paid",
+        "failed": "Failed",
+        "refunded": "Refunded",
+        "partially_refunded": "Partially refunded",
+        "unknown": "Status unavailable"
+      }
     },
     "fragrance": {
       "metaTitle": "CATALYST — LOSTINSEOUL",
@@ -451,6 +509,41 @@
             }
           }
         }
+      }
+    },
+    "orders": {
+      "title": "Orders",
+      "back": "Back to store",
+      "detail": "Order details",
+      "empty": "No orders.",
+      "pagination": "Order pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "{page} of {total}",
+      "fulfillment": "Fulfillment",
+      "unavailable": "Not available",
+      "items": "Items",
+      "sku": "SKU: {sku}",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "lineTotal": "Line total",
+      "shippingAddress": "Shipping address",
+      "billingAddress": "Billing address",
+      "deliveryNote": "Delivery note",
+      "shippingAmount": "Shipping",
+      "taxAmount": "Tax",
+      "guestHelp": "View this order using the saved purchase access code in this browser, or enter an access code.",
+      "accessCode": "Purchase access code",
+      "loading": "Loading",
+      "viewOrder": "View order",
+      "lookupError": "Could not retrieve this order.",
+      "fulfillments": {
+        "unfulfilled": "Unfulfilled",
+        "reserved": "Reserved",
+        "in_production": "In production",
+        "fulfilled": "Fulfilled",
+        "canceled": "Canceled",
+        "unknown": "Status unavailable"
       }
     }
   },

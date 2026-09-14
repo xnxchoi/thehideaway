@@ -1,6 +1,16 @@
 import type { CollectionConfig } from "payload";
 
-import { isAdmin } from "@/payload/plugins/locker/access/accessCheckers";
+const IMMUTABLE_FIELDS = [
+  "command_key",
+  "business_key",
+  "request_hash",
+  "actor_id",
+  "operation",
+  "target_type",
+  "target_id",
+  "reason_code",
+  "audit_source"
+] as const;
 
 export const CommerceCommands: CollectionConfig = {
   slug: "commerce-commands",
@@ -20,12 +30,44 @@ export const CommerceCommands: CollectionConfig = {
     description: "Durable idempotency records for LOSTINSEOUL commerce."
   },
   access: {
-    read: isAdmin,
+    read: () => false,
     create: () => false,
     update: () => false,
     delete: () => false
   },
+  hooks: {
+    beforeChange: [
+      ({ data, originalDoc, operation }) => {
+        if (operation === "update") {
+          if (originalDoc.status === "succeeded")
+            throw new Error("commerce-command-terminal-immutable");
+          for (const field of IMMUTABLE_FIELDS) {
+            if (
+              Object.hasOwn(data, field) &&
+              (data[field] ?? null) !== (originalDoc[field] ?? null)
+            ) {
+              throw new Error("commerce-command-binding-immutable");
+            }
+          }
+        }
+        return data;
+      }
+    ]
+  },
   fields: [
+    ...[
+      "actor_id",
+      "operation",
+      "target_type",
+      "target_id",
+      "reason_code",
+      "audit_source"
+    ].map((name) => ({
+      name,
+      type: "text" as const,
+      index: true,
+      admin: { readOnly: true }
+    })),
     {
       name: "command_key",
       type: "text",

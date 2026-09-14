@@ -38,7 +38,8 @@ export type PortOnePaymentRecord = {
   status?: string;
   amount?: { total?: number; paid?: number } | null;
   currency?: string;
-  channel?: { type?: string } | null;
+  channel?: { type?: string; id?: string; key?: string } | null;
+  storeId?: string;
   paidAt?: string;
   transactionId?: string;
   id?: string;
@@ -50,6 +51,12 @@ export type VerifyExpectation = {
   currency: string;
   /** true when running against a live PG channel (production). */
   requireLiveChannel: boolean;
+  paymentId?: string;
+  storeId?: string;
+  channelKey?: string;
+  channelType?: "LIVE" | "TEST";
+  /** Plugin checkout requires PortOne V2's explicit settled amount. */
+  requirePaidAmount?: boolean;
 };
 
 export type VerifyResult =
@@ -61,13 +68,16 @@ export type VerifyResult =
         | "amount-mismatch"
         | "currency-mismatch"
         | "test-channel-rejected"
+        | "payment-id-mismatch"
+        | "store-mismatch"
+        | "channel-mismatch"
         | "malformed";
     };
 
 const PAID_STATUSES = new Set(["PAID", "SUCCEEDED", "SUCCESS", "CAPTURED"]);
 
-function normalizeCurrency(value: string | undefined | null): string {
-  if (!value) return "";
+function normalizeCurrency(value: unknown): string {
+  if (typeof value !== "string") return "";
   // PortOne returns e.g. "KRW" or "CURRENCY_KRW"; normalize to the bare code.
   return value.replace(/^CURRENCY_/, "").toUpperCase();
 }
@@ -80,9 +90,18 @@ export function verifyPortOnePayment(
   record: PortOnePaymentRecord | null | undefined,
   expected: VerifyExpectation
 ): VerifyResult {
-  if (!record || typeof record !== "object") {
+  if (!record || typeof record !== "object" || Array.isArray(record)) {
     return { ok: false, reason: "malformed" };
   }
+
+  if (expected.paymentId && record.id !== expected.paymentId)
+    return { ok: false, reason: "payment-id-mismatch" };
+  if (expected.storeId && record.storeId !== expected.storeId)
+    return { ok: false, reason: "store-mismatch" };
+  if (expected.channelKey && record.channel?.key !== expected.channelKey)
+    return { ok: false, reason: "channel-mismatch" };
+  if (expected.channelType && record.channel?.type !== expected.channelType)
+    return { ok: false, reason: "channel-mismatch" };
 
   const status = String(record.status ?? "").toUpperCase();
   if (!PAID_STATUSES.has(status)) {
@@ -104,7 +123,15 @@ export function verifyPortOnePayment(
   // is the documented assumption in the NOT-VERIFIED note (confirm the V2
   // field name against a sandbox response before go-live).
   const paid = record.amount?.paid;
-  if (typeof paid === "number" && Number.isFinite(paid)) {
+  if (expected.requirePaidAmount && !Number.isSafeInteger(paid)) {
+    return { ok: false, reason: "malformed" };
+  }
+  if (
+    paid !== undefined &&
+    (typeof paid !== "number" || !Number.isFinite(paid))
+  )
+    return { ok: false, reason: "malformed" };
+  if (typeof paid === "number") {
     if (paid !== expected.amount) {
       return { ok: false, reason: "amount-mismatch" };
     }
@@ -151,6 +178,8 @@ export async function getPortOnePayment(
     `${PORTONE_API_BASE}/payments/${encodeURIComponent(paymentId)}`,
     {
       method: "GET",
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
       headers: {
         Authorization: `PortOne ${secret}`,
         "content-type": "application/json"

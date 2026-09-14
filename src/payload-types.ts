@@ -10,7 +10,7 @@
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "OrderStatus".
  */
-export type OrderStatus = ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
+export type OrderStatus = ('processing' | 'completed' | 'cancelled' | 'refunded' | 'pending') | null;
 /**
  * Supported timezones in IANA format.
  *
@@ -85,6 +85,8 @@ export interface Config {
     members: Member;
     invitations: Invitation;
     'admin-invitations': AdminInvitation;
+    'commerce-provider-events': CommerceProviderEvent;
+    'commerce-commands': CommerceCommand;
     assets: Asset;
     categories: Category;
     media: Media;
@@ -198,6 +200,8 @@ export interface Config {
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
     'admin-invitations': AdminInvitationsSelect<false> | AdminInvitationsSelect<true>;
+    'commerce-provider-events': CommerceProviderEventsSelect<false> | CommerceProviderEventsSelect<true>;
+    'commerce-commands': CommerceCommandsSelect<false> | CommerceCommandsSelect<true>;
     assets: AssetsSelect<false> | AssetsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -2203,6 +2207,69 @@ export interface AdminInvitation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-provider-events".
+ */
+export interface CommerceProviderEvent {
+  id: string;
+  dedupe_key: string;
+  provider: 'portone';
+  event_key: string;
+  event_type?: string | null;
+  payment_ref?: string | null;
+  payload_hash?: string | null;
+  provider_status?: string | null;
+  transaction_ref?: string | null;
+  occurred_at?: string | null;
+  received_at: string;
+  processing_status: 'received' | 'processing' | 'retryable' | 'processed' | 'rejected';
+  attempt_count: number;
+  lease_token_hash?: string | null;
+  lease_expires_at?: string | null;
+  last_attempt_at?: string | null;
+  processed_at?: string | null;
+  outcome_code?: string | null;
+  last_error_code?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Durable idempotency records for LOSTINSEOUL commerce.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-commands".
+ */
+export interface CommerceCommand {
+  id: string;
+  actor_id?: string | null;
+  operation?: string | null;
+  target_type?: string | null;
+  target_id?: string | null;
+  reason_code?: string | null;
+  audit_source?: string | null;
+  command_key: string;
+  business_key: string;
+  request_hash: string;
+  status: 'in_progress' | 'succeeded';
+  attempt_count: number;
+  lease_token_hash?: string | null;
+  lease_expires_at?: string | null;
+  safe_response?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  resource_type?: string | null;
+  resource_id?: string | null;
+  completed_at?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "email-quota".
  */
 export interface EmailQuota {
@@ -3159,6 +3226,29 @@ export interface Order {
   status?: OrderStatus;
   amount?: number | null;
   currency?: ('KRW' | 'USD' | 'EUR' | 'JPY') | null;
+  checkout_snapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  checkout_fingerprint?: string | null;
+  guest_access_digest?: string | null;
+  reconciliation_required?: boolean | null;
+  checkout_cart?: (string | null) | Cart;
+  settlement_transaction?: (string | null) | Transaction;
+  settlement_effects?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   order_ref: string;
   order_mode: 'standard_purchase' | 'request_to_order' | 'private_order';
   lifecycle_status:
@@ -3265,6 +3355,38 @@ export interface Transaction {
   cart?: (string | null) | Cart;
   amount?: number | null;
   currency?: ('KRW' | 'USD' | 'EUR' | 'JPY') | null;
+  checkout_snapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  checkout_fingerprint?: string | null;
+  guest_access_digest?: string | null;
+  reconciliation_required?: boolean | null;
+  checkout_attempt_key?: string | null;
+  provider_expectation?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  provider_outcome?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  provider_verified_at?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3449,6 +3571,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'admin-invitations';
         value: string | AdminInvitation;
+      } | null)
+    | ({
+        relationTo: 'commerce-provider-events';
+        value: string | CommerceProviderEvent;
+      } | null)
+    | ({
+        relationTo: 'commerce-commands';
+        value: string | CommerceCommand;
       } | null)
     | ({
         relationTo: 'assets';
@@ -3839,6 +3969,57 @@ export interface AdminInvitationsSelect<T extends boolean = true> {
   email?: T;
   token?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-provider-events_select".
+ */
+export interface CommerceProviderEventsSelect<T extends boolean = true> {
+  dedupe_key?: T;
+  provider?: T;
+  event_key?: T;
+  event_type?: T;
+  payment_ref?: T;
+  payload_hash?: T;
+  provider_status?: T;
+  transaction_ref?: T;
+  occurred_at?: T;
+  received_at?: T;
+  processing_status?: T;
+  attempt_count?: T;
+  lease_token_hash?: T;
+  lease_expires_at?: T;
+  last_attempt_at?: T;
+  processed_at?: T;
+  outcome_code?: T;
+  last_error_code?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-commands_select".
+ */
+export interface CommerceCommandsSelect<T extends boolean = true> {
+  actor_id?: T;
+  operation?: T;
+  target_type?: T;
+  target_id?: T;
+  reason_code?: T;
+  audit_source?: T;
+  command_key?: T;
+  business_key?: T;
+  request_hash?: T;
+  status?: T;
+  attempt_count?: T;
+  lease_token_hash?: T;
+  lease_expires_at?: T;
+  safe_response?: T;
+  resource_type?: T;
+  resource_id?: T;
+  completed_at?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -5237,6 +5418,13 @@ export interface OrdersSelect<T extends boolean = true> {
   status?: T;
   amount?: T;
   currency?: T;
+  checkout_snapshot?: T;
+  checkout_fingerprint?: T;
+  guest_access_digest?: T;
+  reconciliation_required?: T;
+  checkout_cart?: T;
+  settlement_transaction?: T;
+  settlement_effects?: T;
   order_ref?: T;
   order_mode?: T;
   lifecycle_status?: T;
@@ -5310,6 +5498,14 @@ export interface TransactionsSelect<T extends boolean = true> {
   cart?: T;
   amount?: T;
   currency?: T;
+  checkout_snapshot?: T;
+  checkout_fingerprint?: T;
+  guest_access_digest?: T;
+  reconciliation_required?: T;
+  checkout_attempt_key?: T;
+  provider_expectation?: T;
+  provider_outcome?: T;
+  provider_verified_at?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -5843,6 +6039,8 @@ export interface TaskCreateCollectionExport {
     name: string;
     batchSize?: number | null;
     collectionSlug:
+      | 'commerce-provider-events'
+      | 'commerce-commands'
       | 'users'
       | 'assets'
       | 'categories'

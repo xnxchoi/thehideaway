@@ -8,6 +8,8 @@ import * as migration_20260830_175903_order_overrides from './20260830_175903_or
 import * as migration_20260831_011714_commerce_cutover from './20260831_011714_commerce_cutover';
 import * as migration_20260831_063800_array_item_ids from './20260831_063800_array_item_ids';
 import * as migration_20260831_120000_uncategorized_category from './20260831_120000_uncategorized_category';
+import * as migration_20260914_012723_checkout_durable_purchase from './20260914_012723_checkout_durable_purchase';
+import * as migration_20260914_073802_commerce_command_journal from './20260914_073802_commerce_command_journal';
 
 export const migrations = [
   {
@@ -59,5 +61,15 @@ export const migrations = [
     up: migration_20260831_120000_uncategorized_category.up,
     down: migration_20260831_120000_uncategorized_category.down,
     name: '20260831_120000_uncategorized_category',
+  },
+  {
+    up: migration_20260914_012723_checkout_durable_purchase.up,
+    down: migration_20260914_012723_checkout_durable_purchase.down,
+    name: '20260914_012723_checkout_durable_purchase',
+  },
+  {
+    up: migration_20260914_073802_commerce_command_journal.up,
+    down: migration_20260914_073802_commerce_command_journal.down,
+    name: '20260914_073802_commerce_command_journal'
   },
 ];

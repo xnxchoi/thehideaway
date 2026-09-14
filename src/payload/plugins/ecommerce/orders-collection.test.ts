@@ -61,8 +61,16 @@ const defaultCollection = {
               name: "items",
               type: "array",
               fields: [
-                { name: "product", type: "relationship", relationTo: "products" },
-                { name: "variant", type: "relationship", relationTo: "variants" },
+                {
+                  name: "product",
+                  type: "relationship",
+                  relationTo: "products"
+                },
+                {
+                  name: "variant",
+                  type: "relationship",
+                  relationTo: "variants"
+                },
                 { name: "quantity", type: "number" }
               ]
             }
@@ -101,7 +109,8 @@ describe("ordersCollectionOverride", () => {
       ])
     );
     expect(namedField(collection.fields, "status")).toMatchObject({
-      type: "select"
+      type: "select",
+      options: ["processing", "pending"]
     });
     expect(namedField(collection.fields, "lifecycle_status")).toMatchObject({
       type: "select",
@@ -110,6 +119,23 @@ describe("ordersCollectionOverride", () => {
     expect(namedField(collection.fields, "campaign")).toMatchObject({
       type: "text"
     });
+  });
+
+  it("owns one pending purchase per cart and denies public capability reads", async () => {
+    const collection = await ordersCollectionOverride({ defaultCollection });
+    expect(namedField(collection.fields, "checkout_cart")).toMatchObject({
+      type: "relationship",
+      relationTo: "carts",
+      unique: true,
+      index: true
+    });
+    const digest = namedField(collection.fields, "guest_access_digest");
+    expect(digest).toMatchObject({ type: "text", hidden: true });
+    if (!digest || !("access" in digest))
+      throw new Error("missing digest access");
+    expect(await digest.access?.read?.({} as never)).toBe(false);
+    expect(await digest.access?.create?.({} as never)).toBe(false);
+    expect(await digest.access?.update?.({} as never)).toBe(false);
   });
 
   it("guards lifecycle updates with the PortOne-authorized hook", async () => {

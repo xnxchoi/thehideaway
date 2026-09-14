@@ -1,19 +1,23 @@
 import { Webhook } from "@portone/server-sdk";
 import type { Endpoint, PayloadRequest } from "payload";
 
-import { recordCommerceProviderEventStandalone } from "@/lib/lost-commerce/provider-events";
+import {
+  recordCommerceProviderEventStandalone,
+  claimCommerceProviderEvent,
+  completeCommerceProviderEvent
+} from "@/lib/lost-commerce/provider-events";
 import { getPortOneConfig } from "@/lib/lost-commerce/portone";
 
 import type { PortOneAdapterDeps } from "./deps";
 import { requestHeader } from "./deps";
-import { createPortOneConfirmOrder } from "./confirm-order";
+import { createPortOneSettlement } from "./settle-payment";
 
 function isConfiguredSecret(value: string | undefined): value is string {
   const secret = value?.trim();
   return Boolean(
     secret &&
-      secret.length >= 32 &&
-      !/change[_-]?me|placeholder|example/i.test(secret)
+    secret.length >= 32 &&
+    !/change[_-]?me|placeholder|example/i.test(secret)
   );
 }
 
@@ -36,32 +40,21 @@ async function readRawBody(req: PayloadRequest): Promise<string> {
   const maybeText = (req as PayloadRequest & { text?: () => Promise<string> })
     .text;
   if (typeof maybeText === "function") return maybeText.call(req);
-  return JSON.stringify(req.data ?? {});
+  throw new Error("webhook-raw-body-required");
 }
 
 export function createPortOneWebhookEndpoint(
   deps: PortOneAdapterDeps = {}
 ): Endpoint {
-  const confirmOrder = deps.confirmOrder ?? createPortOneConfirmOrder(deps);
+  const settlePayment = deps.settlePayment ?? createPortOneSettlement(deps);
   const verifyWebhook =
     deps.verifyWebhook ??
     ((secret, body, headers) => Webhook.verify(secret, body, headers));
   const webhookSecret =
     deps.webhookSecret ?? (() => getPortOneConfig().webhookSecret);
-  const recordEvent =
-    deps.recordEvent ??
-    (async (input) => {
-      const collections = input.payload.collections;
-      if (collections && !("commerce-provider-events" in collections)) {
-        return {
-          recorded: false,
-          duplicate: false,
-          conflict: false,
-          eventId: null
-        };
-      }
-      return recordCommerceProviderEventStandalone(input);
-    });
+  const recordEvent = deps.recordEvent ?? recordCommerceProviderEventStandalone;
+  const claimEvent = deps.claimEvent ?? claimCommerceProviderEvent;
+  const completeEvent = deps.completeEvent ?? completeCommerceProviderEvent;
 
   return {
     method: "post",
@@ -75,7 +68,15 @@ export function createPortOneWebhookEndpoint(
         );
       }
 
-      const rawBody = await readRawBody(req);
+      let rawBody: string;
+      try {
+        rawBody = await readRawBody(req);
+      } catch {
+        return Response.json(
+          { message: "webhook-raw-body-required" },
+          { status: 400 }
+        );
+      }
       const webhookId = requestHeader(req, "webhook-id");
       const webhookSignature = requestHeader(req, "webhook-signature");
       const webhookTimestamp = requestHeader(req, "webhook-timestamp");
@@ -83,7 +84,10 @@ export function createPortOneWebhookEndpoint(
         webhookId || webhookSignature || webhookTimestamp
       );
       if (!hasSignatureHeaders) {
-        return Response.json({ message: "signature-required" }, { status: 401 });
+        return Response.json(
+          { message: "signature-required" },
+          { status: 401 }
+        );
       }
 
       try {
@@ -102,64 +106,86 @@ export function createPortOneWebhookEndpoint(
       let event: Record<string, unknown>;
       try {
         event = JSON.parse(rawBody) as Record<string, unknown>;
+        if (!event || typeof event !== "object" || Array.isArray(event))
+          throw new Error("bad-request");
       } catch {
         return Response.json({ message: "bad-request" }, { status: 400 });
       }
 
       const paymentId = paymentIdOf(event);
       if (!paymentId) {
-        return Response.json({ message: "missing-payment-id" }, { status: 400 });
+        return Response.json(
+          { message: "missing-payment-id" },
+          { status: 400 }
+        );
       }
 
-      const eventType = String(event.type ?? "").toUpperCase();
-      if (
-        eventType &&
-        !eventType.includes("PAID") &&
-        !eventType.includes("CAPTURED") &&
-        !eventType.includes("SUCCEEDED")
-      ) {
-        return Response.json({ received: true, ignored: true });
-      }
-
-      const recorded = await recordEvent({
-        payload: req.payload,
-        paymentId,
-        event: {
-          ...event,
-          provider_event_id: webhookId ?? event.webhook_id ?? event.event_id
-        },
-        rawBody
-      });
-      if (recorded.duplicate) {
-        return Response.json({ received: true, alreadyProcessed: true });
-      }
-
+      // All signed payment outcomes are reconciled from fresh provider truth.
+      // Receipt persistence alone never means settlement completed.
+      let eventId: string | null = null;
+      let leaseToken: string | null = null;
       try {
-        const result = await confirmOrder({
-          cartsSlug: "carts",
-          ordersSlug: "orders",
-          transactionsSlug: "transactions",
-          data: { paymentId },
-          req
+        const recorded = await recordEvent({
+          payload: req.payload,
+          paymentId,
+          rawBody,
+          event: {
+            ...event,
+            provider_event_id: webhookId ?? event.webhook_id ?? event.event_id
+          }
+        });
+        eventId = recorded.eventId;
+        if (recorded.conflict)
+          return Response.json(
+            { message: "provider-event-conflict" },
+            { status: 409 }
+          );
+        if (!eventId) throw new Error("provider-event-persistence-required");
+        const claim = await claimEvent({ payload: req.payload, eventId });
+        if (claim.kind === "terminal")
+          return Response.json({
+            received: true,
+            alreadyProcessed: claim.status === "processed",
+            outcome: claim.outcomeCode
+          });
+        if (claim.kind === "busy")
+          return Response.json(
+            { message: "provider-event-busy" },
+            { status: 503 }
+          );
+        leaseToken = claim.leaseToken;
+        const result = await settlePayment({ req, paymentId });
+        await completeEvent({
+          payload: req.payload,
+          eventId,
+          leaseToken,
+          status: "processed",
+          outcomeCode: result.reconciliationRequired
+            ? "reconciliation-required"
+            : result.paymentStatus
         });
         return Response.json({ received: true, ...result });
       } catch (error) {
-        const reason = error instanceof Error ? error.message : "confirm-failed";
-        if (
-          reason === "not-paid" ||
-          reason === "amount-mismatch" ||
-          reason === "currency-mismatch" ||
-          reason === "test-channel-rejected" ||
-          reason === "malformed" ||
-          reason === "transaction-not-found"
-        ) {
-          req.payload.logger?.warn?.(
-            `[payments/portone/webhooks] ${paymentId} ignored: ${reason}`
-          );
-          return Response.json({ received: true, ignored: reason });
+        const reason =
+          error instanceof Error ? error.message : "settlement-failed";
+        if (eventId && leaseToken) {
+          try {
+            await completeEvent({
+              payload: req.payload,
+              eventId,
+              leaseToken,
+              status: "retryable",
+              outcomeCode:
+                reason === "not-paid" ? "not-paid" : "settlement-unavailable"
+            });
+          } catch {
+            req.payload.logger?.error?.(
+              "[payments/portone/webhooks] event completion unavailable"
+            );
+          }
         }
         req.payload.logger?.error?.(
-          `[payments/portone/webhooks] confirm unavailable for ${paymentId}`
+          "[payments/portone/webhooks] settlement unavailable"
         );
         return Response.json(
           { message: "verify-unavailable" },

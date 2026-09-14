@@ -8,7 +8,7 @@ import { RPage } from "@/components/UX/Transition";
 import { getServerSession } from "@/lib/auth/getServerSession";
 import { canViewPaidLostOrder } from "@/lib/lost-commerce/payment-recovery";
 import { LostPaymentStatusShell } from "../status-shell";
-import { ClearPendingProductPayment } from "../clear-pending-payment.client";
+import { PurchaseStatus } from "../purchase-status";
 
 type Props = {
   searchParams: Promise<{ order?: string }>;
@@ -23,6 +23,13 @@ export default async function LostPaymentSuccessPage({ searchParams }: Props) {
   if (!order) notFound();
   const session = await getServerSession(await nextHeaders());
 
+  if (!session?.user?.id) {
+    return (
+      <RPage slug={["lostinseoul", "payment", "success"]} type="pages">
+        <PurchaseStatus orderRef={order} />
+      </RPage>
+    );
+  }
   const payload = await getPayload({ config });
   const orders = await payload.find({
     collection: "orders",
@@ -36,6 +43,7 @@ export default async function LostPaymentSuccessPage({ searchParams }: Props) {
         id: string;
         customer?: string | { id?: string } | null;
         payment_status?: string;
+        reconciliation_required?: boolean;
       }
     | undefined;
   const customer =
@@ -44,8 +52,16 @@ export default async function LostPaymentSuccessPage({ searchParams }: Props) {
       : paidOrder?.customer && typeof paidOrder.customer.id === "string"
         ? paidOrder.customer.id
         : null;
+  if (paidOrder && !customer) {
+    return (
+      <RPage slug={["lostinseoul", "payment", "success"]} type="pages">
+        <PurchaseStatus orderRef={order} />
+      </RPage>
+    );
+  }
   if (
     !paidOrder ||
+    paidOrder.reconciliation_required === true ||
     !canViewPaidLostOrder({
       customer,
       paymentStatus: paidOrder.payment_status,
@@ -57,7 +73,6 @@ export default async function LostPaymentSuccessPage({ searchParams }: Props) {
 
   return (
     <RPage slug={["lostinseoul", "payment", "success"]} type="pages">
-      <ClearPendingProductPayment />
       <LostPaymentStatusShell
         actionHref="/lostinseoul"
         actionLabel={t("continue")}

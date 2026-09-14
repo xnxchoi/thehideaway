@@ -20,7 +20,8 @@ export function canViewPaidLostOrder(input: {
 }): boolean {
   if (input.paymentStatus !== "paid") return false;
   if (input.viewerId) return input.customer === input.viewerId;
-  return !input.customer;
+  // Guest receipts require purchase-scoped capability verification at the HTTP boundary.
+  return false;
 }
 
 export function productPaymentSubmitAction(

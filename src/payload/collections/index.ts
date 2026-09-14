@@ -1,3 +1,4 @@
+import { CommerceCommands } from "@/payload/collections/(consumption)/CommerceCommands";
 import { Assets } from "@/payload/collections/Assets";
 import { Bookmarks } from "@/payload/collections/Bookmarks";
 import { Categories } from "@/payload/collections/Categories";
@@ -21,8 +22,11 @@ import { CollectionConfig } from "payload";
 import { Compilations } from "./Compilations";
 import { EmailQuota } from "@/payload/collections/EmailQuota";
 import { DeferredEmails } from "@/payload/collections/DeferredEmails";
+import { CheckoutProviderEvents } from "@/payload/plugins/ecommerce/provider-events-collection";
 
 export const collections: CollectionConfig[] = [
+  CheckoutProviderEvents,
+  CommerceCommands,
   Users,
   Assets,
   Categories,

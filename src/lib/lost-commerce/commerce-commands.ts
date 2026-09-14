@@ -12,6 +12,13 @@ const MAX_LEASE_MS = 5 * 60_000;
 const MAX_RESPONSE_BYTES = 32 * 1024;
 
 const SENSITIVE_RESPONSE_KEYS = new Set([
+  "accesstoken",
+  "authorization",
+  "apikey",
+  "secret",
+  "token",
+  "purchaseaccesstoken",
+  "leasetoken",
   "accountnumber",
   "address",
   "addressline1",
@@ -38,12 +45,21 @@ export type CommerceCommandSafeResponse =
   | readonly CommerceCommandSafeResponse[]
   | { readonly [key: string]: CommerceCommandSafeResponse };
 
+export type CommerceCommandBinding = {
+  actorId: string;
+  operation: string;
+  resource: { type: string; id: string };
+  reasonCode: string;
+  auditSource: string;
+};
+
 type CommerceCommandRecord = CommerceCommand;
 
 type ClaimBaseInput = {
   payload: Payload;
   commandKey: unknown;
   validatedInput: unknown;
+  binding?: CommerceCommandBinding;
   businessKey?: string;
   createBusinessKey?: () => string;
   now?: Date;
@@ -77,6 +93,7 @@ type CompleteCommerceCommandInput = {
   requestHash: string;
   leaseToken: string;
   response: CommerceCommandSafeResponse;
+  binding?: CommerceCommandBinding;
   resource: { type: string; id: string };
   now?: Date;
 };
@@ -227,6 +244,67 @@ function requireStoredBusinessKey(record: CommerceCommandRecord): string {
   );
 }
 
+export function requireCommerceCommandCollection(payload: Payload): void {
+  if (!payload.collections?.["commerce-commands"]) {
+    throw new Error("commerce-command-collection-unavailable");
+  }
+}
+
+function validatedBinding(
+  binding?: CommerceCommandBinding
+): CommerceCommandBinding | undefined {
+  if (!binding) return undefined;
+  return {
+    actorId: validateReference(
+      binding.actorId,
+      "invalid-commerce-command-actor"
+    ),
+    operation: validateReference(
+      binding.operation,
+      "invalid-commerce-command-operation"
+    ),
+    resource: {
+      type: validateReference(
+        binding.resource.type,
+        "invalid-commerce-command-resource"
+      ),
+      id: validateReference(
+        binding.resource.id,
+        "invalid-commerce-command-resource"
+      )
+    },
+    reasonCode: validateReference(
+      binding.reasonCode,
+      "invalid-commerce-command-reason"
+    ),
+    auditSource: validateReference(
+      binding.auditSource,
+      "invalid-commerce-command-audit-source"
+    )
+  };
+}
+
+function bindingFields(binding?: CommerceCommandBinding) {
+  return {
+    actor_id: binding?.actorId ?? null,
+    operation: binding?.operation ?? null,
+    target_type: binding?.resource.type ?? null,
+    target_id: binding?.resource.id ?? null,
+    reason_code: binding?.reasonCode ?? null,
+    audit_source: binding?.auditSource ?? null
+  };
+}
+
+function matchesBinding(
+  record: CommerceCommandRecord,
+  binding?: CommerceCommandBinding
+): boolean {
+  return Object.entries(bindingFields(binding)).every(
+    ([key, value]) =>
+      (record[key as keyof CommerceCommandRecord] ?? null) === value
+  );
+}
+
 function makeTransactionRequest(
   payload: Payload,
   transactionID: string | number
@@ -269,21 +347,12 @@ async function findCommandByBusinessKey(
 export async function claimCommerceCommand(
   input: ClaimBaseInput
 ): Promise<CommerceCommandClaim> {
-  if (
-    input.payload.collections &&
-    !("commerce-commands" in input.payload.collections)
-  ) {
-    const requestHash = hashCommerceCommandInput(input.validatedInput);
-    return {
-      kind: "claimed",
-      businessKey: resolveNewBusinessKey(input),
-      requestHash,
-      leaseToken: "unlogged",
-      leaseExpiresAt: new Date().toISOString()
-    };
-  }
+  requireCommerceCommandCollection(input.payload);
+  const binding = validatedBinding(input.binding);
   const commandKey = validateCommerceCommandKey(input.commandKey);
-  const requestHash = hashCommerceCommandInput(input.validatedInput);
+  const requestHash = hashCommerceCommandInput(
+    binding ? { binding, input: input.validatedInput } : input.validatedInput
+  );
   const now = validateNow(input.now);
   const leaseMs = validateLeaseMs(input.leaseMs);
   const transactionID = await input.payload.db.beginTransaction();
@@ -322,6 +391,7 @@ export async function claimCommerceCommand(
         overrideAccess: true,
         req,
         data: {
+          ...bindingFields(binding),
           command_key: commandKey,
           business_key: businessKey,
           request_hash: requestHash,
@@ -338,7 +408,10 @@ export async function claimCommerceCommand(
         leaseToken,
         leaseExpiresAt
       };
-    } else if (existing.request_hash !== requestHash) {
+    } else if (
+      existing.request_hash !== requestHash ||
+      !matchesBinding(existing, binding)
+    ) {
       result = { kind: "conflict" };
     } else {
       const businessKey = requireStoredBusinessKey(existing);
@@ -418,15 +491,8 @@ export async function completeCommerceCommand(
   businessKey: string;
   response: CommerceCommandSafeResponse;
 }> {
-  if (
-    input.payload.collections &&
-    !("commerce-commands" in input.payload.collections)
-  ) {
-    return {
-      businessKey: "unlogged",
-      response: cloneSafeResponse(input.response)
-    };
-  }
+  requireCommerceCommandCollection(input.payload);
+  const binding = validatedBinding(input.binding);
   const commandKey = validateCommerceCommandKey(input.commandKey);
   if (!REQUEST_HASH_PATTERN.test(input.requestHash)) {
     throw new Error("invalid-commerce-command-request-hash");
@@ -453,6 +519,14 @@ export async function completeCommerceCommand(
   await commerceCommandLock(input.payload, transactionID, `key:${commandKey}`);
   const existing = await findCommand(input.payload, input.req, commandKey);
   if (!existing) throw new Error("commerce-command-not-found");
+  if (
+    !matchesBinding(existing, binding) ||
+    (binding &&
+      (binding.resource.type !== resourceType ||
+        binding.resource.id !== resourceId))
+  ) {
+    throw new Error("commerce-command-binding-conflict");
+  }
   if (existing.request_hash !== input.requestHash) {
     throw new Error("commerce-command-request-hash-conflict");
   }

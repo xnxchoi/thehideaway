@@ -1,77 +1,27 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const redirect = vi.fn((path: string) => {
-  throw new Error(`redirect:${path}`);
-});
-const verifyReturnedProductPayment = vi.fn();
-
-vi.mock("next/navigation", () => ({ redirect }));
+import { describe, expect, it, vi } from "vitest";
+const verify = vi.fn();
 vi.mock("@/lib/lost-commerce/paymentReturn", () => ({
-  verifyReturnedProductPayment
+  verifyReturnedProductPayment: verify
 }));
-
-describe("LOSTINSEOUL payment return", () => {
-  beforeEach(() => {
-    redirect.mockClear();
-    verifyReturnedProductPayment.mockReset();
-  });
-
-  it("redirects to success only after authoritative reconciliation", async () => {
-    verifyReturnedProductPayment.mockResolvedValue({
-      ok: true,
-      orderRef: "ord_1"
-    });
+vi.mock("@/components/UX/Transition", () => ({
+  RPage: ({ children }: { children: unknown }) => children
+}));
+vi.mock("../purchase-status", () => ({ PurchaseStatus: () => null }));
+describe("LOST payment return", () => {
+  it("passes only purchase references to browser reconciliation, never treats provider query status as proof", async () => {
     const { default: Page } = await import("./page");
-
-    await expect(
-      Page({ searchParams: Promise.resolve({ paymentId: "lis_1" }) })
-    ).rejects.toThrow(
-      "redirect:/lostinseoul/payment/success?order=ord_1&paymentId=lis_1"
-    );
-  });
-
-  it("does not claim success when reconciliation fails", async () => {
-    verifyReturnedProductPayment.mockResolvedValue({
-      ok: false,
-      status: 503,
-      reason: "verify-unavailable"
-    });
-    const { default: Page } = await import("./page");
-
-    await expect(
-      Page({ searchParams: Promise.resolve({ order: "lis_1" }) })
-    ).rejects.toThrow("redirect:/lostinseoul/checkout");
-  });
-
-  it("reconciles the stored attempt when PortOne returns an error code", async () => {
-    verifyReturnedProductPayment.mockResolvedValue({
-      ok: false,
-      status: 503,
-      reason: "verify-unavailable"
-    });
-    const { default: Page } = await import("./page");
-
-    await expect(
-      Page({
-        searchParams: Promise.resolve({ code: "FAIL", order: "lis_1" })
+    const result = await Page({
+      searchParams: Promise.resolve({
+        paymentId: "pay-1",
+        order: "LIS-1",
+        code: "FAILED"
       })
-    ).rejects.toThrow("redirect:/lostinseoul/checkout");
-    expect(verifyReturnedProductPayment).toHaveBeenCalledWith({
-      orderRef: "lis_1",
-      paymentId: undefined
     });
-  });
-
-  it("shows failure only after an authoritative terminal result", async () => {
-    verifyReturnedProductPayment.mockResolvedValue({
-      ok: false,
-      status: 402,
-      reason: "payment-failed"
+    expect(result.props.children.props).toEqual({
+      paymentId: "pay-1",
+      orderRef: "LIS-1",
+      showOrderReference: false
     });
-    const { default: Page } = await import("./page");
-
-    await expect(
-      Page({ searchParams: Promise.resolve({ order: "lis_1" }) })
-    ).rejects.toThrow("redirect:/lostinseoul/payment/failure?order=lis_1");
+    expect(verify).not.toHaveBeenCalled();
   });
 });

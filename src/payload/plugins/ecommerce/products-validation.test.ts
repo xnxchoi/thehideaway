@@ -4,9 +4,7 @@ import { hideawayProductsValidation } from "./products-validation";
 
 const currenciesConfig = {
   defaultCurrency: "KRW",
-  supportedCurrencies: [
-    { code: "KRW", decimals: 0, label: "Won", symbol: "₩" }
-  ]
+  supportedCurrencies: [{ code: "KRW", decimals: 0, label: "Won", symbol: "₩" }]
 };
 
 describe("hideawayProductsValidation", () => {
@@ -39,6 +37,7 @@ describe("hideawayProductsValidation", () => {
           active: false,
           _status: "published",
           priceInKRW: 12000,
+          priceInKRWEnabled: true,
           min_order_quantity: 1,
           max_order_quantity: 2
         } as never,
@@ -55,6 +54,7 @@ describe("hideawayProductsValidation", () => {
           active: true,
           _status: "published",
           priceInKRW: 12000,
+          priceInKRWEnabled: true,
           min_order_quantity: 1,
           max_order_quantity: 2
         } as never,
@@ -73,6 +73,7 @@ describe("hideawayProductsValidation", () => {
           active: true,
           _status: "published",
           priceInKRW: 12000,
+          priceInKRWEnabled: true,
           min_order_quantity: 1,
           max_order_quantity: 2
         } as never,

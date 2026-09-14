@@ -1,9 +1,13 @@
 import type { Payload, PayloadRequest } from "payload";
-import type { PaymentAdapter } from "@payloadcms/plugin-ecommerce/types";
 
 import type { PortOnePaymentPayload } from "@/lib/lost-commerce/portone";
 import type { PortOnePaymentRecord } from "@/lib/lost-commerce/verify-payment";
 import type { CommerceProviderEventWriteResult } from "@/lib/lost-commerce/provider-events";
+import type {
+  claimCommerceProviderEvent,
+  completeCommerceProviderEvent
+} from "@/lib/lost-commerce/provider-events";
+import type { SettlementResult } from "./settle-payment";
 
 export type PortOneBuildPayload = (input: {
   orderRef: string;
@@ -32,15 +36,12 @@ export type PortOneAdapterDeps = {
     headers: Record<string, string | undefined>
   ) => Promise<unknown>;
   webhookSecret?: () => string | undefined;
-  confirmOrder?: PaymentAdapter["confirmOrder"];
-  commitReservations?: (input: {
-    payload: Payload;
+  settlePayment?: (input: {
     req: PayloadRequest;
-    orderId: string;
-    paymentId?: string;
-    idempotencyKey: string;
-    effectiveAt: string;
-  }) => Promise<{ kind: "committed" | "skipped" | "paid_inventory_review" }>;
+    paymentId: string;
+  }) => Promise<SettlementResult>;
+  claimEvent?: typeof claimCommerceProviderEvent;
+  completeEvent?: typeof completeCommerceProviderEvent;
 };
 
 export function requestHeader(
@@ -48,9 +49,7 @@ export function requestHeader(
   name: string
 ): string | null {
   const headers = req.headers as
-    | Headers
-    | Record<string, string | string[] | undefined>
-    | undefined;
+    Headers | Record<string, string | string[] | undefined> | undefined;
   if (!headers) return null;
   if (typeof (headers as Headers).get === "function") {
     return (headers as Headers).get(name);

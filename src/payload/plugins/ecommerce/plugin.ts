@@ -1,4 +1,5 @@
 import { EUR, USD, ecommercePlugin } from "@payloadcms/plugin-ecommerce";
+import type { Plugin } from "payload";
 
 import {
   adminOnlyFieldAccess,
@@ -17,8 +18,10 @@ import { productsCollectionOverride } from "./products-collection";
 import { hideawayProductsValidation } from "./products-validation";
 import { transactionsCollectionOverride } from "./transactions-collection";
 import { variantsCollectionOverride } from "./variants-collection";
+import { replacePortOnePaymentEndpoints } from "./payment-endpoints";
 
-export const hideawayEcommercePlugin = ecommercePlugin({
+const paymentAdapter = portoneAdapter();
+const officialEcommercePlugin = ecommercePlugin({
   access: {
     adminOnlyFieldAccess,
     adminOrPublishedStatus,
@@ -54,6 +57,12 @@ export const hideawayEcommercePlugin = ecommercePlugin({
     transactionsCollectionOverride
   },
   payments: {
-    paymentMethods: [portoneAdapter()]
+    paymentMethods: [paymentAdapter]
   }
 });
+
+export const hideawayEcommercePlugin: Plugin = async (config) =>
+  replacePortOnePaymentEndpoints(
+    await officialEcommercePlugin(config),
+    paymentAdapter
+  );

@@ -1,207 +1,90 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PayloadRequest } from "payload";
+import {
+  createPortOneConfirmOrder,
+  markAuthorizedBrowserPayment
+} from "./confirm-order";
 
-import { createPortOneConfirmOrder } from "./confirm-order";
+const mocks = vi.hoisted(() => ({ find: vi.fn(), settle: vi.fn() }));
+vi.mock("./settle-payment", () => ({
+  findPaymentAttempt: mocks.find,
+  createPortOneSettlement: () => mocks.settle
+}));
 
-function payloadStub() {
-  return {
-    find: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    logger: { error: vi.fn() }
-  };
-}
-
-function reqStub(payload: ReturnType<typeof payloadStub>): PayloadRequest {
-  return {
-    payload,
-    user: { id: "user-1", email: "buyer@example.com" }
-  } as unknown as PayloadRequest;
-}
-
-const pendingTransaction = {
+const attempt = {
   id: "txn-1",
-  status: "pending",
-  amount: 120000,
-  currency: "KRW",
   cart: "cart-1",
-  customer: "user-1",
-  customerEmail: "buyer@example.com",
-  items: [
-    {
-      product: "prod-1",
-      variant: "var-1",
-      quantity: 1,
-      mode: "standard_purchase"
-    }
-  ],
-  portone: { paymentId: "pay_1", channel: "channel-live" }
+  order: "order-1",
+  status: "succeeded",
+  checkout_snapshot: { cartID: "cart-1" }
 };
+const req = () =>
+  ({
+    payload: {},
+    context: {},
+    user: { id: "buyer" }
+  }) as unknown as PayloadRequest;
 
-describe("createPortOneConfirmOrder", () => {
-  it("confirms from PortOne REST against the stored transaction amount", async () => {
-    const payload = payloadStub();
-    payload.find.mockResolvedValue({ docs: [pendingTransaction], totalDocs: 1 });
-    payload.create.mockResolvedValue({ id: "order-1" });
-    payload.update.mockResolvedValue({});
-    const getPayment = vi.fn(async () => ({
-      status: "PAID",
-      amount: { total: 120000 },
-      currency: "KRW",
-      channel: { type: "LIVE" },
-      transactionId: "portone-txn"
-    }));
-    const confirm = createPortOneConfirmOrder({
-      getPayment,
-      requireLiveChannel: () => true
-    });
-
-    const result = await confirm({
-      cartsSlug: "carts",
-      ordersSlug: "orders",
-      transactionsSlug: "transactions",
-      data: { paymentId: "pay_1", customerEmail: "buyer@example.com" },
-      req: reqStub(payload)
-    });
-
-    expect(getPayment).toHaveBeenCalledWith("pay_1");
-    expect(payload.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: "orders",
-        data: expect.objectContaining({
-          amount: 120000,
-          currency: "KRW",
-          customer: "user-1",
-          customerEmail: "buyer@example.com",
-          status: "processing",
-          order_ref: "pay_1",
-          order_mode: "standard_purchase",
-          lifecycle_status: "paid",
-          payment_status: "paid",
-          fulfillment_status: "reserved",
-          line_snapshot_version: 3,
-          transactions: ["txn-1"]
-        })
-      })
-    );
-    expect(payload.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "cart-1",
-        collection: "carts",
-        data: expect.objectContaining({ purchasedAt: expect.any(String) })
-      })
-    );
-    expect(payload.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "txn-1",
-        collection: "transactions",
-        data: expect.objectContaining({
-          status: "succeeded",
-          order: "order-1",
-          portone: expect.objectContaining({
-            paymentId: "pay_1",
-            transactionId: "portone-txn",
-            channel: "channel-live"
-          })
-        })
-      })
-    );
-    expect(result).toEqual({
-      message: "Order confirmed successfully",
-      orderID: "order-1",
-      order_ref: "pay_1",
-      transactionID: "txn-1"
-    });
+describe("browser confirmation authority", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.find.mockResolvedValue(attempt);
+    mocks.settle.mockResolvedValue({ orderID: "order-1" });
   });
-
-  it("replays a succeeded transaction without creating a second order", async () => {
-    const payload = payloadStub();
-    payload.find.mockResolvedValue({
-      docs: [
-        {
-          ...pendingTransaction,
-          status: "succeeded",
-          order: "order-1"
-        }
-      ],
-      totalDocs: 1
-    });
-    const getPayment = vi.fn();
-    const confirm = createPortOneConfirmOrder({ getPayment });
-
+  it("rejects known paid IDs and forged body privileges before reads or provider calls", async () => {
     await expect(
-      confirm({
-        cartsSlug: "carts",
-        ordersSlug: "orders",
-        transactionsSlug: "transactions",
-        data: { paymentId: "pay_1" },
-        req: reqStub(payload)
+      createPortOneConfirmOrder()({
+        req: req(),
+        data: { paymentId: "pay_1", trusted: true, internal: true }
       })
-    ).resolves.toEqual({
-      message: "Order confirmed successfully",
-      orderID: "order-1",
-      order_ref: "pay_1",
-      transactionID: "txn-1"
-    });
-    expect(getPayment).not.toHaveBeenCalled();
-    expect(payload.create).not.toHaveBeenCalled();
+    ).rejects.toThrow("payment-authorization-required");
+    expect(mocks.find).not.toHaveBeenCalled();
+    expect(mocks.settle).not.toHaveBeenCalled();
   });
-
-  it("stamps the order from the transaction buyer, not the confirm request user", async () => {
-    const payload = payloadStub();
-    payload.find.mockResolvedValue({ docs: [pendingTransaction], totalDocs: 1 });
-    payload.create.mockResolvedValue({ id: "order-1" });
-    payload.update.mockResolvedValue({});
-    const confirm = createPortOneConfirmOrder({
-      getPayment: async () => ({
-        status: "PAID",
-        amount: { total: 120000 },
-        currency: "KRW",
-        channel: { type: "LIVE" },
-        transactionId: "portone-txn"
-      }),
-      requireLiveChannel: () => true
+  it("checks receipt binding before an already-paid replay", async () => {
+    const request = req();
+    markAuthorizedBrowserPayment(request, {
+      transactionID: "other-transaction",
+      cartID: "cart-1"
     });
-
-    await confirm({
-      cartsSlug: "carts",
-      ordersSlug: "orders",
-      transactionsSlug: "transactions",
-      data: { paymentId: "pay_1" },
-      req: { payload, user: null } as unknown as PayloadRequest
-    });
-
-    expect(payload.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          customer: "user-1",
-          customerEmail: "buyer@example.com"
-        })
-      })
-    );
-  });
-
-  it("rejects amount, currency, and unpaid PortOne records", async () => {
-    const payload = payloadStub();
-    payload.find.mockResolvedValue({ docs: [pendingTransaction], totalDocs: 1 });
-    const confirm = createPortOneConfirmOrder({
-      getPayment: async () => ({
-        status: "PAID",
-        amount: { total: 1 },
-        currency: "KRW",
-        channel: { type: "LIVE" }
-      }),
-      requireLiveChannel: () => true
-    });
-
     await expect(
-      confirm({
-        cartsSlug: "carts",
-        ordersSlug: "orders",
-        transactionsSlug: "transactions",
-        data: { paymentId: "pay_1" },
-        req: reqStub(payload)
+      createPortOneConfirmOrder()({
+        req: request,
+        data: { paymentId: "pay_1" }
       })
-    ).rejects.toThrow("amount-mismatch");
+    ).rejects.toThrow("payment-authorization-required");
+    expect(mocks.settle).not.toHaveBeenCalled();
+  });
+  it("checks cart binding independently of the transaction identifier", async () => {
+    const request = req();
+    markAuthorizedBrowserPayment(request, {
+      transactionID: "txn-1",
+      cartID: "other-cart"
+    });
+    await expect(
+      createPortOneConfirmOrder()({
+        req: request,
+        data: { paymentId: "pay_1" }
+      })
+    ).rejects.toThrow("payment-authorization-required");
+    expect(mocks.settle).not.toHaveBeenCalled();
+  });
+  it("uses the trusted settlement path after HTTP authorization even after cart deletion", async () => {
+    const request = req();
+    mocks.find.mockResolvedValue({ ...attempt, cart: null });
+    markAuthorizedBrowserPayment(request, {
+      transactionID: "txn-1",
+      cartID: "cart-1"
+    });
+    await expect(
+      createPortOneConfirmOrder()({
+        req: request,
+        data: { paymentId: "pay_1" }
+      })
+    ).resolves.toEqual({ orderID: "order-1" });
+    expect(mocks.settle).toHaveBeenCalledWith({
+      req: request,
+      paymentId: "pay_1"
+    });
   });
 });

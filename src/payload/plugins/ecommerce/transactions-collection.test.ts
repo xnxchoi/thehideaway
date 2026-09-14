@@ -38,7 +38,11 @@ const defaultCollection = {
               name: "items",
               type: "array",
               fields: [
-                { name: "product", type: "relationship", relationTo: "products" },
+                {
+                  name: "product",
+                  type: "relationship",
+                  relationTo: "products"
+                },
                 { name: "quantity", type: "number" }
               ]
             }
@@ -50,6 +54,19 @@ const defaultCollection = {
 } as unknown as CollectionConfig;
 
 describe("transactionsCollectionOverride", () => {
+  it("indexes attempt identity and protects provider evidence from client writes", async () => {
+    const collection = await transactionsCollectionOverride({
+      defaultCollection
+    });
+    expect(namedField(collection.fields, "checkout_attempt_key")).toMatchObject(
+      { type: "text", unique: true, index: true }
+    );
+    const evidence = namedField(collection.fields, "provider_outcome");
+    if (!evidence || !("access" in evidence))
+      throw new Error("missing evidence access");
+    expect(await evidence.access?.update?.({} as never)).toBe(false);
+    expect(collection.hooks?.beforeChange).toHaveLength(1);
+  });
   it("keeps mode and campaign on transaction lines", async () => {
     const collection = await transactionsCollectionOverride({
       defaultCollection

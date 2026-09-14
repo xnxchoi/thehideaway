@@ -46,14 +46,14 @@ describe("productPaymentRecoveryAction", () => {
 });
 
 describe("canViewPaidLostOrder", () => {
-  it("lets a guest see a paid order that has no customer account", () => {
+  it("requires purchase capability verification for guest orders", () => {
     expect(
       canViewPaidLostOrder({
         customer: null,
         paymentStatus: "paid",
         viewerId: null
       })
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("lets a signed-in customer see only their paid order", () => {
