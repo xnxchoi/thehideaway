@@ -456,15 +456,46 @@ Expected: health returns `200`; `www.lostinseoul.com` may redirect to
 
 ### LOST host API allowlist (ecommerce Phase 9)
 
-`nginx/sites-enabled/production.conf` 404s generic `/api/` on
-`$is_lostinseoul_host`. Today the LOST host may reach `/api/auth/`,
-`/api/health`, `/api/lost/`, and `/api/commerce/`. Plugin checkout uses
-`/api/carts/` and `/api/payments/` — those prefixes are not allowlisted yet.
+Both domains use the **existing VPS and the same Next/Payload app**. No second
+server is needed. Keep `NEXT_PUBLIC_SERVER_URL=https://hideawayseoul.com` and
+set `NEXT_PUBLIC_LOSTINSEOUL_URL=https://lostinseoul.com` in the build and runtime
+environment. DNS and TLS already cover both domains (verified 2026-09-10).
+
+The Phase 9 candidate forwards `lostinseoul.com/` to Next, which internally
+rewrites it to `/lostinseoul`. Supported storefront descendants use clean
+public paths: `/products/:slug`, `/collections/:slug`, `/fragrance`, `/cart`,
+`/checkout`, `/orders/:ref`, `/payment/{return,success,pending,failure}`,
+`/auth/sign-in`, `/gate`, and the legal/policy pages. GET/HEAD requests with
+the old `/lostinseoul` prefix redirect to clean paths on the LOST domain;
+POST requests are not canonicalized. The prefixed routes remain available
+on the primary domain for compatibility.
+
+`nginx/sites-enabled/production.conf` keeps generic `/api/` and the separate
+notifications stream closed on `$is_lostinseoul_host`. The candidate allows
+`/api/auth/`, `/api/health`, `/api/lost/`, `/api/commerce/`, exact `/api/carts`,
+`/api/carts/`, `/api/payments/`, and exact `/api/users/me` and `/api/addresses`.
+The identity/address descendants remain denied. `/api/lost/orders` serves account
+history and no-store guest lookup; proposed `/api/orders/:id/fulfillment` is
+main-site-only and not registered at the pause checkpoint. Exact `/api/carts` is required: the plugin
+POSTs new carts without a slash, and a 301 would discard the POST body.
 
 Do not open generic `/api/` or `/vault/` on `lostinseoul.com`. Product
 PortOne sandbox webhooks go to `/api/payments/portone/webhooks`. Membership
 plan webhooks stay `/api/lost/webhooks/portone`. Full procedure:
 `readmes/ECOMMERCE.md` Phase 9.
+
+**Deployment status (2026-09-10): prepared locally, not deployed.** Live nginx
+still redirects `/` to `/lostinseoul`, then the app redirects to `/gate`, which
+live nginx rejects with 404. Live app image is `v33.0.31` (revision `e319e9e`),
+server checkout is `2fdc3daf`, and the live database lacks plugin `variants`,
+`carts`, `orders`, and `transactions` tables. Deploy the tested application,
+schema, and nginx configuration together after the same-server staging proof;
+do not reload this nginx candidate alone and call the cutover complete.
+
+Local validation: nginx syntax passed in Docker; host-routing checks kept LOST
+admin/unrelated APIs at 404 while primary-domain routes reached the upstream.
+`POST /api/carts?depth=2` preserved method, body, and query with no redirect.
+These checks used a fixture upstream, not the production app or a payment.
 
 ---
 

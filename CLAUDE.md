@@ -43,11 +43,11 @@ Read the matching `readmes/*.md` before working on any of these.
 - **Vault (`/vault`)** — Payload admin. Paint Payload CSS variables; custom work-queue home is interim. Bird’s-eye dashboard is deferred until admin is end-to-end functional. → `readmes/VAULT.md`
 - **Settings / user shell** — `/me/settings` persistent rail + pane fade (`SHELL`). Convenience lanes: UserDropdown, SideDrawer, ⌘K. → `readmes/SETTINGS.md`
 - **LOSTINSEOUL** — storefront under `src/lostinseoul/`. Naming, ecommerce, fragrance are separate docs. → `readmes/LOSTINSEOUL.md`
-- **Ecommerce** — official `@payloadcms/plugin-ecommerce` owns catalog/cart/orders/transactions; warehouse ledger owns stock; membership and tickets stay separate. Phases 0–8 done; Phase 9 (nginx `/api/carts/` + `/api/payments/` on the LOST host, then PortOne **sandbox**) is next. → `readmes/ECOMMERCE.md`
+- **Ecommerce** — official `@payloadcms/plugin-ecommerce` owns catalog/cart/orders/transactions. Launch scope: manually operated drops/preorders, one-time memberships, December tickets for 50–70 attendees, and account points gifted/redeemed at the event. Card payment is mandatory. Warehouse automation, recurring billing and JavaCard hardware are deferred. Read the launch contract first, then the active handoff at `readmes/ECOMMERCE_HANDOFF.md`. → `readmes/ECOMMERCE.md`
 
 ### Docs map
 
-One file per scope. Session dumps belong in `.attic/`, not here.
+One file per scope. Active handoffs live in `readmes/`. Only inactive documents and dormant code belong in `.attic/`.
 
 | Scope | File |
 |---|---|
@@ -71,7 +71,7 @@ One file per scope. Session dumps belong in `.attic/`, not here.
 ### Open work
 
 1. Vault e2e list / edit / publish / preview. Not the bird’s-eye dashboard.
-2. Ecommerce Phase 9 (`readmes/ECOMMERCE.md`) — staging prove, nginx allowlist, PortOne sandbox. Not a production dashboard click. Storefront WebGL/CSS leftovers are a separate lane (`readmes/LOSTINSEOUL.md`).
+2. Ecommerce launch readiness (`readmes/ECOMMERCE.md`) — current three-case contract supersedes the earlier warehouse/recurring exploration. Domain routing and migration fixes are local in `codex/ecommerce-phase9`; launch capabilities remain to implement/test. Follow `readmes/ECOMMERCE_HANDOFF.md` for resumption. No production PortOne click. Storefront WebGL/CSS leftovers remain separate.
 3. Settings Controlbar back-link, ⌘K context suggestions, `/me/posts` table controls.
 4. Notifications Phase B (SSE). Polling stays until that ships.
 5. Type debt, incrementally, post-launch.
