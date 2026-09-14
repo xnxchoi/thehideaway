@@ -8,8 +8,7 @@ export type FaviconLinkSnapshot = {
 
 export type StaticFaviconLinkSnapshot = {
   link: HTMLLinkElement;
-  nextSibling: ChildNode | null;
-  parent: HTMLElement;
+  media: string | null;
 };
 
 const ANIMATED_FAVICON_DATA_ATTRIBUTE = "animatedFavicon";
@@ -72,10 +71,7 @@ export const captureFaviconLink = (
   type: link.getAttribute("type")
 });
 
-export const setAnimatedFaviconHref = (
-  link: HTMLLinkElement,
-  href: string
-) => {
+export const setAnimatedFaviconHref = (link: HTMLLinkElement, href: string) => {
   link.rel = "icon";
   link.type = "image/png";
   link.setAttribute("sizes", "32x32");
@@ -91,13 +87,13 @@ export const suspendStaticFaviconLinks = (
   const snapshots = getStaticFaviconLinks(documentRef, animatedLink).map(
     (link) => ({
       link,
-      nextSibling: link.nextSibling,
-      parent: link.parentElement ?? documentRef.head
+      media: link.getAttribute("media")
     })
   );
 
   for (const snapshot of snapshots) {
-    snapshot.link.remove();
+    // React owns these head nodes and must retain them for reconciliation.
+    snapshot.link.setAttribute("media", "not all");
   }
 
   appendAsLastIcon(animatedLink);
@@ -109,19 +105,9 @@ export const restoreStaticFaviconLinks = (
   snapshots: StaticFaviconLinkSnapshot[]
 ) => {
   for (const snapshot of snapshots) {
-    if (snapshot.link.isConnected) {
-      continue;
-    }
-
-    if (
-      snapshot.nextSibling &&
-      snapshot.nextSibling.parentNode === snapshot.parent
-    ) {
-      snapshot.parent.insertBefore(snapshot.link, snapshot.nextSibling);
-      continue;
-    }
-
-    snapshot.parent.appendChild(snapshot.link);
+    if (!snapshot.link.isConnected) continue;
+    if (snapshot.media === null) snapshot.link.removeAttribute("media");
+    else snapshot.link.setAttribute("media", snapshot.media);
   }
 };
 

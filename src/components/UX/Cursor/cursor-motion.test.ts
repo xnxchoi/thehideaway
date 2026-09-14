@@ -5,7 +5,9 @@ const source = readFileSync(__dirname + "/index.tsx", "utf8");
 
 describe("global cursor motion", () => {
   it("binds pointer coordinates directly without a trailing position spring", () => {
-    expect(source).toContain('document.addEventListener("pointermove"');
+    expect(source).toContain("useCoordinator((store) => store.x)");
+    expect(source).toContain("useCoordinator((store) => store.y)");
+    expect(source).not.toContain('document.addEventListener("pointermove"');
     expect(source).toContain("x: cursorX,");
     expect(source).toContain("y: cursorY,");
     expect(source).not.toContain("cursorXSpring");

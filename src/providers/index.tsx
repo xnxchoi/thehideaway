@@ -22,6 +22,7 @@ import { QueryProvider } from "./QueryProvider";
 import { SessionProvider } from "./Session/providers";
 import { CMDKeyManager, ThemeProvider } from "./Theme";
 import { TransitionProvider } from "./TransitionProvider";
+import { CoordinatorCtx } from "./CoordinatorCtx";
 
 const motion = () => import("./Motion").then((r) => r.default);
 
@@ -52,25 +53,27 @@ export const Providers: React.FC<{
                 <ThemeProvider>
                   <LazyMotion features={motion} strict={true}>
                     <CursorProvider>
-                      <PortalProvider>
-                        <TransitionProvider>
-                          <MenuProvider>
-                            <SearchBarProvider>
-                              <MiddleMan>
-                                <TooltipProvider>
-                                  <CMDKeyManager />
-                                  <TourProvider>
-                                    <TourOrchestrator />
-                                    <HeaderThemeProvider>
-                                      {children}
-                                    </HeaderThemeProvider>
-                                  </TourProvider>
-                                </TooltipProvider>
-                              </MiddleMan>
-                            </SearchBarProvider>
-                          </MenuProvider>
-                        </TransitionProvider>
-                      </PortalProvider>
+                      <CoordinatorCtx>
+                        <PortalProvider>
+                          <TransitionProvider>
+                            <MenuProvider>
+                              <SearchBarProvider>
+                                <MiddleMan>
+                                  <TooltipProvider>
+                                    <CMDKeyManager />
+                                    <TourProvider>
+                                      <TourOrchestrator />
+                                      <HeaderThemeProvider>
+                                        {children}
+                                      </HeaderThemeProvider>
+                                    </TourProvider>
+                                  </TooltipProvider>
+                                </MiddleMan>
+                              </SearchBarProvider>
+                            </MenuProvider>
+                          </TransitionProvider>
+                        </PortalProvider>
+                      </CoordinatorCtx>
                     </CursorProvider>
                   </LazyMotion>
                 </ThemeProvider>

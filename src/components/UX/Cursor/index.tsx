@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCursor, useDeviceInfo, useRPStore } from "@/providers/RP_Pro";
 import { useTheme } from "@/providers/Theme";
+import { useCoordinator } from "@/providers/CoordinatorCtx";
 
 import { useIsMobile } from "@/providers/MiddleMan";
 import { clamp } from "@/utilities/mathUtilities";
@@ -24,8 +25,8 @@ type DEFAULT = null;
 export type CursorStates = FOCUS | DRAG | DEFAULT;
 // Initialize cursor
 export default function RP_Cursor() {
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
+  const cursorX = useCoordinator((store) => store.x);
+  const cursorY = useCoordinator((store) => store.y);
   const { isMobile } = useIsMobile();
   const textWidth = useRef(12);
   const c = useMemo(
@@ -37,20 +38,6 @@ export default function RP_Cursor() {
     []
   );
 
-  useEffect(() => {
-    cursorX.set(window.innerWidth / 2);
-    cursorY.set(window.innerHeight / 2);
-    const updatePosition = (e: PointerEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-    };
-
-    document.addEventListener("pointermove", updatePosition, { passive: true });
-
-    return () => {
-      document.removeEventListener("pointermove", updatePosition);
-    };
-  }, [cursorX, cursorY]);
   const isTouchDevice = useDeviceInfo(useShallow((r) => r.isTouchDevice));
   const [isTextCursor, setIsTextCursor] = useState(!1);
   const marquee = useCursor(useShallow((l) => l.marquee));
@@ -295,8 +282,10 @@ export default function RP_Cursor() {
   useEffect(() => {
     if (!theme) return;
 
-    setBaseCursorTheme(navIsOpen?(theme==='light'?'dark':'light'):theme);
-     resetCursorTheme();
+    setBaseCursorTheme(
+      navIsOpen ? (theme === "light" ? "dark" : "light") : theme
+    );
+    resetCursorTheme();
   }, [
     navIsOpen,
     resetCursorTheme,
@@ -389,7 +378,9 @@ export default function RP_Cursor() {
               >
                 <m.circle
                   ref={oCircle}
-                  className={"inline bg-transparent fill-transparent transition-[stroke] duration-150 ease-out-power3 data-[focus=true]:stroke-rouge-400"}
+                  className={
+                    "inline bg-transparent fill-transparent transition-[stroke] duration-150 ease-out-power3 data-[focus=true]:stroke-rouge-400"
+                  }
                   cx={50}
                   cy={50}
                   r={outerRadius}
