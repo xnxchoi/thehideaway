@@ -6,6 +6,7 @@ import { useFooterVisibility } from "@/components/Shells/Footer/footer-visibilit
 import { useRPStore } from "@/providers/RP_Pro";
 import type { ProductListing } from "@/lib/lost-commerce/queries";
 import type { LostOrderMode } from "@/lib/lost-commerce/types";
+import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
 
 import { cn } from "@/lib/utils";
 import {
@@ -801,6 +802,7 @@ export function ProductSection({
   products
 }: LostProductSectionProps) {
   const t = useTranslations("LOSTINSEOUL");
+  const { count: cartCount } = useStoreCart();
   const incomingLabel = t("home.incoming"),
     standardModeLabel = t("modes.standard"),
     requestModeLabel = t("modes.request"),
@@ -853,6 +855,7 @@ export function ProductSection({
       ? (visibleProducts[1] ?? visibleProducts[0] ?? null)
       : null;
   const sectionMetaText = getLostProductSectionMetaLabel({
+    cartCount,
     cartLabel,
     incomingLabel,
     productCount: visibleProducts.length,
@@ -1771,4 +1774,3 @@ export function VideoCollections({
     </section>
   );
 }
-

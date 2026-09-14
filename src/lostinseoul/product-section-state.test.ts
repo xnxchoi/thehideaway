@@ -3,6 +3,24 @@ import { describe, expect, it } from "vitest";
 import { getLostProductSectionMetaLabel } from "./product-section-state";
 
 describe("LOSTINSEOUL product section state", () => {
+  it.each<[string, number, string]>([
+    ["Cart", 2, "Cart / 02"],
+    ["카트", 12, "카트 / 12"]
+  ])(
+    "shows the actual cart quantity with translated label %s",
+    (cartLabel, cartCount, expected) => {
+      expect(
+        getLostProductSectionMetaLabel({
+          cartLabel,
+          cartCount,
+          incomingLabel: "Incoming",
+          productCount: 3,
+          searchQuery: "",
+          searchResultsLabel: "Search results"
+        })
+      ).toBe(expected);
+    }
+  );
   it("labels an empty non-search catalog as incoming instead of cart", () => {
     expect(
       getLostProductSectionMetaLabel({

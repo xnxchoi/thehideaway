@@ -3,15 +3,20 @@ import { describe, expect, it } from "vitest";
 
 describe("LostEcommerceProvider wiring", () => {
   it("wraps plugin EcommerceProvider with KRW, variants, and PortOne", () => {
-    const source = readFileSync(new URL("./provider.tsx", import.meta.url), "utf8");
+    const source = readFileSync(
+      new URL("./cart-session.tsx", import.meta.url),
+      "utf8"
+    );
     expect(source).toContain("EcommerceProvider");
-    expect(source).toContain('from "@payloadcms/plugin-ecommerce/client/react"');
+    expect(source).toContain(
+      'from "@payloadcms/plugin-ecommerce/client/react"'
+    );
     expect(source).toContain("enableVariants={true}");
     expect(source).toContain('defaultCurrency: "KRW"');
     expect(source).toContain('name: "portone"');
     expect(source).toContain("initiatePayment: true");
     expect(source).toContain("confirmOrder: true");
-    expect(source).toContain("onLogin");
+    expect(source).toContain("prepareCartSession");
     expect(source).toContain("cartsFetchQuery");
     expect(source).not.toContain("stripeAdapter");
   });
@@ -25,7 +30,9 @@ describe("LostEcommerceProvider wiring", () => {
       "utf8"
     );
     expect(migration).toContain("WHY-OVERRIDE-PAYLOAD");
-    expect(migration).toContain('ALTER TABLE "carts_items" ALTER COLUMN "id" TYPE varchar');
+    expect(migration).toContain(
+      'ALTER TABLE "carts_items" ALTER COLUMN "id" TYPE varchar'
+    );
   });
 
   it("keeps useStoreCart as a plugin useCart adapter that returns the add promise", () => {

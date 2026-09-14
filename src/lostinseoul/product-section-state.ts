@@ -1,4 +1,5 @@
 type LostProductSectionMetaInput = {
+  cartCount?: number;
   cartLabel: string;
   incomingLabel: string;
   productCount: number;
@@ -8,6 +9,7 @@ type LostProductSectionMetaInput = {
 };
 
 export function getLostProductSectionMetaLabel({
+  cartCount = 0,
   cartLabel,
   incomingLabel,
   productCount,
@@ -29,5 +31,5 @@ export function getLostProductSectionMetaLabel({
     return `${incomingLabel} / 00`;
   }
 
-  return `${cartLabel} / 00`;
+  return `${cartLabel} / ${cartCount.toString().padStart(2, "0")}`;
 }

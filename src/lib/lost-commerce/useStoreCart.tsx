@@ -38,7 +38,15 @@ export function serializeStoreCartLines(
 
 /** Adapter over plugin `useCart`. Do not name this `useCart`. */
 export function useStoreCart() {
-  const { addItem, cart, clearCart, isLoading, removeItem } = useCart();
+  const {
+    addItem,
+    cart,
+    clearCart,
+    decrementItem,
+    incrementItem,
+    isLoading,
+    removeItem
+  } = useCart();
   const lines = useMemo(
     () => mapPluginCartLines(cart, String(cart?.currency ?? "KRW")),
     [cart]
@@ -62,6 +70,26 @@ export function useStoreCart() {
   );
 
   const clear = useCallback(() => clearCart(), [clearCart]);
+  const increment = useCallback(
+    (line: StoreCartLine) =>
+      line.itemId ? incrementItem(line.itemId) : Promise.resolve(),
+    [incrementItem]
+  );
+  const decrement = useCallback(
+    (line: StoreCartLine) =>
+      line.itemId ? decrementItem(line.itemId) : Promise.resolve(),
+    [decrementItem]
+  );
 
-  return { lines, add, remove, clear, total, count, isLoading };
+  return {
+    lines,
+    add,
+    remove,
+    clear,
+    increment,
+    decrement,
+    total,
+    count,
+    isLoading
+  };
 }

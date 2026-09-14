@@ -8,7 +8,6 @@ import * as m from "motion/react-m";
 import {
   type RefObject,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState
 } from "react";
@@ -44,6 +43,8 @@ import {
 } from "@lostinseoul/cart-frame";
 import { LostCartLineImage } from "@lostinseoul/cart-line-image";
 import { useCartOpen, useCommerceRef } from "@lostinseoul/page-status";
+import { CartDialog } from "./cart-dialog";
+import { CartLineControls } from "./cart-line-controls";
 
 type CartLine = ReturnType<typeof useStoreCart>["lines"][number];
 
@@ -73,7 +74,7 @@ export function CartOverlay() {
   const previousOverflowRef = useRef<string | null>(null);
   const rootAnimationRef = useRef<AnimationPlaybackControls | null>(null);
   const stoppedLenisRef = useRef(false);
-  const { lines, remove, total } = useStoreCart();
+  const { lines, total } = useStoreCart();
   const count = lines.reduce((sum, line) => sum + line.quantity, 0);
   const currency = lines[0]?.currency ?? "KRW";
 
@@ -96,17 +97,6 @@ export function CartOverlay() {
     stoppedLenisRef
   );
 
-  useLayoutEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open, setOpen]);
-
   const closeBag = () => setOpen(false);
   const overlay = (
     <AnimatePresence>
@@ -119,7 +109,6 @@ export function CartOverlay() {
           key="lost-cart-surface"
           lines={lines}
           onClose={closeBag}
-          onRemove={remove}
           open={open}
 
           total={total}
@@ -466,7 +455,6 @@ function CartSurface({
 
   lines,
   onClose,
-  onRemove,
   open,
 
   total
@@ -478,7 +466,6 @@ function CartSurface({
 
   lines: CartLine[];
   onClose: () => void;
-  onRemove: (line: CartLine) => void;
   open: boolean;
 
   total: number;
@@ -486,9 +473,9 @@ function CartSurface({
   const isPresent = useIsPresent();
   const t = useTranslations("LOSTINSEOUL.cart");
   return (
-    <m.div
-      role="dialog"
-      aria-modal="true"
+    <CartDialog
+      active={open && isPresent}
+      onClose={onClose}
       animate={{ opacity: 1 }}
       data-open={open ? "true" : "false"}
       data-lost-cursor-theme="light"
@@ -509,7 +496,6 @@ function CartSurface({
         currency={currency}
         lines={lines}
         onClose={onClose}
-        onRemove={onRemove}
         total={total}
       />
       <p className="relative z-10 col-span-full row-start-3 hidden self-center justify-self-center overflow-hidden text-[1.2rem] leading-none text-[var(--lost-cart-muted)] lg:block">
@@ -523,7 +509,7 @@ function CartSurface({
           {t("total")} {formatLostMoney(total, currency)}
         </m.span>
       </p>
-    </m.div>
+    </CartDialog>
   );
 }
 
@@ -545,7 +531,7 @@ function CartHeader({
         transition={chromeTransition}
       >
         <Link
-          aria-label="LOSTINSEOUL home"
+          aria-label={t("cart.home")}
           href="/lostinseoul"
           onClick={onClose}
         >
@@ -589,9 +575,10 @@ function CartAperture({
   apertureRef: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
 }) {
+  const t = useTranslations("LOSTINSEOUL.cart");
   return (
     <m.section
-      aria-label="cart preview"
+      aria-label={t("preview")}
       animate={getCartOverlayApertureState(true)}
       className="relative z-10 hidden grid-rows-[1.5rem_calc(100svh*var(--lost-cart-frame-scale,0.62))] gap-10 overflow-hidden lg:col-span-8 lg:row-start-2 lg:grid"
       exit={getCartOverlayApertureState(false)}
@@ -607,7 +594,7 @@ function CartAperture({
         transition={getCartOverlayChromeTransition()}
       />
       <Button
-        aria-label="Close cart preview"
+        aria-label={t("closePreview")}
         className="cursor-pointer rounded-[4px] border border-[var(--lost-cart-line)] bg-transparent"
         data-lost-cart-aperture
         onClick={onClose}
@@ -622,13 +609,11 @@ function CartPanel({
   currency,
   lines,
   onClose,
-  onRemove,
   total
 }: {
   currency: LostCurrency;
   lines: CartLine[];
   onClose: () => void;
-  onRemove: (line: CartLine) => void;
   total: number;
 }) {
   const t = useTranslations("LOSTINSEOUL");
@@ -662,7 +647,7 @@ function CartPanel({
                     `${line.productId}:${line.skuId}:${line.mode}:${line.campaignId ?? ""}`
                   }
                   line={line}
-                  onRemove={onRemove}
+                  onClose={onClose}
                 />
               ))}
             </div>
@@ -674,6 +659,7 @@ function CartPanel({
               <Link
                 className="inline-flex min-h-18 items-center justify-center rounded-[4px] bg-[var(--lost-cart-strong)] px-5 text-[1.2rem] leading-none font-medium text-[var(--lost-cart-strong-ink)]"
                 href="/lostinseoul/checkout"
+                onClick={onClose}
               >
                 {t("checkout.title")}
               </Link>
@@ -705,17 +691,18 @@ function CartEmpty({ onClose }: { onClose: () => void }) {
 
 function CartLineItem({
   line,
-  onRemove
+  onClose
 }: {
   line: CartLine;
-  onRemove: (line: CartLine) => void;
+  onClose: () => void;
 }) {
-  const t = useTranslations("LOSTINSEOUL.cart");
   return (
     <div className="grid grid-cols-[7.2rem_1fr] gap-4 border-b border-[var(--lost-cart-line)] pb-5 last:border-b-0">
       <Link
+        aria-label={line.productName}
         className="aspect-square overflow-hidden bg-[var(--lost-cart-soft)]"
         href={`/lostinseoul/products/${line.productSlug}`}
+        onClick={onClose}
       >
         {line.imageUrl ? (
           <LostCartLineImage
@@ -730,6 +717,7 @@ function CartLineItem({
           <Link
             className="text-[1.4rem] leading-tight font-medium tracking-tight"
             href={`/lostinseoul/products/${line.productSlug}`}
+            onClick={onClose}
           >
             {line.productName}
           </Link>
@@ -741,13 +729,7 @@ function CartLineItem({
           {line.variantLabel ? `${line.variantLabel} / ` : ""}
           {line.mode.replaceAll("_", " ")} / x {line.quantity}
         </p>
-        <Button
-          className="mt-4 rounded-[4px] border border-[var(--lost-cart-line)] px-3 py-2 text-[1.2rem] leading-none text-[var(--lost-cart-muted)] transition-colors hover:bg-[var(--lost-cart-strong)] hover:text-[var(--lost-cart-strong-ink)]"
-          onClick={() => onRemove(line)}
-          type="button"
-        >
-          {t("remove")}
-        </Button>
+        <CartLineControls line={line} />
       </div>
     </div>
   );
