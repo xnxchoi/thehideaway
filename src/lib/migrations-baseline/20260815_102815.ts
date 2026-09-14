@@ -3,7 +3,11 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from "@payloadcms/db-postgres";
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
   CREATE EXTENSION IF NOT EXISTS pgcrypto;
-  CREATE OR REPLACE FUNCTION nanoid_optimized(
+  -- WHY-OVERRIDE-PAYLOAD: postgres/nanoid.sql may preinstall these functions.
+  -- Preserve their definitions, named arguments, and dependent column defaults.
+  DO $bootstrap$ BEGIN
+  IF to_regprocedure('public.nanoid_optimized(integer,text,integer,integer)') IS NULL THEN
+  CREATE FUNCTION public.nanoid_optimized(
     size int,
     alphabet text,
     mask int,
@@ -34,7 +38,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
     END LOOP;
   END
   \$\$;
-  CREATE OR REPLACE FUNCTION nanoid(
+  END IF;
+  END $bootstrap$;
+  DO $bootstrap$ BEGIN
+  IF to_regprocedure('public.nanoid(integer,text,double precision)') IS NULL THEN
+  CREATE FUNCTION public.nanoid(
     size int DEFAULT 21,
     alphabet text DEFAULT '_-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
     additional_bytes_factor float DEFAULT 1.6
@@ -62,6 +70,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
     RETURN nanoid_optimized(size, alphabet, mask, step);
   END
   \$\$;
+  END IF;
+  END $bootstrap$;
    DO $guard$ BEGIN CREATE TYPE "public"."_locales" AS ENUM('en', 'ko'); EXCEPTION WHEN duplicate_object THEN NULL; END $guard$;
   DO $guard$ BEGIN CREATE TYPE "public"."enum_users_role" AS ENUM('admin', 'cofounder', 'editor', 'author', 'patron', 'resident', 'user'); EXCEPTION WHEN duplicate_object THEN NULL; END $guard$;
   DO $guard$ BEGIN CREATE TYPE "public"."enum_users_status" AS ENUM('draft', 'published'); EXCEPTION WHEN duplicate_object THEN NULL; END $guard$;
