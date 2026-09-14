@@ -1,3 +1,4 @@
+import { consumeManualFulfillmentWrite } from "./manual-fulfillment-protection";
 import type {
   CollectionAfterChangeHook,
   CollectionBeforeChangeHook
@@ -100,6 +101,7 @@ function lifecycleOf(value: unknown): CommerceOrderState | undefined {
 export const protectPluginOrderLifecycle: CollectionBeforeChangeHook = async (
   args
 ) => {
+  const manualFulfillment = consumeManualFulfillmentWrite(args);
   const data = { ...(args.data as Record<string, unknown>) };
   if (args.operation === "create" && data.lifecycle_status === undefined)
     data.lifecycle_status = "pending_payment";
@@ -157,6 +159,7 @@ export const protectPluginOrderLifecycle: CollectionBeforeChangeHook = async (
     data: {
       ...data,
       status: data.lifecycle_status ?? original?.lifecycle_status,
+      ...(manualFulfillment ? { fulfillment_status: original?.fulfillment_status } : {}),
       ...(Object.hasOwn(data, "items") ? { lines: data.items } : {}),
       ...(Object.hasOwn(data, "customer") ? { user: data.customer } : {}),
       ...(Object.hasOwn(data, "amount") ? { total_amount: data.amount } : {}),
