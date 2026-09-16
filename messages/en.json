@@ -587,6 +587,9 @@
     }
   },
   "Commerce": {
+    "countries": {
+      "KR": "South Korea"
+    },
     "colophon": {
       "aria": "Business information",
       "tradeName": "Trade name",

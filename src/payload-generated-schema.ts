@@ -595,7 +595,8 @@ export const enum_addresses_country = pgEnum("enum_addresses_country", [
   "SI",
   "ES",
   "SE",
-  "CH"
+  "CH",
+  "KR"
 ]);
 export const enum_variants_status = pgEnum("enum_variants_status", [
   "draft",

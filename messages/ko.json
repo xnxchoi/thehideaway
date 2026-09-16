@@ -651,6 +651,9 @@
     }
   },
   "Commerce": {
+    "countries": {
+      "KR": "대한민국"
+    },
     "colophon": {
       "aria": "사업자 정보",
       "tradeName": "상호",

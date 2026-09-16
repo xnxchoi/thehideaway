@@ -10,6 +10,7 @@ import * as migration_20260831_063800_array_item_ids from './20260831_063800_arr
 import * as migration_20260831_120000_uncategorized_category from './20260831_120000_uncategorized_category';
 import * as migration_20260914_012723_checkout_durable_purchase from './20260914_012723_checkout_durable_purchase';
 import * as migration_20260914_073802_commerce_command_journal from './20260914_073802_commerce_command_journal';
+import * as migration_20260916_074244_address_countries from './20260916_074244_address_countries';
 
 export const migrations = [
   {
@@ -70,6 +71,11 @@ export const migrations = [
   {
     up: migration_20260914_073802_commerce_command_journal.up,
     down: migration_20260914_073802_commerce_command_journal.down,
-    name: '20260914_073802_commerce_command_journal'
+    name: '20260914_073802_commerce_command_journal',
+  },
+  {
+    up: migration_20260916_074244_address_countries.up,
+    down: migration_20260916_074244_address_countries.down,
+    name: '20260916_074244_address_countries'
   },
 ];

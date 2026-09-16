@@ -3170,7 +3170,8 @@ export interface Address {
     | 'SI'
     | 'ES'
     | 'SE'
-    | 'CH';
+    | 'CH'
+    | 'KR';
   phone?: string | null;
   updatedAt: string;
   createdAt: string;

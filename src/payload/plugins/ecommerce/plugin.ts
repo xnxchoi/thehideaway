@@ -10,6 +10,7 @@ import {
   isEcommerceAdmin
 } from "./access";
 import { lostCartItemMatcher } from "./cart-item-matcher";
+import { addressCountries } from "./address-countries";
 import { cartsCollectionOverride } from "./carts-collection";
 import { JPY, KRW } from "./currencies";
 import { ordersCollectionOverride } from "./orders-collection";
@@ -32,6 +33,9 @@ const officialEcommercePlugin = ecommercePlugin({
   },
   customers: {
     slug: "users"
+  },
+  addresses: {
+    supportedCountries: addressCountries
   },
   products: {
     productsCollectionOverride,
