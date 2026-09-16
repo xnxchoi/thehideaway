@@ -356,12 +356,16 @@ export async function proxy(request: NextRequest) {
   const isProtected = protectedPrefixes.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
+  // This page renders the guest capability form; order access is verified by
+  // the page/API. Keep the account history list and deeper paths protected.
+  const isGuestOrderDetail = /^\/lostinseoul\/orders\/[^/]+\/?$/.test(pathname);
   const isDevelopmentCheckoutPreview =
     pathname === "/lostinseoul/checkout" &&
     isLostCommercePaymentPreviewEnabled();
 
   if (
     isProtected &&
+    !isGuestOrderDetail &&
     !isDevelopmentCheckoutPreview &&
     !hasSessionCookie(request)
   ) {

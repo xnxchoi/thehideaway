@@ -63,7 +63,7 @@ export function lostInternalPath(pathname: string): string | null {
   const path = pathname.replace(/\/$/, "") || "/";
   if (path === "/") return INTERNAL_ROOT;
   if (
-    /^\/(?:gate|privacy|terms|refund|fragrance|cart|checkout|policy)$/.test(
+    /^\/(?:gate|privacy|terms|refund|fragrance|cart|checkout|orders|policy)$/.test(
       path
     ) ||
     /^\/(?:products|collections|orders)\/[^/]+$/.test(path) ||

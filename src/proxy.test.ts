@@ -497,7 +497,156 @@ describe("proxy routing", () => {
   });
 });
 
+describe("guest order detail routing", () => {
+  it.each(["/lostinseoul/orders/LIS-guest", "/lostinseoul/orders/LIS-guest/"])(
+    "lets an unlocked anonymous visitor reach the capability form at %s",
+    async (path) => {
+      const response = await proxy(makeRequest(path, lostGateCookie));
+
+      expect(response.headers.get("location")).toBeNull();
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+    }
+  );
+
+  it("rewrites an anonymous canonical LOST detail request to the capability form", async () => {
+    const response = await proxy(
+      makeRequest(
+        "/orders/LIS-guest",
+        lostGateCookie,
+        "https://lostinseoul.com"
+      )
+    );
+
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("x-middleware-rewrite")).toBe(
+      "https://lostinseoul.com/lostinseoul/orders/LIS-guest"
+    );
+  });
+
+  it("canonicalizes the prefixed LOST detail route before guest lookup", async () => {
+    const response = await proxy(
+      makeRequest(
+        "/lostinseoul/orders/LIS-guest",
+        lostGateCookie,
+        "https://lostinseoul.com"
+      )
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://lostinseoul.com/orders/LIS-guest"
+    );
+  });
+
+  it.each([
+    "/lostinseoul/orders",
+    "/lostinseoul/orders/",
+    "/lostinseoul/orders/LIS-guest/extra",
+    "/lostinseoul/checkout",
+    "/me/orders",
+    "/prive"
+  ])("retains anonymous sign-in protection for %s", async (path) => {
+    const response = await proxy(makeRequest(path, lostGateCookie));
+
+    expect(response.status).toBe(307);
+    const location = new URL(response.headers.get("location")!);
+    expect(location.pathname).toBe(
+      path.startsWith("/lostinseoul/")
+        ? "/lostinseoul/auth/sign-in"
+        : "/sign-in"
+    );
+    expect(location.searchParams.get("redirectTo")).toBe(path);
+  });
+
+  it.each(["/orders/LIS-guest/extra", "/orders-extra/LIS-guest"])(
+    "does not expose an unrelated canonical LOST route %s",
+    async (path) => {
+      const response = await proxy(
+        makeRequest(path, lostGateCookie, "https://lostinseoul.com")
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+    }
+  );
+
+  it.each([
+    [
+      "https://hideaway.test",
+      "/lostinseoul/orders/LIS-guest",
+      "/lostinseoul/gate"
+    ],
+    ["https://lostinseoul.com", "/orders/LIS-guest", "/gate"]
+  ])(
+    "retains the launch gate before guest lookup on %s",
+    async (origin, path, gate) => {
+      const response = await proxy(makeRequest(path, undefined, origin));
+
+      expect(response.status).toBe(307);
+      const location = new URL(response.headers.get("location")!);
+      expect(location.pathname).toBe(gate);
+      expect(location.searchParams.get("returnTo")).toBe(path);
+    }
+  );
+});
+
 describe("canonical LOST storefront routes", () => {
+  it.each(["/orders", "/orders/"])(
+    "requires sign-in for canonical account history %s",
+    async (path) => {
+      const response = await proxy(
+        makeRequest(path, lostGateCookie, "https://lostinseoul.com")
+      );
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get("location")).toBe(
+        "https://lostinseoul.com/auth/sign-in?redirectTo=%2Forders"
+      );
+    }
+  );
+
+  it.each(["/orders", "/orders/"])(
+    "rewrites signed-in canonical account history %s to its server-validated page",
+    async (path) => {
+      const response = await proxy(
+        makeRequest(
+          `${path}?page=2`,
+          `${lostGateCookie}; better-auth.session_token=abc`,
+          "https://lostinseoul.com"
+        )
+      );
+
+      expect(response.headers.get("location")).toBeNull();
+      expect(response.headers.get("x-middleware-rewrite")).toBe(
+        "https://lostinseoul.com/lostinseoul/orders?page=2"
+      );
+    }
+  );
+
+  it("canonicalizes prefixed account history while preserving its page query", async () => {
+    const response = await proxy(
+      makeRequest(
+        "/lostinseoul/orders?page=2",
+        lostGateCookie,
+        "https://lostinseoul.com"
+      )
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "https://lostinseoul.com/orders?page=2"
+    );
+  });
+
+  it("keeps canonical account history behind the launch gate", async () => {
+    const response = await proxy(
+      makeRequest("/orders", undefined, "https://lostinseoul.com")
+    );
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(
+      "https://lostinseoul.com/gate?returnTo=%2Forders"
+    );
+  });
+
   it.each([
     "/",
     "/products/coat",

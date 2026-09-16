@@ -73,12 +73,17 @@ describe("production LOSTINSEOUL nginx boundary", () => {
     expect(root).not.toContain("return 302 /lostinseoul");
   });
 
-  it.each(["/cart", "/checkout", "/fragrance", "/policy", "/auth/sign-in"])(
-    "forwards clean storefront page %s",
-    (route) =>
-      expect(locationBlock(productionNginx, `= ${route}`)).toContain(
-        "proxy_pass http://hideaway_upstream;"
-      )
+  it.each([
+    "/cart",
+    "/checkout",
+    "/orders",
+    "/fragrance",
+    "/policy",
+    "/auth/sign-in"
+  ])("forwards clean storefront page %s", (route) =>
+    expect(locationBlock(productionNginx, `= ${route}`)).toContain(
+      "proxy_pass http://hideaway_upstream;"
+    )
   );
 
   it.each(["products", "collections", "orders", "payment", "policy"])(

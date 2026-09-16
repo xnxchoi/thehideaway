@@ -65,6 +65,24 @@ describe("LOST domain boundary", () => {
       "/lostinseoul/cart"
     );
   });
+  it.each(["/orders", "/orders/"])(
+    "normalizes account history path %s",
+    (path) => {
+      expect(lostInternalPath(path)).toBe("/lostinseoul/orders");
+    }
+  );
+  it("serializes account history using its canonical LOST path", () => {
+    expect(lostPublicHref("/lostinseoul/orders?page=2", true)).toBe(
+      "/orders?page=2"
+    );
+    expect(lostPublicHref("/lostinseoul/orders", false)).toBe(
+      "/lostinseoul/orders"
+    );
+  });
+  it.each(["/orders-extra", "/orders-extra/LIS-1", "/orders/LIS-1/extra"])(
+    "rejects order route lookalikes and extra depth %s",
+    (path) => expect(lostInternalPath(path)).toBeNull()
+  );
   it("excludes LOST hosts from legacy auth redirects", () => {
     const pattern = new RegExp(
       `^(?:${lostHostRedirectPattern("https://shop.test")})$`,
