@@ -464,7 +464,7 @@ environment. DNS and TLS already cover both domains (verified 2026-09-10).
 The Phase 9 candidate forwards `lostinseoul.com/` to Next, which internally
 rewrites it to `/lostinseoul`. Supported storefront descendants use clean
 public paths: `/products/:slug`, `/collections/:slug`, `/fragrance`, `/cart`,
-`/checkout`, `/orders/:ref`, `/payment/{return,success,pending,failure}`,
+`/checkout`, `/orders`, `/orders/:ref`, `/payment/{return,success,pending,failure}`,
 `/auth/sign-in`, `/gate`, and the legal/policy pages. GET/HEAD requests with
 the old `/lostinseoul` prefix redirect to clean paths on the LOST domain;
 POST requests are not canonicalized. The prefixed routes remain available
@@ -484,7 +484,7 @@ PortOne sandbox webhooks go to `/api/payments/portone/webhooks`. Membership
 plan webhooks stay `/api/lost/webhooks/portone`. Full procedure:
 `readmes/ECOMMERCE.md` Phase 9.
 
-**Deployment status (2026-09-10): prepared locally, not deployed.** Live nginx
+**Last live observation (2026-09-10; not rechecked September 16):** live nginx
 still redirects `/` to `/lostinseoul`, then the app redirects to `/gate`, which
 live nginx rejects with 404. Live app image is `v33.0.31` (revision `e319e9e`),
 server checkout is `2fdc3daf`, and the live database lacks plugin `variants`,
@@ -496,6 +496,36 @@ Local validation: nginx syntax passed in Docker; host-routing checks kept LOST
 admin/unrelated APIs at 404 while primary-domain routes reached the upstream.
 `POST /api/carts?depth=2` preserved method, body, and query with no redirect.
 These checks used a fixture upstream, not the production app or a payment.
+
+**Local privacy checkpoint (2026-09-16; not deployed):** the candidate now
+protects order-history responses through the required nginx public ingress.
+`next.config.ts` applies the narrow override to exact `/api/lost/orders` and its
+trailing-slash form. Nginx's mapped headers cover those paths, including redirects,
+on both hostnames without opening unrelated APIs or the vault. Both source reviews
+passed at this ingress boundary.
+
+Actual direct Next exact/query requests returned 401 with `Referrer-Policy:
+no-referrer`, `Cache-Control: no-store` and `Vary: Cookie`. Next's automatic
+trailing-slash 308 returned **no referrer-policy header**. A configuration-helper
+test cannot establish header coverage on that framework redirect. Public exposure
+of standalone Next is therefore outside the verified boundary: nginx must remain
+in front of it for order-history privacy, including HTTP/www redirects.
+
+Local nginx → actual Next checks on both hosts confirmed privacy headers on the
+401 and 308 responses, with negative API/vault requests still 404. Twelve HTTP/www
+ingress redirect cases also passed. Evidence:
+`/private/tmp/hideaway-order-history-headers/next-chain-results.json`,
+`next-chain-negative-results.json` and `ingress-redirect-results.json` in the same
+directory. Earlier `results.json` predates the slash correction. Validation nginx
+containers were removed. These local checks do not establish production deployment,
+staging, complete history browser behavior or payment readiness. Current browser
+and migration state remains in `readmes/ECOMMERCE_HANDOFF.md`.
+
+The paused routing checkpoint additionally allows the exact `/orders` page in
+nginx and the shared LOST path map, while preserving account-list authentication
+and allowing the guest capability form on one-segment detail routes. This later
+routing slice has 193/194 tests passing and no fresh browser or nginx runtime
+proof; the earlier privacy checks do not validate this additional change.
 
 ---
 

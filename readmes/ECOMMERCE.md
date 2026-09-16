@@ -336,38 +336,53 @@ memoize broadly without evidence. Record mobile LCP/INP/CLS (targets 2.5s/200ms/
 and application latency/error/resource baselines; provider latency is reported
 separately. No performance success is claimed from local unit tests.
 
-### Pause checkpoint — 2026-09-14
+### Active checkpoint — 2026-09-16
 
-User requested a pause after current checks, an active handoff and sliced commits/
-push of `codex/ecommerce-phase9`. No deployment or production payment is included.
-The detailed source map, checks, restart commands, business decisions, review
-findings and L0–L7 remaining plan are in `readmes/ECOMMERCE_HANDOFF.md`.
+The active evidence, fixture state and remaining sequence live in
+`readmes/ECOMMERCE_HANDOFF.md`. Five reviewed source slices are pushed through `30566d53`:
+private customer cart discovery (`933675a`), startup/hydration and confirmed cart
+operations (`e2daed9`), translated purchase modes (`57dd2d6`), KR saved addresses
+and native enum migration (`bbe31bc`), and history privacy through nginx
+(`30566d5`). No deployment, provider payment, webhook change or external email
+has occurred.
 
-L1a/L1b purchase integrity, command journal, immutable customer history, server
-cart concurrency and storefront runtime fixes are implemented in the candidate.
-Runtime, journal and history have paired source-review PASS. Server-cart and the
-disabled fulfillment draft have checkpoint review B PASS; C was blocked by lint/
-type prerequisites, so no paired approval. Client cart remains unfinished: HIGH
-interaction-before-final-hydration race and MEDIUM drawer-close loss of uncertain
-quantity recovery state. Forty-eight client checks do not close those findings.
-Manual fulfillment has pure contract/protection code only; no service/endpoint,
-order schema, migration or UI enables dispatch.
+The earlier cart hydration and drawer-close recovery findings have fixes and
+paired source reviews. Local EN/KO browser cart flows, real UI sign-in and merge,
+identity isolation, two-tab contention and startup focus/readiness checks passed.
+The combined readiness/cart run passed 13 files / 110 tests; evidence sets overlap
+and must not be summed. The older whole-storefront GAN **FAIL 5.6/10** remains a
+separate result. These checks do not close complete C04/E19 or built-app, staging,
+provider and release gates.
 
-Latest native cart/history/checkout run: 25 tests across 3 files. Runtime: 21 focused
-plus 1 pointer test. Journal: 28 including 4 PG. History: 61 focused plus 2 native cases
-within that 25-test run. These are separate evidence sets, not an aggregate release
-score or new L1c coverage. Historical L1a/L1b 255 tests and scoped 91.62% line coverage
-predate these changes. The three-round storefront GAN verdict is **FAIL 5.6/10**;
-latest SSR/modal/count/quantity fixes still require fresh browser verification.
-Real Better Auth, built-app/staging, sandbox card/webhook/refund and email delivery
-remain open. Full tsc/lint are blocked by existing debt/tool incompatibilities.
+KR is added through the official country option while preserving 40 vendor
+countries; the Payload-native generated enum migration is applied to the retained
+local browser database. Fresh validation passed the 13-migration chain and
+13 tests, with five native tests passing again after the type fix. Paired source
+and database reviews passed. This is saved-address support: active checkout still
+lacks KR-only physical shipping enforcement and configured shipping fees, so C07
+remains open.
 
-Precommit audit has 1 critical and 2 moderate baseline advisories (MapLibre, Payload,
-csv-parse), with unchanged manifests. Applicability/mitigation is a release gate;
-see the handoff. Local Next 3100 is stopped, disposable PostgreSQL 55439 retained.
-Active docs remain in readmes; unrelated primary design research is preserved.
+History privacy passed actual Next/nginx checks with nginx as **required public
+ingress**. Direct Next exact/query 401 responses have the privacy headers, but its
+automatic direct 308 lacks the referrer-policy header. Both hosts through nginx
+protect 401/308 responses and preserve negative API/vault 404s; HTTP/www ingress
+redirect checks also passed. See `readmes/DEPLOY.md` for this deployment boundary.
+The history browser run remains incomplete: its last run found an anonymous detail
+redirect to sign-in. Routing checkpoint `7315f0b` is paused at 193/194 tests (one
+trailing-slash expectation). Code/security review permits this WIP checkpoint only;
+the assertion and browser rerun remain open.
+Revocation stopped before revoking any session because native tab visibility never
+became hidden. Neither browser gate is marked PASS; see the active pause handoff.
 
-### L1 implementation packet — 2026-09-14
+Full TypeScript remains at 652 baseline diagnostics with zero errors in the
+completed resume scopes. Canonical lint tooling remains broken. Audit findings
+remain one critical MapLibre and two moderate Payload/csv-parse advisories;
+applicability and mitigation remain release gates. Local Next 3100 is stopped; isolated
+PostgreSQL 55439 remains available. Manual fulfillment is still only a disabled pure
+contract/protection draft; implementing it is the next milestone after shared
+foundation gates. No service, endpoint, schema or UI enables dispatch.
+
+### Earlier implementation packet — 2026-09-14 (historical)
 
 **Status: L1a/L1b approved and implemented in the local candidate; local integrity checks pass, launch gates remain open.**
 
@@ -594,24 +609,48 @@ not mention those slugs except `proxy.ts` (410) and the retirement test.
 | `/api/lost/gate`                                                        | Storefront password gate                                                                                       |
 | `/api/invoice`, `/api/lost/cart`, `/api/lost/checkout`, `/api/commerce` | Retired. `src/proxy.ts` returns **410**.                                                                       |
 
-Production nginx on `$is_lostinseoul_host` currently allows `/api/auth/`,
+The September 10 live nginx observation on `$is_lostinseoul_host` allowed `/api/auth/`,
 `/api/health`, `/api/lost/`, `/api/commerce/`, and 404s generic `/api/`.
 The Phase 9 candidate adds exact `/api/carts`, `/api/carts/`, `/api/payments/`,
 and exact `/api/users/me` and `/api/addresses`; identity/address descendants stay denied.
-It is not deployed yet. `/vault/` stays 404 on the LOST host.
+The candidate remains undeployed as of September 16; the live configuration has
+not been rechecked. `/vault/` stays 404 on the LOST host in local validation.
 
 ---
 
 ## Client wiring
 
+- `TransitionReadinessProvider` keeps the initial streamed tree readable but
+  inert until the shared client transition wrappers mount. The LOST provider
+  passes readiness separately from customer identity; cart preparation and
+  hydration start only in that final tree. This is startup readiness, not
+  navigation animation state. Keep `TransitionManager` client-gated.
+
 - Layout wraps `LostEcommerceProvider`
   (`src/payload/plugins/ecommerce/client/provider.tsx`): KRW, variants on,
   PortOne method, identity-keyed Better Auth `useSession` preparation and guest
-  recovery around the official provider. Final-provider hydration gating remains
-  unfinished; see the HIGH finding in the active handoff.
+  recovery around the official provider. `CartSession` waits for authoritative
+  user/cart/address hydration and quarantines failures with localized reload
+  recovery while preserving streamed server children.
+- A narrow pnpm patch at `patches/@payloadcms__plugin-ecommerce@3.88.0.patch`
+  exposes `initialize`, `isHydrating` and `hydrationError` on the official
+  provider. The version remains 3.88.0; its collections, cart state and actions
+  remain authoritative. Patch metadata lives in `pnpm-workspace.yaml` and the
+  lockfile. Recheck the patch against upstream before any future upgrade.
+- `Users.cart` uses `customer-cart-field.ts`: a private virtual Join over
+  `carts.customer`, selecting the latest unpurchased cart. The official plugin
+  does not add this customer field itself; its provider expects `user.cart.docs`
+  from `/api/users/me`. The join adds no physical database column.
 - Storefront lines go through `useStoreCart` (`src/lib/lost-commerce/useStoreCart.tsx`),
   an adapter over plugin `useCart`. Do not re-export or shadow `useCart`.
   See `src/lostinseoul/NAMING.md`.
+- `CartOperationsProvider` stores only session-scoped operation metadata above
+  the drawer. Adapter mutations return a confirmed boolean, retain a synchronous
+  lock across drawer closure, and require a fresh matching cart before success.
+  Unconfirmed writes offer reload; never retry quantity deltas automatically.
+  `isBlocked()` guards checkout navigation/submission in the same event loop turn.
+  Add/Buy now show success or navigate only after confirmation. Current source,
+  review and browser evidence are recorded separately in the active handoff.
 - Identifier names vs plugin/site hooks: `src/lostinseoul/NAMING.md`.
 - Storefront chrome (bag/search/entry) is React context in
   `src/lostinseoul/page-status.tsx`, not a CustomEvent bus and not prop drilling.

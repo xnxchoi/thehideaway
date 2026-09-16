@@ -1,8 +1,228 @@
-# Ecommerce pause and resume handoff — 2026-09-14
+# Ecommerce pause and resume handoff — 2026-09-16
 
-## Start here
+## Active pause checkpoint — 2026-09-16
 
-The latest instruction is to **pause after the current run, document progress and
+Work is isolated in `codex/ecommerce-phase9`. Five reviewed source slices are
+committed and pushed. Their remote HEAD was verified as
+`30566d53409bfe7dec624179944f4503b0487d9f`:
+- `933675a`: private customer cart discovery.
+- `e2daed9`: authoritative cart hydration, operation confirmation and startup readiness.
+- `57dd2d6`: translated purchase-mode labels in both cart surfaces.
+- `bbe31bc`: KR saved-address support and the native-generated country enum migration.
+- `30566d5`: order-history privacy headers through the required nginx ingress.
+
+The primary checkout remains on main with its unrelated dirty files/research
+preserved. Its handoff points to this candidate. No deployment, provider payment,
+webhook change or external email has occurred.
+
+### Pause boundary and next action
+
+User explicitly paused. All implementation workers, tests and owned browsers are
+stopped; Next3100 was stopped. Keep the isolated PostgreSQL fixture for resumption.
+The five reviewed source commits above are pushed. The user then requested a
+commit/push of the paused session slice: routing WIP is checkpointed in `7315f0b`,
+followed by this documentation commit. See branch HEAD for the final checkpoint.
+No deployment or implementation restart is authorized by that commit request.
+
+Routing WIP owns six files: `src/proxy.ts`, `src/proxy.test.ts`,
+`src/lib/lostinseoul/domain.ts`, `src/lib/lostinseoul/domain.test.ts`,
+`src/proxy.nginx.test.ts`, and `nginx/sites-enabled/production.conf`.
+It permits the one-segment guest detail page after the unchanged launch gate and
+adds the canonical LOST `/orders` account-list route with exact nginx access.
+List authentication and server-side detail authorization remain required.
+Guest-detail-only checks passed 162 tests. Expanded canonical-list checks are
+**193/194 PASS**: one trailing-slash rewrite expectation remains unresolved
+(`/lostinseoul/orders?page=2` expected, `/lostinseoul/orders/?page=2` observed).
+The worker suspects installed Next serialization, but verify before changing the
+test. Scoped ESLint9 and whitespace checks passed. Independent code and security
+reviews found no blocker to preserving this as a WIP checkpoint; they did not
+approve release. Current browser proof and the unresolved assertion remain open.
+
+On resume: resolve that single assertion, review any resulting routing diff, restart
+the guarded app, then rerun the existing history harness without reseeding.
+Revocation requires a reliable native visibility transition first; see below.
+
+### Completed in this resume
+
+The version-pinned 3.88.0 patch adds initialization/hydration/error signals to the
+official provider without replacing its cart state or actions. Preparation and
+final user/cart/address hydration are gated; streamed server children remain.
+Localized recovery retains guest proof. Session-scoped operation metadata above
+the drawer keeps uncertain writes blocked across drawer closure; successful Add,
+Buy now and checkout require a fresh matching official cart.
+
+Quantity controls retain keyboard focus before disabling; Floating UI handles
+Escape. The first apparent Tab failure was a transient focus-guard test timing
+issue. A separate real startup race was found: the same customer's cart became
+interactive before TransitionProvider inserted its final wrappers, then remounted.
+The initial streamed tree is now inert and explicit startup readiness defers cart
+preparation. TransitionManager remains client-gated; ordinary navigation does not
+toggle this readiness signal.
+
+The official plugin expects `user.cart.docs` but does not add that customer field.
+The new owner-only virtual Users.cart join discovers the latest unpurchased cart.
+Officially generated types changed only the join-related semantics; unrelated
+interface relocation is generator output. This join required no physical migration.
+
+Evidence (overlapping scopes; do not add counts):
+- Latest combined readiness/cart run: 13 files / 110 tests PASS.
+- Native discovery/access/prior cart-history-checkout run: 5 files / 35 tests PASS.
+- Copy follow-up: 4 files / 53 existing tests PASS; compatible ESLint9 clean.
+- Full TypeScript remains at 652 baseline diagnostics, none in the new readiness
+  or copy scope. Canonical Next lint/ESLint10 remain broken baseline tooling.
+- Paired independent source reviews PASS for cart operations/hydration, account
+  discovery, startup readiness and copy. A specialized copy reviewer stopped at
+  the baseline type preflight; it did not approve source. A separate fresh source
+  reviewer completed the paired copy review. Security scope passed with unchanged
+  release-blocking audit findings (MapLibre critical; Payload/csv-parse moderate).
+- Frozen offline install with scripts disabled proved patch reproducibility.
+  Earlier coverage: hydration100% lines/97.22% branches; operations95.78%/89.83%,
+  measured before the final focus/startup additions.
+
+Local browser proof after the startup fix:
+- Native inert focus rejection and no cart reads before final ancestry.
+- Real email/password UI sign-in, return to PDP, guest+account merge and proof cleanup.
+- Six API-backed identity/isolation cases (separate from UI sign-in evidence).
+- Full EN and KO cart flows: 11 cases each, including delayed restore, uncertain
+  committed writes, reload recovery, keyboard,375px layout and checkout/back.
+- Two-tab real merge contention: one merge, matching quantities, reload and logout isolation.
+- Settled desktop/mobile visuals; follow-up KO overlay and full cart mode copy:4 checks.
+
+Sanitized cart evidence is in
+`/private/tmp/hideaway-readiness/cart-verified-final-20260916/`.
+The mode-copy follow-up is `cart-ko-copy-*` in the same parent directory.
+The old whole-storefront GAN FAIL5.6 is unchanged. These checks are local, not
+staging, built-app, provider or complete C04/E19 release evidence.
+
+### Address and history-header follow-up
+
+The official `supportedCountries` option now includes KR while preserving all
+40 vendor countries. A Payload-native generated, idempotent enum migration is
+registered. Fresh isolated validation passed the 13-migration chain and 13 tests;
+five native tests passed again after the type fix. Full TypeScript returned to
+the 652-diagnostic baseline, with zero scoped errors. Paired source/database
+reviews passed. Migration of the retained browser database completed with counts
+unchanged at 24 orders, 18 carts and zero addresses at that checkpoint.
+
+This enables KR saved addresses; it does **not** enforce KR-only physical shipping
+or calculate configured shipping fees. Inspection of active checkout found both
+missing, so C07 remains open. Both inventory flags, UUIDs and `push: false` remain
+unchanged; preserving billing/contact countries does not authorize international
+physical shipping.
+
+The order-history header correction covers the canonical API path and trailing
+slash in Next configuration and nginx. Paired source reviews passed with nginx
+as a **required public ingress**. Actual direct Next exact/query requests return
+401 with `no-referrer`, `no-store` and `Vary: Cookie`. Next's automatic direct 308
+still lacks the referrer-policy header: the config helper does not prove that
+redirect protected. Actual nginx → Next checks on both hosts protect the 401 and
+308 responses; 12 HTTP/www ingress redirect cases also passed. Negative API/vault
+requests remain 404. Owned validation nginx containers were removed; no production
+reload or deployment occurred.
+
+Header evidence is under `/private/tmp/hideaway-order-history-headers/`:
+`next-chain-results.json`, `next-chain-negative-results.json` and
+`ingress-redirect-results.json`. Earlier `results.json` predates the slash fix.
+Deployment must preserve the nginx boundary described in `readmes/DEPLOY.md`.
+
+### Active browser gates
+
+1. **History browser:** the guarded seeder committed 24 synthetic pending orders
+   (21 Daria, 1 Miles, 2 guests) to the browser fixture. No payment, receipt job,
+   cart mutation or email. Capability metadata is private mode 600. After the
+   header correction, the run stopped at `en:guestlookup`: the protected orders
+   prefix in the then-tested `src/proxy.ts` sent anonymous detail requests to sign-in (307)
+   before guest lookup can render. Anonymous account-list 401/privacy passed;
+   the checkpointed routing fix and its remaining assertion are recorded above.
+   The run is **not PASS**. Do not mark pagination, guest success/denial, all immutable
+   lines, cross-owner/logout, KO or mobile gates closed from this partial run.
+   Refund/tracking projection and guest-to-account association are not implemented
+   by this history slice, so browser history alone cannot close all E19.
+2. **Revocation:** KR address creation returned 201; owned cart/address reads and
+   visible quantity 2 passed. The harness deleted its synthetic address afterward.
+   **No session was revoked.** It stopped waiting for the original tab to become
+   hidden. Blank-only Chromium diagnostics found that disabling Playwright focus
+   emulation restores focus changes, but both tabs remain visible; a minimize
+   request also left the window normal/visible. Do not fake a visibility event and
+   call it natural refresh proof. All browsers are closed. Retain the reviewed
+   private harness and investigate native visibility before retrying. Registration
+   and natural session expiry remain unproved.
+
+Private history scripts have passed static safety review. They forbid schema
+push/drop/create/migrations, auto-generation, initialization seeds, jobs and
+nonlocal networking. The seeder retains recovery metadata across commit/write
+failures. It must not be rerun over existing fixture orders. Its successful first
+process lingered after commit and was stopped narrowly; future cleanup is bounded.
+Do not import the destructive native checkout fixture into the browser database.
+
+Next3100 is stopped at the user pause. Isolated PG18 on
+127.0.0.1:55439 remains running (`hideaway-readiness-pg`); main5432 is untouched.
+Browser DB: `hideaway_readiness`; native tests use a separate guarded
+`ecommerce_checkout_test_*` database. Private runner/envs are under
+`/private/tmp/hideaway-readiness/`; never print credentials or raw Next logs.
+Coordinate generation/migrations/browser runs; do not start a second Next process.
+
+Next, when asked to resume: finish and review the routing WIP, then history and
+revocation evidence. Continue committing reviewed work in slices. Manual fulfillment remains the
+next implementation milestone after the shared foundation gates. D4–D10 policies,
+release audit/tooling/migration rehearsal and production authorization are still
+open as described below.
+
+## Historical checkpoints — superseded by the active resume above
+
+The remainder preserves prior checkpoint evidence and plans. Runtime, commit and
+unresolved-finding statements below describe their recorded dates, not the current
+state. Use the active September 16 section above for resumption and current limits.
+
+## Earlier resume attempt paused — 2026-09-16 (historical)
+
+User explicitly paused again. All implementation/browser workers stopped. Branch
+HEAD remains `ae7657d0`; no new commit or push occurred. Preserve current test WIP.
+The two cart findings below remain unresolved; production implementation is
+unchanged. `cart-session.test.tsx` has six new failing hydration regressions
+(latest run: 6 failed / 10 passed, expected RED). `cart-line-controls.test.tsx`
+has failing drawer-remount and adapter-bypass regressions (2 failed / 5 passed); no fix is installed.
+
+Installed plugin3.88.0 exposes no reliable initial hydration-completion signal.
+A minimal version-pinned pnpm patch was selected to expose hydration status/error
+while retaining the official provider/actions; a neutral preparation instance
+must not perform eager initialization. An **uninstalled, unreviewed draft** exists
+in `/private/tmp/hideaway-ecommerce-hydration-patch`, and its two edited vendor
+files are backed up in ignored candidate
+`.git-support/ecommerce-restart-2026-09-10/resume-2026-09-16/dist/`.
+Do not apply it blindly: callback/dependency replay, address loading, StrictMode,
+unmount/error handling and localized reload recovery still require implementation
+and tests. No patch metadata, lockfile or package version was changed. The planned
+quantity fix keeps only operation metadata in identity-scoped context above the
+drawer (never a duplicate cart); synchronous locking must survive drawer remount.
+
+The old temporary runtime files had disappeared. Docker Desktop was started;
+the retained fixture DB/container and readiness-shirt/migrations were confirmed.
+Only fixture role credentials were regenerated into private mode600 envs; no
+production settings or data were used. App3100 was briefly started for baseline
+root inspection, then stopped before patch work; no listener remains. Root had
+no browser console errors during that baseline, but this is not a cart-fix gate.
+HTML lang remains absent. Disposable PostgreSQL55439 remains running; Docker also
+started its configured main5432 container, which this work did not query or modify.
+
+Reconstructed `/private/tmp/hideaway-readiness/run-next-resume.mjs` loads guarded
+app.env and resume-local.env. A private DEV_READER_PASSWORD is prepared for the
+next boot to seed ordinary Daria/Miles fixture users, but that boot has not run.
+Payment/mail secrets remain absent. The browser regression harness
+`cart-browser-probe.cjs` and `cart-browser-regression.cjs` are prepared only, **not executed**. Selector validation, bounded delays, Korean coverage and real account transitions still need work. Do not claim actual
+login/cart-merge or new post-fix browser evidence.
+
+Verification tooling exists temporarily under `/private/tmp/hideaway-verification`:
+ESLint9.39.5 and matching Vitest/coverage4.1.11. Scoped ESLint9 on the four existing
+cart implementation files passed; this does not fix the repo ESLint10 toolchain.
+Full TypeScript still has652 diagnostics, zero in the current cart scope. No repo
+dependency upgrade was made. Resume at the RED tests and draft-design review,
+then install a reproducible narrow patch, finish recovery behavior, run mounted
+regressions, fresh paired reviews and bounded browser verification.
+
+## September 14 pause instructions (historical)
+
+The September14 instruction was to **pause after the current run, document progress and
 remaining work, then commit and push in slices**. Implementation workers are
 stopped. Do not interpret this checkpoint as launch approval. Resume the existing
 bounded implementation plan only when the user returns; do not repeat approved
