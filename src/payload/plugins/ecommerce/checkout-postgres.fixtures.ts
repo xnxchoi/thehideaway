@@ -2,6 +2,7 @@ import { createHmac, randomUUID } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import path from "node:path";
 import type { CollectionConfig, Payload } from "payload";
+import { customerCartField } from "./customer-cart-field";
 
 type Row = Record<string, unknown> & { id: string };
 type JSONResult = { status: number; body: Record<string, any> };
@@ -144,6 +145,7 @@ export async function createCheckoutFixture(databaseURI: string) {
           ]
         },
         fields: [
+          customerCartField,
           { name: "email", type: "email" },
           { name: "role", type: "text" }
         ]

@@ -141,6 +141,7 @@ export interface Config {
   collectionsJoins: {
     users: {
       profile: 'profile';
+      cart: 'carts';
       bookmarks: 'bookmarks';
       followers: 'follows';
       following: 'follows';
@@ -400,6 +401,11 @@ export interface User {
    * Users chosen display name
    */
   name: string;
+  cart?: {
+    docs?: (string | Cart)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   portrait?: string | null;
   bookmarks?: {
     docs?: (string | Bookmark)[];
@@ -1268,6 +1274,221 @@ export interface FolderInterface {
     totalDocs?: number;
   };
   folderType?: 'userMedia'[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: string;
+  items?:
+    | {
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
+        quantity: number;
+        mode: 'standard_purchase' | 'request_to_order' | 'private_order';
+        campaign?: string | null;
+        schema_version?: number | null;
+        product_name?: string | null;
+        product_slug?: string | null;
+        sku?: string | null;
+        sku_label?: string | null;
+        options?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        currency?: ('KRW' | 'USD' | 'JPY' | 'EUR') | null;
+        unit_amount?: number | null;
+        line_amount?: number | null;
+        weight_grams?: number | null;
+        length_mm?: number | null;
+        width_mm?: number | null;
+        height_mm?: number | null;
+        tax_category?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  secret?: string | null;
+  customer?: (string | null) | User;
+  purchasedAt?: string | null;
+  status?: ('active' | 'purchased' | 'abandoned') | null;
+  subtotal?: number | null;
+  currency?: ('KRW' | 'USD' | 'EUR' | 'JPY') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * LOSTINSEOUL storefront products.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  enableVariants?: boolean | null;
+  variantTypes?: (string | VariantType)[] | null;
+  variants?: {
+    docs?: (string | Variant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  priceInKRWEnabled?: boolean | null;
+  priceInKRW?: number | null;
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  priceInEUREnabled?: boolean | null;
+  priceInEUR?: number | null;
+  priceInJPYEnabled?: boolean | null;
+  priceInJPY?: number | null;
+  name: string;
+  slug: string;
+  active: boolean;
+  storefront: string;
+  drop?: (string | null) | ProductDrop;
+  category?: (string | null) | ProductCategory;
+  summary?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  details?: string | null;
+  care?: string | null;
+  shipping_returns?: string | null;
+  hero_media?: (string | null) | Media;
+  gallery?: (string | Media)[] | null;
+  compare_at_amount?: number | null;
+  max_order_quantity: number;
+  min_order_quantity: number;
+  standard_enabled: boolean;
+  request_to_order_enabled: boolean;
+  private_order_enabled: boolean;
+  private_preset_price_enabled: boolean;
+  private_unit_amount?: number | null;
+  private_tier_gate: 'anyone' | 'resident' | 'patron' | 'cofounder' | 'staff';
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantTypes".
+ */
+export interface VariantType {
+  id: string;
+  label: string;
+  name: string;
+  options?: {
+    docs?: (string | VariantOption)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantOptions".
+ */
+export interface VariantOption {
+  id: string;
+  _variantOptions_options_order?: string | null;
+  variantType: string | VariantType;
+  label: string;
+  /**
+   * should be defaulted or dynamic based on label
+   */
+  value: string;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * Stable product SKUs used by checkout.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variants".
+ */
+export interface Variant {
+  id: string;
+  /**
+   * Used for administrative purposes, not shown to customers. This is populated by default.
+   */
+  title?: string | null;
+  product: string | Product;
+  options: (string | VariantOption)[];
+  priceInKRWEnabled?: boolean | null;
+  priceInKRW?: number | null;
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  priceInEUREnabled?: boolean | null;
+  priceInEUR?: number | null;
+  priceInJPYEnabled?: boolean | null;
+  priceInJPY?: number | null;
+  active: boolean;
+  identity_locked: boolean;
+  sku?: string | null;
+  label?: string | null;
+  option_key: string;
+  barcode?: string | null;
+  weight_grams?: number | null;
+  length_mm?: number | null;
+  width_mm?: number | null;
+  height_mm?: number | null;
+  tax_category?: string | null;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * LOSTINSEOUL seasonal drops and collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-drops".
+ */
+export interface ProductDrop {
+  id: string;
+  title: string;
+  slug: string;
+  active: boolean;
+  kicker?: string | null;
+  lede?: string | null;
+  hero_media?: (string | null) | Media;
+  sort?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-category".
+ */
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  sort?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2884,42 +3105,12 @@ export interface Holiday {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-category".
- */
-export interface ProductCategory {
-  id: string;
-  name: string;
-  slug: string;
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "product-sub".
  */
 export interface ProductSub {
   id: string;
   name: string;
   slug: string;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * LOSTINSEOUL seasonal drops and collections.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-drops".
- */
-export interface ProductDrop {
-  id: string;
-  title: string;
-  slug: string;
-  active: boolean;
-  kicker?: string | null;
-  lede?: string | null;
-  hero_media?: (string | null) | Media;
-  sort?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2981,191 +3172,6 @@ export interface Address {
     | 'SE'
     | 'CH';
   phone?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Stable product SKUs used by checkout.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variants".
- */
-export interface Variant {
-  id: string;
-  /**
-   * Used for administrative purposes, not shown to customers. This is populated by default.
-   */
-  title?: string | null;
-  product: string | Product;
-  options: (string | VariantOption)[];
-  priceInKRWEnabled?: boolean | null;
-  priceInKRW?: number | null;
-  priceInUSDEnabled?: boolean | null;
-  priceInUSD?: number | null;
-  priceInEUREnabled?: boolean | null;
-  priceInEUR?: number | null;
-  priceInJPYEnabled?: boolean | null;
-  priceInJPY?: number | null;
-  active: boolean;
-  identity_locked: boolean;
-  sku?: string | null;
-  label?: string | null;
-  option_key: string;
-  barcode?: string | null;
-  weight_grams?: number | null;
-  length_mm?: number | null;
-  width_mm?: number | null;
-  height_mm?: number | null;
-  tax_category?: string | null;
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * LOSTINSEOUL storefront products.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
- */
-export interface Product {
-  id: string;
-  enableVariants?: boolean | null;
-  variantTypes?: (string | VariantType)[] | null;
-  variants?: {
-    docs?: (string | Variant)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  priceInKRWEnabled?: boolean | null;
-  priceInKRW?: number | null;
-  priceInUSDEnabled?: boolean | null;
-  priceInUSD?: number | null;
-  priceInEUREnabled?: boolean | null;
-  priceInEUR?: number | null;
-  priceInJPYEnabled?: boolean | null;
-  priceInJPY?: number | null;
-  name: string;
-  slug: string;
-  active: boolean;
-  storefront: string;
-  drop?: (string | null) | ProductDrop;
-  category?: (string | null) | ProductCategory;
-  summary?: string | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  details?: string | null;
-  care?: string | null;
-  shipping_returns?: string | null;
-  hero_media?: (string | null) | Media;
-  gallery?: (string | Media)[] | null;
-  compare_at_amount?: number | null;
-  max_order_quantity: number;
-  min_order_quantity: number;
-  standard_enabled: boolean;
-  request_to_order_enabled: boolean;
-  private_order_enabled: boolean;
-  private_preset_price_enabled: boolean;
-  private_unit_amount?: number | null;
-  private_tier_gate: 'anyone' | 'resident' | 'patron' | 'cofounder' | 'staff';
-  sort?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantTypes".
- */
-export interface VariantType {
-  id: string;
-  label: string;
-  name: string;
-  options?: {
-    docs?: (string | VariantOption)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantOptions".
- */
-export interface VariantOption {
-  id: string;
-  _variantOptions_options_order?: string | null;
-  variantType: string | VariantType;
-  label: string;
-  /**
-   * should be defaulted or dynamic based on label
-   */
-  value: string;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "carts".
- */
-export interface Cart {
-  id: string;
-  items?:
-    | {
-        product?: (string | null) | Product;
-        variant?: (string | null) | Variant;
-        quantity: number;
-        mode: 'standard_purchase' | 'request_to_order' | 'private_order';
-        campaign?: string | null;
-        schema_version?: number | null;
-        product_name?: string | null;
-        product_slug?: string | null;
-        sku?: string | null;
-        sku_label?: string | null;
-        options?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        currency?: ('KRW' | 'USD' | 'JPY' | 'EUR') | null;
-        unit_amount?: number | null;
-        line_amount?: number | null;
-        weight_grams?: number | null;
-        length_mm?: number | null;
-        width_mm?: number | null;
-        height_mm?: number | null;
-        tax_category?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  secret?: string | null;
-  customer?: (string | null) | User;
-  purchasedAt?: string | null;
-  status?: ('active' | 'purchased' | 'abandoned') | null;
-  subtotal?: number | null;
-  currency?: ('KRW' | 'USD' | 'EUR' | 'JPY') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3797,6 +3803,7 @@ export interface UsersSelect<T extends boolean = true> {
   twoFactorEnabled?: T;
   emailVerified?: T;
   name?: T;
+  cart?: T;
   portrait?: T;
   bookmarks?: T;
   followers?: T;

@@ -24,6 +24,7 @@ import {
   OverviewField
 } from "@payloadcms/plugin-seo/fields";
 import { CollectionConfig, Where } from "payload";
+import { customerCartField } from "@/payload/plugins/ecommerce/customer-cart-field";
 
 export const Users: CollectionConfig = {
   slug: "users",
@@ -70,6 +71,7 @@ export const Users: CollectionConfig = {
     }
   },
   fields: [
+    customerCartField,
     {
       name: "portrait",
       type: "text",
