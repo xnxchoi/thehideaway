@@ -9,6 +9,7 @@ import { formatLostMoney } from "@/lib/lost-commerce/format";
 import type { LostProductDetail } from "@/lib/lost-commerce/queries";
 import type { LostOrderMode } from "@/lib/lost-commerce/types";
 import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
+import { CartMutationFeedback } from "@lostinseoul/components/cart-mutation-feedback";
 import { Footer } from "@lostinseoul/parts/Footer";
 import { useCartOpen } from "@lostinseoul/page-status";
 import type {
@@ -154,7 +155,8 @@ export function LostFragranceChapter({
   const [added, setAdded] = useState(false);
   const [hintFaded, setHintFaded] = useState(false);
   const [affordanceVisible, setAffordanceVisible] = useState(false);
-  const { add } = useStoreCart();
+  const { add, isLoading, unconfirmed } = useStoreCart();
+  const [cartFailed, setCartFailed] = useState(false);
   const [mode, setMode] = useState<LostOrderMode | null>(
     product?.modes[0] ?? null
   );
@@ -227,6 +229,7 @@ export function LostFragranceChapter({
       !displayedPrice ||
       !mode ||
       !primaryVariant ||
+      isLoading ||
       needsProductPage
     )
       return;
@@ -247,8 +250,14 @@ export function LostFragranceChapter({
         variantLabel: primaryVariant.label
       })
     )
-      .then(() => setAdded(true))
-      .catch(() => undefined);
+      .then((confirmed) => {
+        setAdded(confirmed);
+        setCartFailed(!confirmed);
+      })
+      .catch(() => {
+        setAdded(false);
+        setCartFailed(true);
+      });
   };
 
   return (
@@ -378,7 +387,7 @@ export function LostFragranceChapter({
                       ) : canUseActions ? (
                         <button
                           className="lost-fragrance-cta"
-                          disabled={added}
+                          disabled={added || isLoading}
                           onClick={addToBag}
                           type="button"
                         >
@@ -388,6 +397,9 @@ export function LostFragranceChapter({
                       <span aria-live="polite" className="sr-only">
                         {added ? labels.addedLabel : ""}
                       </span>
+                      <CartMutationFeedback
+                        unconfirmed={unconfirmed || cartFailed}
+                      />
                       {!needsProductPage || !canUseActions ? (
                         <Link
                           className="lost-fragrance-eyebrow !mb-0 underline-offset-4 hover:underline"

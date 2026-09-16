@@ -1,0 +1,299 @@
+diff --git a/dist/react/provider/index.js b/dist/react/provider/index.js
+index 68ffb4784324c11f9f87f0126d8291611e726ec3..a0287ecebdb1d6c12224f2a3d3d4780702284aaf 100644
+--- a/dist/react/provider/index.js
++++ b/dist/react/provider/index.js
+@@ -38,6 +38,8 @@ const defaultContext = {
+     incrementItem: async ()=>{},
+     initiatePayment: async ()=>{},
+     isLoading: false,
++    isHydrating: true,
++    hydrationError: undefined,
+     mergeCart: async ()=>{},
+     onLogin: async ()=>{},
+     onLogout: ()=>{},
+@@ -62,7 +64,7 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+             symbol: '$'
+         }
+     ]
+-}, customersSlug = 'users', debug = false, paymentMethods = [], syncLocalStorage = true })=>{
++}, customersSlug = 'users', debug = false, initialize = true, paymentMethods = [], syncLocalStorage = true })=>{
+     const localStorageConfig = syncLocalStorage && typeof syncLocalStorage === 'object' ? {
+         ...defaultLocalStorage,
+         ...syncLocalStorage
+@@ -89,6 +91,10 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+     const [user, setUser] = useState(null);
+     const [addresses, setAddresses] = useState();
+     const hasRendered = useRef(false);
++    const initialization = useRef();
++    const addressUser = useRef();
++    const [isHydrating, setIsHydrating] = useState(true);
++    const [hydrationError, setHydrationError] = useState();
+     /**
+    * The ID of the cart associated with the current session.
+    * This is used to identify the cart in the database or local storage.
+@@ -198,7 +204,7 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+     ]);
+     // Persist cart ID and secret to localStorage
+     useEffect(()=>{
+-        if (hasRendered.current) {
++        if (hasRendered.current && !isHydrating && !hydrationError) {
+             if (syncLocalStorage) {
+                 if (cartID) {
+                     localStorage.setItem(localStorageConfig.key, cartID);
+@@ -215,6 +221,8 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+     }, [
+         cartID,
+         cartSecret,
++        isHydrating,
++        hydrationError,
+         localStorageConfig.key,
+         syncLocalStorage
+     ]);
+@@ -592,7 +600,7 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+         paymentMethods,
+         selectedCurrency.code
+     ]);
+-    const getUser = useCallback(async ()=>{
++    const getUser = useCallback(async (publish = true)=>{
+         try {
+             const query = qs.stringify({
+                 depth: 0,
+@@ -617,7 +625,7 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+                 throw new Error(`User fetch error: ${userData.error}`);
+             }
+             if (userData.user) {
+-                setUser(userData.user);
++                if (publish) setUser(userData.user);
+                 return userData.user;
+             }
+         } catch (error) {
+@@ -625,7 +633,7 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+                 // eslint-disable-next-line no-console
+                 console.error('Error fetching user:', error);
+             }
+-            setUser(null);
++            if (publish) setUser(null);
+             throw new Error(`Failed to fetch user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+         }
+     }, [
+@@ -633,8 +641,8 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+         customersSlug,
+         debug
+     ]);
+-    const getAddresses = useCallback(async ()=>{
+-        if (!user) {
++    const getAddresses = useCallback(async (addressOwner = user, publish = true)=>{
++        if (!addressOwner) {
+             return;
+         }
+         try {
+@@ -658,15 +666,15 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+             if (data.error) {
+                 throw new Error(`Address fetch error: ${data.error}`);
+             }
+-            if (data.docs && data.docs.length > 0) {
+-                setAddresses(data.docs);
+-            }
++            const nextAddresses = data.docs?.length ? data.docs : undefined;
++            if (publish) setAddresses(nextAddresses);
++            return nextAddresses;
+         } catch (error) {
+             if (debug) {
+                 // eslint-disable-next-line no-console
+                 console.error('Error fetching addresses:', error);
+             }
+-            setAddresses(undefined);
++            if (publish) setAddresses(undefined);
+             throw new Error(`Failed to fetch addresses: ${error instanceof Error ? error.message : 'Unknown error'}`);
+         }
+     }, [
+@@ -908,56 +916,42 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+         mergeCart,
+         syncLocalStorage
+     ]);
+-    // If localStorage is enabled, restore cart from storage
++    // One bootstrap promise per provider instance. StrictMode may replay the
++    // subscriber effect, but only its active subscription can publish state.
+     useEffect(()=>{
+-        if (!hasRendered.current) {
+-            if (syncLocalStorage) {
+-                const storedCartID = localStorage.getItem(localStorageConfig.key);
+-                const storedSecret = localStorage.getItem(`${localStorageConfig.key}_secret`);
+-                if (storedCartID) {
+-                    getCart(storedCartID, {
+-                        secret: storedSecret || undefined
+-                    }).then((fetchedCart)=>{
+-                        setCart(fetchedCart);
+-                        setCartID(storedCartID);
+-                        if (storedSecret) {
+-                            setCartSecret(storedSecret);
+-                        }
+-                    }).catch((_)=>{
+-                        // console.error('Error fetching cart from localStorage:', error)
+-                        // If there's an error fetching the cart, clear it from localStorage
+-                        localStorage.removeItem(localStorageConfig.key);
+-                        localStorage.removeItem(`${localStorageConfig.key}_secret`);
+-                        setCartID(undefined);
+-                        setCart(undefined);
+-                        setCartSecret(undefined);
+-                    });
+-                }
+-            }
+-            hasRendered.current = true;
+-            void getUser().then((user)=>{
+-                if (user && user.cart?.docs && user.cart.docs.length > 0) {
+-                    // If the user has carts, we can set the cartID to the first cart
+-                    const cartID = typeof user.cart.docs[0] === 'object' ? user.cart.docs[0].id : user.cart.docs[0];
+-                    if (cartID) {
+-                        getCart(cartID).then((fetchedCart)=>{
+-                            setCart(fetchedCart);
+-                            setCartID(cartID);
+-                        }).catch((error)=>{
+-                            if (debug) {
+-                                // eslint-disable-next-line no-console
+-                                console.error('Error fetching user cart:', error);
+-                            }
+-                            setCart(undefined);
+-                            setCartID(undefined);
+-                            throw new Error(`Failed to fetch user cart: ${error.message}`);
+-                        });
+-                    }
+-                }
+-            });
++        if (!initialize || hasRendered.current) return;
++        let active = true;
++        if (!initialization.current) {
++            initialization.current = (async ()=>{
++                const fetchedUser = await getUser(false);
++                const firstCart = fetchedUser?.cart?.docs?.[0];
++                const userCartID = typeof firstCart === 'object' ? firstCart?.id : firstCart;
++                const storedCartID = !fetchedUser && syncLocalStorage ? localStorage.getItem(localStorageConfig.key) : undefined;
++                const secret = storedCartID ? localStorage.getItem(`${localStorageConfig.key}_secret`) || undefined : undefined;
++                const id = userCartID || storedCartID || undefined;
++                const [fetchedCart, fetchedAddresses] = await Promise.all([
++                    id ? getCart(id, { secret }) : undefined,
++                    getAddresses(fetchedUser, false)
++                ]);
++                return { user: fetchedUser || null, cart: fetchedCart, addresses: fetchedAddresses, id, secret };
++            })();
+         }
++        void initialization.current.then((initial)=>{
++            if (!active) return;
++            addressUser.current = initial.user?.id;
++            setUser(initial.user);
++            setCart(initial.cart);
++            setCartID(initial.id);
++            setCartSecret(initial.secret);
++            setAddresses(initial.addresses);
++            hasRendered.current = true;
++            setIsHydrating(false);
++        }, (error)=>{
++            if (active) setHydrationError(error instanceof Error ? error : new Error('Ecommerce initialization failed'));
++        });
++        return ()=>{ active = false; };
+     }, [
+-        debug,
++        initialize,
+         getAddresses,
+         getCart,
+         getUser,
+@@ -965,42 +959,51 @@ export const EcommerceProvider = ({ addressesSlug = 'addresses', api, cartsSlug
+         syncLocalStorage
+     ]);
+     useEffect(()=>{
++        if (isHydrating || addressUser.current === user?.id) return;
++        addressUser.current = user?.id;
+         if (user) {
+-            // If the user is logged in, fetch their addresses
+-            void getAddresses();
++            void getAddresses().catch((error)=>setHydrationError(error));
+         } else {
+-            // If no user is logged in, clear addresses
+             setAddresses(undefined);
+         }
+     }, [
+         getAddresses,
++        isHydrating,
+         user
+     ]);
++    const requireHydrated = (operation)=>(...args)=>{
++        if (isHydrating || hydrationError) {
++            throw new Error('Ecommerce session is not ready');
++        }
++        return operation(...args);
++    };
+     return /*#__PURE__*/ _jsx(EcommerceContext, {
+         value: {
+-            addItem,
++            addItem: requireHydrated(addItem),
+             addresses,
+             cart,
+-            clearCart,
+-            clearSession,
++            clearCart: requireHydrated(clearCart),
++            clearSession: requireHydrated(clearSession),
+             config,
+-            confirmOrder,
+-            createAddress,
++            confirmOrder: requireHydrated(confirmOrder),
++            createAddress: requireHydrated(createAddress),
+             currenciesConfig,
+             currency: selectedCurrency,
+-            decrementItem,
+-            incrementItem,
+-            initiatePayment,
+-            isLoading,
+-            mergeCart,
+-            onLogin,
+-            onLogout,
++            decrementItem: requireHydrated(decrementItem),
++            incrementItem: requireHydrated(incrementItem),
++            initiatePayment: requireHydrated(initiatePayment),
++            isLoading: isLoading || isHydrating || Boolean(hydrationError),
++            isHydrating,
++            hydrationError,
++            mergeCart: requireHydrated(mergeCart),
++            onLogin: requireHydrated(onLogin),
++            onLogout: requireHydrated(onLogout),
+             paymentMethods,
+-            refreshCart,
+-            removeItem,
++            refreshCart: requireHydrated(refreshCart),
++            removeItem: requireHydrated(removeItem),
+             selectedPaymentMethod,
+-            setCurrency,
+-            updateAddress,
++            setCurrency: requireHydrated(setCurrency),
++            updateAddress: requireHydrated(updateAddress),
+             user
+         },
+         children: children
+diff --git a/dist/types/index.d.ts b/dist/types/index.d.ts
+index 6d3e491352dbad5ea27ca742b857088712a1a83f..0bdc864ff0b4592c928c29ff2b161b6717497f5a 100644
+--- a/dist/types/index.d.ts
++++ b/dist/types/index.d.ts
+@@ -807,6 +807,8 @@ export type EcommerceConfig = {
+     customersSlug: CollectionSlug;
+ };
+ export type ContextProps = {
++    /** Skip initialization for an inert preparatory provider. Defaults to true. */
++    initialize?: boolean;
+     /**
+      * The slug for the addresses collection.
+      *
+@@ -938,10 +940,11 @@ export type EcommerceContextType<T extends EcommerceCollections = EcommerceColle
+     initiatePayment: (paymentMethodID: string, options?: {
+         additionalData: Record<string, unknown>;
+     }) => Promise<unknown>;
+-    /**
+-     * Indicates whether any cart operation is currently in progress.
+-     * Useful for disabling buttons and preventing race conditions.
+-     */
++    /** True until initial user, cart, and addresses are all available. */
++    isHydrating: boolean;
++    /** Initial state is unavailable; remount the provider to retry. */
++    hydrationError?: Error;
++    /** True during initialization, hydration failure, or a cart operation. */
+     isLoading: boolean;
+     /**
+      * Merges items from a source cart into a target cart.

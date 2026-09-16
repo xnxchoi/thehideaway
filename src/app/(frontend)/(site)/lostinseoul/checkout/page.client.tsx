@@ -8,6 +8,7 @@ import {
   isLostCommercePaymentUiEnabled,
   shouldExecuteLostCommercePayment
 } from "@/lib/lost-commerce/payment-preview";
+import { CartMutationFeedback } from "@lostinseoul/components/cart-mutation-feedback";
 import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
 import {
   useCart,
@@ -78,7 +79,13 @@ export function LostCheckoutPageClient({
   portOneEnabled: boolean;
   portOneSdkVersion: "v2" | "global";
 }) {
-  const { lines, total } = useStoreCart();
+  const {
+    lines,
+    total,
+    isLoading: cartLoading,
+    unconfirmed,
+    isBlocked
+  } = useStoreCart();
   const viewerID = useRPSession((session) => session.id);
   const operationRef = useRef(0);
   const { cart } = useCart();
@@ -161,7 +168,7 @@ export function LostCheckoutPageClient({
   }
 
   async function submit(form: HTMLFormElement) {
-    if (state === "pending" || state === "reconciling") return;
+    if (isBlocked() || state === "pending" || state === "reconciling") return;
     const operation = ++operationRef.current;
     setState("pending");
     setErrorKey("failed");
@@ -185,6 +192,10 @@ export function LostCheckoutPageClient({
     try {
       await loadPortOneSdk(portOneSdkVersion);
       if (operation !== operationRef.current) return;
+      if (isBlocked()) {
+        setState("idle");
+        return;
+      }
       if (!window.PortOne?.requestPayment)
         throw new Error("portone-unavailable");
       const address = {
@@ -271,6 +282,7 @@ export function LostCheckoutPageClient({
           </h1>
         </div>
 
+        <CartMutationFeedback unconfirmed={unconfirmed} />
         {recoveryPayment ? (
           <section className="mx-auto max-w-md border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] p-5">
             <Button
@@ -443,6 +455,7 @@ export function LostCheckoutPageClient({
               <Button
                 className="mt-5 min-h-[48px] w-full bg-[var(--n-s-fg)] px-4 text-sm font-medium text-[var(--n-s-bg)] disabled:cursor-wait disabled:opacity-70"
                 disabled={
+                  cartLoading ||
                   state === "pending" ||
                   (!portOneUiEnabled && !manualPaymentEnabled)
                 }

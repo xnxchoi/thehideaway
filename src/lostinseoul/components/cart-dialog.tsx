@@ -1,6 +1,11 @@
 "use client";
 
-import { FloatingFocusManager, useFloating } from "@floating-ui/react";
+import {
+  FloatingFocusManager,
+  useDismiss,
+  useFloating,
+  useInteractions
+} from "@floating-ui/react";
 import { useTranslations } from "next-intl";
 import type { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
@@ -18,6 +23,8 @@ export function CartDialog({
       if (!open) onClose();
     }
   });
+  const dismiss = useDismiss(context, { outsidePress: false });
+  const { getFloatingProps } = useInteractions([dismiss]);
   return (
     <FloatingFocusManager
       context={context}
@@ -29,6 +36,7 @@ export function CartDialog({
     >
       <m.div
         {...props}
+        {...getFloatingProps()}
         ref={refs.setFloating}
         role="dialog"
         aria-modal={active ? "true" : undefined}
@@ -36,12 +44,6 @@ export function CartDialog({
         inert={!active}
         aria-label={t("title")}
         tabIndex={-1}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            onClose();
-          }
-        }}
       >
         {children}
       </m.div>

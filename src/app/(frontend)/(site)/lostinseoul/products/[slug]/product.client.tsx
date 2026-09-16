@@ -15,6 +15,7 @@ import type {
 } from "@/lib/lost-commerce/queries";
 import type { LostOrderMode } from "@/lib/lost-commerce/types";
 import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
+import { CartMutationFeedback } from "@lostinseoul/components/cart-mutation-feedback";
 import { cn } from "@/lib/utils";
 import { ProductSection } from "@lostinseoul/components";
 import {
@@ -131,7 +132,8 @@ export function LostProductDetailClient({
   /** Fragrance product only — swaps the left image gallery for the WebGL flacon stage. */
   enableProductStage?: boolean;
 }) {
-  const { add } = useStoreCart();
+  const { add, isLoading, unconfirmed } = useStoreCart();
+  const [cartFailed, setCartFailed] = useState(false);
   const router = useRouter();
   const [mode, setMode] = useState<LostOrderMode | null>(
     product.modes[0] ?? null
@@ -247,21 +249,31 @@ export function LostProductDetailClient({
 
   const addToCart = () => {
     const line = buildCartLine();
-    if (!line) return;
+    if (!line || isLoading) return;
     void Promise.resolve(add(line))
-      .then(() => setAdded(true))
-      .catch(() => undefined);
+      .then((confirmed) => {
+        setAdded(confirmed);
+        setCartFailed(!confirmed);
+      })
+      .catch(() => {
+        setAdded(false);
+        setCartFailed(true);
+      });
   };
 
   const buyNow = () => {
     const line = buildCartLine();
-    if (!line) return;
+    if (!line || isLoading) return;
     void Promise.resolve(add(line))
-      .then(() => {
-        setAdded(true);
-        router.push("/lostinseoul/checkout");
+      .then((confirmed) => {
+        setAdded(confirmed);
+        setCartFailed(!confirmed);
+        if (confirmed) router.push("/lostinseoul/checkout");
       })
-      .catch(() => undefined);
+      .catch(() => {
+        setAdded(false);
+        setCartFailed(true);
+      });
   };
 
   useEffect(() => {
@@ -779,6 +791,7 @@ export function LostProductDetailClient({
                   <Button
                     className="lost-source-button lost-source-button--white justify-center"
                     onClick={buyNow}
+                    disabled={isLoading}
                     type="button"
                   >
                     <span>{labels.directPurchase}</span>
@@ -786,12 +799,15 @@ export function LostProductDetailClient({
                   <Button
                     className="lost-source-button justify-center"
                     onClick={addToCart}
+                    disabled={isLoading}
                     type="button"
                   >
                     <span>{added ? labels.added : labels.add}</span>
                   </Button>
                 </div>
               ) : null}
+
+              <CartMutationFeedback unconfirmed={unconfirmed || cartFailed} />
 
               {details.length > 0 ? (
                 <article
@@ -892,16 +908,18 @@ export function LostProductDetailClient({
             </Button>
           ) : canUseActions ? (
             <div className="grid grid-cols-2 gap-2">
-              <Link
+              <Button
                 className="lost-source-button lost-source-button--white justify-center"
-                href="/lostinseoul/checkout"
+                type="button"
+                disabled={isLoading}
                 onClick={buyNow}
               >
                 <span>{labels.directPurchase}</span>
-              </Link>
+              </Button>
               <Button
                 className="lost-source-button justify-center"
                 onClick={addToCart}
+                disabled={isLoading}
                 type="button"
               >
                 <span>{added ? labels.added : labels.add}</span>

@@ -5,12 +5,7 @@ import { useLenis } from "lenis/react";
 import { animate, type AnimationPlaybackControls } from "motion";
 import { AnimatePresence, useIsPresent } from "motion/react";
 import * as m from "motion/react-m";
-import {
-  type RefObject,
-  useEffect,
-  useRef,
-  useState
-} from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
@@ -44,6 +39,7 @@ import {
 import { LostCartLineImage } from "@lostinseoul/cart-line-image";
 import { useCartOpen, useCommerceRef } from "@lostinseoul/page-status";
 import { CartDialog } from "./cart-dialog";
+import { CartMutationFeedback } from "./cart-mutation-feedback";
 import { CartLineControls } from "./cart-line-controls";
 
 type CartLine = ReturnType<typeof useStoreCart>["lines"][number];
@@ -530,11 +526,7 @@ function CartHeader({
         initial={getCartOverlayChromeState(false)}
         transition={chromeTransition}
       >
-        <Link
-          aria-label={t("cart.home")}
-          href="/lostinseoul"
-          onClick={onClose}
-        >
+        <Link aria-label={t("cart.home")} href="/lostinseoul" onClick={onClose}>
           <span className="font-sans text-[1.6rem] leading-none font-bold tracking-[0.24em] uppercase lg:text-[2rem]">
             LOSTINSEOUL
           </span>
@@ -617,6 +609,7 @@ function CartPanel({
   total: number;
 }) {
   const t = useTranslations("LOSTINSEOUL");
+  const { isLoading, unconfirmed, isBlocked } = useStoreCart();
   return (
     <m.aside
       animate={getCartOverlayPanelState(true)}
@@ -636,7 +629,10 @@ function CartPanel({
       />
       <div className="grid min-h-[calc(100svh-24rem)] grid-rows-[1fr_auto] border border-[var(--lost-cart-line)] bg-[var(--lost-cart-bg)] p-5 lg:min-h-0 lg:p-8">
         {lines.length === 0 ? (
-          <CartEmpty onClose={onClose} />
+          <div className="grid gap-4">
+            <CartMutationFeedback unconfirmed={unconfirmed} />
+            <CartEmpty onClose={onClose} />
+          </div>
         ) : (
           <>
             <div className="grid max-h-[48svh] gap-6 overflow-y-auto pr-2">
@@ -656,13 +652,25 @@ function CartPanel({
                 <span>{t("cart.total")}</span>
                 <span>{formatLostMoney(total, currency)}</span>
               </div>
-              <Link
-                className="inline-flex min-h-18 items-center justify-center rounded-[4px] bg-[var(--lost-cart-strong)] px-5 text-[1.2rem] leading-none font-medium text-[var(--lost-cart-strong-ink)]"
-                href="/lostinseoul/checkout"
-                onClick={onClose}
-              >
-                {t("checkout.title")}
-              </Link>
+              {isLoading ? (
+                <Button type="button" disabled className="min-h-18 opacity-60">
+                  {t("checkout.title")}
+                </Button>
+              ) : (
+                <Link
+                  className="inline-flex min-h-18 items-center justify-center rounded-[4px] bg-[var(--lost-cart-strong)] px-5 text-[1.2rem] leading-none font-medium text-[var(--lost-cart-strong-ink)]"
+                  href="/lostinseoul/checkout"
+                  onClick={(event) => {
+                    if (isBlocked()) {
+                      event.preventDefault();
+                      return;
+                    }
+                    onClose();
+                  }}
+                >
+                  {t("checkout.title")}
+                </Link>
+              )}
             </div>
           </>
         )}

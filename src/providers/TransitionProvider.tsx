@@ -3,6 +3,7 @@ import type { PortalFrameTransitions } from "@/components/UX/Transition";
 import { TE } from "@/constants/animations";
 import { NavEventsProvider } from "@/providers/Navigation/_client-nav-events";
 import { HAStoreContext, useCursor, useRPStore } from "@/providers/RP_Pro";
+import { TransitionReadinessProvider } from "@/providers/transition-readiness";
 import { CornerSide, FrameSide } from "@/stores/Frame_Ctrl";
 import { createTransStore, type RPT } from "@/stores/RP_Ui";
 import { gsap } from "gsap";
@@ -1016,13 +1017,15 @@ export const TransitionProvider = ({ children }: { children: ReactNode }) => {
   }, []);
   return (
     <TransContextProvider>
-      {mounted ? (
-        <TransitionManager>
-          <NavEventsProvider>{children}</NavEventsProvider>
-        </TransitionManager>
-      ) : (
-        children
-      )}
+      <TransitionReadinessProvider ready={mounted}>
+        {mounted ? (
+          <TransitionManager>
+            <NavEventsProvider>{children}</NavEventsProvider>
+          </TransitionManager>
+        ) : (
+          children
+        )}
+      </TransitionReadinessProvider>
     </TransContextProvider>
   );
 };

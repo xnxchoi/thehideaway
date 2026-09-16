@@ -1,4 +1,8 @@
 {
+  "CartSession": {
+    "unavailable": "Unable to load your cart.",
+    "reload": "Reload"
+  },
   "Highlights": {
     "error": {
       "share": {

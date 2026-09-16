@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo } from "react";
 import { useCart } from "@payloadcms/plugin-ecommerce/client/react";
+import { useCartOperations } from "@/payload/plugins/ecommerce/client/cart-operations";
+import { cartLinesMatch } from "@/payload/plugins/ecommerce/cart-item-matcher";
 
 import type { LostCartLineInput } from "./types";
 import {
@@ -47,6 +49,7 @@ export function useStoreCart() {
     isLoading,
     removeItem
   } = useCart();
+  const { run, pending, unconfirmed, isBlocked } = useCartOperations();
   const lines = useMemo(
     () => mapPluginCartLines(cart, String(cart?.currency ?? "KRW")),
     [cart]
@@ -58,27 +61,69 @@ export function useStoreCart() {
   const count = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   const add = useCallback(
-    (line: StoreCartLine) =>
-      addItem(pluginCartAddItem(line) as never, line.quantity),
-    [addItem]
+    (line: StoreCartLine) => {
+      const item = pluginCartAddItem(line);
+      const existing = cart?.items?.find((candidate) =>
+        cartLinesMatch(candidate, item)
+      );
+      const identity = {
+        product: line.productId,
+        variant: line.skuId,
+        mode: line.mode,
+        campaign: line.campaignId
+      };
+      return run(
+        {
+          kind: "add",
+          item: identity,
+          quantity: (existing?.quantity ?? 0) + line.quantity
+        },
+        () => addItem(pluginCartAddItem(line) as never, line.quantity)
+      );
+    },
+    [addItem, cart?.items, run]
   );
 
   const remove = useCallback(
     (line: StoreCartLine) =>
-      line.itemId ? removeItem(line.itemId) : Promise.resolve(),
-    [removeItem]
+      line.itemId
+        ? run({ kind: "item", itemID: line.itemId, quantity: 0 }, () =>
+            removeItem(line.itemId!)
+          )
+        : Promise.resolve(false),
+    [removeItem, run]
   );
 
-  const clear = useCallback(() => clearCart(), [clearCart]);
+  const clear = useCallback(
+    () =>
+      cart?.items?.length
+        ? run({ kind: "clear" }, () => clearCart())
+        : Promise.resolve(false),
+    [cart?.items?.length, clearCart, run]
+  );
   const increment = useCallback(
     (line: StoreCartLine) =>
-      line.itemId ? incrementItem(line.itemId) : Promise.resolve(),
-    [incrementItem]
+      line.itemId
+        ? run(
+            { kind: "item", itemID: line.itemId, quantity: line.quantity + 1 },
+            () => incrementItem(line.itemId!)
+          )
+        : Promise.resolve(false),
+    [incrementItem, run]
   );
   const decrement = useCallback(
     (line: StoreCartLine) =>
-      line.itemId ? decrementItem(line.itemId) : Promise.resolve(),
-    [decrementItem]
+      line.itemId
+        ? run(
+            {
+              kind: "item",
+              itemID: line.itemId,
+              quantity: Math.max(0, line.quantity - 1)
+            },
+            () => decrementItem(line.itemId!)
+          )
+        : Promise.resolve(false),
+    [decrementItem, run]
   );
 
   return {
@@ -90,6 +135,9 @@ export function useStoreCart() {
     decrement,
     total,
     count,
-    isLoading
+    isLoading: isLoading || pending || unconfirmed,
+    isBlocked,
+    pending,
+    unconfirmed
   };
 }

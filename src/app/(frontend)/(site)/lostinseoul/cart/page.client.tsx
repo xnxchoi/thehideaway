@@ -4,6 +4,8 @@ import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
 import { useStoreCart } from "@/lib/lost-commerce/useStoreCart";
+import { CartLineControls } from "@lostinseoul/components/cart-line-controls";
+import { CartMutationFeedback } from "@lostinseoul/components/cart-mutation-feedback";
 import { LostCartLineImage } from "@lostinseoul/cart-line-image";
 import "@lostinseoul/index.css";
 
@@ -18,7 +20,7 @@ type Labels = {
 };
 
 export function LostCartPageClient({ labels }: { labels: Labels }) {
-  const { lines, remove, total } = useStoreCart();
+  const { lines, total, isLoading, unconfirmed, isBlocked } = useStoreCart();
   const currency = lines[0]?.currency ?? "KRW";
   const count = lines.reduce((sum, line) => sum + line.quantity, 0);
 
@@ -84,6 +86,9 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
             </p>
           </div>
 
+          {lines.length === 0 ? (
+            <CartMutationFeedback unconfirmed={unconfirmed} />
+          ) : null}
           <div className="border-y border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.1)]">
             {lines.length === 0 ? (
               <div className="grid min-h-[320px] content-center justify-items-center gap-5 text-center">
@@ -127,13 +132,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                         {line.variantLabel ? `${line.variantLabel} / ` : ""}
                         {line.mode.replaceAll("_", " ")} / x {line.quantity}
                       </p>
-                      <Button
-                        className="mt-5 inline-flex min-h-[44px] items-center rounded-[4px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.12)] px-4 text-sm text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.7)] transition hover:bg-[var(--n-s-fg)] hover:text-[var(--n-s-bg)]"
-                        onClick={() => remove(line)}
-                        type="button"
-                      >
-                        {labels.remove}
-                      </Button>
+                      <CartLineControls line={line} />
                     </div>
                     <p className="font-sans text-xs text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.55)] tabular-nums">
                       {formatLostMoney(
@@ -154,10 +153,21 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
             <span>{formatLostMoney(total, currency)}</span>
           </div>
           <div className="grid gap-3 pt-5">
-            {lines.length > 0 ? (
+            {lines.length > 0 && isLoading ? (
+              <Button
+                type="button"
+                disabled
+                className="min-h-[48px] opacity-60"
+              >
+                {labels.checkout}
+              </Button>
+            ) : lines.length > 0 ? (
               <Link
                 className="inline-flex min-h-[48px] items-center justify-center rounded-[4px] bg-[var(--n-s-fg)] px-5 text-sm font-medium text-[var(--n-s-bg)]"
                 href="/lostinseoul/checkout"
+                onClick={(event) => {
+                  if (isBlocked()) event.preventDefault();
+                }}
               >
                 {labels.checkout}
               </Link>
