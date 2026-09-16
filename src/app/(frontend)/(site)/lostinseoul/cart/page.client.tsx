@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/core/Button";
 import { Link } from "@/components/core/Link/Link";
 import { formatLostMoney } from "@/lib/lost-commerce/format";
@@ -20,6 +21,7 @@ type Labels = {
 };
 
 export function LostCartPageClient({ labels }: { labels: Labels }) {
+  const tModes = useTranslations("LOSTINSEOUL.cart.modes");
   const { lines, total, isLoading, unconfirmed, isBlocked } = useStoreCart();
   const currency = lines[0]?.currency ?? "KRW";
   const count = lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -130,7 +132,7 @@ export function LostCartPageClient({ labels }: { labels: Labels }) {
                       </Link>
                       <p className="mt-2 font-sans text-[11px] tracking-[0.16em] text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.55)] uppercase">
                         {line.variantLabel ? `${line.variantLabel} / ` : ""}
-                        {line.mode.replaceAll("_", " ")} / x {line.quantity}
+                        {tModes(line.mode)} / x {line.quantity}
                       </p>
                       <CartLineControls line={line} />
                     </div>

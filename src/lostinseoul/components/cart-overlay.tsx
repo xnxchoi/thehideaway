@@ -704,6 +704,8 @@ function CartLineItem({
   line: CartLine;
   onClose: () => void;
 }) {
+  const tModes = useTranslations("LOSTINSEOUL.cart.modes");
+
   return (
     <div className="grid grid-cols-[7.2rem_1fr] gap-4 border-b border-[var(--lost-cart-line)] pb-5 last:border-b-0">
       <Link
@@ -735,7 +737,7 @@ function CartLineItem({
         </div>
         <p className="mt-1 font-sans text-[1.1rem] leading-tight tracking-[0.16em] text-[var(--lost-cart-muted)] uppercase">
           {line.variantLabel ? `${line.variantLabel} / ` : ""}
-          {line.mode.replaceAll("_", " ")} / x {line.quantity}
+          {tModes(line.mode)} / x {line.quantity}
         </p>
         <CartLineControls line={line} />
       </div>

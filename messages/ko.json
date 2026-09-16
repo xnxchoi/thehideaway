@@ -235,6 +235,11 @@
     },
     "cart": {
       "title": "카트",
+      "modes": {
+        "standard_purchase": "일반 구매",
+        "request_to_order": "주문 요청",
+        "private_order": "프라이빗 오더"
+      },
       "quantity": "수량",
       "increase": "{product} 수량 늘리기",
       "decrease": "{product} 수량 줄이기",

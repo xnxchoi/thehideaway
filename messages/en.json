@@ -235,6 +235,11 @@
     },
     "cart": {
       "title": "Cart",
+      "modes": {
+        "standard_purchase": "Standard purchase",
+        "request_to_order": "Order request",
+        "private_order": "Private order"
+      },
       "quantity": "Quantity",
       "increase": "Increase quantity for {product}",
       "decrease": "Decrease quantity for {product}",
