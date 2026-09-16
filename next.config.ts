@@ -104,6 +104,12 @@ const nextConfig: NextConfig = {
         // Apply to everything — including /api routes and /vault.
         source: "/:path*",
         headers: securityHeaders
+      },
+      {
+        // Guest order lookup may carry a secret in the query string.
+        // Next uses the last matching rule for each header key.
+        source: "/api/lost/orders",
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }]
       }
     ];
   },
