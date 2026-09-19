@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -9,11 +10,19 @@ import { getCustomerOrder } from "@/payload/plugins/ecommerce/order-history";
 import { OrderDetail } from "@/lostinseoul/order-detail";
 import { OrderLookup } from "@/lostinseoul/order-lookup";
 
-export default async function OrderPage({
-  params
-}: {
+type OrderPageProps = {
   params: Promise<{ ref: string }>;
-}) {
+};
+
+export default function OrderPage({ params }: OrderPageProps) {
+  return (
+    <Suspense fallback={null}>
+      <OrderContent params={params} />
+    </Suspense>
+  );
+}
+
+async function OrderContent({ params }: OrderPageProps) {
   const { ref } = await params;
   if (!ref || ref.length > 100) notFound();
   const session = await getServerSession(await headers());
