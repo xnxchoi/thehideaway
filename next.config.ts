@@ -11,6 +11,7 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
   allowedDevOrigins: [
+    "127.0.0.1",
     "172.30.1.71",
     "172.20.10.4",
     "sean-mbp.local",
