@@ -605,9 +605,13 @@ describe("canonical LOST storefront routes", () => {
     }
   );
 
-  it.each(["/orders", "/orders/"])(
+  // Cloned NextURL serialization retains the incoming trailing slash.
+  it.each([
+    ["/orders", "/lostinseoul/orders"],
+    ["/orders/", "/lostinseoul/orders/"]
+  ])(
     "rewrites signed-in canonical account history %s to its server-validated page",
-    async (path) => {
+    async (path, internalPath) => {
       const response = await proxy(
         makeRequest(
           `${path}?page=2`,
@@ -618,7 +622,7 @@ describe("canonical LOST storefront routes", () => {
 
       expect(response.headers.get("location")).toBeNull();
       expect(response.headers.get("x-middleware-rewrite")).toBe(
-        "https://lostinseoul.com/lostinseoul/orders?page=2"
+        `https://lostinseoul.com${internalPath}?page=2`
       );
     }
   );
