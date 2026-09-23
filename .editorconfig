@@ -1,0 +1,7 @@
+root = true
+
+# Frozen archive. WebStorm skips formatting; VS Code/Cursor read-only is in
+# .vscode/settings.json. Do not add indent rules here for the rest of the repo.
+[**/.attic/**]
+ij_formatter_enabled = false
+ij_formatter_tags_enabled = false

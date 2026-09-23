@@ -51,5 +51,12 @@ for src in "$@"; do
 
   mkdir -p "$(dirname "$dest")"
   mv "$src" "$dest"
+  # Read-only so WebStorm and files.readonlyFromPermissions refuse a casual save.
+  # Directories stay writable so a later attic can add files.
+  if [ -d "$dest" ]; then
+    find "$dest" -type f -exec chmod a-w {} +
+  else
+    chmod a-w "$dest"
+  fi
   echo "attic: $src -> $dest"
 done

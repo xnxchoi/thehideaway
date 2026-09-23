@@ -1,0 +1,6 @@
+{
+  "files.readonlyFromPermissions": true,
+  "files.readonlyInclude": {
+    "**/.attic/**": true
+  }
+}

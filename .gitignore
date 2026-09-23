@@ -41,11 +41,14 @@ tests
 # .attic/ is the local archival stash (`pnpm attic <path>`). Gitignored.
 # Never rm dormant code — park it here. Excluded from Docker + tsconfig.
 .attic
-.vscode
+# Share the attic read-only editor settings. Ignore the rest of each directory.
+.vscode/*
+!.vscode/settings.json
 .idea
 .codex
 .next
-.claude
+.claude/*
+!.claude/settings.json
 .pnpm-store
 .turbo
 .git-support/archive-worktree/

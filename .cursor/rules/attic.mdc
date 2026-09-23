@@ -1,0 +1,7 @@
+---
+description: Attic files are a frozen archive
+globs: .attic/**/*
+alwaysApply: true
+---
+
+Files under `.attic/` are frozen snapshots. Read them. Do not edit, format, delete, or chmod them back to writable. To reuse an old command, copy the script body into the live file you mean to change.

@@ -15,6 +15,7 @@ export default defineConfig({
   test: {
     include: [
       "src/**/*.{test,spec}.{ts,tsx}",
+      "scripts/**/*.{test,spec}.ts",
       ".git-support/**/*.{test,spec}.{ts,tsx}"
     ],
     exclude: [

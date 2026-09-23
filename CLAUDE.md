@@ -113,14 +113,43 @@ Full procedure, templates, FK-drop ordering: **`readmes/MIGRATIONS.md`**.
 ## Development
 
 ```bash
-pnpm dev              # dev server (Turbopack)
-pnpm dev:pgstart      # start PostgreSQL Docker container
-pnpm dev:init         # DB + migrate + dev
+pnpm dev              # start local Postgres, then the dev server
+pnpm dev:init         # start local Postgres, migrate, then the dev server
 pnpm build
-pnpm generate:types   # → src/types/payload-types.ts (run after schema changes)
-pnpm generate:schema
+pnpm start
+pnpm test
 pnpm lint · pnpm format
+pnpm generate:types   # → src/types/payload-types.ts
+pnpm generate:schema
+pnpm generate:importmap
+pnpm micreate · pnpm migrate · pnpm migrate:fresh
+pnpm attic <path> · pnpm attic:init · pnpm attic:snap
+pnpm release:cut · pnpm release:check
 ```
+
+`package.json` keeps those plus `seed:rebuild`, the env/deploy-rule commands in
+`readmes/DEPLOY.md`, and `oauth:approval:report`. The previous 55-script file
+is the local gitignored copy `.attic/package.json`. Read a script body from
+there when a session still needs the old invocation. Do not copy that file
+back over the live `package.json`.
+
+| Old script | Use |
+| --- | --- |
+| `dev:pgstart`, `db:wait`, `dev:docker`, `dev:m`, `dev:restart` | `pnpm dev` or `pnpm dev:init` |
+| `dev:prod`, `ci` | `pnpm migrate`, then `pnpm build`. Releases follow `readmes/DEPLOY.md`. |
+| `generate` | `pnpm generate:types`, `pnpm generate:schema`, `pnpm generate:importmap` |
+| `lint:fix` | `pnpm format` |
+| `test:watch` | `pnpm exec vitest` |
+| `payload` | `pnpm exec payload` |
+| `ii`, `reinstall` | `pnpm install` |
+| `upgrade` | `pnpm update` |
+| `micreate:fresh` | `pnpm micreate` |
+
+These files are still in the tree. Their old script names are only in
+`.attic/package.json`: `src/scripts/bootstrapLostLaunch.ts`,
+`cleanupButlerPosts.ts`, `cleanupDevFixtures.ts`, `seedButlerPosts.ts`,
+`seedLostProducts.ts`, `seedMembership.ts`, plus `.git-support/archive.mjs`
+and `.git-support/media.mjs`. Git hooks: `git config core.hooksPath .git-support/hooks`.
 
 Docker-based deploy (dev/prod.Dockerfile) behind Nginx. → `readmes/DEPLOY.md`.
 
@@ -137,7 +166,7 @@ Docker-based deploy (dev/prod.Dockerfile) behind Nginx. → `readmes/DEPLOY.md`.
 
 Two directories sit outside `src/`, excluded from the production build.
 
-- **`.attic/` — archived dormant code.** **Never `rm` a file — always `pnpm attic <path>`** (mirrors the source path). Gitignored local stash; excluded from Docker + tsconfig, so type errors inside don't hit CI. Role and usage: `scripts/attic.sh` and this section.
+- **`.attic/` — archived dormant code.** **Never `rm` a file — always `pnpm attic <path>`** (mirrors the source path). `pnpm attic:init` creates the directory when it is missing, removes write permission from files already there, and exits quietly when that is already true. `pnpm attic:snap` opens a list: space or enter toggles a file or folder, `s` writes a read-only copy to `.attic/snapshots/<time>`. `--all` and `--name` skip the list. Git still holds history for tracked files. Do not edit, format, or delete anything under `.attic/`. Editors pick that up from `.vscode/settings.json`, `.editorconfig`, and `.prettierignore`. Excluded from Docker, TypeScript, ESLint, and Prettier, so archived code does not hit CI. Role and usage: `scripts/attic.sh` and this section.
 - **`reference/` — optional local-only study/benchmark code.** Git-ignored external material for reading/porting only,
   never imported by production. When ready to use, port into `src/` properly — don't import directly.
 
