@@ -1,0 +1,120 @@
+{
+  "date": "2026-09-25",
+  "scope": "KR physical checkout destination admission and complete EN/KO address fields; partial D3/C07",
+  "status": "PASS_SCOPED",
+  "nonPostgresAndCoverage": {
+    "files": 54,
+    "tests": 428,
+    "result": "PASS",
+    "statements": 91.22,
+    "branches": 85.74,
+    "functions": 98.41,
+    "lines": 93.24,
+    "sources": [
+      "src/payload/plugins/ecommerce/checkout-snapshot.ts",
+      "src/payload/plugins/ecommerce/payment-endpoints.ts",
+      "src/payload/plugins/ecommerce/client/purchase-confirmation.ts",
+      "src/app/(frontend)/(site)/lostinseoul/checkout/page.client.tsx"
+    ],
+    "tooling": "Existing temporary matching Vitest/coverage-v8 4.1.11; file-URL custom provider and escaped route-group globs; no dependency changes",
+    "limits": "Source/DOM coverage; PostgreSQL and live browser evidence are separate, overlapping evidence sets"
+  },
+  "nativePostgres": {
+    "files": 1,
+    "tests": 16,
+    "result": "PASS",
+    "databaseGuard": "Fresh ecommerce_checkout_test_kr_address_* database at 127.0.0.1:55439",
+    "provider": "Local simulator, not PortOne",
+    "covers": [
+      "registered HTTP rejects missing/malformed/foreign shipping without orders, attempts or provider calls",
+      "normalized KR destination and separate foreign billing persist",
+      "existing ownership, concurrent initiation/confirmation, guest capability and webhook settlement regressions"
+    ]
+  },
+  "browser": {
+    "result": "PASS_SCOPED_FIELD_UI",
+    "score": 7.45,
+    "threshold": 7,
+    "locales": [
+      "en",
+      "ko"
+    ],
+    "widths": [
+      1440,
+      768,
+      375
+    ],
+    "mobileKeyboardSupplement": "PASS",
+    "paymentEnabled": false,
+    "initialBlockedDevelopmentDiagnosticRequests": 1,
+    "supplementPageErrors": 0,
+    "supplementUnknownLocalRequests": 0,
+    "report": "browser-gan-report.json"
+  },
+  "reviews": {
+    "code": "PASS; final tests-only delta reviewed",
+    "react": "PASS scoped source/DOM review",
+    "security": "PASS scoped source review",
+    "typescriptSpecialist": "Incomplete: reviewer stopped on existing global compiler/lint configuration gates; separate final compiler check below"
+  },
+  "types": {
+    "wholeProject": "FAIL",
+    "diagnostics": 505,
+    "changedFilesDiagnostics": 0,
+    "option": "--ignoreDeprecations 6.0"
+  },
+  "lint": {
+    "result": "BLOCKED",
+    "reason": "Existing ESLint 10/plugin configuration and react-plugin compatibility failures"
+  },
+  "preservation": {
+    "baselineFiles": 3210,
+    "baseline": "private-data/verification/baseline.json",
+    "retainedSourceTablesUnchanged": 167,
+    "deliveredOrderHistoryAndSnapshotsUnchanged": true,
+    "ownedSyntheticSessionsRemaining": 0,
+    "primaryPostgresUntouched": true,
+    "next3100": "STOPPED",
+    "isolatedPostgres": "STOPPED"
+  },
+  "limits": [
+    "Shipping fees are not implemented: shippingAmount remains null and checkout still uses merchandise subtotal; this is not free shipping or sales readiness",
+    "No carrier-verified address validation or restrictive phone/postal policy was selected",
+    "Enabled submission, provider payment and historical pending recovery were not exercised live",
+    "No migration, generated artifact, dependency, deployment, webhook configuration or external email change"
+  ],
+  "nextSlice": "Server-authoritative configured shipping fees and reviewed totals, without inventing fee amounts or unresolved policies",
+  "evidence": "Ignored private-data/ contains native/browser reports, coverage, type logs, source baseline, runner configuration and initialization scan",
+  "verificationContext": "Original candidate includes earlier uncommitted work; exact commit checked separately below",
+  "commitVerification": {
+    "result": "PASS_SCOPED",
+    "base": "e410e7d6",
+    "scope": "HEAD plus exactly 18 selected paths; earlier fulfillment WIP and staged rename excluded",
+    "nonPostgresFiles": 51,
+    "nonPostgresTests": 395,
+    "nativeFiles": 1,
+    "nativeTests": 16,
+    "coverage": {
+      "statements": 91.22,
+      "branches": 85.74,
+      "functions": 98.41,
+      "lines": 93.24
+    },
+    "nativeProvider": "Loopback simulator",
+    "nativeClientsAfterTests": 0,
+    "isolatedPostgresAfterTests": "STOPPED",
+    "gitHook": "Standard repository hook retained; command-scoped verifyDepsBeforeRun=false prevents automatic dependency installation"
+  },
+  "dependencyAudit": {
+    "command": "pnpm audit --prod --json",
+    "critical": 1,
+    "moderate": 2,
+    "high": 0,
+    "advisories": [
+      "GHSA-jrc7-96c5-q579",
+      "GHSA-jg8r-5jh2-v2xj",
+      "GHSA-8cw4-87c7-c6xx"
+    ],
+    "status": "Existing release blockers; no dependency or lockfile change"
+  }
+}

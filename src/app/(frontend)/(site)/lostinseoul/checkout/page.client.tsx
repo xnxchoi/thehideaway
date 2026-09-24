@@ -169,6 +169,40 @@ export function LostCheckoutPageClient({
 
   async function submit(form: HTMLFormElement) {
     if (isBlocked() || state === "pending" || state === "reconciling") return;
+    const formData = new FormData(form);
+    const addressValues = {
+      firstName: String(formData.get("name") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      addressLine1: String(formData.get("address") ?? ""),
+      postalCode: String(formData.get("postalCode") ?? ""),
+      addressLine2: String(formData.get("addressLine2") ?? "")
+    };
+    const invalidAddress = Object.entries(addressValues).some(
+      ([key, value]) =>
+        (key !== "addressLine2" && !value.trim()) ||
+        value.length > 500 ||
+        Array.from(value).some((character) => {
+          const code = character.charCodeAt(0);
+          return code < 32 || (code >= 127 && code <= 159);
+        })
+    );
+    if (invalidAddress || !form.checkValidity()) {
+      setErrorKey("invalidShippingAddress");
+      setState("failed");
+      form.reportValidity();
+      return;
+    }
+    const normalize = (value: string) => value.trim().replace(/\s+/g, " ");
+    const address = {
+      country: "KR",
+      firstName: normalize(addressValues.firstName),
+      phone: normalize(addressValues.phone),
+      addressLine1: normalize(addressValues.addressLine1),
+      postalCode: normalize(addressValues.postalCode),
+      ...(addressValues.addressLine2.trim()
+        ? { addressLine2: normalize(addressValues.addressLine2) }
+        : {})
+    };
     const operation = ++operationRef.current;
     setState("pending");
     setErrorKey("failed");
@@ -187,7 +221,6 @@ export function LostCheckoutPageClient({
       setState("idle");
       return;
     }
-    const formData = new FormData(form);
     const previousAttempt = readPendingPurchaseForViewer(viewerID);
     try {
       await loadPortOneSdk(portOneSdkVersion);
@@ -198,11 +231,6 @@ export function LostCheckoutPageClient({
       }
       if (!window.PortOne?.requestPayment)
         throw new Error("portone-unavailable");
-      const address = {
-        firstName: String(formData.get("name") ?? "").trim(),
-        phone: String(formData.get("phone") ?? "").trim(),
-        addressLine1: String(formData.get("address") ?? "").trim()
-      };
       const initiated: unknown = await initiatePayment("portone", {
         additionalData: {
           customerEmail: String(formData.get("email") ?? "").trim(),
@@ -318,23 +346,24 @@ export function LostCheckoutPageClient({
                 <legend className="mb-2 text-lg font-medium">
                   {labels.contact}
                 </legend>
-                <label className="sr-only" htmlFor="lost-checkout-name">
+                <label className="text-sm" htmlFor="lost-checkout-name">
                   {labels.name}
                 </label>
                 <input
                   id="lost-checkout-name"
-                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
+                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none focus-visible:border-[var(--n-s-fg)] focus-visible:ring-1 focus-visible:ring-[var(--n-s-fg)] md:text-sm"
                   autoComplete="name"
+                  maxLength={500}
                   name="name"
                   placeholder={labels.name}
                   required
                 />
-                <label className="sr-only" htmlFor="lost-checkout-email">
+                <label className="text-sm" htmlFor="lost-checkout-email">
                   {labels.email}
                 </label>
                 <input
                   id="lost-checkout-email"
-                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
+                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none focus-visible:border-[var(--n-s-fg)] focus-visible:ring-1 focus-visible:ring-[var(--n-s-fg)] md:text-sm"
                   autoComplete="email"
                   inputMode="email"
                   name="email"
@@ -342,14 +371,16 @@ export function LostCheckoutPageClient({
                   required
                   type="email"
                 />
-                <label className="sr-only" htmlFor="lost-checkout-phone">
+                <label className="text-sm" htmlFor="lost-checkout-phone">
                   {labels.phone}
                 </label>
                 <input
                   id="lost-checkout-phone"
-                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
+                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none focus-visible:border-[var(--n-s-fg)] focus-visible:ring-1 focus-visible:ring-[var(--n-s-fg)] md:text-sm"
                   autoComplete="tel"
                   inputMode="tel"
+                  maxLength={500}
+                  required
                   name="phone"
                   placeholder={labels.phone}
                   type="tel"
@@ -359,23 +390,53 @@ export function LostCheckoutPageClient({
                 <legend className="mb-2 text-lg font-medium">
                   {labels.shipping}
                 </legend>
-                <label className="sr-only" htmlFor="lost-checkout-address">
+                <p className="text-sm text-[oklch(from_var(--n-s-fg)_l_c_h_/_0.72)]">
+                  {t("shippingCountry")}
+                </p>
+                <label className="text-sm" htmlFor="lost-checkout-address">
                   {labels.address}
                 </label>
                 <input
                   id="lost-checkout-address"
-                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none md:text-sm"
-                  autoComplete="shipping street-address"
+                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none focus-visible:border-[var(--n-s-fg)] focus-visible:ring-1 focus-visible:ring-[var(--n-s-fg)] md:text-sm"
+                  autoComplete="shipping address-line1"
+                  maxLength={500}
                   name="address"
                   placeholder={labels.address}
                   required
                 />
-                <label className="sr-only" htmlFor="lost-checkout-note">
+                <label
+                  className="text-sm"
+                  htmlFor="lost-checkout-address-line2"
+                >
+                  {t("addressLine2")}
+                </label>
+                <input
+                  id="lost-checkout-address-line2"
+                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none focus-visible:border-[var(--n-s-fg)] focus-visible:ring-1 focus-visible:ring-[var(--n-s-fg)] md:text-sm"
+                  autoComplete="shipping address-line2"
+                  maxLength={500}
+                  name="addressLine2"
+                  placeholder={t("addressLine2")}
+                />
+                <label className="text-sm" htmlFor="lost-checkout-postal-code">
+                  {t("postalCode")}
+                </label>
+                <input
+                  id="lost-checkout-postal-code"
+                  className="min-h-[48px] border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent px-3 text-[16px] outline-none focus-visible:border-[var(--n-s-fg)] focus-visible:ring-1 focus-visible:ring-[var(--n-s-fg)] md:text-sm"
+                  autoComplete="shipping postal-code"
+                  maxLength={500}
+                  name="postalCode"
+                  placeholder={t("postalCode")}
+                  required
+                />
+                <label className="text-sm" htmlFor="lost-checkout-note">
                   {labels.note}
                 </label>
                 <textarea
                   id="lost-checkout-note"
-                  className="min-h-28 border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent p-3 text-[16px] outline-none md:text-sm"
+                  className="min-h-28 border border-[oklch(from_var(--n-s-fg)_l_c_h_/_0.2)] bg-transparent p-3 text-[16px] outline-none focus-visible:border-[var(--n-s-fg)] focus-visible:ring-1 focus-visible:ring-[var(--n-s-fg)] md:text-sm"
                   maxLength={2000}
                   name="note"
                   placeholder={labels.note}
@@ -464,7 +525,9 @@ export function LostCheckoutPageClient({
                 {state === "pending" ? labels.pending : labels.submit}
               </Button>
               {state === "failed" ? (
-                <p className="mt-3 text-sm text-destructive">{t(errorKey)}</p>
+                <p className="mt-3 text-sm text-destructive" role="alert">
+                  {t(errorKey)}
+                </p>
               ) : null}
             </aside>
           </form>

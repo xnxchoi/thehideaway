@@ -33,6 +33,96 @@ describe
       await fixture?.close();
     }, 30_000);
 
+    it("rejects invalid physical destinations without persisting purchases or payment attempts", async () => {
+      const cart = await fixture.cart();
+      const valid = {
+        country: "KR",
+        firstName: "Fixture recipient",
+        phone: "010 1234 5678",
+        addressLine1: "서울시 중구 1",
+        postalCode: "04524"
+      };
+      const ordersBefore = await fixture.payload.count({
+        collection: "orders",
+        overrideAccess: true
+      });
+      const providerCallsBefore = fixture.providerCalls.length;
+      for (const [shippingAddress, code] of [
+        [undefined, "shipping-address-required"],
+        [null, "shipping-address-required"],
+        [{}, "invalid-shipping-address"],
+        [{ ...valid, phone: false }, "invalid-shipping-address"],
+        [{ ...valid, firstName: " " }, "invalid-shipping-address"],
+        [{ ...valid, addressLine1: "street\n" }, "invalid-shipping-address"],
+        [{ ...valid, postalCode: "x".repeat(501) }, "invalid-shipping-address"],
+        [{ ...valid, country: "US" }, "unsupported-shipping-country"]
+      ]) {
+        const result = await fixture.request("/api/payments/portone/initiate", {
+          cartID: cart.id,
+          secret: cart.secret,
+          expectedAmount: 12000,
+          expectedCurrency: "KRW",
+          customerEmail: "guest@checkout.test",
+          shippingAddress
+        });
+        expect(result).toEqual({ status: 400, body: { code, message: code } });
+        expect(await fixture.attempts(cart.id)).toHaveLength(0);
+      }
+      expect(
+        await fixture.payload.count({
+          collection: "orders",
+          overrideAccess: true
+        })
+      ).toEqual(ordersBefore);
+      expect(fixture.providerCalls).toHaveLength(providerCallsBefore);
+    });
+
+    it("persists normalized KR shipping independently of a foreign billing address", async () => {
+      const cart = await fixture.cart();
+      const shippingAddress = {
+        country: " KR ",
+        firstName: "  김   서울  ",
+        phone: " 010  1234 5678 ",
+        addressLine1: " 서울시   중구 1 ",
+        addressLine2: " 101동   202호 ",
+        postalCode: " 04524 "
+      };
+      const billingAddress = {
+        firstName: "Buyer",
+        country: "US",
+        postalCode: "90210"
+      };
+      const result = await fixture.request("/api/payments/portone/initiate", {
+        cartID: cart.id,
+        secret: cart.secret,
+        expectedAmount: 12000,
+        expectedCurrency: "KRW",
+        customerEmail: "guest@checkout.test",
+        shippingAddress,
+        billingAddress
+      });
+      expect(result.status).toBe(200);
+      const [attempt] = await fixture.attempts(cart.id);
+      const order = await fixture.orderFor(attempt);
+      const expected = {
+        fulfillmentKind: "physical",
+        shippingAddress: {
+          country: "KR",
+          firstName: "김 서울",
+          phone: "010 1234 5678",
+          addressLine1: "서울시 중구 1",
+          addressLine2: "101동 202호",
+          postalCode: "04524"
+        },
+        billingAddress,
+        shippingAmount: null,
+        taxAmount: null
+      };
+      expect(attempt.checkout_snapshot).toMatchObject(expected);
+      expect(order.checkout_snapshot).toMatchObject(expected);
+      expect(shippingAddress.country).toBe(" KR ");
+    });
+
     it("creates a real guest cart and one reusable unpaid purchase under concurrent initiation", async () => {
       const cart = await fixture.cart();
       const results = await Promise.all(

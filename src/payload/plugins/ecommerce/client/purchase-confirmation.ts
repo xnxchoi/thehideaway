@@ -243,15 +243,29 @@ export async function confirmPurchase(
 
 export function checkoutErrorKey(
   error: unknown
-): "failed" | "totalChanged" | "unavailable" | "accessDenied" | "rateLimited" {
+):
+  | "failed"
+  | "totalChanged"
+  | "unavailable"
+  | "accessDenied"
+  | "rateLimited"
+  | "shippingAddressRequired"
+  | "invalidShippingAddress"
+  | "unsupportedShippingCountry" {
   let code = error instanceof Error ? error.message : "";
   try {
     const parsed: unknown = JSON.parse(code);
-    if (isRecord(parsed) && typeof parsed.error === "string")
-      code = parsed.error;
+    if (isRecord(parsed)) {
+      if (typeof parsed.code === "string") code = parsed.code;
+      else if (typeof parsed.error === "string") code = parsed.error;
+    }
   } catch {
     /* Vendor errors can already be machine codes. */
   }
+  if (code === "shipping-address-required") return "shippingAddressRequired";
+  if (code === "invalid-shipping-address") return "invalidShippingAddress";
+  if (code === "unsupported-shipping-country")
+    return "unsupportedShippingCountry";
   if (code === "checkout-rate-limited") return "rateLimited";
   if (["checkout-total-changed", "checkout-review-required"].includes(code))
     return "totalChanged";

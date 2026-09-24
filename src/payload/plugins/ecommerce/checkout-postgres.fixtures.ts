@@ -473,6 +473,13 @@ export async function createCheckoutFixture(databaseURI: string) {
             expectedAmount: 12000,
             expectedCurrency: "KRW",
             customerEmail: "guest@checkout.test",
+            shippingAddress: {
+              country: "KR",
+              firstName: "Fixture recipient",
+              phone: "010 1234 5678",
+              addressLine1: "서울시 중구 1",
+              postalCode: "04524"
+            },
             ...(options.retryPayment ? { retryPayment: true } : {})
           },
           { userID: options.userID }

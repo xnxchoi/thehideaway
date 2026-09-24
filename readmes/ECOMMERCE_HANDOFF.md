@@ -1,3 +1,83 @@
+# Ecommerce continuation — 2026-09-25
+
+## Current KR destination checkpoint
+
+This commit contains only the KR delivery-address slice and its public verification
+record on `codex/ecommerce-phase9`. Earlier manual-fulfillment implementation,
+documentation consolidation and unrelated work remain outside this commit.
+Private test credentials, browser captures and runner logs are ignored and not pushed.
+
+The full local candidate evidence below includes earlier uncommitted work; the
+isolated commit verification is recorded in the public validation record. Source
+push is not deployment or permission for production payments.
+
+Next: server-authoritative shipping-fee configuration and reviewed checkout totals.
+Do not invent fee amounts, carrier policies or unresolved D4–D10 decisions.
+
+### KR destination slice
+
+The follow-on change implements the destination/address portion of D3/C07:
+
+- New goods checkout requires an explicit `KR` destination, recipient name,
+  phone, street address and postal code. Text is bounded, control characters
+  are rejected and whitespace is normalized into the immutable snapshot.
+  Optional address line 2 and delivery note are retained. No carrier lookup,
+  deliverability guarantee or restrictive phone/postal format is implied.
+- Cart ownership is checked first; invalid destinations return safe 400 codes
+  before the payment adapter or purchase/attempt writes. Billing addresses may
+  still be foreign. Saved-address countries and supported currencies are unchanged.
+- The existing checkout form has EN/KO destination copy, required fields,
+  persistent labels and focus indication. Validation runs before loading the SDK;
+  safe server errors preserve entered values and the cart. The official client's
+  JSON-text error transport is covered. Existing purchase recovery/confirmation
+  remains independent of the new address form and validation.
+- No migration, generated artifact, fulfillment transition or payment-provider
+  configuration changed. The registered HTTP/PostgreSQL suite uses a fresh
+  guarded disposable database and local provider simulator, never the retained
+  browser database or primary PostgreSQL.
+
+Source: `checkout-snapshot.ts`, `payment-endpoints.ts`, their tests and native
+fixtures under `src/payload/plugins/ecommerce/`; checkout `page.client.tsx` and
+DOM tests; `client/purchase-confirmation.ts`; EN/KO checkout keys. Current evidence
+is in `.git-support/ecommerce-kr-address-2026-09-25/`; credentials, screenshots,
+runner logs and temporary coverage tooling references stay in ignored `private-data/`.
+
+Verification: 54 non-PG files / 428 tests passed; the four-source scope has 91.22%
+statements, 85.74% branches, 98.41% functions and 93.24% lines. The registered
+checkout HTTP/PostgreSQL suite passed 16 tests separately. Code, React and
+security reviews found no blockers. The TypeScript specialist stopped at global
+configuration gates; a separate final compiler run with the documented TS6
+option found 505 existing diagnostics and none in this slice. Global lint remains
+blocked by existing ESLint/plugin failures. No clean whole-project check is claimed.
+
+Independent GAN field-UI evaluation passed 7.45/10: EN/KO at 1440, 768 and 375,
+plus mobile keyboard/invalid-field focus. Pay remained disabled; enabled submit,
+provider payment, custom server-error display and historical recovery were not
+proved live. The first browser run blocked one Next dev diagnostic request; its
+report is retained. The supplement had no page errors/unknown local requests.
+All 167 source-table fingerprints and delivered order histories/snapshots stayed
+unchanged; no sessions remained. Owned Next3100 and isolated PostgreSQL are stopped.
+Read `validation.json` and `browser-gan-report.json` in the evidence directory;
+these overlap prior evidence and must not be summed into a release test total.
+
+Exact commit verification: 51 non-PG files / 395 tests and 16 registered HTTP/PostgreSQL
+tests passed in a separate HEAD-based tree, with the same four-source coverage
+above. The refreshed production dependency audit still reports one critical and
+two moderate advisories; dependency files are unchanged. The standard Git hook
+runs with command-scoped `verifyDepsBeforeRun=false` to avoid pnpm 11 automatically
+installing dependencies during a source commit.
+
+**C07 is still partial.** `shippingAmount` remains unknown (`null`) and checkout
+still uses the merchandise subtotal. Do not interpret this slice as free shipping
+or sales readiness. Configure fees and review authoritative totals before sales
+open; tax/policy/provider/launch gates remain as documented. Existing historical
+snapshots are not rewritten or revalidated by confirmation.
+
+
+## Earlier checkpoints — historical
+
+The older entries below are retained for provenance and do not override the current checkpoint.
+
 # Ecommerce pause and resume handoff — 2026-09-16
 
 ## Active pause checkpoint — 2026-09-16

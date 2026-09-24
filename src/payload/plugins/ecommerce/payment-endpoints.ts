@@ -117,8 +117,16 @@ async function initiate(
       deliveryNote: data.deliveryNote
     });
   } catch (error) {
-    if (error instanceof CheckoutSnapshotError)
-      throw new CheckoutHTTPError(400, "checkout-review-required");
+    if (error instanceof CheckoutSnapshotError) {
+      const code = [
+        "shipping-address-required",
+        "invalid-shipping-address",
+        "unsupported-shipping-country"
+      ].includes(error.message)
+        ? error.message
+        : "checkout-review-required";
+      throw new CheckoutHTTPError(400, code);
+    }
     throw error;
   }
   if (

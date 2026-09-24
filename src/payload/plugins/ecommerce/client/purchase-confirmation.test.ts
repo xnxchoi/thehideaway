@@ -221,3 +221,21 @@ describe("purchase confirmation", () => {
     expect(readPurchasePayment(payment.paymentId, store)).toEqual(payment);
   });
 });
+
+describe("checkout shipping errors", () => {
+  it.each([
+    ["shipping-address-required", "shippingAddressRequired"],
+    ["invalid-shipping-address", "invalidShippingAddress"],
+    ["unsupported-shipping-country", "unsupportedShippingCountry"]
+  ])("maps %s without exposing raw errors", (code, key) => {
+    expect(checkoutErrorKey(new Error(code))).toBe(key);
+    expect(
+      checkoutErrorKey(
+        new Error(JSON.stringify({ code, message: "Invalid address" }))
+      )
+    ).toBe(key);
+    expect(checkoutErrorKey(new Error(JSON.stringify({ error: code })))).toBe(
+      key
+    );
+  });
+});

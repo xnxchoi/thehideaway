@@ -1,5 +1,21 @@
 # Ecommerce
 
+## KR physical destination admission — 2026-09-25
+
+New physical initiation requires an explicit KR shipping destination with recipient,
+phone, street and postal code. Bounded text is normalized into the immutable
+snapshot; invalid destinations are rejected before payment initiation. Foreign
+billing and general saved-address countries remain independent. Existing purchase
+confirmation reads its stored snapshot without retroactive address admission.
+
+This completes only the destination/address part of D3/C07. Shipping fees remain
+unknown, and checkout still uses merchandise subtotal. Configure shipping fees
+and authoritative reviewed totals before sales open. No carrier-verified
+deliverability or restrictive phone/postal rule is implied. Current verification
+and continuation are in ECOMMERCE_HANDOFF.md.
+
+---
+
 Catalog, cart, order, and transaction primitives belong to
 `@payloadcms/plugin-ecommerce@3.88.0` (pin to the Payload 3.x release; do not
 float `latest`). Membership billing and ticketing stay separate. The launch

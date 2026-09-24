@@ -32,6 +32,7 @@ let root: Root;
 let container: HTMLDivElement;
 let resolveMutation: (response: Response) => void;
 const requests: string[] = [];
+let initiationError = "invalid-shipping-address";
 const labels = {
   title: "Checkout",
   back: "Back",
@@ -92,7 +93,17 @@ async function mount(surface: "checkout" | "cart" = "checkout") {
   await act(async () =>
     root.render(
       <NextIntlClientProvider locale="en" messages={en}>
-        <EcommerceProvider syncLocalStorage={false}>
+        <EcommerceProvider
+          syncLocalStorage={false}
+          paymentMethods={[
+            {
+              name: "portone",
+              label: "Card",
+              initiatePayment: true,
+              confirmOrder: true
+            }
+          ]}
+        >
           <CartOperationsProvider>
             <Harness surface={surface} />
           </CartOperationsProvider>
@@ -121,6 +132,11 @@ beforeEach(() => {
         return Response.json({
           user: { id: "user", cart: { docs: ["cart"] } }
         });
+      if (path === "/api/payments/portone/initiate")
+        return Response.json(
+          { code: initiationError, message: "Address rejected" },
+          { status: 400 }
+        );
       if (path === "/api/addresses") return Response.json({ docs: [] });
       if (
         path === "/api/carts/cart/update-item" ||
@@ -153,6 +169,17 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 function submit() {
+  const values = {
+    name: "Buyer",
+    email: "buyer@example.com",
+    phone: "+82 10 1234 5678",
+    address: "10 Seoul Road",
+    postalCode: "01234"
+  };
+  for (const [name, value] of Object.entries(values)) {
+    container.querySelector<HTMLInputElement>(`[name="${name}"]`)!.value =
+      value;
+  }
   container
     .querySelector("form")!
     .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
@@ -251,5 +278,31 @@ describe("mounted cart and checkout mutation recovery", () => {
     expect(
       container.querySelector('a[href="/lostinseoul/checkout"]')
     ).toBeNull();
+  });
+});
+
+describe("official payment provider shipping errors", () => {
+  it.each([
+    ["shipping-address-required", "Enter a shipping address."],
+    ["invalid-shipping-address", "Check the shipping address."],
+    [
+      "unsupported-shipping-country",
+      "Shipping is available within South Korea only."
+    ]
+  ])("shows %s from the server code envelope", async (code, message) => {
+    initiationError = code;
+    const requestPayment = vi.fn();
+    vi.stubGlobal("PortOne", { requestPayment });
+    await mount();
+    await act(async () => submit());
+    expect(requests).toContain("/api/payments/portone/initiate");
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+      message
+    );
+    expect(
+      container.querySelector<HTMLInputElement>('[name="postalCode"]')?.value
+    ).toBe("01234");
+    expect(container.textContent).toContain("Shirt");
+    expect(requestPayment).not.toHaveBeenCalled();
   });
 });

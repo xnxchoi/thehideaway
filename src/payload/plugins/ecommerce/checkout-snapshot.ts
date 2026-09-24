@@ -45,6 +45,37 @@ function addressSnapshot(value: unknown): RecordData | null {
   );
 }
 
+/** The goods checkout has an explicit, bounded South Korean destination. */
+function shippingAddressSnapshot(value: unknown): RecordData {
+  if (value == null)
+    throw new CheckoutSnapshotError("shipping-address-required");
+  let address;
+  try {
+    address = addressSnapshot(value)!;
+  } catch (error) {
+    if (error instanceof CheckoutSnapshotError)
+      throw new CheckoutSnapshotError("invalid-shipping-address");
+    throw error;
+  }
+  const normalized = Object.fromEntries(
+    Object.keys(address).map((key) => {
+      const field = (value as RecordData)[key] as string;
+      if (/[\u0000-\u001f\u007f-\u009f]/u.test(field))
+        throw new CheckoutSnapshotError("invalid-shipping-address");
+      return [key, field.trim().replace(/\s+/gu, " ")];
+    })
+  );
+  if (
+    ["country", "firstName", "phone", "addressLine1", "postalCode"].some(
+      (key) => !normalized[key]
+    )
+  )
+    throw new CheckoutSnapshotError("invalid-shipping-address");
+  if (normalized.country !== "KR")
+    throw new CheckoutSnapshotError("unsupported-shipping-country");
+  return normalized;
+}
+
 async function snapshotLine(
   item: RecordData,
   currency: string,
@@ -149,6 +180,7 @@ export async function buildCheckoutSnapshot({
   shippingAddress?: unknown;
   deliveryNote?: unknown;
 }) {
+  const destination = shippingAddressSnapshot(shippingAddress);
   if (
     deliveryNote != null &&
     (typeof deliveryNote !== "string" || deliveryNote.length > 2000)
@@ -254,7 +286,7 @@ export async function buildCheckoutSnapshot({
     amount,
     items,
     billingAddress: addressSnapshot(billingAddress),
-    shippingAddress: addressSnapshot(shippingAddress),
+    shippingAddress: destination,
     deliveryNote: typeof deliveryNote === "string" ? deliveryNote.trim() : null,
     shippingAmount: null,
     taxAmount: null,

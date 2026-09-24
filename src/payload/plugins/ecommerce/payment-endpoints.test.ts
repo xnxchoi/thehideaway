@@ -35,6 +35,15 @@ vi.mock("./checkout-attempt", () => ({ markAuthorizedCheckout: vi.fn() }));
 
 import { hideawayEcommercePlugin } from "./plugin";
 import { replacePortOnePaymentEndpoints } from "./payment-endpoints";
+import { markAuthorizedCheckout } from "./checkout-attempt";
+
+const shippingAddress = {
+  country: "KR",
+  firstName: "Customer",
+  phone: "010 1234 5678",
+  addressLine1: "서울 중구 1",
+  postalCode: "04524"
+};
 
 const product = {
   id: "product-1",
@@ -120,7 +129,8 @@ function request(changes: Record<string, unknown> = {}) {
         cartID: "cart-1",
         paymentId: "pay-1",
         expectedAmount: 1200,
-        expectedCurrency: "KRW"
+        expectedCurrency: "KRW",
+        shippingAddress
       },
       user: { id: "owner-1", email: "owner@example.test" },
       payload,
@@ -244,6 +254,20 @@ describe("registered commerce payment routes", () => {
     expect(adapter.confirmOrder).toHaveBeenCalledOnce();
     expect(fixture.payload.db.updateOne).not.toHaveBeenCalled();
   });
+  it("keeps confirmation available for an authorized historical foreign destination", async () => {
+    const fixture = request();
+    fixture.records.transaction.checkout_snapshot = {
+      cartID: "cart-1",
+      shippingAddress: { country: "US" }
+    };
+    const response = await (await handler("confirm-order"))(fixture.req);
+    expect(response.status).toBe(200);
+    expect(adapter.confirmOrder).toHaveBeenCalledOnce();
+    expect(fixture.records.transaction.checkout_snapshot).toEqual({
+      cartID: "cart-1",
+      shippingAddress: { country: "US" }
+    });
+  });
   it("rejects a guest capability mismatch before paid replay and does not trust body privilege flags", async () => {
     const fixture = request({
       user: null,
@@ -294,7 +318,7 @@ describe("registered commerce payment routes", () => {
     const fixture = request({
       data: {
         cartID: "cart-1",
-        shippingAddress: { city: "Seoul" },
+        shippingAddress: { ...shippingAddress, city: "Seoul" },
         expectedAmount: 1200,
         expectedCurrency: "KRW"
       }
@@ -306,7 +330,7 @@ describe("registered commerce payment routes", () => {
         data: expect.objectContaining({
           checkoutSnapshot: expect.objectContaining({
             amount: 1200,
-            shippingAddress: { city: "Seoul" }
+            shippingAddress: { ...shippingAddress, city: "Seoul" }
           })
         })
       })
@@ -347,10 +371,88 @@ describe("registered commerce payment routes", () => {
     "rejects an unreviewed/stale displayed total %s",
     async (expectedAmount) => {
       const fixture = request({
-        data: { cartID: "cart-1", expectedAmount, expectedCurrency: "KRW" }
+        data: {
+          cartID: "cart-1",
+          expectedAmount,
+          expectedCurrency: "KRW",
+          shippingAddress
+        }
       });
       expect((await (await handler("initiate"))(fixture.req)).status).toBe(409);
       expect(adapter.initiatePayment).not.toHaveBeenCalled();
     }
   );
+});
+
+describe("physical destination initiation boundary", () => {
+  it.each([
+    [undefined, "shipping-address-required"],
+    [null, "shipping-address-required"],
+    [{}, "invalid-shipping-address"],
+    [[], "invalid-shipping-address"],
+    [{ ...shippingAddress, firstName: " " }, "invalid-shipping-address"],
+    [{ ...shippingAddress, phone: 1 }, "invalid-shipping-address"],
+    [
+      { ...shippingAddress, addressLine1: "street\n" },
+      "invalid-shipping-address"
+    ],
+    [{ ...shippingAddress, postalCode: undefined }, "invalid-shipping-address"],
+    [{ ...shippingAddress, country: "US" }, "unsupported-shipping-country"]
+  ])(
+    "rejects invalid shipping before creating attempts or calling the adapter (%j)",
+    async (value, code) => {
+      const fixture = request({
+        data: {
+          cartID: "cart-1",
+          expectedAmount: 1200,
+          expectedCurrency: "KRW",
+          shippingAddress: value
+        }
+      });
+      const response = await (await handler("initiate"))(fixture.req);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ message: code, code });
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(markAuthorizedCheckout).not.toHaveBeenCalled();
+      expect(adapter.initiatePayment).not.toHaveBeenCalled();
+      expect(fixture.payload.create).not.toHaveBeenCalled();
+      expect(fixture.payload.update).not.toHaveBeenCalled();
+      expect(fixture.payload.db.updateOne).not.toHaveBeenCalled();
+    }
+  );
+
+  it("passes normalized KR shipping and foreign billing into one authorized initiation", async () => {
+    const fixture = request({
+      data: {
+        cartID: "cart-1",
+        expectedAmount: 1200,
+        expectedCurrency: "KRW",
+        shippingAddress: {
+          ...shippingAddress,
+          firstName: "  김   서울 ",
+          addressLine2: "  101동   202호  "
+        },
+        billingAddress: { country: "US", firstName: "Buyer" }
+      }
+    });
+    const response = await (await handler("initiate"))(fixture.req);
+    expect(response.status).toBe(200);
+    expect(markAuthorizedCheckout).toHaveBeenCalledOnce();
+    expect(adapter.initiatePayment).toHaveBeenCalledOnce();
+    expect(adapter.initiatePayment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          shippingAddress: {
+            ...shippingAddress,
+            firstName: "김 서울",
+            addressLine2: "101동 202호"
+          },
+          billingAddress: { country: "US", firstName: "Buyer" },
+          checkoutSnapshot: expect.objectContaining({
+            fulfillmentKind: "physical"
+          })
+        })
+      })
+    );
+  });
 });

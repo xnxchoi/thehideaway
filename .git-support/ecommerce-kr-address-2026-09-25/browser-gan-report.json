@@ -1,0 +1,40 @@
+{
+  "status": "PASS_SCOPED_FIELD_UI",
+  "scope": "Actual local Next/Payload checkout address fields in Chromium; no enabled payment submission",
+  "independentFromImplementation": true,
+  "iteration": 1,
+  "scores": {
+    "designFit": { "score": 7.5, "weight": 0.3 },
+    "coherence": { "score": 7.0, "weight": 0.2 },
+    "accessibilityAndCraft": { "score": 8.0, "weight": 0.3 },
+    "testedFieldFunctionality": { "score": 7.0, "weight": 0.2 }
+  },
+  "weightedScore": 7.45,
+  "passThreshold": 7.0,
+  "verified": [
+    "EN/KO fields at 1440, 768 and 375 pixels",
+    "Required fields, 500-character bounds, optional line 2 and fixed KR destination notice",
+    "Real filling, native validity, FormData capture, visible focus and mobile keyboard order",
+    "No page/form horizontal overflow or clipped address fields",
+    "Retained-source fingerprints and delivered order histories/snapshots unchanged"
+  ],
+  "limits": [
+    "Pay remained disabled; no enabled submit, SDK or provider request",
+    "Custom localized server/whitespace errors and pending recovery have separate DOM/native evidence only",
+    "First run blocked one Next development stack-frame diagnostic request; preserve that report",
+    "Supplement had zero page errors/unknown local requests; existing WebGL performance warnings remain",
+    "No staging, production-build, carrier, fee calculation or launch-readiness proof"
+  ],
+  "runtime": {
+    "ownedNextStopped": true,
+    "port3100Free": true,
+    "isolatedPostgresStopped": true,
+    "ownedSessionsRemaining": 0
+  },
+  "evidence": {
+    "feedback": "private-data/feedback-001.md",
+    "primary": "private-data/run-1790277612471/report.json",
+    "supplement": "private-data/run-1790277690611/report.json",
+    "privacy": "Ignored private-data; directories 700, files 600"
+  }
+}
