@@ -1,5 +1,73 @@
 # Ecommerce continuation — 2026-09-26
 
+## Owner preview feedback — September 26 (capture only)
+
+Sean paused feedback collection after the two topics below, pending a different
+benchmark target he intends to provide. These are his observations of the current
+preview, not independently reproduced findings, diagnosed causes, approved fixes
+or a prioritized implementation backlog. Speaking order does not imply priority.
+He described the feedback as potentially longstanding and broader in scope,
+having been unable to test the ecommerce experience for a while. Retain both
+topics; do not implement changes from this feedback before further direction.
+
+### Page and cart transitions
+
+- Exit and entry animations both initiate, but their handoff is not smooth.
+- The page appears to freeze for roughly half a second or longer while the next
+  page loads, then jerks back into motion. This duration is an owner estimate,
+  not a measurement or a confirmed loading-related cause.
+- Incoming and outgoing pages remain conspicuously overlapped: both visibly
+  exist rather than producing a seamless transition.
+- Cart opening and closing likewise feel poorly coordinated.
+- Sean cited the original offlin.fr reference: the incoming page appears in
+  front of the exiting page with a continuous, smooth handoff. This records his
+  comparison, not a fresh inspection of that site or a prescribed technique.
+
+### Navigation, information and purchase actions
+
+- The overall navigation experience feels subpar, partly because of the
+  transitions but also because much of the information feels truncated.
+  Specific affected information/elements have not yet been identified.
+- It is not sufficiently apparent which action a customer should take to order.
+  Sean's concern is the interaction design, not a request for more explanatory
+  copy: "You can't explain people into good UX."
+- Design should place substantially more weight on the customer/user viewpoint.
+  Buttons feel disconnected from one another and from the shopping journey;
+  they feel like the same button with different effects rather than clearly
+  differentiated, interconnected actions.
+- Sean explored Buy versus Add to cart: Buy taking the customer directly to
+  checkout, and whether adding to cart should also meet an expectation of
+  navigation to another page. He stopped this line of prescription before
+  settling it. **No add-to-cart redirect or revised purchase flow is approved.**
+- He retained the broader criticism but deferred a specific direction until
+  bringing in the different benchmark target. That target is not yet supplied;
+  do not assume offlin.fr alone determines the next navigation design.
+
+Documentation only. No code, fixture, runtime or payment changes were requested
+by this feedback capture. Await the benchmark and further owner direction.
+
+### Narrow follow-up fixes requested during frontend planning
+
+Separate from the broader redesign feedback above, Sean requested two immediate
+fixes. The candidate source now guards page-entry animation against same-path
+remounts and settles a LOST intro when its tab becomes hidden; a real navigation
+to a different path can still start an entry. The shared cursor's point and text
+rendering use fixed black/white contrast rather than route-theme resets, with a
+red focus/drag accent. This avoids the last-writer-wins cursor color change on
+transitions without choosing light/dark manually for each surface.
+
+The focused suite passed 26 tests across six files: hidden/focus, same-path
+remount versus route return (including the LOST public-root rewrite), and
+cursor contrast markup. A final compiler run using the documented TS6
+deprecation override still returned 505 existing diagnostics; the sole error
+in a touched file concerns the unchanged `CommerceMain` ref assignment.
+Scoped lint could not run because ESLint 10 and the installed React plugin
+fail while loading `react/display-name`. The owner preview running on port
+3100 was serving the prior build when checked, so the new behavior is **not**
+yet physically verified there. Source fixes do not resolve the broader transition
+handoff, cart coordination or navigation-design feedback. No fixture, payment,
+deployment or production changes were made.
+
 ## Interactive local preview — September 26
 
 The immediate priority is a browser preview the owner can use. The reviewed

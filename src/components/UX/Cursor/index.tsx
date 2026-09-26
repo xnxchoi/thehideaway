@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
-import { useCursor, useDeviceInfo, useRPStore } from "@/providers/RP_Pro";
-import { useTheme } from "@/providers/Theme";
+import { useCursor, useDeviceInfo } from "@/providers/RP_Pro";
 import { useCoordinator } from "@/providers/CoordinatorCtx";
 
 import { useIsMobile } from "@/providers/MiddleMan";
@@ -50,28 +49,6 @@ export default function RP_Cursor() {
   const [mqArr, setMqArr] = useState(
     Math.ceil(120 / ((cursorState?.length || 12) + 1))
   );
-  const pageIsTransitioning = useRPStore(
-    useShallow((l) => l.pageIsTransitioning)
-  );
-  const cursorTheme = useCursor(useShallow((l) => l.cursorTheme));
-
-  const colors = useMemo(
-    () => ({
-      rouge: "62.41% 0.246 28.34",
-      light: "10.17% 0.0013 218.99",
-      dark: "97.5% 0.0013 218.99"
-    }),
-    []
-  );
-  const { rouge } = colors;
-  const [currentBase, setCurrentBase] = useState(colors[cursorTheme]);
-
-  useEffect(() => {
-    setCurrentBase(colors[cursorTheme]);
-  }, [cursorTheme, colors]);
-  const theme = useTheme((r) => r.theme);
-  const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
-
   const [isEnabled, setIsEnabled] = useState(!(isTouchDevice && isMobile));
   useEffect(() => {
     setIsEnabled(!(isTouchDevice && isMobile));
@@ -119,7 +96,6 @@ export default function RP_Cursor() {
     }),
     []
   );
-  const strokeColor = useMotionValue(`oklch(${currentBase}/1)`);
 
   const outerVariants = useMemo(
     () => ({
@@ -140,8 +116,6 @@ export default function RP_Cursor() {
     const isFocus = cursorState === "FOCUS";
     const isDrag = cursorState === "DRAG";
     const isTC = !(isFocus || isDrag) && !!cursorState;
-    const target = isFocus || isDrag ? rouge : currentBase;
-    strokeColor.set(`oklch(${target}/1)`);
     const rr = isFocus || isDrag ? c.MEDIUM : c.SMALL;
     const ii = isDrag ? 0 : isFocus ? 1 : rr;
     outerRad.set(rr);
@@ -168,10 +142,7 @@ export default function RP_Cursor() {
     containerHeight,
     c,
     innerRad,
-    outerRad,
-    rouge,
-    currentBase,
-    strokeColor
+    outerRad
   ]);
   const textCursorVariants = useMemo(
     () => ({
@@ -275,25 +246,6 @@ export default function RP_Cursor() {
   //   { dependencies: [cursorState], scope: cursr }
   // );
 
-  const baseTheme = useCursor(useShallow((l) => l.baseCursorTheme));
-  const setBaseCursorTheme = useCursor((l) => l.setBaseCursorTheme);
-  const resetCursorTheme = useCursor((l) => l.resetCursorTheme);
-
-  useEffect(() => {
-    if (!theme) return;
-
-    setBaseCursorTheme(
-      navIsOpen ? (theme === "light" ? "dark" : "light") : theme
-    );
-    resetCursorTheme();
-  }, [
-    navIsOpen,
-    resetCursorTheme,
-    setBaseCursorTheme,
-    theme,
-    pageIsTransitioning
-  ]);
-
   const [textMarq, setTextMarq] = useState(false);
   useEffect(() => {
     setTextMarq(Boolean(cursorState) && isTextCursor && marquee);
@@ -312,7 +264,6 @@ export default function RP_Cursor() {
         translateX: "-50%",
         translateY: "-50%"
       }}
-      data-theme={cursorTheme}
       data-state={cursorState || "null"}
       ref={cursr}
       aria-hidden={!0}
@@ -327,24 +278,21 @@ export default function RP_Cursor() {
                 key={"wrap"}
                 className={cn(
                   "pointer-events-none flex shrink-0 cursor-none flex-col items-center justify-center overflow-hidden outline-none",
-                  "rounded-[8px] bg-nav-button/10 font-dots backdrop-blur-xs perspective-distant"
+                  "rounded-[8px] border border-white bg-black/90 font-dots backdrop-blur-xs perspective-distant"
                 )}
                 style={{ width: containerWidth, height: containerHeight }}
                 variants={textCursorVariants}
-                data-themed="color, border-color, background-color, outline-color,box-shadow"
                 initial="hidden"
                 animate={"animate"}
                 exit="hidden"
               >
                 <m.span
-                  data-themed="color, background-color"
-                  className="pointer-events-none relative inline-block w-full origin-[50%_50%_0] text-center font-dots text-sm leading-none font-bold tracking-[0.05rem] whitespace-nowrap text-nav-foreground mix-blend-difference"
+                  className="pointer-events-none relative inline-block w-full origin-[50%_50%_0] text-center font-dots text-sm leading-none font-bold tracking-[0.05rem] whitespace-nowrap text-white"
                   key={cursorState}
                   style={{
                     fontFeatureSettings: "normal",
                     fontVariationSettings: "normal"
                   }}
-                  data-theme={cursorTheme}
                   initial={{ opacity: 0 }}
                   animate={{
                     opacity: 1,
@@ -378,20 +326,15 @@ export default function RP_Cursor() {
               >
                 <m.circle
                   ref={oCircle}
-                  className={
-                    "inline bg-transparent fill-transparent transition-[stroke] duration-150 ease-out-power3 data-[focus=true]:stroke-rouge-400"
-                  }
+                  className="inline fill-transparent"
                   cx={50}
                   cy={50}
                   r={outerRadius}
-                  strokeWidth={1}
-                  {...((cursorState === "FOCUS" || cursorState === "DRAG") && {
-                    "data-focus": true
-                  })}
+                  stroke="black"
+                  strokeWidth={8}
                   variants={outerVariants}
                   initial={"hidden"}
                   animate={circleVariant}
-                  style={{ stroke: strokeColor }}
                   exit={{
                     opacity: 0,
                     visibility: "hidden",
@@ -406,8 +349,34 @@ export default function RP_Cursor() {
                   fill="transparent"
                 />
                 <m.circle
+                  cx={50}
+                  cy={50}
+                  r={outerRadius}
+                  stroke="white"
+                  strokeWidth={4}
+                  fill="transparent"
+                  variants={outerVariants}
+                  initial="hidden"
+                  animate={circleVariant}
+                  exit="hidden"
+                />
+                {(cursorState === "FOCUS" || cursorState === "DRAG") && (
+                  <m.circle
+                    cx={50}
+                    cy={50}
+                    r={outerRadius}
+                    stroke="oklch(62.41% 0.246 28.34)"
+                    strokeWidth={2}
+                    fill="transparent"
+                    variants={outerVariants}
+                    initial="hidden"
+                    animate={circleVariant}
+                    exit="hidden"
+                  />
+                )}
+                <m.circle
                   ref={iCircle}
-                  className="inline stroke-0"
+                  className="inline"
                   cx={50}
                   cy={50}
                   variants={innerVariants}
@@ -415,8 +384,9 @@ export default function RP_Cursor() {
                   animate={circleVariant}
                   exit={"hidden"}
                   r={innerRadius}
-                  strokeWidth={0}
-                  style={{ fill: strokeColor }}
+                  stroke="black"
+                  strokeWidth={3}
+                  fill="white"
                 />
               </m.svg>
             )}

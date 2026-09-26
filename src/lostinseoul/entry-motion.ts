@@ -1,5 +1,6 @@
 import { Target } from "motion";
 import { useEffect, useState } from "react";
+import { getCommittedPageTransitionPath } from "@/utilities/pageTransitionInitial";
 
 export type EntryElement = "stage" | "chrome" | "heroText" | "heroButton";
 export type EntryPhase = "loading" | "ready" | "ending";
@@ -127,11 +128,28 @@ const ENTRY_FORCE_READY_MS = ENTRY_FAILSAFE_MS + ENTRY_EXIT_MS + 500;
 
 export function useEntrySequence(
   sceneReady: boolean,
-  enabled = true
+  enabled = true,
+  pathname?: string
 ): EntryPhase {
-  const [phase, setPhase] = useState<EntryPhase>(enabled ? "loading" : "ready");
+  const [phase, setPhase] = useState<EntryPhase>(() =>
+    enabled &&
+    (pathname === undefined || pathname !== getCommittedPageTransitionPath())
+      ? "loading"
+      : "ready"
+  );
   const [minimumElapsed, setMinimumElapsed] = useState(!enabled);
   const [sceneTimedOut, setSceneTimedOut] = useState(!enabled);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const settleWhenHidden = () => {
+      if (document.hidden) setPhase("ready");
+    };
+    document.addEventListener("visibilitychange", settleWhenHidden);
+    settleWhenHidden();
+    return () =>
+      document.removeEventListener("visibilitychange", settleWhenHidden);
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled) return;

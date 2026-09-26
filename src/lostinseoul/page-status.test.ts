@@ -21,4 +21,11 @@ describe("page-status chrome contract", () => {
     expect(source).toContain("export function CommerceMain");
     expect(source).toContain("export function useWatchVideo");
   });
+
+  it("compares raw public paths for entry remounts on the LOST host", () => {
+    expect(source).toContain('import { usePathname } from "next/navigation"');
+    expect(source).toMatch(
+      /useEntrySequence\(\s*sceneReady,\s*isEntryPath\(pathname\),\s*publicPathname\s*\)/
+    );
+  });
 });

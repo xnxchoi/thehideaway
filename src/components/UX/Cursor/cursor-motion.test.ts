@@ -14,12 +14,11 @@ describe("global cursor motion", () => {
     expect(source).not.toContain("cursorYSpring");
   });
 
-  it("maps the route theme to the contrasting cursor color", () => {
-    expect(source).toContain(
-      'const baseCursorTheme = theme === "light" ? "dark" : "light"'
-    );
-    expect(source).toContain("setBaseCursorTheme(baseCursorTheme)");
-    expect(source).toContain("style={{ fill: strokeColor }}");
-    expect(source).not.toContain('className="inline fill-nav-button stroke-0"');
+  it("keeps a two-tone point cursor legible without route-theme resets", () => {
+    expect(source).toContain('stroke="black"');
+    expect(source).toContain('stroke="white"');
+    expect(source).toContain('fill="white"');
+    expect(source).not.toContain("pageIsTransitioning");
+    expect(source).not.toContain("resetCursorTheme()");
   });
 });

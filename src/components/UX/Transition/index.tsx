@@ -12,7 +12,10 @@ import {
   useVoyageur
 } from "@/stores/Routing/RP_Voyageur";
 import { useIsMobile } from "@/utilities/getBreakpoints";
-import { consumeHydrationSafeInitial } from "@/utilities/pageTransitionInitial";
+import {
+  commitPageTransitionPath,
+  consumeHydrationSafeInitial
+} from "@/utilities/pageTransitionInitial";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
 import { HTMLMotionProps, useAnimate, useMotionValue } from "motion/react";
@@ -29,12 +32,7 @@ import {
 import { useShallow } from "zustand/react/shallow";
 
 export type PageTransitionType =
-  | "FADE"
-  | "FROM_MENU"
-  | "CURTAIN"
-  | "LOST_PRODUCT"
-  | "IMMEDIATE"
-  | "SHELL";
+  "FADE" | "FROM_MENU" | "CURTAIN" | "LOST_PRODUCT" | "IMMEDIATE" | "SHELL";
 /**
  * @description Information on the transition trigger.
  * @property origin - what caused the navigation, default null
@@ -373,6 +371,13 @@ const TransitionInternal = (props: TransitionWrapperProps) => {
   } = props;
   const pathname = usePathname();
   const hydrationSafeInitial = consumeHydrationSafeInitial(pathname);
+  const pageIdentity = `${props.type}:${props.slug.join("/")}`;
+  const committedPageIdentity = useRef<string | null>(null);
+  useEffect(() => {
+    if (committedPageIdentity.current === pageIdentity) return;
+    committedPageIdentity.current = pageIdentity;
+    commitPageTransitionPath(pathname);
+  }, [pageIdentity, pathname]);
 
   const navIsOpen = useRPStore(useShallow((l) => l.navIsOpen));
   const setPageTheme = useTheme((r) => r.setPageTheme);

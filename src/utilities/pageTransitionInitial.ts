@@ -1,5 +1,4 @@
-let firstPathname: string | null = null;
-let leftFirstDocumentPath = false;
+let lastPathname: string | null = null;
 
 const isBrowser = (): boolean =>
   typeof window !== "undefined" &&
@@ -7,16 +6,15 @@ const isBrowser = (): boolean =>
 
 export const consumeHydrationSafeInitial = (pathname: string): boolean => {
   if (!isBrowser()) return true;
-  if (firstPathname === null) {
-    firstPathname = pathname;
-  }
-  if (pathname !== firstPathname) {
-    leftFirstDocumentPath = true;
-  }
-  return !leftFirstDocumentPath;
+  return lastPathname === null || pathname === lastPathname;
 };
 
+export const commitPageTransitionPath = (pathname: string): void => {
+  if (isBrowser()) lastPathname = pathname;
+};
+
+export const getCommittedPageTransitionPath = (): string | null => lastPathname;
+
 export const __resetDocumentHydratedForTests = (): void => {
-  firstPathname = null;
-  leftFirstDocumentPath = false;
+  lastPathname = null;
 };
