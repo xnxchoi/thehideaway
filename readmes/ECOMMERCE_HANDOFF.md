@@ -1,4 +1,45 @@
-# Ecommerce continuation — 2026-09-25
+# Ecommerce continuation — 2026-09-26
+
+## Interactive local preview — September 26
+
+The immediate priority is a browser preview the owner can use. The reviewed
+isolated clone was restored and Next started on `http://127.0.0.1:3100` at
+19:02 KST, with automatic shutdown at 20:02 KST on September 26. Check the
+listener before relying on this dated status. Do not start ordinary `pnpm dev`
+for this fixture.
+
+- Storefront: `/lostinseoul`.
+- Published test product: `/lostinseoul/products/readiness-shirt`.
+- Shopping flow: `/lostinseoul/cart` → `/lostinseoul/checkout`.
+- Customer history: `/lostinseoul/orders`.
+- Operator orders: `/vault/collections/orders`.
+
+Use synthetic fixture identities only. Credentials and exact order links are in
+`.git-support/ecommerce-fulfillment-2026-09-25/private-data/PREVIEW_ACCESS.private.md`
+(ignored, mode 600). A separate interactive order was seeded directly as paid
+and unfulfilled for owner prepare → dispatch → deliver testing. Its private
+journal/receipt are separate from the three retained delivered examples. Creation
+and a repeat verification passed without changing those examples; preserve their
+histories. The new order is fixture data, not evidence of a provider payment.
+
+Live browser evaluation passed 7.25/10 for catalog, guest cart and address-form
+testing: add, quantity changes, reload persistence, remove/empty state, EN/KO
+responsive form, required-field focus and length limits. A product policy link
+incorrectly opened the membership/ticket policy; its target was corrected to
+`/lostinseoul/refund`; a real mobile click verified the destination. Customer and
+operator sign-in passed through the actual forms, reaching customer order detail
+and the Vault orders table. Both verification sessions were signed out. Private
+login evidence is `private-data/user-login-1790417553559/report.json` in the
+fulfillment evidence directory. Private storefront captures/feedback are under
+`.git-support/ecommerce-kr-address-2026-09-25/private-data/interactive-preview-eval/`.
+
+Card payment remains disabled; no sandbox-card purchase is established. Shipping
+fees remain unresolved. This is a local development preview, with outbound
+server restrictions and blank provider/mail credentials, not public ingress or
+a release. The one-hour runner and 03:00 UTC job exclusion still apply; use the
+private restart procedure below instead of bypassing those guards.
+
+KR destination commit: `c3324bb2` (pushed). Earlier fulfillment and unrelated work remain local.
 
 ## Current KR destination checkpoint
 

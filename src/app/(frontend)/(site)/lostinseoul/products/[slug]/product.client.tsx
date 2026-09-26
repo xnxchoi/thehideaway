@@ -869,7 +869,7 @@ export function LostProductDetailClient({
                 </div>
                 <Link
                   className="justify-self-start font-sans text-[1.2rem] tracking-[0.1em] text-[oklch(from_var(--white)_l_c_h_/_0.85)] underline underline-offset-[0.3em] transition-opacity hover:opacity-70"
-                  href="/refund"
+                  href="/lostinseoul/refund"
                 >
                   {commerce.link}
                 </Link>
