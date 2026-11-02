@@ -22,7 +22,6 @@
 - **Seeder categories:** added required `identity` field with safe defaults.
 
 ---
-
 ## Remaining Clusters (~142 errors)
 
 ### 🔴 Cluster 1 — `BulkUpload` field (22 errors, ~5 files) — **WIP, deferred**

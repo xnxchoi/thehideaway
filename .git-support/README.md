@@ -22,13 +22,13 @@ file, moves content, or deletes local files. Runtime uploads below
 
 ## Dormant-source archive
 
-Dormant source will live on the `archive/source` branch and mount at the
-ignored `.git-support/archive-worktree/`. The active branch retains only the
-bundle catalog and restoration tooling.
+The current workflow is `pnpm attic <path>` from the checkout that owns the file.
+It moves dormant material to the local, Git-ignored `.attic/` while preserving its
+source path. Keep active runbooks and handoffs in `readmes/`; never edit or remove
+existing attic contents. Review references before archiving a live file.
 
-`node .git-support/archive.mjs restore <bundle>` is a dry run. Add `--apply` only after reviewing
-the collision report. Archive files are copied back to their original paths;
-production code never imports from the mounted archive.
-
-The archive is not yet populated. Credential-bearing files must never be
-copied into it.
+`archive.mjs`, `archive.json` and their tests are retained legacy tooling for an
+`archive/source` branch and `.git-support/archive-worktree/` mount. That catalog
+is not populated. They are not the current archival workflow; do not remove them
+without separately reviewing hook/tool dependencies. Credential-bearing files
+must never enter a publishable archive.

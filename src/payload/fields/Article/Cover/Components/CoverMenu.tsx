@@ -27,12 +27,12 @@ import {
   RalueWithRelation,
   RenderImageFields,
   TabNames
-} from "@types/collections/image-collections";
-import { ImageForm, ImageMetadata } from "@types/ImageCollections/schema";
+} from "@/types/collections/image-collections";
+import { ImageForm, ImageMetadata } from "@/types/ImageCollections/schema";
 import {
   SavedMetadataUnsplash,
   UnsplashCollectionDoc
-} from "@types/ImageCollections/unsplash";
+} from "@/types/ImageCollections/unsplash";
 import { ContextMenu, Menu, Popover, Tabs } from "@base-ui/react";
 import {
   $getNodeByKey,

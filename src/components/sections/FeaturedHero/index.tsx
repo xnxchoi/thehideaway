@@ -2,7 +2,7 @@ import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage";
 import { cn } from "@/lib/utils";
-import { PostOverview } from "@types/collections/posts";
+import { PostOverview } from "@/types/collections/posts";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { RelativeTime } from "@/components/sections/FeaturedHero/RelativeTime";
 import { getLocale } from "next-intl/server";

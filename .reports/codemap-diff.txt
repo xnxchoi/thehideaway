@@ -1,0 +1,45 @@
+Codemap scan — 2026-11-02
+Project: hideawayseoul (single Next.js app, not a monorepo)
+Source files scanned: 2221 ts/tsx under src/
+Prior codemaps: none (docs/CODEMAPS and .reports did not exist)
+Diff vs previous: n/a — first generation, no overwrite gate
+
+Files added
+- docs/CODEMAPS/architecture.md
+- docs/CODEMAPS/backend.md
+- docs/CODEMAPS/frontend.md
+- docs/CODEMAPS/data.md
+- docs/CODEMAPS/dependencies.md
+- .reports/codemap-diff.txt
+
+Files removed
+- none
+
+Files modified
+- none (no prior codemap)
+
+New dependencies recorded (initial inventory, not a delta)
+- Next 16, Payload 3.88, PostgreSQL via @payloadcms/db-postgres
+- Better Auth 1.7 (email/password, Google, Naver, Kakao, passkey, TOTP)
+- @payloadcms/plugin-ecommerce + @portone/server-sdk
+- next-intl, TanStack Query, Zustand, Motion, Howler, Lexical, React Three Fiber
+- Nodemailer/Brevo, image-search (Unsplash/Pexels/Pixabay), captcha providers
+- plugin-form-builder and plugin-nested-docs are installed and not mounted
+
+Architecture captured
+- src/proxy.ts is the Next 16 request gate (lostinseoul.com rewrite, API rate limit, session cookie)
+- Admin remains /vault; Payload REST is (payload)/api/[...slug]
+- Live plugin set: locker, search, seo, redirects, betterAuth, membership, merchandising, ecommerce
+- InventoryPlugin is mounted with enabled:false — ledger collections are not in the boot config
+- TicketingPlugin (events, ticket-orders, tickets) is not imported by src/payload/plugins/index.ts
+- Active migrations are src/lib/migrations-baseline (10). src/lib/migrations (55) is not migrationDir
+- pool.max in src/payload.config.ts is 15 (AGENTS.md still says 350)
+
+Staleness (readmes/*.md mtime older than 90 days as of 2026-11-02)
+- readmes/HIGHLIGHTR.md            2026-03-31
+- readmes/NOTIFICATIONS.md         2026-05-15
+- readmes/SERVER_HARDENING.md      2026-05-22
+- readmes/OAUTH_APPROVAL_FORM.md   2026-06-02
+- readmes/GOING_PUBLIC.md          2026-06-04
+
+No codemap was stale. Ecommerce, deploy, Lost, settings, and vault readmes are inside 90 days.

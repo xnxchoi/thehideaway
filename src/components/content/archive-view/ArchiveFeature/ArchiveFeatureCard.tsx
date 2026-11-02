@@ -4,10 +4,13 @@ import { FrontImage } from "@/components/core/Media/FrontImage";
 import { AspectRatio } from "@/components/core/Media/types";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
-import { RalueAsDataWithRelation } from "@types/collections/image-collections";
-import { CollectionOverviewMap, OverviewSlugs } from "@types/collections/index";
-import { TagOverview } from "@types/collections/meta-collections";
-import { AuthorOverview } from "@types/collections/users";
+import { RalueAsDataWithRelation } from "@/types/collections/image-collections";
+import {
+  CollectionOverviewMap,
+  OverviewSlugs
+} from "@/types/collections/index";
+import { TagOverview } from "@/types/collections/meta-collections";
+import { AuthorOverview } from "@/types/collections/users";
 import type { ComponentProps, ReactNode } from "react";
 
 export type OverviewItem<T extends OverviewSlugs = OverviewSlugs> = {

@@ -1,7 +1,7 @@
 "use client";
 import { ProgressiveBlur } from "@/components/UX/Blur/ProgressiveBlur";
 import { useFloater } from "@/components/UX/Highlightr/providers/FloatProvider";
-import type { SingleArticle } from "@types/collections/posts";
+import type { SingleArticle } from "@/types/collections/posts";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import React, { useRef } from "react";
 import {

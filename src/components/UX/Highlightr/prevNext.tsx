@@ -3,7 +3,7 @@ import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { fallback } from "@/components/UX/Highlightr/Navigation/fallbacks";
 import { useCursor, useFrameState, useRPStore } from "@/providers/RP_Pro";
-import type { PostOverview } from "@types/collections/posts";
+import type { PostOverview } from "@/types/collections/posts";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { useLenis } from "lenis/react";
 import { useMotionValue, useTransform } from "motion/react";

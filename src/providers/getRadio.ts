@@ -65,11 +65,13 @@ export const getRadio = cache(
           duration: duration || 12220
         } satisfies RP_Track;
       });
-    return await Promise.allSettled(res).then((r) =>
-      r
-        .filter((v) => v.status === "fulfilled")
-        .map((vs) => vs.value)
-        .filter((x) => !!x)
-    );
+    const settled = await Promise.allSettled(res);
+    return settled
+      .filter(
+        (v): v is PromiseFulfilledResult<false | RP_Track> =>
+          v.status === "fulfilled"
+      )
+      .map((vs) => vs.value)
+      .filter((track): track is RP_Track => typeof track !== "boolean");
   }
 );

@@ -4,7 +4,7 @@ import React from "react";
 import { ArticleHero } from "@/components/layouts/ArticleFrontpage";
 import type { HeroSquareBlock as HeroSquareBlockProps } from "@/payload-types";
 import { queryPostOverviews } from "@/payload/collections/Posts/api/queryPostOverviews";
-import { PostOverview } from "@types/collections/posts";
+import { PostOverview } from "@/types/collections/posts";
 
 export const HeroSquareBlock: React.FC<
   {

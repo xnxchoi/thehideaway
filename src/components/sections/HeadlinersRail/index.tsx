@@ -1,6 +1,6 @@
 import { Link } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
-import { PostOverview } from "@types/collections/posts";
+import { PostOverview } from "@/types/collections/posts";
 import { formatRelativeTime } from "@/utilities/formatRelativeTime";
 
 type HeadlinersRailProps = {

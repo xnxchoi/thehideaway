@@ -1,4 +1,4 @@
-import { ImageCollectionSlug } from "@types/collections/image-collections";
+import { ImageCollectionSlug } from "@/types/collections/image-collections";
 import {
   CollectionSlug,
   FilterOptionsResult,

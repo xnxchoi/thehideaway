@@ -3,7 +3,7 @@
 import { getPayloadImageProps } from "@/components/core/Media/Image/getPayloadImageProps";
 import { breakString } from "@/cssVariables";
 import { cn } from "@/lib/utils";
-import { RenderImageFields } from "@types/collections/image-collections";
+import { RenderImageFields } from "@/types/collections/image-collections";
 import { HTMLMotionProps } from "motion/react";
 import * as m from "motion/react-m";
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";

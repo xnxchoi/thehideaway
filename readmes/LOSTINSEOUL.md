@@ -12,7 +12,7 @@ note. Those are attic'd.
 
 | Concern | Doc |
 |---|---|
-| Catalog, cart, orders, PortOne checkout | `ECOMMERCE.md` (phases 0–8 done; **Phase 9 not started**) |
+| Catalog, cart, orders, PortOne checkout | [Launch contract](ECOMMERCE.md) · [Active handoff](ECOMMERCE_HANDOFF.md) |
 | Identifier names vs plugin/site hooks | `src/lostinseoul/NAMING.md` |
 | Fragrance launch chapter | `LOSTINSEOUL_FRAGRANCE.md` |
 

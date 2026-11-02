@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import { FeaturedHero } from "@/components/sections/FeaturedHero";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { FrontImage } from "@/components/core/Media/FrontImage";
-import { PostOverview } from "@types/collections/posts";
+import { PostOverview } from "@/types/collections/posts";
 
 export const HomeArticleLayout = (props: { posts: PostOverview[] }) => {
   const { posts } = props;

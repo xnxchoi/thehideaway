@@ -834,11 +834,11 @@ Colors
     /*--n-s-bb: var(--n-c-bb);*/
     /*--n-s-bbg: var(--n-c-bbg);*/
 
-    --opaque-fg: var(--opaque-black);
     --fg: var(--black);
+    --bg: var(--white);
+    --opaque-fg: var(--opaque-black);
     --faded-fg: var(--faded-black);
     --off-fg: var(--off-black);
-    --bg: var(--white);
     --muted-fg: var(--cold-d-gray);
     --muted-faded-fg: var(--faded-d-gray);
     --muted-off-fg: var(--off-d-gray);

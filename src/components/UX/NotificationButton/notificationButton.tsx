@@ -9,7 +9,7 @@ import { useIsMobile } from "@/providers/MiddleMan";
 import { useNotifications } from "@/providers/Notifications";
 import { useRPStore } from "@/providers/RP_Pro";
 import { sortByDate } from "@/stores/Notification/NotificationStore";
-import { AuthorOverview } from "@types/collections/users";
+import { AuthorOverview } from "@/types/collections/users";
 import { useWindowResize } from "@/utilities/use_window_resize";
 import { Popover } from "@base-ui/react/popover";
 import NumberFlow, { continuous } from "@number-flow/react";

@@ -1,6 +1,6 @@
 import { RP_IMG_DMA } from "../../client/nodeTODomMap";
 import { $convertRPImageElement } from "./conversions";
-import { ImageCollectionSlug } from "@types/collections/image-collections";
+import { ImageCollectionSlug } from "@/types/collections/image-collections";
 import { clamp } from "@/utilities/mathUtilities";
 import { StronglyTypedLeafNode } from "@payloadcms/richtext-lexical";
 import {

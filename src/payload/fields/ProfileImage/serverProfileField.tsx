@@ -1,4 +1,4 @@
-import { ImageCollectionSlug } from "@types/collections/image-collections";
+import { ImageCollectionSlug } from "@/types/collections/image-collections";
 import { FilterOptionsResult, UIFieldServerProps, Where } from "payload";
 import ProfileImageField from "@/payload/fields/ProfileImage/index";
 import { getServerSideURL } from "@/utilities/getURL";

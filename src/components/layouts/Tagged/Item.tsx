@@ -4,7 +4,7 @@ import { Link } from "@/components/core/Link/Link";
 import { FrontImage } from "@/components/core/Media/FrontImage";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { cn } from "@/lib/utils";
-import { PostOverview } from "@types/collections/posts";
+import { PostOverview } from "@/types/collections/posts";
 import { DateTime } from "luxon";
 import { useLocale } from "next-intl";
 import { ComponentProps, useState } from "react";

@@ -8,7 +8,7 @@ import { errorToast, successToast } from "@/payload/components/sonner";
 import {
   ImageCollection,
   ImageCollectionSlug
-} from "@types/collections/image-collections";
+} from "@/types/collections/image-collections";
 import {
   ListDrawerProps,
   useAuth,

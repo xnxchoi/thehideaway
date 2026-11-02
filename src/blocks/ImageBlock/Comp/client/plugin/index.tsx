@@ -13,8 +13,8 @@ import {
   Internal_RPImageData,
   RP_ImageData
 } from "@/payload/fields/Article/Cover/rp-image/server/node/RP_ImageNode";
-import { ImageCollectionSlug } from "@types/collections/image-collections";
-import { imageSelect } from "@types/payload-api-selects";
+import { ImageCollectionSlug } from "@/types/collections/image-collections";
+import { imageSelect } from "@/types/payload-api-selects";
 import { getClientSideURL } from "@/utilities/getURL";
 import { PluginComponent } from "@payloadcms/richtext-lexical";
 import {

@@ -35,7 +35,7 @@ import { useDomCursor } from "@/components/core/cursorWrapper";
 import {
   FetchedImageDoc,
   ImageCollectionSlug
-} from "@types/collections/image-collections";
+} from "@/types/collections/image-collections";
 
 type PopulatedDocs = {
   relationTo: string;

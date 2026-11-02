@@ -6,8 +6,8 @@ import {
   ImageCollectionSlug,
   ProcessedImageDoc,
   TabNames
-} from "@types/collections/image-collections";
-import { ImageMetadata } from "@types/ImageCollections/schema";
+} from "@/types/collections/image-collections";
+import { ImageMetadata } from "@/types/ImageCollections/schema";
 import { MutationStatus } from "@tanstack/react-query";
 import {
   createContext,

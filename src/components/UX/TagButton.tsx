@@ -1,7 +1,7 @@
 "use client";
 import { Link } from "@/components/core/Link/Link";
 import { cn } from "@/lib/utils";
-import { TagOverview } from "@types/collections/meta-collections";
+import { TagOverview } from "@/types/collections/meta-collections";
 import { MakeRequired, RequireByKeys } from "@/utilities/typeUtilities";
 import { ComponentProps } from "react";
 

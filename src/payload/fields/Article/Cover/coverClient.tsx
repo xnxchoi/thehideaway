@@ -19,7 +19,7 @@ import {
 import { useAltDocCtrls } from "@/payload/providers/Admins";
 import { useCursor } from "@/providers/RP_Pro";
 
-import { UserOverview } from "@types/collections/users";
+import { UserOverview } from "@/types/collections/users";
 import {
   FetchedImageDoc,
   ImageCollection,
@@ -27,8 +27,8 @@ import {
   ProcessedImageDoc,
   RenderImageFields,
   TabNames
-} from "@types/collections/image-collections";
-import { UnsplashFetchResult } from "@types/ImageCollections/unsplash";
+} from "@/types/collections/image-collections";
+import { UnsplashFetchResult } from "@/types/ImageCollections/unsplash";
 import { clamp } from "@/utilities/mathUtilities";
 import { Menu } from "@base-ui/react";
 import {

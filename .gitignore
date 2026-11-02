@@ -28,6 +28,7 @@
 .env*
 !.env.production.template
 !.env.production.enc
+!.env**.example
 
 # Ignore node_modules folder
 node_modules/
@@ -53,6 +54,8 @@ tests
 .turbo
 .git-support/archive-worktree/
 .git-support/media.local.json
+# Local recovery artifacts; active handoff remains in readmes/.
+.git-support/ecommerce-restart-2026-09-10/
 /thehideaway.code-workspace
 backup/
 

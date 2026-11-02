@@ -7,7 +7,7 @@ import { useCourier } from "@/payload/elements/DocumentFields/RP_CourierProvider
 import { useAltDocCtrls } from "@/payload/providers/Admins";
 import { useCursor } from "@/providers/RP_Pro";
 
-import { UserOverview } from "@types/collections/users";
+import { UserOverview } from "@/types/collections/users";
 import type {
   FetchedImage,
   FetchedImageDoc,
@@ -16,8 +16,8 @@ import type {
   PopulatedDocs,
   RalueAsDataWithRelation,
   TabNames
-} from "@types/collections/image-collections";
-import { UnsplashFetchResult } from "@types/ImageCollections/unsplash";
+} from "@/types/collections/image-collections";
+import { UnsplashFetchResult } from "@/types/ImageCollections/unsplash";
 import { clamp } from "@/utilities/mathUtilities";
 import { Menu, Tabs } from "@base-ui/react";
 import {

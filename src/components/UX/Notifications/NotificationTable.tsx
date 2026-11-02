@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/core/Button";
 import { useHumanDate } from "@/hooks/useLocaleDate";
-import type { DataTableRowAction } from "@types/data-table";
+import type { DataTableRowAction } from "@/types/data-table";
 import { NAction } from "./Table/ActionBar";
 
 export const NotificationTable = () => {

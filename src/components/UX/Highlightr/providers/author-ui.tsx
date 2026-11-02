@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { GradientSeparator } from "@/components/ui/separator";
 import { Link } from "@/components/core/Link/Link";
-import type { AuthorOverview } from "@types/collections/users";
+import type { AuthorOverview } from "@/types/collections/users";
 import { ProviderButton } from "@/components/auth";
 import { AUTH_PROVIDERS } from "@/lib/auth/providers";
 import { cn } from "@/lib/utils";

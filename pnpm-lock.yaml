@@ -310,9 +310,6 @@ importers:
       color:
         specifier: ^5.0.3
         version: 5.0.3
-      cross-env:
-        specifier: ^10.1.0
-        version: 10.1.0
       csstype:
         specifier: ^3.2.3
         version: 3.2.3
@@ -677,6 +674,9 @@ importers:
       copyfiles:
         specifier: ^2.4.1
         version: 2.4.1
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
       eslint:
         specifier: ^10.10.0
         version: 10.10.0(jiti@2.7.0)(supports-color@8.1.1)

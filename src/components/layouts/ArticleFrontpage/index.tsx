@@ -4,7 +4,7 @@ import { PlaceHolderImage } from "@/components/core/Media/Image/PlaceHolderImage
 import { FeaturedHero } from "@/components/sections/FeaturedHero";
 import { HeadlinersRail } from "@/components/sections/HeadlinersRail";
 import { cn } from "@/lib/utils";
-import { PostOverview } from "@types/collections/posts";
+import { PostOverview } from "@/types/collections/posts";
 import { formatRelativeTime } from "@/utilities/formatRelativeTime";
 import { RP_BadgeTag } from "@/components/UX/RP_BadgeTag";
 import { getLocale } from "next-intl/server";
